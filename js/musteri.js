@@ -1,0 +1,139 @@
+﻿function renderMusteriler(){
+  let data=[...state.musteriler];
+  const q=(document.getElementById('fm-ara').value||'').toLowerCase();
+  if(q)data=data.filter(m=>(m.kurum+m.kisi+m.tel).toLowerCase().includes(q));
+  document.getElementById('musteri-count').textContent=data.length+' müşteri';
+  const tbody=document.getElementById('musteri-table-body');
+  if(!data.length){tbody.innerHTML='';document.getElementById('musteri-empty').style.display='';return}
+  document.getElementById('musteri-empty').style.display='none';
+  tbody.innerHTML=data.map(m=>{return`<tr><td><span class="kn-badge" style="color:var(--accent);font-size:10px">${m.kayitNo||'—'}</span></td><td style="font-weight:500">${m.kurum}</td><td style="color:var(--text2)">${m.kisi||'—'}</td><td class="td-mono">${m.tel||'—'}</td><td style="color:var(--text2)">${m.email||'—'}</td><td>${m.sehir||'—'}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goMusteriForm('${m.id}')">✎</button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('musteri','${m.id}')">⊗</button></div></td></tr>`;}).join('');
+}
+function saveMusteri(){
+  const kurum=document.getElementById('mf-kurum').value.trim();if(!kurum)return toast('Kurum adı zorunlu.','error');
+  const editId=document.getElementById('mf-edit-id').value;
+  const payload={kurum,kisi:document.getElementById('mf-kisi').value.trim(),tel:document.getElementById('mf-tel').value.trim(),email:document.getElementById('mf-email').value.trim(),sehir:document.getElementById('mf-sehir').value.trim(),adres:document.getElementById('mf-adres').value.trim(),not:document.getElementById('mf-not').value.trim()};
+  if(editId){const idx=state.musteriler.findIndex(x=>x.id===editId);if(idx>=0){state.musteriler[idx]={...state.musteriler[idx],...payload};toast('Güncellendi.','success');}}
+  else{var mKN='MK'+String(state.musteriler.length+1).padStart(5,'0');state.musteriler.push({id:'m'+Date.now(),kayitNo:mKN,...payload});toast('Müşteri eklendi.','success');}
+  saveAll();showPage('musteriler');
+}
+
+// ════ ÜRÜNLER ════
+function renderUrunler(){
+  let data=[...state.urunler];
+  const q=(document.getElementById('fu-ara').value||'').toLowerCase();
+  if(q)data=data.filter(u=>(u.urunAdi+u.marka+u.model+u.kategori).toLowerCase().includes(q));
+  document.getElementById('urun-count').textContent=`${data.length} ürün`;
+  const tbody=document.getElementById('urun-table-body');
+  if(!data.length){tbody.innerHTML='';document.getElementById('urun-empty').style.display='';return}
+  document.getElementById('urun-empty').style.display='none';
+  tbody.innerHTML=data.map(u=>{return`<tr><td class="td-mono" style="color:var(--accent);font-size:11px">${u.urunKodu||'—'}</td><td style="font-weight:500">${u.urunAdi}</td><td style="color:var(--text2)">${u.marka||'—'}</td><td class="td-mono" style="color:var(--text2)">${u.model||'—'}</td><td class="td-mono" style="color:var(--amber)">${u.fiyat?({'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[u.paraBirimi||'TRY']||'₺')+' '+fmtTL(u.fiyat):'—'}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goUrunForm('${u.id}')">✎</button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('urun','${u.id}')">⊗</button></div></td></tr>`;}).join('');
+}
+function saveUrun(){
+  const urunAdi=document.getElementById('uf-urunAdi').value.trim();if(!urunAdi)return toast('Ürün adı zorunlu.','error');
+  const editId=document.getElementById('uf-edit-id').value;
+  const fiyatEl=document.getElementById('uf-fiyat');const fiyat=fiyatEl?parseFloat(fiyatEl.value)||0:0;
+  var urunKoduEl=document.getElementById('uf-urunKodu');var urunKodu=urunKoduEl?urunKoduEl.value.trim():'';
+  const pbEl2=document.getElementById('uf-paraBirimi');const paraBirimi=pbEl2?pbEl2.value:'TRY';
+  const payload={urunAdi,urunKodu,marka:document.getElementById('uf-marka').value.trim(),model:document.getElementById('uf-model').value.trim(),kategori:'',fiyat,paraBirimi,aciklama:document.getElementById('uf-aciklama').value.trim()};
+  if(editId){const idx=state.urunler.findIndex(x=>x.id===editId);if(idx>=0){state.urunler[idx]={...state.urunler[idx],...payload};toast('Güncellendi.','success');}}
+  else{state.urunler.push({id:'p'+Date.now(),...payload});toast('Ürün eklendi.','success');}
+  saveAll();showPage('urunler');
+}
+
+// ════ RAPORLAR ════
+function renderRaporlar(){
+  const s=state.servisler,tl=state.teklifler;
+  const teslim=s.filter(x=>x.durum==='Tamamlandı');
+  const ortSure=teslim.length?Math.round(teslim.reduce((a,b)=>{const d1=new Date(b.gelisTarihi),d2=new Date(b.kargoTarihi||b.olusturmaTarihi);return a+(isNaN(d1)||isNaN(d2)?0:(d2-d1)/864e5)},0)/teslim.length):0;
+  document.getElementById('rapor-stats').innerHTML=`<div class="stat-card"><div class="stat-label">Tamamlanan</div><div class="stat-value" style="color:var(--green)">${teslim.length}</div></div><div class="stat-card"><div class="stat-label">Ort. Süre</div><div class="stat-value" style="color:var(--teal)">${ortSure}<span style="font-size:13px"> gün</span></div></div><div class="stat-card"><div class="stat-label">Reddedilen</div><div class="stat-value" style="color:var(--red)">${s.filter(x=>x.durum==='Reddedildi').length}</div></div><div class="stat-card"><div class="stat-label">Onaylı Teklif</div><div class="stat-value" style="color:var(--amber)">${tl.filter(t=>t.durum==='Onaylandı').length}</div></div>`;
+  const sg=[{l:'0–7 gün',mi:0,ma:7,c:0},{l:'8–14',mi:8,ma:14,c:0},{l:'15–30',mi:15,ma:30,c:0},{l:'30+',mi:31,ma:9999,c:0}];
+  teslim.forEach(x=>{const g=Math.round((new Date(x.kargoTarihi||x.olusturmaTarihi)-new Date(x.gelisTarihi))/864e5);const gr=sg.find(g2=>g>=g2.mi&&g<=g2.ma);if(gr)gr.c++});
+  const mxSg=Math.max(...sg.map(g=>g.c),1);
+  document.getElementById('sure-rapor').innerHTML=sg.map(g=>`<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2)">${g.l}</span><span class="text-mono" style="color:var(--text3)">${g.c}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${g.c/mxSg*100}%;background:var(--teal)"></div></div></div>`).join('');
+  const ev=s.filter(x=>x.garantiDurumu==='Evet').length,hay=s.filter(x=>x.garantiDurumu==='Hayır').length,tot=ev+hay||1;
+  document.getElementById('garanti-rapor').innerHTML=`<div style="text-align:center;margin-bottom:16px"><div style="font-size:32px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green)">${Math.round(ev/tot*100)}%</div><div style="font-size:11px;color:var(--text3)">Garantili Oran</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div style="background:var(--teal-soft);border:1px solid rgba(45,212,191,.2);border-radius:8px;padding:11px;text-align:center"><div style="font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:var(--teal)">${ev}</div><div style="font-size:11px;color:var(--text3)">Garantili</div></div><div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px;text-align:center"><div style="font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:var(--text2)">${hay}</div><div style="font-size:11px;color:var(--text3)">Garantisiz</div></div></div>`;
+  const mxD=Math.max(...DURUM_LIST.map(d=>s.filter(x=>x.durum===d).length),1);
+  document.getElementById('durum-bar-rapor').innerHTML=DURUM_LIST.map((d,i)=>{const cnt=s.filter(x=>x.durum===d).length;return`<div style="display:flex;align-items:center;gap:11px;margin-bottom:9px"><div style="width:125px;font-size:12px;color:var(--text2);text-align:right;flex-shrink:0">${d}</div><div style="flex:1;height:16px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:${cnt/mxD*100}%;background:${DURUM_COLORS[i]};border-radius:3px;opacity:.85"></div></div><div style="width:24px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text3)">${cnt}</div></div>`}).join('');
+  const ciro=tl.filter(t=>t.durum==='Onaylandı').reduce((a,t)=>a+calcTeklifToplam(t),0);
+  const bek=tl.filter(t=>t.durum==='Onay Bekleniyor').reduce((a,t)=>a+calcTeklifToplam(t),0);
+  document.getElementById('teklif-rapor').innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:13px"><div style="background:var(--accent-soft);border:1px solid rgba(61,155,196,.2);border-radius:8px;padding:13px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Toplam Teklif</div><div style="font-size:17px;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent)">${tl.length} adet</div></div><div style="background:var(--green-soft);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:13px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Onaylı Ciro</div><div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green)">${fmtTL(ciro)}</div></div><div style="background:var(--amber-soft);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:13px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Bekleyen Tutar</div><div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--amber)">${fmtTL(bek)}</div></div></div>`;
+}
+
+// ════ TUTANAKLAR ════
+function renderTutanaklar(){
+  loadSavedTutanaklar();
+  var yeniGelenler=state.servisler.filter(function(s){return s.durum==='Yeni Gelen';});
+  var statsEl=document.getElementById('tutanak-stats');
+  if(statsEl)statsEl.innerHTML=''
+    +'<div class="stat-card"><div class="stat-label">Yeni Gelen</div><div class="stat-value" style="color:var(--teal)">'+yeniGelenler.length+'</div><div class="stat-sub">Tutanağa aktarılacak</div></div>'
+    +'<div class="stat-card"><div class="stat-label">Toplam Tutanak</div><div class="stat-value" style="color:var(--accent)">'+savedTutanaklar.length+'</div></div>'
+    +'<div class="stat-card"><div class="stat-label">Garantili</div><div class="stat-value" style="color:var(--green)">'+yeniGelenler.filter(function(s){return s.garantiDurumu==='Evet';}).length+'</div></div>';
+  var tbody=document.getElementById('tutanak-table-body');
+  var emptyEl=document.getElementById('tutanak-empty');
+  if(!tbody)return;
+  if(!savedTutanaklar.length){tbody.innerHTML='';if(emptyEl)emptyEl.style.display='';return;}
+  if(emptyEl)emptyEl.style.display='none';
+  tbody.innerHTML=savedTutanaklar.map(function(t){
+    return '<tr>'
+      +'<td><span class="kn-badge">'+t.no+'</span></td>'
+      +'<td class="td-mono">'+fmtDate(t.tarih)+'</td>'
+      +'<td style="color:var(--text2)">'+((t.kalemler||[]).length)+' cihaz</td>'
+      +'<td style="color:var(--text2);font-size:12px">'+(t.olusturan||'—')+'</td>'
+      +'<td><div class="action-row" style="justify-content:flex-end">'
+      +'<button class="btn-icon" title="Görüntüle/Yazdır" onclick="previewTutanak(\''+t.no+'\')">🖨</button>'
+      +'<button class="btn-icon" style="color:var(--red)" onclick="deleteTutanak(\''+t.no+'\')">⊗</button>'
+      +'</div></td>'
+      +'</tr>';
+  }).join('');
+}
+function getAksesuarStr(s){
+  const chips=Array.isArray(s.aksesuarlar)&&s.aksesuarlar.length?[...s.aksesuarlar]:[];
+  if(s.aksesyarDiger)chips.push(s.aksesyarDiger);
+  return chips.join(', ');
+}
+
+
+// ════ KULLANICI ════
+function renderUserTable(){
+  var lbl=document.getElementById('kul-portal-label');
+  if(lbl)lbl.textContent=(currentPortal==='servis'?'Teknik Servis Portalı':'Satış Pazarlama Portalı')+' kullanıcıları';
+  document.getElementById('user-table-body').innerHTML=state.users.map(u=>`<tr><td style="font-weight:500">${u.ad}</td><td class="td-mono">${u.username}</td><td><span class="badge badge-${u.rol}">${{admin:'Admin',teknisyen:'Teknisyen',izleyici:'İzleyici'}[u.rol]||u.rol}</span></td><td style="color:var(--text2)">${u.email||'—'}</td><td class="td-mono" style="color:var(--text3)">${u.sonGiris?new Date(u.sonGiris).toLocaleDateString('tr-TR'):'—'}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goKullaniciForm('${u.id}')">✎</button>${u.id!==state.currentUser?.id?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('kullanici','${u.id}')">⊗</button>`:''}</div></td></tr>`).join('');
+}
+function saveUser(){
+  const ad=document.getElementById('kf-ad').value.trim(),username=document.getElementById('kf-username').value.trim(),sifre=document.getElementById('kf-sifre').value,email=document.getElementById('kf-email').value.trim(),rol=document.getElementById('kf-rol').value;
+  const editId=document.getElementById('kf-edit-id').value;
+  if(!ad||!username)return toast('Ad ve kullanıcı adı zorunlu.','error');
+  if(!editId&&!sifre)return toast('Şifre zorunlu.','error');
+  if(sifre&&sifre.length<4)return toast('Şifre en az 4 karakter.','error');
+  if(state.users.find(u=>u.username===username&&u.id!==editId))return toast('Bu kullanıcı adı mevcut.','error');
+  if(editId){const idx=state.users.findIndex(x=>x.id===editId);if(idx>=0)state.users[idx]={...state.users[idx],ad,username,email,rol,...(sifre?{sifre}:{})};toast('Güncellendi.','success');}
+  else{state.users.push({id:'u'+Date.now(),ad,username,sifre,email,rol,sonGiris:null});toast('Kullanıcı oluşturuldu.','success');}
+  saveAll();showPage('kullanici');
+}
+
+// ════ AYARLAR ════
+function loadSettings(){['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''})}
+function saveSettings(){['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)state.settings[k]=el.value});saveAll();toast('Ayarlar kaydedildi.','success')}
+
+// ════ CONFIRM DELETE ════
+function confirmDelete(type,id){
+  const msgs={servis:'Bu servis kaydını silmek istiyor musunuz? İlişkili teklifler de silinecek.',teklif:'Bu teklifi silmek istiyor musunuz?',siparis:'Bu siparişi silmek istiyor musunuz?',fatura:'Bu faturayı silmek istiyor musunuz?',musteri:'Bu müşteriyi silmek istiyor musunuz?',urun:'Bu ürünü silmek istiyor musunuz?',kullanici:'Bu kullanıcıyı silmek istiyor musunuz?'};
+  document.getElementById('confirm-msg').textContent=msgs[type]||'Emin misiniz?';
+  document.getElementById('confirm-ok-btn').onclick=()=>{
+    if(type==='servis'){state.servisler=state.servisler.filter(x=>x.id!==id);state.teklifler=state.teklifler.filter(t=>t.servisId!==id)}
+    else if(type==='teklif')state.teklifler=state.teklifler.filter(x=>x.id!==id);
+    else if(type==='musteri')state.musteriler=state.musteriler.filter(x=>x.id!==id);
+    else if(type==='urun')state.urunler=state.urunler.filter(x=>x.id!==id);
+    else if(type==='siparis'){state.siparisler=(state.siparisler||[]).filter(function(x){return x.id!==id;});}
+    else if(type==='fatura'){state.faturalar=(state.faturalar||[]).filter(function(x){return x.id!==id;});}
+    else if(type==='kullanici')state.users=state.users.filter(x=>x.id!==id);
+    saveAll();closeModal('modal-confirm');
+    const refreshMap={servis:()=>{renderTable();renderDashboard()},teklif:renderTeklifler,siparis:renderSiparisler,fatura:renderFaturalar,musteri:renderMusteriler,urun:renderUrunler,kullanici:renderUserTable};
+    if(refreshMap[type])refreshMap[type]();
+    toast('Silindi.','info');
+  };
+  openModal('modal-confirm');
+}
+
+
+// ════ EXCEL EXPORT ════

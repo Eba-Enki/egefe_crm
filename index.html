@@ -1,0 +1,757 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Egefe — Teknik Servis Takip</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ─── PORTAL SEÇİM ─── -->
+<div id="portal-screen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);position:fixed;inset:0;z-index:400;flex-direction:column">
+  <div style="text-align:center;margin-bottom:48px">
+    <img id="portal-logo-img" src="" alt="Egefe" style="height:117px;object-fit:contain;display:block;margin:0 auto 18px;mix-blend-mode:screen">
+    <div style="font-size:30px;font-weight:700;color:var(--text);letter-spacing:-.5px">Egefe Bilişim Sağlık A.Ş.</div>
+    <div style="font-size:14px;color:var(--text3);margin-top:8px">Lütfen kullanmak istediğiniz portalı seçin</div>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center">
+    <div class="portal-card" onclick="selectPortal('servis')">
+      <div class="portal-icon">🔧</div>
+      <div class="portal-title">Teknik Servis Portalı</div>
+      <div class="portal-sub">Servis kayıtları, teklifler,<br>tutanaklar ve raporlar</div>
+    </div>
+    <div class="portal-card" onclick="selectPortal('satis')">
+      <div class="portal-icon">📊</div>
+      <div class="portal-title">Satış Pazarlama Portalı</div>
+      <div class="portal-sub">Müşteriler, ürünler<br>ve teklif yönetimi</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── LOGIN ─── -->
+<div id="login-screen" style="display:none;">
+  <div class="login-card">
+    <div class="login-logo">
+      <img id="login-logo-img" src="" alt="Egefe" style="max-height:70px;object-fit:contain;display:block;margin:0 auto;mix-blend-mode:screen">
+      <div class="login-logo-sub" id="login-portal-name">Teknik Servis Takip Sistemi</div>
+    </div>
+    <div class="field" style="margin-bottom:10px"><label>Kullanıcı Adı</label><input type="text" id="login-user" autocomplete="username"></div>
+    <div class="field" style="margin-bottom:16px"><label>Şifre</label><input type="password" id="login-pass"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Giriş Yap →</button>
+    <div class="login-error" id="login-error">Kullanıcı adı veya şifre hatalı.</div>
+    <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:12px;font-size:12px" onclick="backToPortal()">← Ana Sayfaya Dön</button>
+  </div>
+</div>
+
+<!-- ─── SIDEBAR ─── -->
+<div id="sidebar">
+  <div class="sb-logo" style="display:flex;align-items:center;gap:10px;padding:12px 16px">
+    <img id="sb-logo-img" src="" alt="Egefe" style="height:52px;object-fit:contain;display:block;mix-blend-mode:screen;flex-shrink:0">
+    <div>
+      
+      <div id="sb-portal-name" style="font-size:11px;font-weight:500;color:var(--text2)"></div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Ana</div>
+    <div class="sb-item" data-page="dashboard" onclick="showPage('dashboard')"><span class="icon">◈</span><span>Dashboard</span></div>
+    <div class="sb-item servis-only" data-page="servisler" onclick="showPage('servisler')"><span class="icon">🔧</span><span>Servisler</span><span class="badge" id="sb-badge" style="display:none">0</span></div>
+    <div class="sb-item" data-page="teklifler" onclick="showPage('teklifler')"><span class="icon">📄</span><span>Teklifler</span></div>
+    <div class="sb-item satis-only" data-page="siparisler" style="display:none" onclick="showPage('siparisler')"><span class="icon">📦</span><span>Siparişler</span></div>
+    <div class="sb-item satis-only" data-page="faturalar" style="display:none" onclick="showPage('faturalar')"><span class="icon">🧾</span><span>Faturalar</span></div>
+    <div class="sb-section">İşlemler</div>
+    <div class="sb-item servis-only" onclick="goServisForm()"><span class="icon">＋</span><span>Yeni Servis Girişi</span></div>
+    <div class="sb-item" id="sb-yeni-teklif" onclick="goTeklifForm()"><span class="icon">＋</span><span>Yeni Teklif</span></div>
+    <div class="sb-item servis-only" data-page="tutanaklar" onclick="showPage('tutanaklar')"><span class="icon">📋</span><span>Tutanaklar</span></div>
+
+    <div class="sb-section">Kayıtlar</div>
+    <div class="sb-item" data-page="musteriler" onclick="showPage('musteriler')"><span class="icon">⊙</span><span>Müşteriler</span></div>
+    <div class="sb-item" data-page="urunler" onclick="showPage('urunler')"><span class="icon">⊠</span><span>Ürünler</span></div>
+    <div class="sb-section">Analiz</div>
+    <div class="sb-item servis-only" data-page="raporlar" onclick="showPage('raporlar')"><span class="icon">◑</span><span>Raporlar</span></div>
+    <div class="sb-section admin-only">Yönetim</div>
+    <div class="sb-item admin-only" data-page="kullanici" onclick="showPage('kullanici')"><span class="icon">⊕</span><span>Kullanıcılar</span></div>
+    <div class="sb-item admin-only" data-page="ayarlar" onclick="showPage('ayarlar')"><span class="icon">⊗</span><span>Ayarlar</span></div>
+  </nav>
+  <div class="sb-bottom">
+    <div style="margin-bottom:6px"><button class="btn btn-ghost btn-sm" style="width:100%;font-size:11px" onclick="switchPortal()">← Portale Dön</button></div>
+    <div class="sb-user" onclick="doLogout()">
+      <div class="sb-avatar" id="sb-avatar">?</div>
+      <div><div class="sb-username" id="sb-username">-</div><div class="sb-role" id="sb-role-text">-</div></div>
+    </div>
+  </div>
+</div>
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ─── MAIN ─── -->
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menü">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-breadcrumb" id="breadcrumb"><span class="current" id="topbar-title">Dashboard</span><span class="portal-badge" id="portal-badge"></span></div>
+    </div>
+    <div class="topbar-actions" id="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="topbar-theme-btn" title="Tema Değiştir" style="padding:7px 10px;font-size:15px">🌙</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportData()">⬇ Dışa Aktar</button>
+      <label class="btn btn-ghost btn-sm" style="cursor:pointer">⬆ İçe Aktar<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
+      <button class="btn btn-primary btn-sm can-write" id="topbar-new-servis-btn" style="display:none" onclick="goServisForm()">＋ Yeni Servis Girişi</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div id="page-dashboard" class="page">
+      <div class="stats-grid" id="stat-cards"></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Durum Dağılımı</span></div>
+          <div class="card-body" id="durum-chart-wrap">
+            <div style="position:relative;width:130px;height:130px;margin:0 auto">
+              <svg id="donut-svg" width="130" height="130" viewBox="0 0 130 130"><circle cx="65" cy="65" r="50" fill="none" stroke="#1a2333" stroke-width="20"/></svg>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column"><span style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace" id="dc-total">0</span><span style="font-size:10px;color:var(--text3)">Toplam</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:14px" id="durum-legend"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title" id="recent-list-title">Son Eklenen</span></div>
+          <div class="card-body" style="padding:0"><div id="recent-list" style="padding:8px 18px"></div></div>
+        </div>
+      </div>
+      <div style="margin-top:16px" class="card">
+        <div class="card-header"><span class="card-title">Aylık Aktivite</span></div>
+        <div class="card-body" id="monthly-chart" style="height:100px;position:relative"></div>
+      </div>
+    </div>
+
+    <!-- ═══ SERVİSLER ═══ -->
+    <div id="page-servisler" class="page">
+      <div class="filter-bar">
+        <input type="text" id="f-kurum" placeholder="Kurum / müşteri..." oninput="filterTable()">
+        <input type="text" id="f-seri" placeholder="Seri no / kayıt no..." oninput="filterTable()">
+        <select id="f-durum" onchange="filterTable()"><option value="">Tüm Durumlar</option><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Kargoya Verildi</option><option>Teslim Edildi</option><option>Reddedildi</option></select>
+        <select id="f-garanti" onchange="filterTable()"><option value="">Garanti Tümü</option><option value="Evet">Garantili</option><option value="Hayır">Garantisiz</option></select>
+        <input type="date" id="f-ts" oninput="filterTable()"><input type="date" id="f-te" oninput="filterTable()">
+        <button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕</button>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="filter-count"></span>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th class="sortable" onclick="sortTable('kayitNo')">Kayıt No<span class="sort-ind" id="sort-kayitNo"></span></th>
+              <th class="sortable" onclick="sortTable('kurumAdi')">Kurum / Müşteri<span class="sort-ind" id="sort-kurumAdi"></span></th>
+              <th>Seri No</th>
+              <th class="sortable" onclick="sortTable('gelisTarihi')">Geliş<span class="sort-ind" id="sort-gelisTarihi"></span></th>
+              <th>Durum</th>
+              <th>Garanti</th>
+              <th>İlgili Kişi</th>
+              <th style="text-align:right">İşlemler</th>
+            </tr></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+          <div id="table-empty" class="empty-state" style="display:none"><div class="icon">⊡</div><h3 style="color:var(--text2)">Kayıt bulunamadı</h3></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SERVİS FORMU (inline) ═══ -->
+    <div id="page-servis-form" class="page">
+      <div class="form-page">
+        <div class="form-page-header">
+          <button class="btn btn-back" onclick="showPage(state.prevPage||'servisler')">← Geri</button>
+          <div><div class="form-page-title" id="sf-title">Yeni Servis Kaydı</div><div class="form-page-sub" id="sf-sub">Yeni bir cihaz servisi oluşturun</div></div>
+        </div>
+        <input type="hidden" id="sf-edit-id">
+        <div class="form-card">
+          <div class="form-section-title">Müşteri Bilgileri <span style="font-weight:400;font-size:10px;letter-spacing:0;text-transform:none">(kayıttan seçin veya yazın)</span></div>
+          <div class="form-grid">
+            <div class="field form-full">
+              <label>Kurum / Müşteri</label>
+              <div class="combo-wrap">
+                <input type="text" id="sf-kurumAdi" placeholder="Yazın veya listeden seçin..." autocomplete="off" oninput="comboFilter('sf-kurumAdi','cb-sf-kurum',getMusteriAds)" onfocus="comboFilter('sf-kurumAdi','cb-sf-kurum',getMusteriAds)" onblur="setTimeout(function(){comboClose('cb-sf-kurum');},200)">
+                <div class="combo-dropdown" id="cb-sf-kurum"></div>
+              </div>
+            </div>
+            <div class="field"><label>İlgili Kişi</label><input type="text" id="sf-ilgiliKisi"></div>
+            <div class="field"><label>Telefon</label><input type="tel" id="sf-telefon"></div>
+            <div class="field"><label>E-posta</label><input type="email" id="sf-email"></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Cihaz Bilgileri</div>
+          <div class="form-grid">
+            <div class="field"><label>Cihaz Seri No</label><input type="text" id="sf-seriNo" placeholder="Seri numarası..."></div>
+            <div class="field"><label>Garanti</label><select id="sf-garantiDurumu"><option value="Hayır">Hayır</option><option value="Evet">Evet</option></select></div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Aksesuarlar</label>
+            <div class="chip-group" id="sf-aksesuar-chips"></div>
+            <input type="text" id="sf-aksesuar-diger" placeholder="Diğer aksesuarlar..." style="margin-top:8px">
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Servis Bilgileri</div>
+          <div class="form-grid">
+            <div class="field"><label>Geliş Tarihi</label><input type="date" id="sf-gelisTarihi"></div>
+            <div class="field" id="sf-durum-field"><label>Durum</label><select id="sf-durum"><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Kargoya Verildi</option><option>Teslim Edildi</option><option>Reddedildi</option></select></div>
+            <div class="field"><label>Kargo Tarihi</label><input type="date" id="sf-kargoTarihi"></div>
+            <div class="field"><label>Kargo Firması</label><input type="text" id="sf-kargoFirmasi"></div>
+            <div class="field"><label>Teslim Alan</label><input type="text" id="sf-teslimAlan"></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Notlar</div>
+          <div class="field"><textarea id="sf-notlar" rows="3" placeholder="Arıza açıklaması, yapılan işlemler..."></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="showPage(state.prevPage||'servisler')">İptal</button>
+          <button class="btn btn-primary" id="sf-save-btn" onclick="saveServis()">Kaydet</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TEKLİFLER ═══ -->
+    <div id="page-teklifler" class="page">
+      <div class="stats-grid" id="teklif-stats"></div>
+      <div class="filter-bar">
+        <input type="text" id="tf-f-kurum" placeholder="Kurum / müşteri..." oninput="renderTeklifler()">
+        <input type="text" id="tf-f-teklif" placeholder="Teklif no..." oninput="renderTeklifler()" style="width:120px">
+        <select id="tf-f-durum" onchange="renderTeklifler()"><option value="">Tüm Durumlar</option><option>Taslak</option><option>Açık Teklif</option><option>Kabul Edildi</option><option>İptal Edildi</option><option>Reddedildi</option><option>Onay Bekleniyor</option><option>Onaylandı</option></select>
+        <input type="date" id="tf-f-ts" oninput="renderTeklifler()" title="Başlangıç">
+        <input type="date" id="tf-f-te" oninput="renderTeklifler()" title="Bitiş">
+        <button class="btn btn-ghost btn-sm" onclick="clearTeklifFilters()">✕ Temizle</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportTekliflerExcel()" style="color:var(--green)">⬇ Excel</button>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="teklif-filter-count"></span>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Teklifler</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Teklif No</th><th>Tarih</th><th>Kurum</th><th>Tutar</th><th>Durum</th><th id="th-sorumlu" style="display:none">Satış Temsilcisi</th><th style="text-align:right">İşlemler</th></tr></thead>
+            <tbody id="teklif-table-body"></tbody>
+          </table>
+          <div id="teklif-empty" class="empty-state" style="display:none"><div class="icon">◎</div><h3 style="color:var(--text2)">Henüz teklif yok</h3></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TEKLİF FORMU (inline) ═══ -->
+    <div id="page-teklif-form" class="page">
+      <div class="form-page" style="max-width:1000px">
+        <div class="form-page-header">
+          <button class="btn btn-back" onclick="showPage('teklifler')">← Geri</button>
+          <div><div class="form-page-title" id="tf-title">Yeni Teklif Hazırla</div></div>
+        </div>
+        <input type="hidden" id="tf-edit-id">
+                <div class="form-card">
+          <div class="form-section-title">Müşteri / Kurum Bilgileri</div>
+          <div class="form-grid">
+            <div class="field form-full">
+              <label>Kurum / Müşteri <span style="font-weight:400;color:var(--text3)">(listeden seçin veya yazın)</span></label>
+              <div class="combo-wrap">
+                <input type="text" id="tf-kurum" placeholder="Kurum adı yazın veya listeden seçin..." autocomplete="off"
+                  oninput="comboFilter('tf-kurum','cb-tf-musteri',getMusteriAds)"
+                  onfocus="comboFilter('tf-kurum','cb-tf-musteri',getMusteriAds)"
+                  onblur="setTimeout(function(){comboClose('cb-tf-musteri');},200)">
+                <div class="combo-dropdown" id="cb-tf-musteri"></div>
+              </div>
+            </div>
+            <div class="field"><label>İlgili Kişi</label><input type="text" id="tf-ilgiliKisi"></div>
+            <!-- Servis portalı alanları -->
+            <div class="field tf-servis-field"><label>İlişkili Kayıt No</label><input type="text" id="tf-kayitNo" placeholder="Ör: KN000001" style="color:var(--accent)"></div>
+            <div class="field tf-servis-field"><label>Cihaz Seri No</label><input type="text" id="tf-seriNo"></div>
+            <!-- Satış portalı alanları -->
+            <div class="field tf-satis-field" style="display:none"><label>Telefon</label><input type="text" id="tf-telefon" placeholder="Telefon numarası"></div>
+            <div class="field tf-satis-field" style="display:none"><label>E-posta</label><input type="email" id="tf-email" placeholder="E-posta adresi"></div>
+          </div>
+          <input type="hidden" id="tf-servis-ara" data-servisid="">
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Teklif Bilgileri</div>
+          <div class="form-grid">
+            <div class="field"><label>Teklif No</label><input type="text" id="tf-teklifNo" readonly style="color:var(--accent);background:var(--bg4)"></div>
+            <div class="field"><label>Teklif Tarihi</label><input type="date" id="tf-teklifTarihi"></div>
+            <div class="field"><label>Geçerlilik Tarihi</label><input type="date" id="tf-gecerlilik"></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Teklif Kalemleri</div>
+          <div class="teklif-items-wrap">
+            <table class="teklif-items">
+              <thead><tr>
+                <th class="ti-aciklama">Açıklama / İşlem <span style="font-weight:400;color:var(--text3)">(üründen seçin veya yazın)</span></th>
+                <th class="ti-miktar">Miktar</th>
+                <th class="ti-birim">Birim</th>
+                <th class="ti-fiyat">Birim Fiyat (₺)</th>
+                
+                <th class="ti-total">Toplam</th>
+                <th class="ti-del"></th>
+              </tr></thead>
+              <tbody id="ti-body"></tbody>
+            </table>
+            <div class="teklif-totals">
+              <div class="totals-inner">
+                <div class="totals-row grand"><span>Toplam</span><span class="val" id="tt-ara">0,00 ₺</span></div>
+                
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="addTeklifItem()">＋ Kalem Ekle</button>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Notlar / Şartlar</div>
+          <div class="field"><textarea id="tf-notlar" rows="3" placeholder="Ödeme şartları, garanti, özel notlar..."></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="showPage('teklifler')">İptal</button>
+          <button class="btn btn-amber" onclick="saveTeklifAndPrint()">Kaydet + PDF İndir</button>
+          <button class="btn btn-primary" onclick="saveTeklif()">Kaydet</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══ MÜŞTERİLER ═══ -->
+    <div id="page-musteriler" class="page">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:13px"><button class="btn btn-primary can-write" onclick="goMusteriForm()">＋ Yeni Müşteri</button></div>
+      <div class="filter-bar"><input type="text" id="fm-ara" placeholder="Ara..." oninput="renderMusteriler()" style="width:220px"><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="musteri-count"></span></div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>Kayıt No</th><th>Kurum</th><th>İlgili Kişi</th><th>Telefon</th><th>E-posta</th><th>Şehir</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead><tbody id="musteri-table-body"></tbody></table><div id="musteri-empty" class="empty-state" style="display:none"><div class="icon">⊙</div><h3 style="color:var(--text2)">Müşteri yok</h3></div></div></div>
+    </div>
+
+    <!-- ═══ MÜŞTERİ FORMU (inline) ═══ -->
+    <div id="page-musteri-form" class="page">
+      <div class="form-page" style="max-width:580px">
+        <div class="form-page-header">
+          <button class="btn btn-back" onclick="showPage('musteriler')">← Müşteriler</button>
+          <div class="form-page-title" id="mf-title">Yeni Müşteri</div>
+        </div>
+        <input type="hidden" id="mf-edit-id">
+        <div class="form-card">
+          <div class="form-grid">
+            <div class="field form-full"><label>Kurum Adı <span class="req">*</span></label><input type="text" id="mf-kurum" placeholder="Hastane / Şirket adı"></div>
+            <div class="field"><label>İlgili Kişi</label><input type="text" id="mf-kisi"></div>
+            <div class="field"><label>Telefon</label><input type="tel" id="mf-tel"></div>
+            <div class="field"><label>E-posta</label><input type="email" id="mf-email"></div>
+            <div class="field"><label>Şehir</label><input type="text" id="mf-sehir"></div>
+            <div class="field form-full"><label>Adres</label><textarea id="mf-adres" rows="2"></textarea></div>
+            <div class="field form-full"><label>Notlar</label><textarea id="mf-not" rows="2"></textarea></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="showPage('musteriler')">İptal</button>
+          <button class="btn btn-primary" onclick="saveMusteri()">Kaydet</button>
+        </div>
+      </div>
+    </div>
+
+        <!-- ═══ ÜRÜNLER ═══ -->
+    <div id="page-urunler" class="page">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:13px"><button class="btn btn-primary can-write" onclick="goUrunForm()">＋ Yeni Ürün</button></div>
+      <div class="filter-bar"><input type="text" id="fu-ara" placeholder="Ara..." oninput="renderUrunler()" style="width:220px"><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="urun-count"></span></div>
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>Ürün Kodu</th><th>Ürün / İşlem Adı</th><th>Marka</th><th>Parametre</th><th>Liste Fiyatı</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead>
+        <tbody id="urun-table-body"></tbody>
+      </table>
+      <div id="urun-empty" class="empty-state">
+        <div class="icon">⊠</div><h3 style="color:var(--text2)">Ürün yok</h3>
+      </div></div></div>
+    </div>
+
+    <!-- ═══ ÜRÜN FORMU (inline) ═══ -->
+    <div id="page-urun-form" class="page">
+      <div class="form-page" style="max-width:540px">
+        <div class="form-page-header">
+          <button class="btn btn-back" onclick="showPage('urunler')">← Ürünler</button>
+          <div class="form-page-title" id="uf-title">Yeni Ürün</div>
+        </div>
+        <input type="hidden" id="uf-edit-id">
+        <div class="form-card">
+          <div class="form-grid">
+            <div class="field"><label>Ürün / İşlem Adı <span class="req">*</span></label><input type="text" id="uf-urunAdi" placeholder="Kalibrasyon, Tamir, Yazılım Güncelleme..."></div>
+            <div class="field"><label>Ürün Kodu</label><input type="text" id="uf-urunKodu" placeholder="Örn: SKU-001"></div>
+            <div class="field"><label>Marka</label><input type="text" id="uf-marka"></div>
+            <div class="field"><label>Parametre</label><input type="text" id="uf-model"></div>
+            <div class="field"><label>Liste Fiyatı</label><input type="number" id="uf-fiyat" min="0" step="0.01" placeholder="0.00"></div>
+            <div class="field"><label>Para Birimi</label><select id="uf-paraBirimi"><option value="TRY">₺ TL</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option><option value="GBP">£ GBP</option></select></div>
+            <div class="field form-full"><label>Açıklama</label><textarea id="uf-aciklama" rows="2"></textarea></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="showPage('urunler')">İptal</button>
+          <button class="btn btn-primary" onclick="saveUrun()">Kaydet</button>
+        </div>
+      </div>
+    </div>
+
+<!-- ═══ TUTANAKLAR ═══ -->
+    <div id="page-tutanaklar" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:13px;color:var(--text2)">Yeni Gelen durumdaki servis kayıtlarından teslim tutanağı oluşturun</div>
+        </div>
+        <button class="btn btn-primary can-write" onclick="openYeniTutanak()">＋ Yeni Teslim Tutanağı</button>
+      </div>
+      <div class="stats-grid" id="tutanak-stats"></div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Yeni Gelen Servisler (Tutanağa Aktarılacak)</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th>
+              <th>Kurum Adı</th>
+              <th>Seri No</th>
+              <th>Garanti</th>
+              <th>Aksesuarlar</th>
+              <th>Geliş Tarihi</th>
+            </tr></thead>
+            <tbody id="tutanak-table-body"></tbody>
+          </table>
+          <div id="tutanak-empty" class="empty-state" style="display:none">
+            <div class="icon">⊟</div>
+            <h3 style="color:var(--text2)">Yeni Gelen servis kaydı yok</h3>
+            <p style="font-size:13px">Tutanak oluşturmak için önce servis girişi yapın.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SİPARİŞLER ═══ -->
+    <div id="page-siparisler" class="page">
+      <div class="stats-grid" id="siparis-stats"></div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-header" style="flex-wrap:wrap;gap:8px">
+          <span class="card-title">Siparişler</span>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="sp-f-kurum" placeholder="Kurum ara..." style="padding:4px 8px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);color:var(--text);width:130px" oninput="renderSiparisler()">
+            <select id="sp-f-durum" style="padding:4px 8px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);color:var(--text)" onchange="renderSiparisler()">
+              <option value="">Tüm Durumlar</option><option>Hazırlanıyor</option><option>Kısmen Sevk Edildi</option><option>Tamamlandı</option><option>İptal</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr>
+            <th>Sipariş No</th><th>Tarih</th><th>Kurum</th><th>Tutar</th><th>Durum</th><th>Satış Temsilcisi</th><th style="text-align:right;width:100px">İşlemler</th>
+          </tr></thead>
+          <tbody id="siparis-table-body"></tbody>
+        </table>
+        <div id="siparis-empty" class="empty-state">
+          <div class="icon">📦</div><h3 style="color:var(--text2)">Henüz sipariş yok</h3>
+          <p style="font-size:13px">Kabul edilen tekliflerden sipariş oluşturun.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- ═══ FATURALAR ═══ -->
+    <div id="page-faturalar" class="page">
+      <div class="stats-grid" id="fatura-stats"></div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-header" style="flex-wrap:wrap;gap:8px">
+          <span class="card-title">Faturalar</span>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="ft-f-kurum" placeholder="Kurum ara..." style="padding:4px 8px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);color:var(--text);width:130px" oninput="renderFaturalar()">
+          </div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr>
+            <th>Fatura No</th><th>Sipariş No</th><th>Müşteri</th><th>Tutar</th><th>Fatura Tarihi</th><th>Vade</th><th>Durum</th><th style="text-align:right;width:80px">İşlemler</th>
+          </tr></thead>
+          <tbody id="fatura-table-body"></tbody>
+        </table>
+        <div id="fatura-empty" class="empty-state">
+          <div class="icon">🧾</div><h3 style="color:var(--text2)">Henüz fatura yok</h3>
+        </div></div>
+      </div>
+    </div>
+
+
+
+    <!-- ═══ SİPARİŞ FORMU ═══ -->
+    <div id="page-siparis-form" class="page">
+      <div class="form-page" style="max-width:640px">
+        <div class="form-page-header">
+          <button class="btn btn-back" onclick="showPage('teklifler')">← Teklifler</button>
+          <div class="form-page-title" id="sf2-title">Sipariş Oluştur</div>
+        </div>
+        <input type="hidden" id="sf2-teklif-id">
+        <div class="form-card">
+          <div class="form-section-title">Teklif Bilgileri</div>
+          <div class="form-grid" style="margin-bottom:8px">
+            <div class="field"><label>Teklif No</label><input type="text" id="sf2-teklif-no" readonly style="background:var(--bg4);color:var(--accent)"></div>
+            <div class="field"><label>Kurum</label><input type="text" id="sf2-kurum" readonly style="background:var(--bg4)"></div>
+            <div class="field"><label>Tutar</label><input type="text" id="sf2-tutar" readonly style="background:var(--bg4);color:var(--amber)"></div>
+            <div class="field"><label>Satış Temsilcisi</label><input type="text" id="sf2-sorumlu" readonly style="background:var(--bg4)"></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Sipariş Detayları</div>
+          <div class="form-grid">
+            <div class="field"><label>Sipariş Tarihi <span class="req">*</span></label><input type="date" id="sf2-tarih"></div>
+            <div class="field"><label>Tahmini Teslimat</label><input type="date" id="sf2-teslimat"></div>
+            <div class="field form-full"><label>Notlar</label><textarea id="sf2-notlar" rows="3" placeholder="Sipariş notları, özel talepler..."></textarea></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="showPage('teklifler')">İptal</button>
+          <button class="btn btn-primary" onclick="saveSiparisForm()">Siparişi Kaydet</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ KULLANICI ═══ -->
+    <div id="page-kullanici" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:15px;font-weight:600">Kullanıcı Yönetimi</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px" id="kul-portal-label"></div>
+        </div>
+        <button class="btn btn-primary can-write" onclick="goKullaniciForm()">＋ Yeni Kullanıcı</button>
+      </div>
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>Ad</th><th>Kullanıcı Adı</th><th>Rol</th><th>E-posta</th><th>Son Giriş</th><th style="text-align:right;width:80px">İşlem</th></tr></thead>
+        <tbody id="user-table-body"></tbody>
+      </table></div></div>
+    </div>
+
+    <!-- ═══ KULLANICI FORMU (inline) ═══ -->
+    <div id="page-kullanici-form" class="page">
+      <div class="form-page" style="max-width:480px">
+        <div class="form-page-header">
+          <button class="btn btn-back" onclick="showPage('kullanici')">← Kullanıcılar</button>
+          <div class="form-page-title" id="kf-title">Yeni Kullanıcı</div>
+        </div>
+        <input type="hidden" id="kf-edit-id">
+        <div class="form-card">
+          <div style="display:flex;flex-direction:column;gap:13px">
+            <div class="field"><label>Ad Soyad <span class="req">*</span></label><input type="text" id="kf-ad"></div>
+            <div class="field"><label>Kullanıcı Adı <span class="req">*</span></label><input type="text" id="kf-username"></div>
+            <div class="field"><label>Şifre</label><input type="password" id="kf-sifre" placeholder="(değiştirmek için girin)"></div>
+            <div class="field"><label>E-posta</label><input type="email" id="kf-email"></div>
+            <div class="field"><label>Rol</label><select id="kf-rol"><option value="admin">Admin — Tam Yetki</option><option value="teknisyen" id="kf-rol-tekn">Teknisyen — Ekle/Düzenle</option><option value="izleyici">İzleyici — Sadece Görüntüle</option></select></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="showPage('kullanici')">İptal</button>
+          <button class="btn btn-primary" onclick="saveUser()">Kaydet</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AYARLAR ═══ -->
+    <div id="page-ayarlar" class="page">
+      <div class="form-page" style="max-width:520px">
+        <div class="form-card">
+          <div class="form-section-title">Firma Bilgileri</div>
+          <div class="form-grid" style="gap:12px">
+            <div class="field form-full"><label>Firma Adı</label><input type="text" id="set-firma"></div>
+            <div class="field"><label>Telefon</label><input type="text" id="set-tel"></div>
+            <div class="field"><label>Faks</label><input type="text" id="set-faks"></div>
+            <div class="field form-full"><label>Adres</label><input type="text" id="set-adres"></div>
+            <div class="field"><label>E-posta</label><input type="text" id="set-email"></div>
+            <div class="field"><label>Web</label><input type="text" id="set-web"></div>
+            <div class="field"><label>Vergi Dairesi</label><input type="text" id="set-vergi-dairesi"></div>
+            <div class="field"><label>Vergi Numarası</label><input type="text" id="set-vergi-no"></div>
+          </div>
+          <div class="form-actions"><button class="btn btn-primary" onclick="saveSettings()">Kaydet</button></div>
+        </div>
+        <div class="form-card" style="margin-top:14px">
+          <div class="form-section-title">Görünüm</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0">
+            <div>
+              <div style="font-size:13px;font-weight:500">Tema</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:2px">Koyu veya açık renk şeması</div>
+            </div>
+            <div class="theme-switcher" id="theme-switcher">
+              <button onclick="setTheme('dark')" id="btn-theme-dark" class="theme-btn active">🌙 Koyu</button>
+              <button onclick="setTheme('light')" id="btn-theme-light" class="theme-btn">☀ Açık</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-card" style="margin-top:14px">
+          <div class="form-section-title">Veri Yönetimi</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <button class="btn btn-ghost" style="justify-content:flex-start" onclick="exportData()">⬇ JSON Dışa Aktar</button>
+            <label class="btn btn-ghost" style="justify-content:flex-start;cursor:pointer">⬆ JSON İçe Aktar<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
+            <button class="btn btn-danger" style="justify-content:flex-start" onclick="clearAllData()">⊗ Tüm Veriyi Sil</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+  
+  <div id="app-footer" style="position:fixed;bottom:0;left:var(--sidebar-w);right:0;background:var(--bg2);border-top:1px solid var(--border);padding:6px 26px;text-align:center;font-size:11px;color:var(--text3);z-index:10">
+    Tel: 0 (312) 482 54 51 &nbsp;|&nbsp; Fax: 0 (312) 480 54 52 &nbsp;|&nbsp; E-mail: servis&#64;ege-fe.com
+  </div>
+</div><!-- /main -->
+
+<!-- ── MODAL: TUTANAK ÖNIZLEME ── -->
+<div class="modal-overlay" id="modal-tutanak-onizleme">
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title" id="tutanak-modal-title">Teslim Tutanağı</span><button class="close-btn" onclick="closeModal('modal-tutanak-onizleme')">✕</button></div>
+    <div class="modal-body" id="tutanak-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-tutanak-onizleme')">Kapat</button>
+      <button class="btn btn-primary" id="tutanak-pdf-btn">PDF İndir / Yazdır</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: TEKLİF DETAY ── -->
+<div class="modal-overlay" id="modal-teklif-detay">
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title" id="td-title">Teklif Detayı</span><button class="close-btn" onclick="closeModal('modal-teklif-detay')">✕</button></div>
+    <div class="modal-body" id="td-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-teklif-detay')">Kapat</button>
+      <button class="btn btn-amber" id="td-edit-btn" onclick="editCurrentTeklif()">Düzenle</button>
+      <button class="btn btn-primary" onclick="printCurrentTeklif()">PDF İndir</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ── MODAL: CONFIRM ── -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal modal-sm">
+    <div class="modal-header"><span class="modal-title">Onay</span><button class="close-btn" onclick="closeModal('modal-confirm')">✕</button></div>
+    <div class="modal-body"><p style="color:var(--text2);line-height:1.6;font-size:13px" id="confirm-msg">Emin misiniz?</p></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-confirm')">İptal</button><button class="btn btn-danger" id="confirm-ok-btn">Evet, Sil</button></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/state.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/servis.js"></script>
+<script src="js/teklif.js"></script>
+<script src="js/tutanak.js"></script>
+<script src="js/musteri.js"></script>
+<script src="js/export.js"></script>
+<script src="js/satis.js"></script>
+<script src="js/init.js"></script>
+<!-- ─── FATURA MODAL ─── -->
+<div class="modal-overlay" id="modal-fatura">
+  <div class="modal-card" style="max-width:420px">
+    <div class="modal-header"><div class="modal-title">Faturaya Aktar</div><button class="modal-close" onclick="closeModal('modal-fatura')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field form-full"><label>Fatura No <span class="req">*</span></label><input type="text" id="fm-faturaNo" placeholder="FAT-2025-001"></div>
+        <div class="field"><label>Fatura Tarihi <span class="req">*</span></label><input type="date" id="fm-faturaTarihi"></div>
+        <div class="field"><label>Vade Tarihi</label><input type="date" id="fm-vadeTarihi"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-fatura')">İptal</button>
+      <button class="btn btn-primary" onclick="saveFatura()">Faturaya Aktar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── KISMİ TESLİM MODAL ─── -->
+<div class="modal-overlay" id="modal-kismiteslim">
+  <div class="modal-card" style="max-width:500px">
+    <div class="modal-header"><div class="modal-title">Kısmi Sevkiyat</div><button class="modal-close" onclick="closeModal('modal-kismiteslim')">✕</button></div>
+    <div class="modal-body"><div id="kt-kalemler"></div></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-kismiteslim')">İptal</button>
+      <button class="btn btn-primary" onclick="saveKismiTeslim()">Sevkiyatı Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TUTANAK SEÇİM MODAL ─── -->
+<div class="modal-overlay" id="modal-tutanak-secim">
+  <div class="modal-card" style="max-width:680px;max-height:80vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <div class="modal-title">Teslim Tutanağı Oluştur</div>
+      <button class="modal-close" onclick="closeModal('modal-tutanak-secim')">✕</button>
+    </div>
+    <div class="modal-body" style="flex:1;overflow-y:auto">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:12px">
+        Tutanağa eklemek istediğiniz <strong style="color:var(--text)">"Yeni Gelen"</strong> kayıtları seçin:
+      </div>
+      <div id="tutanak-secim-listesi"></div>
+      <div id="tutanak-secim-bos" style="display:none;text-align:center;padding:32px;color:var(--text3)">
+        <div style="font-size:32px;margin-bottom:8px">📋</div>
+        <div>Yeni Gelen durumunda servis kaydı bulunamadı.</div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <div style="font-size:12px;color:var(--text3)">
+        <span id="tutanak-secim-sayi">0 kayıt seçili</span>
+      </div>
+    </div>
+<div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="closeModal('modal-tutanak-secim')">İptal</button>
+        <button class="btn btn-primary" onclick="olusturTutanakSecimden()" id="tutanak-olustur-btn">
+          Tutanak Oluştur
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── RED/İPTAL NEDENİ MODAL ─── -->
+<div class="modal-overlay" id="modal-red-neden">
+  <div class="modal-card" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title" id="red-modal-title">Ret Nedeni</div>
+      <button class="modal-close" onclick="closeModal('modal-red-neden')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="red-teklif-id">
+      <input type="hidden" id="red-yeni-durum">
+      <div class="form-grid">
+        <div class="field form-full">
+          <label id="red-neden-label">Red Nedeni <span class="req">*</span></label>
+          <select id="red-neden-select" onchange="updateRedNedenOther()">
+            <option value="">Seçiniz...</option>
+            <option value="Fiyat">Fiyat Uygun Değil</option>
+            <option value="Rakip">Rakip Teklif Tercih Edildi</option>
+            <option value="Bütçe">Bütçe Yetersiz</option>
+            <option value="Zaman">Zaman Uyumsuzluğu</option>
+            <option value="Gerek Yok">İhtiyaç Kalmadı</option>
+            <option value="Diğer">Diğer</option>
+          </select>
+        </div>
+        <div class="field form-full" id="red-neden-other-wrap" style="display:none">
+          <label>Açıklama</label>
+          <input type="text" id="red-neden-other" placeholder="Nedeni açıklayın...">
+        </div>
+        <div class="field form-full">
+          <label>Rakip Firma / Ürün Bilgisi</label>
+          <input type="text" id="red-rakip" placeholder="Rakip firma veya ürün adı...">
+        </div>
+        <div class="field form-full">
+          <label>Rakip Fiyatı</label>
+          <input type="text" id="red-rakip-fiyat" placeholder="Rakip teklif tutarı...">
+        </div>
+        <div class="field form-full">
+          <label>Ek Notlar</label>
+          <textarea id="red-notlar" rows="2" placeholder="Varsa ek bilgi..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-red-neden')">İptal</button>
+      <button class="btn btn-primary" onclick="saveRedNeden()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

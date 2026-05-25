@@ -263,10 +263,10 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   const st = state.settings || {};
   
   // Company Name - X: 68.457mm Y: 11.188mm Font: Arial bold 12pt Color: #2E4050
-  doc.setFontSize(12);
+  doc.setFontSize(9);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text(trFix(st.firma || 'Egefe Bilisim Saglik San. ve Tic. A.S.'), mm(68.457), mm(11.188)+9);
+  doc.text(trFix(st.firma || 'Egefe Bilişim Sağlık San. ve Tic. A.Ş.'), mm(68.457), mm(11.188)+9);
   
   // Company Address - X: 68.457mm, Y: 16.829mm, Font: Arial regular 8pt Color: #8FA4B0
   doc.setFontSize(8);
@@ -289,33 +289,42 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.line(mm(15.446), mm(33.955), mm(194.556), mm(33.955));
   
   // ── RIGHT SIDE - TEKLİF MEKTUBU ──
-  // "TEKLİF MEKTUBU" - Arial bold 15pt, X:141.628mm Y: 42.395mm color: #2E4050
-  doc.setFontSize(15);
+  // "TEKLİF MEKTUBU" - Arial bold 14pt, X:141.628mm Y: 42.395mm color: #2E4050
+  doc.setFontSize(14);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
   doc.text(trFix('TEKLIF MEKTUBU'), mm(141.628), mm(42.395)+11);
   
-  // "Teklif No :" - Arial bold 8pt, X:141.66mm Y: 50.611mm color: #2E4050
+  // "Teklif No" - Arial bold 8pt, X:141.66mm Y: 50.611mm color: #2E4050
   doc.setFontSize(8);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
   doc.text('Teklif No      :', mm(141.66), mm(50.611)+6);
+
+  // ":" - X: 165.354mm Y: 50.611mm
+  doc.text(':', mm(165.354), mm(50.611)+6);
   
   // Teklif no value - Arial regular 8pt, X:171.249mm Y: 50.611mm color: #2E4050
   doc.setFont('Helvetica', 'normal');
   doc.text(t.teklifNo || '-', mm(171.249), mm(50.611)+6);
   
-  // "Teklif Tarihi :" - Arial bold 8pt, X:141.66mm Y:55.109mm color: #2E4050
+  // "Teklif Tarihi" - Arial bold 8pt, X:141.66mm Y:55.109mm color: #2E4050
   doc.setFont('Helvetica', 'bold');
   doc.text('Teklif Tarihi  :', mm(141.66), mm(55.109)+6);
+
+  // ":" - X: 165.354mm Y: 55.109mm
+  doc.text(':', mm(165.354), mm(55.109)+6);
   
   // Teklif tarihi value - Arial regular 8pt, X: 171.249mm Y:55.109mm color: #2E4050
   doc.setFont('Helvetica', 'normal');
   doc.text(fmtDate(t.teklifTarihi) || '-', mm(171.249), mm(55.109)+6);
   
-  // "Geçerlilik Tarihi:" - Arial bold 8pt, X:141.66mm Y:59.58mm color: #2E4050
+  // "Geçerlilik Tarihi" - Arial bold 8pt, X:141.66mm Y:59.58mm color: #2E4050
   doc.setFont('Helvetica', 'bold');
   doc.text(trFix('Gecerlilik Tarihi:'), mm(141.66), mm(59.58)+6);
+
+  // ":" - X: 165.354mm Y: 59.58mm
+  doc.text(':', mm(165.354), mm(59.58)+6);
   
   // Geçerlilik tarihi value - Arial regular 8pt, X: 171.249mm Y:59.607mm color: #2E4050
   doc.setFont('Helvetica', 'normal');
@@ -379,10 +388,10 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFont('Helvetica', 'normal');
   doc.text(t.telefon || '', mm(44.126), mm(59.938)+6);
   
-  // Horizontal Line 2 - X1: 15.446mm X2: 179.184mm Y: 69.667mm thickness: 0.75pt color: #E4F5F9
+  // Horizontal Line 2 - X1: 15.446mm X2: 194.63mm Y: 69.667mm thickness: 0.75pt color: #E4F5F9
   doc.setDrawColor(...C.tableBg);
   doc.setLineWidth(0.75);
-  doc.line(mm(15.446), mm(69.667), mm(179.184), mm(69.667));
+  doc.line(mm(15.446), mm(69.667), mm(194.63), mm(69.667));
   
   // ── TABLE ──
   const tableY = mm(69.667) + mm(0.75);
@@ -411,7 +420,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
       textColor: C.primary,
       fontStyle: 'bold',
       fontSize: 8,
-      halign: 'left',
+      halign: 'center',
       cellPadding: {top: 1.6, right: 2, bottom: 1.6, left: 2}
     },
     columnStyles: {
@@ -496,15 +505,15 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setTextColor(...C.textLabel);
   doc.text('Ara Toplam', mm(137.109), totalsY + mm(1.7));
   
-  // Ara toplam value - right align X2: 188.799mm
+  // Ara toplam value - right align X2: 193.881mm
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text(pbSymbol + ' ' + fmtN(araToplam), mm(188.799), totalsY + mm(1.7), {align: 'right'});
+  doc.text(pbSymbol + ' ' + fmtN(araToplam), mm(193.881), totalsY + mm(1.7), {align: 'right'});
   
-  // Horizontal Line 3 - X1: 137.109mm, X2: 179.184mm, Y: 97.312mm
+  // Horizontal Line 3 - X1: 137.109mm, X2: 194.63mm, Y: 97.312mm
   doc.setDrawColor(...C.tableBg);
   doc.setLineWidth(0.75);
-  doc.line(mm(137.109), totalsY + mm(3.982), mm(179.184), totalsY + mm(3.982));
+  doc.line(mm(137.109), totalsY + mm(3.982), mm(194.63), totalsY + mm(3.982));
   
   // "Genel İskonto" - X: 137.22mm, Y: 99.392mm
   doc.setFont('Helvetica', 'bold');
@@ -513,10 +522,10 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // Genel iskonto value
   doc.setFont('Helvetica', 'normal');
-  doc.text('- %', mm(188.799), totalsY + mm(6.062), {align: 'right'});
+  doc.text('- %', mm(193.881), totalsY + mm(6.062), {align: 'right'});
   
-  // Horizontal Line 4 - X1: 137.109mm, X2: 179.184mm, Y: 103.398mm
-  doc.line(mm(137.109), totalsY + mm(10.068), mm(179.184), totalsY + mm(10.068));
+  // Horizontal Line 4 - X1: 137.109mm, X2: 194.63mm, Y: 103.398mm
+  doc.line(mm(137.109), totalsY + mm(10.068), mm(194.63), totalsY + mm(10.068));
   
   // "KDV" - X: 137.109mm Y: 105.501mm
   doc.setFont('Helvetica', 'bold');
@@ -524,26 +533,26 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // KDV value
   doc.setFont('Helvetica', 'normal');
-  doc.text(pbSymbol + ' ' + fmtN(kdv), mm(188.799), totalsY + mm(12.171), {align: 'right'});
+  doc.text(pbSymbol + ' ' + fmtN(kdv), mm(193.881), totalsY + mm(12.171), {align: 'right'});
   
-  // Horizontal Line 5 - X1: 137.109mm, X2: 179.184mm, Y: 109.483mm
-  doc.line(mm(137.109), totalsY + mm(16.153), mm(179.184), totalsY + mm(16.153));
+  // Horizontal Line 5 - X1: 137.109mm, X2: 194.63mm, Y: 109.483mm
+  doc.line(mm(137.109), totalsY + mm(16.153), mm(194.63), totalsY + mm(16.153));
   
-  // Rectangle 4: TEKLİF TOPLAMI - X1:141.901mm, Y: 104.900mm, X2:194.556mm
+  // Rectangle 4: TEKLİF TOPLAMI - X1:141.901mm, Y: 100.364mm, X2:194.63mm
   const totalBoxY = totalsY + mm(18.269);
-  const totalBoxW = mm(194.556) - mm(141.901);
+  const totalBoxW = mm(194.63) - mm(141.901);
   doc.setDrawColor(...C.primary);
   doc.setLineWidth(1.5);
   doc.setFillColor(...C.white);
-  doc.roundedRect(mm(141.901), totalBoxY, totalBoxW, mm(10), 2, 2, 'FD');
+  doc.roundedRect(mm(141.901), totalBoxY, totalBoxW, mm(14.80), 2, 2, 'FD');
   
-  // "TEKLİF TOPLAMI" - X: 145.228mm, Y: 107.37mm
+  // "TEKLİF TOPLAMI" - X: 145.228mm, Y: 103.236mm
   doc.setFontSize(8);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.primary);
   doc.text(trFix('TEKLIF TOPLAMI'), mm(145.228), totalBoxY + mm(2.47));
   
-  // Teklif toplamı value - X: 145.228mm, Y: 111.971mm - 11pt bold
+  // Teklif toplamı value - X: 145.228mm, Y: 107.987mm - 11pt bold
   doc.setFontSize(11);
   doc.setTextColor(...C.textMid);
   doc.text(pbSymbol + ' ' + fmtN(genelToplam), mm(145.228), totalBoxY + mm(7.071));
@@ -577,20 +586,20 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   const telText = st.tel || '0 (312) 482 5451';
   const faxText = st.fax || '0 (312) 480 5453';
   
-  // "e-posta: ..." - X: 62.978mm Y: 284.604mm
-  doc.text('e-posta: ' + emailText, mm(62.978), mm(284.604)+5);
+  // "e-posta: ..." - X: 59.953mm Y: 284.604mm
+  doc.text('e-posta: ' + emailText, mm(59.953), mm(284.604)+5);
   
-  // "·" - X: 92.12mm Y: 285.026mm
-  doc.text('·', mm(92.12), mm(285.026)+5);
+  // "|" - X: 94.113mm Y: 284.604mm
+  doc.text('|', mm(94.113), mm(284.604)+5);
   
-  // "Tel: ..." - X: 95.395mm Y: 284.604mm
-  doc.text('Tel: ' + telText, mm(95.395), mm(284.604)+5);
+  // "Tel: ..." - X: 97.662mm Y: 284.604mm
+  doc.text('Tel: ' + telText, mm(97.662), mm(284.604)+5);
   
-  // "·" - X: 120.857mm Y: 285.026mm
-  doc.text('·', mm(120.857), mm(285.026)+5);
+  // "|" - X: 122.241mm Y: 284.604mm
+  doc.text('|', mm(122.241), mm(284.604)+5);
   
-  // "Fax: ..." - X: 123.334mm Y: 284.604mm
-  doc.text('Fax: ' + faxText, mm(123.334), mm(284.604)+5);
+  // "Fax: ..." - X: 125.637mm Y: 284.604mm
+  doc.text('Fax: ' + faxText, mm(125.637), mm(284.604)+5);
   
   // Export
   doc.save(`Teklif_${t.teklifNo || 'X'}.pdf`);

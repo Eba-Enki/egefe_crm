@@ -123,7 +123,8 @@ async function _generateTutanakPDF(tutanak, logoPngDataUrl){
   };
 
   const ibaraEndY = renderInline([
-    {text: `${tarihStr} tarihinde aşağıda seri numarası yazılı olan ARMAS Marka Alkolmetre cihazları arızası giderilmek üzere `, bold: false},
+    {text: tarihStr + ' ', bold: true},
+    {text: 'tarihinde aşağıda seri numarası yazılı olan ARMAS Marka Alkolmetre cihazları arızası giderilmek üzere ', bold: false},
     {text: 'Armas Elektronik San. ve Tic. Ltd. Şti', bold: true},
     {text: "'ne elden teslim edilmiştir.", bold: false}
   ], mm(15.446), mm(69), mm(179.108), 9 * 1.5);
@@ -159,7 +160,7 @@ async function _generateTutanakPDF(tutanak, logoPngDataUrl){
     },
     columnStyles: {
       0: {halign: 'center', cellWidth: mm(10)},
-      1: {halign: 'center',   cellWidth: mm(52)},
+      1: {halign: 'left',   cellWidth: mm(52)},
       2: {halign: 'center',   cellWidth: mm(35)},
       3: {halign: 'center', cellWidth: mm(20)},
       4: {halign: 'left'}

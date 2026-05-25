@@ -189,18 +189,6 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   })();
   const trFix=(str)=>{if(!str)return'';return String(str).split('').map(c=>_trMap[c]||c).join('');};
   
-  // Text case helpers
-  const toTitleCase = (str) => {
-    if(!str) return '';
-    return String(str).toLowerCase().split(' ').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-  };
-  
-  const toLowerCase = (str) => {
-    if(!str) return '';
-    return String(str).toLowerCase();
-  };
 
   const fmtN = (v) => new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0);
 
@@ -342,7 +330,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // "Kurum Adı" value - X: 44.126mm, Y: 42.774mm - Title Case
   doc.setFont('Helvetica', 'normal');
-  doc.text(trFix(toTitleCase(t.kurum || '')), mm(44.126), mm(42.774)+6);
+  doc.text(trFix(t.kurum || ''), mm(44.126), mm(42.774)+6);
   
   // "Adres" - X: 15.446mm Y: 47.065mm
   doc.setFont('Helvetica', 'bold');
@@ -353,7 +341,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // "Adres" value - X: 44.126mm, Y: 47.065mm - Title Case
   doc.setFont('Helvetica', 'normal');
-  doc.text(trFix(toTitleCase(t.adres || '')), mm(44.126), mm(47.065)+6);
+  doc.text(trFix(t.adres || ''), mm(44.126), mm(47.065)+6);
   
   // "İlgili Kişi" - X: 15.446mm, Y: 51.356mm
   doc.setFont('Helvetica', 'bold');
@@ -364,7 +352,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // İlgili kişi value - X: 44.126mm, Y: 51.356mm - Title Case
   doc.setFont('Helvetica', 'normal');
-  doc.text(trFix(toTitleCase(t.ilgiliKisi || '')), mm(44.126), mm(51.356)+6);
+  doc.text(trFix(t.ilgiliKisi || ''), mm(44.126), mm(51.356)+6);
   
   // "e-posta" - X: 15.446mm, Y: 55.647mm
   doc.setFont('Helvetica', 'bold');
@@ -375,7 +363,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // e-posta value - X: 44.126mm, Y: 55.647mm - lowercase
   doc.setFont('Helvetica', 'normal');
-  doc.text(toLowerCase(t.email || ''), mm(44.126), mm(55.647)+6);
+  doc.text(trFix(t.email || ''), mm(44.126), mm(55.647)+6);
   
   // "Tel" - X: 15.446mm, Y: 59.938mm
   doc.setFont('Helvetica', 'bold');

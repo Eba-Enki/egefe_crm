@@ -316,9 +316,17 @@
           </div>
           <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="addTeklifItem()">＋ Kalem Ekle</button>
         </div>
+        <div class="form-card tf-satis-field" style="display:none">
+          <div class="form-section-title">Ticari Koşullar</div>
+          <div class="form-grid">
+            <div class="field"><label>Ödeme Koşulu</label><input type="text" id="tf-odemeKosulu" placeholder="Örn: Peşin, 30 gün vadeli..."></div>
+            <div class="field"><label>Vade</label><input type="text" id="tf-vade" placeholder="Örn: 30 gün"></div>
+            <div class="field"><label>Tahmini Teslimat</label><input type="text" id="tf-teslimat" placeholder="Örn: 10-15 iş günü"></div>
+          </div>
+        </div>
         <div class="form-card">
           <div class="form-section-title">Notlar / Şartlar</div>
-          <div class="field"><textarea id="tf-notlar" rows="3" placeholder="Ödeme şartları, garanti, özel notlar..."></textarea></div>
+          <div class="field"><textarea id="tf-notlar" rows="3" placeholder="Genel notlar, ek şartlar, garanti koşulları..."></textarea></div>
         </div>
         <div class="form-actions">
           <button class="btn btn-ghost" onclick="showPage('teklifler')">İptal</button>

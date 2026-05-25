@@ -32,7 +32,7 @@ function updateTeklifTotals(){
 
 // ════ SAVE TEKLIF ════
 function buildTeklifPayload(){
-  return{teklifNo:document.getElementById('tf-teklifNo').value,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:document.getElementById('tf-kurum').value,ilgiliKisi:document.getElementById('tf-ilgiliKisi').value,teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',paraBirimi:(document.getElementById('tf-paraBirimi')||{}).value||'TRY',satirlar:JSON.parse(JSON.stringify(teklifItems))};
+  return{teklifNo:document.getElementById('tf-teklifNo').value,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:document.getElementById('tf-kurum').value,ilgiliKisi:document.getElementById('tf-ilgiliKisi').value,teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',paraBirimi:(document.getElementById('tf-paraBirimi')||{}).value||'TRY',odemeKosulu:(document.getElementById('tf-odemeKosulu')||{}).value||'',vade:(document.getElementById('tf-vade')||{}).value||'',teslimat:(document.getElementById('tf-teslimat')||{}).value||'',satirlar:JSON.parse(JSON.stringify(teklifItems))};
 }
 function saveTeklif(andPrint=false){
   const editId=document.getElementById('tf-edit-id').value;
@@ -402,55 +402,41 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
 
   let y = tableEndY + mm(3);
 
-  // ── BOTTOM GRID - 3 boxes ──
+  // ── BOTTOM GRID - dolu olan kutucuklar soldan sıralı gösterilir ──
   const boxY = y;
   const boxH = mm(13);
   const boxPadding = 1.4;
+  const boxW = mm(36.248);
+  const boxXList = [mm(15.446), mm(53.546), mm(91.91)];
 
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.75);
-  doc.setFillColor(...C.boxBg);
-  doc.roundedRect(mm(15.446), boxY, mm(36.248), boxH, boxPadding, boxPadding, 'FD');
+  const activeBoxes = [
+    {label: 'ÖDEME KOŞULU',     value: t.odemeKosulu},
+    {label: 'VADE',             value: t.vade},
+    {label: 'TAHMİNİ TESLİMAT', value: t.teslimat}
+  ].filter(b => b.value && b.value.trim());
 
   doc.setFontSize(8);
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.textLight);
-  doc.text('ÖDEME KOŞULU', mm(17.725), boxY + mm(3.5));
+  activeBoxes.forEach((box, i) => {
+    const bx = boxXList[i];
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.75);
+    doc.setFillColor(...C.boxBg);
+    doc.roundedRect(bx, boxY, boxW, boxH, boxPadding, boxPadding, 'FD');
+    doc.setFont('Arial', 'bold');
+    doc.setTextColor(...C.textLight);
+    doc.text(box.label, bx + mm(2.4), boxY + mm(3.5));
+    doc.setTextColor(...C.textMid);
+    doc.text(box.value, bx + mm(2.4), boxY + mm(7.8));
+  });
 
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.textMid);
-  doc.text(t.odemeKosulu || 'Peşin', mm(17.814), boxY + mm(7.8));
-
-  doc.setFillColor(...C.boxBg);
-  doc.roundedRect(mm(53.546), boxY, mm(36.248), boxH, boxPadding, boxPadding, 'FD');
-
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.textLight);
-  doc.text('VADE', mm(55.953), boxY + mm(3.5));
-
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.textMid);
-  doc.text(t.vade || '-', mm(56.07), boxY + mm(7.8));
-
-  doc.setFillColor(...C.boxBg);
-  doc.roundedRect(mm(91.91), boxY, mm(36.248), boxH, boxPadding, boxPadding, 'FD');
-
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.textLight);
-  doc.text('TAHMİNİ TESLİMAT', mm(94.276), boxY + mm(3.5));
-
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.textMid);
-  doc.text(t.teslimat || '10-15 Gün', mm(94.276), boxY + mm(7.8));
-
-  const notY = boxY + boxH + mm(4);
+  const notY = activeBoxes.length > 0 ? boxY + boxH + mm(4) : boxY + mm(2);
   doc.setFontSize(8);
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textLabel);
   doc.text('Not :', mm(15.446), notY);
 
   doc.setFont('Arial', 'normal');
-  const notText = t.not || 'Teklifimiz yukarıda belirtilen geçerlilik tarihi itibarıyla geçerliliğini yitirecektir.';
+  const notText = t.notlar || 'Teklifimiz yukarıda belirtilen geçerlilik tarihi itibarıyla geçerliliğini yitirecektir.';
   const notLines = doc.splitTextToSize(notText, mm(100));
   doc.text(notLines, mm(24.405), notY);
 

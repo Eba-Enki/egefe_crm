@@ -5,10 +5,21 @@ function showPage(id,skipRender){
   document.querySelectorAll('.sb-item[data-page]').forEach(i=>i.classList.toggle('active',i.dataset.page===id));
   document.getElementById('topbar-title').textContent=PAGE_TITLES[id]||id;
   const canWrite=state.currentUser?.rol!=='izleyici';
-  const nsBtn=document.getElementById('topbar-new-servis-btn');
-  if(nsBtn)nsBtn.style.display=(id==='servisler'&&canWrite)?'':'none';
-  const ntBtn=document.getElementById('topbar-new-teklif-btn');
-  if(ntBtn)ntBtn.style.display=(id==='teklifler'&&canWrite)?'':'none';
+  const isAdmin=state.currentUser?.rol==='admin';
+  const pageTopbarBtns={
+    servisler:'topbar-new-servis-btn',
+    teklifler:'topbar-new-teklif-btn',
+    musteriler:'topbar-new-musteri-btn',
+    urunler:'topbar-new-urun-btn',
+    tutanaklar:'topbar-new-tutanak-btn',
+    kullanici:'topbar-new-kullanici-btn'
+  };
+  Object.entries(pageTopbarBtns).forEach(function([page,btnId]){
+    const btn=document.getElementById(btnId);
+    if(!btn)return;
+    const show=(id===page)&&(page==='kullanici'?isAdmin:canWrite);
+    btn.style.display=show?'':'none';
+  });
   const renders={dashboard:renderDashboard,servisler:renderTable,teklifler:renderTeklifler,musteriler:renderMusteriler,urunler:renderUrunler,raporlar:renderRaporlar,kullanici:renderUserTable,ayarlar:loadSettings,tutanaklar:renderTutanaklar,siparisler:renderSiparisler,faturalar:renderFaturalar,'siparis-form':function(){}};
   if(!skipRender&&renders[id])renders[id]();
 }

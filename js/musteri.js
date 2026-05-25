@@ -112,8 +112,21 @@ function saveUser(){
 }
 
 // ════ AYARLAR ════
-function loadSettings(){['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''})}
-function saveSettings(){['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)state.settings[k]=el.value});saveAll();toast('Ayarlar kaydedildi.','success')}
+function loadSettings(){
+  ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''});
+  var spEl=document.getElementById('set-servis-prefix');if(spEl)spEl.value=state.settings.servisPrefix||'KN';
+  var sdEl=document.getElementById('set-servis-digits');if(sdEl)sdEl.value=state.settings.servisDigits||6;
+  var tpEl=document.getElementById('set-teklif-prefix');if(tpEl)tpEl.value=state.settings.teklifPrefix||'TKL';
+  var tdEl=document.getElementById('set-teklif-digits');if(tdEl)tdEl.value=state.settings.teklifDigits||5;
+}
+function saveSettings(){
+  ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)state.settings[k]=el.value});
+  var spEl=document.getElementById('set-servis-prefix');if(spEl&&spEl.value.trim())state.settings.servisPrefix=spEl.value.trim().toUpperCase();
+  var sdEl=document.getElementById('set-servis-digits');if(sdEl&&sdEl.value)state.settings.servisDigits=Math.min(9,Math.max(3,parseInt(sdEl.value)||6));
+  var tpEl=document.getElementById('set-teklif-prefix');if(tpEl&&tpEl.value.trim())state.settings.teklifPrefix=tpEl.value.trim().toUpperCase();
+  var tdEl=document.getElementById('set-teklif-digits');if(tdEl&&tdEl.value)state.settings.teklifDigits=Math.min(9,Math.max(3,parseInt(tdEl.value)||5));
+  saveAll();toast('Ayarlar kaydedildi.','success');
+}
 
 // ════ CONFIRM DELETE ════
 function confirmDelete(type,id){

@@ -60,8 +60,8 @@ function genSample(){
 const today=()=>new Date().toISOString().slice(0,10);
 function fmtDate(d){if(!d)return'—';try{return new Date(d+'T12:00:00').toLocaleDateString('tr-TR')}catch{return d}}
 function fmtTL(v){if(v===''||v==null)return'—';return new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',minimumFractionDigits:2}).format(v)}
-function nextKN(){const n=state.servisler.map(s=>parseInt(s.kayitNo.replace('KN',''))||0);return'KN'+String((n.length?Math.max(...n):0)+1).padStart(6,'0')}
-function nextTN(){const n=state.teklifler.map(t=>parseInt((t.teklifNo||'').replace('TKL',''))||0);return'TKL'+String((n.length?Math.max(...n):0)+1).padStart(5,'0')}
+function nextKN(){const p=(state.settings&&state.settings.servisPrefix)||'KN';const d=parseInt((state.settings&&state.settings.servisDigits)||6);const n=state.servisler.map(s=>parseInt((s.kayitNo||'').replace(p,''))||0);return p+String((n.length?Math.max(...n):0)+1).padStart(d,'0')}
+function nextTN(){const p=(state.settings&&state.settings.teklifPrefix)||'TKL';const d=parseInt((state.settings&&state.settings.teklifDigits)||5);const n=state.teklifler.map(t=>parseInt((t.teklifNo||'').replace(p,''))||0);return p+String((n.length?Math.max(...n):0)+1).padStart(d,'0')}
 function durumBadge(d){return`<span class="badge ${DURUM_CLASS[d]||''}">${d||'—'}</span>`}
 function calcTeklifToplam(t){return(t.satirlar||[]).reduce(function(a,s){return a+(s.miktar*s.birimFiyat)},0)}
 

@@ -80,7 +80,7 @@ async function _generateTutanakPDF(tutanak, logoPngDataUrl){
   doc.setFontSize(15);
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text('TESLİM TUTANAĞI', mm(105), mm(42.395)+11, {align: 'center'});
+  doc.text('Teslim Tutanağı', mm(105), mm(42.395)+11, {align: 'center'});
 
   // ── META (sağ taraf, teklif ile aynı sütun pozisyonları) ──
   const tarihStr = fmtDate(tutanak.tarih) || '-';
@@ -103,16 +103,32 @@ async function _generateTutanakPDF(tutanak, logoPngDataUrl){
   doc.setLineWidth(0.75);
   doc.line(mm(15.446), mm(64), mm(194.63), mm(64));
 
-  // ── İBARA ──
+  // ── İBARA (şirket adı bold, kelime kelime akış) ──
   doc.setFontSize(9);
-  doc.setFont('Arial', 'normal');
   doc.setTextColor(...C.textMid);
-  const ibara = `${tarihStr} tarihinde aşağıda seri numarası yazılı olan ARMAS Marka Alkolmetre cihazları arızası giderilmek üzere Armas Elektronik San. ve Tic. Ltd. Şti'ne elden teslim edilmiştir.`;
-  const ibaraLines = doc.splitTextToSize(ibara, mm(179.108));
-  doc.text(ibaraLines, mm(15.446), mm(69));
+
+  const renderInline = (parts, sx, sy, maxW, lh) => {
+    let cx = sx, cy = sy;
+    for(const {text, bold} of parts){
+      doc.setFont('Arial', bold ? 'bold' : 'normal');
+      const tokens = text.match(/\S+\s*/g) || [];
+      for(const token of tokens){
+        const tw = doc.getTextWidth(token);
+        if(cx > sx && cx + tw > sx + maxW){ cx = sx; cy += lh; }
+        doc.text(token, cx, cy);
+        cx += tw;
+      }
+    }
+    return cy + lh;
+  };
+
+  const ibaraEndY = renderInline([
+    {text: `${tarihStr} tarihinde aşağıda seri numarası yazılı olan ARMAS Marka Alkolmetre cihazları arızası giderilmek üzere `, bold: false},
+    {text: 'Armas Elektronik San. ve Tic. Ltd. Şti', bold: true},
+    {text: "'ne elden teslim edilmiştir.", bold: false}
+  ], mm(15.446), mm(69), mm(179.108), 9 * 1.5);
 
   // ── TABLE ──
-  const ibaraEndY = mm(69) + ibaraLines.length * (9 * 1.35);
   let tableEndY = ibaraEndY + mm(4);
 
   doc.autoTable({
@@ -143,14 +159,14 @@ async function _generateTutanakPDF(tutanak, logoPngDataUrl){
     },
     columnStyles: {
       0: {halign: 'center', cellWidth: mm(10)},
-      1: {halign: 'left',   cellWidth: mm(52)},
-      2: {halign: 'left',   cellWidth: mm(35)},
+      1: {halign: 'center',   cellWidth: mm(52)},
+      2: {halign: 'center',   cellWidth: mm(35)},
       3: {halign: 'center', cellWidth: mm(20)},
       4: {halign: 'left'}
     },
     didParseCell: data => {
       if(data.section === 'head'){
-        const aligns = ['center','left','left','center','left'];
+        const aligns = ['center','center','center','center','left'];
         data.cell.styles.halign = aligns[data.column.index] || 'left';
       }
     },
@@ -179,10 +195,10 @@ async function _generateTutanakPDF(tutanak, logoPngDataUrl){
   doc.setFontSize(9);
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text('TESLİM EDEN', mm(15.446)+mm(37.5), signY+mm(6), {align: 'center'});
+  doc.text('Teslim Eden', mm(15.446)+mm(37.5), signY+mm(6), {align: 'center'});
 
   doc.line(mm(194.556)-mm(75), signY, mm(194.556), signY);
-  doc.text('TESLİM ALAN', mm(194.556)-mm(37.5), signY+mm(6), {align: 'center'});
+  doc.text('Teslim Alan', mm(194.556)-mm(37.5), signY+mm(6), {align: 'center'});
 
   // ── FOOTER ──
   doc.setDrawColor(...C.primary);
@@ -194,13 +210,13 @@ async function _generateTutanakPDF(tutanak, logoPngDataUrl){
 
   const emailText = st.email || 'servis@ege-fe.com';
   const telText   = st.tel   || '0 (312) 482 54 51';
-  const faxText   = st.fax   || '0 (312) 480 54 52';
+  const faxText   = st.fax   || '0 (312) 480 54 53';
 
-  doc.text('Tel: '+telText,       mm(59.953),  mm(284.604)+5);
+  doc.text('e-posta: '+emailText, mm(59.953),  mm(284.604)+5);
   doc.text('|',                   mm(94.113),  mm(284.604)+5);
-  doc.text('Fax: '+faxText,       mm(97.662),  mm(284.604)+5);
+  doc.text('Tel: '+telText,       mm(97.662),  mm(284.604)+5);
   doc.text('|',                   mm(122.241), mm(284.604)+5);
-  doc.text('e-posta: '+emailText, mm(125.637), mm(284.604)+5);
+  doc.text('Fax: '+faxText, mm(125.637), mm(284.604)+5);
 
   doc.save(`Tutanak_${tutanak.no||'X'}.pdf`);
 }

@@ -74,4 +74,3 @@
   if(rlTitle)rlTitle.textContent=currentPortal==='satis'?'Sipariş Durum Dağılımı':'Son Eklenen';
 }
 
-function showDurumMenu(sid, btnEl){

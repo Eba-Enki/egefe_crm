@@ -48,8 +48,6 @@
 
 // ════ TUTANAK ════
 
-// ════ MÜŞTERİLER ════
-function renderMusteriler(){
 let savedTutanaklar = [];
 function loadSavedTutanaklar(){
   savedTutanaklar = DB.pload('tutanaklar', []);

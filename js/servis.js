@@ -36,7 +36,7 @@ function durumColor(d){
   return map[d]||'#888';
 }
 
-const ARSIV_DURUMLAR = ['Tamamlandi', 'Reddedildi'];
+const ARSIV_DURUMLAR = ['Tamamlandı', 'Reddedildi'];
 let servisTab = 'aktif';
 
 function switchServisTab(tab) {
@@ -46,6 +46,7 @@ function switchServisTab(tab) {
   var newBtn = document.getElementById('topbar-new-servis-btn');
   if(newBtn) newBtn.style.display = (tab === 'aktif' && state.currentUser && state.currentUser.rol !== 'izleyici') ? '' : 'none';
   clearFilters(false);
+  renderTable();
 }
 
 function arsivdenGeriAl(sid) {

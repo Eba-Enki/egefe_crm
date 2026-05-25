@@ -9,3 +9,10 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('sidebar').style.display = 'none';
   document.getElementById('main').style.display = 'none';
 });
+
+function initApp() {
+  document.getElementById('sidebar').style.display = '';
+  document.getElementById('main').style.display = '';
+  document.getElementById('portal-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+}

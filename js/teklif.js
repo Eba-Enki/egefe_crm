@@ -390,6 +390,9 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
       5: {halign: 'right', cellWidth: mm(24.823)}
     },
     margin: {left: mm(15.446), right: mm(210 - 179.184 - 15.446)},
+    didParseCell: (data) => {
+      if (data.section === 'head' && data.column.index === 1) data.cell.styles.halign = 'left';
+    },
     didDrawPage: (data) => {
       tableEndY = data.cursor.y;
     }

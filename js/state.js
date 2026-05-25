@@ -38,6 +38,7 @@ let state={
   teklifler:DB.pload('teklifler',[]),
   musteriler:DB.pload('musteriler',[]),
   urunler:DB.pload('urunler',[]),
+  urunKategoriler:DB.pload('urunKategoriler',['Cihaz','Yazılım','Aksesuar','Sarf Malzeme','Diğer']),
   settings:DB.pload('settings',{firma:'Egefe Teknik Servis',tel:'',faks:'',adres:'',email:'',web:''}),
   sortCol:'kayitNo',sortDir:'desc'
 };
@@ -45,7 +46,7 @@ let sfAksesuarlar=[];
 let teklifItems=[];
 
 function saveAll(){
-  var keys=['users','musteriler','urunler','teklifler','settings'];
+  var keys=['users','musteriler','urunler','urunKategoriler','teklifler','settings'];
   if(currentPortal==='servis') keys=keys.concat(['servisler']);
   keys.forEach(function(k){DB.psave(k,state[k]);});
 }

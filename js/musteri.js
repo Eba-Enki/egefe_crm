@@ -113,6 +113,25 @@ function saveUser(){
   saveAll();showPage('kullanici');
 }
 
+// ════ ÜRÜN KATEGORİLERİ ════
+function renderUrunKategorileri(){
+  const el=document.getElementById('urun-kategori-list');if(!el)return;
+  const cats=state.urunKategoriler||[];
+  if(!cats.length){el.innerHTML='<div style="font-size:12px;color:var(--text3)">Henüz kategori yok.</div>';return;}
+  el.innerHTML=cats.map((k,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">${k}</span><button class="btn-icon" style="color:var(--red)" onclick="deleteUrunKategori(${i})">⊗</button></div>`).join('');
+}
+function addUrunKategori(){
+  const inp=document.getElementById('yeni-kategori-input');if(!inp)return;
+  const val=inp.value.trim();if(!val)return toast('Kategori adı girin.','error');
+  if((state.urunKategoriler||[]).includes(val))return toast('Bu kategori zaten mevcut.','error');
+  state.urunKategoriler=(state.urunKategoriler||[]).concat(val);
+  saveAll();inp.value='';renderUrunKategorileri();toast('Kategori eklendi.','success');
+}
+function deleteUrunKategori(i){
+  state.urunKategoriler=(state.urunKategoriler||[]).filter((_,idx)=>idx!==i);
+  saveAll();renderUrunKategorileri();toast('Kategori silindi.','info');
+}
+
 // ════ AYARLAR ════
 function loadSettings(){
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''});
@@ -120,6 +139,7 @@ function loadSettings(){
   var sdEl=document.getElementById('set-servis-digits');if(sdEl)sdEl.value=state.settings.servisDigits||6;
   var tpEl=document.getElementById('set-teklif-prefix');if(tpEl)tpEl.value=state.settings.teklifPrefix||'TKL';
   var tdEl=document.getElementById('set-teklif-digits');if(tdEl)tdEl.value=state.settings.teklifDigits||5;
+  renderUrunKategorileri();
 }
 function saveSettings(){
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)state.settings[k]=el.value});

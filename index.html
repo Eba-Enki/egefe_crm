@@ -394,7 +394,7 @@
             <div class="field"><label>Ürün / İşlem Adı <span class="req">*</span></label><input type="text" id="uf-urunAdi" placeholder="Kalibrasyon, Tamir, Yazılım Güncelleme..."></div>
             <div class="field"><label>Ürün Kodu</label><input type="text" id="uf-urunKodu" placeholder="Örn: SKU-001"></div>
             <div class="field"><label>Marka</label><input type="text" id="uf-marka"></div>
-            <div class="field tf-satis-field" style="display:none"><label>Kategori</label><select id="uf-kategori"><option value="">— Seçin —</option><option>Cihaz</option><option>Yazılım</option><option>Aksesuar</option><option>Servis / Kalibrasyon</option><option>Sarf Malzeme</option><option>Diğer</option></select></div>
+            <div class="field tf-satis-field" style="display:none"><label>Kategori</label><select id="uf-kategori"><option value="">— Seçin —</option></select></div>
             <div class="field"><label>Parametre</label><input type="text" id="uf-model"></div>
             <div class="field"><label>Liste Fiyatı</label><input type="number" id="uf-fiyat" min="0" step="0.01" placeholder="0.00"></div>
             <div class="field"><label>Para Birimi</label><select id="uf-paraBirimi"><option value="TRY">₺ TL</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option><option value="GBP">£ GBP</option></select></div>
@@ -592,6 +592,14 @@
               <button onclick="setTheme('dark')" id="btn-theme-dark" class="theme-btn active">🌙 Koyu</button>
               <button onclick="setTheme('light')" id="btn-theme-light" class="theme-btn">☀ Açık</button>
             </div>
+          </div>
+        </div>
+        <div class="form-card tf-satis-field" style="margin-top:14px;display:none">
+          <div class="form-section-title">Ürün Kategorileri</div>
+          <div id="urun-kategori-list" style="margin-bottom:12px"></div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="yeni-kategori-input" placeholder="Yeni kategori adı" style="flex:1">
+            <button class="btn btn-primary" onclick="addUrunKategori()">Ekle</button>
           </div>
         </div>
         <div class="form-card" style="margin-top:14px">

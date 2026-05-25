@@ -119,7 +119,10 @@ function goUrunForm(editId){
   ['uf-urunAdi','uf-urunKodu','uf-marka','uf-model','uf-aciklama'].forEach(function(id){var f=id.replace('uf-','');var el=document.getElementById(id);if(el)el.value=u?u[f]||'':'';});
   const fEl=document.getElementById('uf-fiyat');if(fEl)fEl.value=u?.fiyat||'';
   const pbEl=document.getElementById('uf-paraBirimi');if(pbEl)pbEl.value=u?.paraBirimi||'TRY';
-  const katEl=document.getElementById('uf-kategori');if(katEl)katEl.value=u?.kategori||'';
+  var urunAdiEl=document.getElementById('uf-urunAdi');
+  if(urunAdiEl)urunAdiEl.placeholder=currentPortal==='satis'?'Alkolmetre, Kamera, Yazıcı...':'Kalibrasyon, Tamir, Yazılım Güncelleme...';
+  const katEl=document.getElementById('uf-kategori');
+  if(katEl){katEl.innerHTML='<option value="">— Seçin —</option>'+(state.urunKategoriler||[]).map(k=>`<option value="${k}">${k}</option>`).join('');katEl.value=u?.kategori||'';}
   showPage('urun-form',true);
 }
 function goKullaniciForm(editId){

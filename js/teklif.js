@@ -94,9 +94,6 @@ function renderTeklifler(){
     <td><div class="action-row" style="justify-content:flex-end">
       <button class="btn-icon" title="Detay" onclick="openTeklifDetay('${t.id}')">◎</button>
       ${canEdit?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)">⇅</button>`:''}
-      ${canEdit&&currentPortal==='satis'&&t.durum==='Açık Teklif'?`<button class="btn-icon" style="color:var(--green)" title="Kabul Et" onclick="changeTeklifDurum('${t.id}','Kabul Edildi')">✓</button>`:''}
-      ${canEdit&&currentPortal==='satis'&&['Açık Teklif','Taslak'].includes(t.durum)?`<button class="btn-icon" style="color:var(--red)" title="Reddet" onclick="openRedNedenModal('${t.id}','Reddedildi')">✕</button>`:''}
-      ${canEdit&&currentPortal==='satis'&&!['İptal Edildi','Siparişe Aktarıldı'].includes(t.durum)?`<button class="btn-icon" style="color:var(--text3);font-size:10px" title="İptal Et" onclick="openRedNedenModal('${t.id}','İptal Edildi')">⊗</button>`:''}
       ${canEdit&&t.durum!=='Siparişe Aktarıldı'?`<button class="btn-icon" title="Düzenle" onclick="goTeklifForm('${t.id}')">✎</button>`:''}
       <button class="btn-icon" style="color:var(--accent)" title="PDF" onclick="printTeklifById('${t.id}')">⬇</button>
       ${canEdit&&currentPortal==='satis'&&t.durum==='Kabul Edildi'?`<button class="btn-icon" title="Sipariş Oluştur" style="color:var(--purple)" onclick="goSiparisForm('${t.id}')">📦</button>`:''}

@@ -67,7 +67,11 @@ function showTeklifDurumMenu(tid,btnEl){
   menu.style.cssText='position:fixed;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;z-index:600;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5);overflow:hidden;';
   menu.innerHTML=durList.map(function(d){
     var active=d===t.durum;
-    return '<div onmousedown="event.stopPropagation();changeTeklifDurum(\''+tid+'\',\''+d+'\');document.querySelectorAll(\'.durum-quick-menu\').forEach(function(m){m.remove();});" style="padding:9px 14px;font-size:13px;cursor:pointer;'+(active?'background:var(--accent-soft);color:var(--accent);font-weight:600':'color:var(--text2)')+'">'+(active?'✓ ':'')+d+'</div>';
+    var needsReason=(d==='Reddedildi'||d==='İptal Edildi')&&!active;
+    var action=needsReason
+      ?'document.querySelectorAll(\'.durum-quick-menu\').forEach(function(m){m.remove();});openRedNedenModal(\''+tid+'\',\''+d+'\');'
+      :'changeTeklifDurum(\''+tid+'\',\''+d+'\');document.querySelectorAll(\'.durum-quick-menu\').forEach(function(m){m.remove();});';
+    return '<div onmousedown="event.stopPropagation();'+action+'" style="padding:9px 14px;font-size:13px;cursor:pointer;'+(active?'background:var(--accent-soft);color:var(--accent);font-weight:600':'color:var(--text2)')+'">'+(active?'✓ ':'')+d+'</div>';
   }).join('');
   document.body.appendChild(menu);
   var r=btnEl.getBoundingClientRect();

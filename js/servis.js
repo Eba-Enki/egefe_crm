@@ -45,6 +45,9 @@ function switchServisTab(tab) {
   document.getElementById('tab-arsiv').classList.toggle('active', tab === 'arsiv');
   var newBtn = document.getElementById('topbar-new-servis-btn');
   if(newBtn) newBtn.style.display = (tab === 'aktif' && state.currentUser && state.currentUser.rol !== 'izleyici') ? '' : 'none';
+  // Arşiv tabında teklif butonu da gizle
+  var ntBtn = document.getElementById('topbar-new-teklif-btn');
+  if(ntBtn) ntBtn.style.display = 'none';
   clearFilters(false);
   renderTable();
 }

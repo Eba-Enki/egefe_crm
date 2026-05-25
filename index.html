@@ -64,9 +64,6 @@
     <div class="sb-item" data-page="teklifler" onclick="showPage('teklifler')"><span class="icon">📄</span><span>Teklifler</span></div>
     <div class="sb-item satis-only" data-page="siparisler" style="display:none" onclick="showPage('siparisler')"><span class="icon">📦</span><span>Siparişler</span></div>
     <div class="sb-item satis-only" data-page="faturalar" style="display:none" onclick="showPage('faturalar')"><span class="icon">🧾</span><span>Faturalar</span></div>
-    <div class="sb-section">İşlemler</div>
-    <div class="sb-item servis-only" onclick="goServisForm()"><span class="icon">＋</span><span>Yeni Servis Girişi</span></div>
-    <div class="sb-item" id="sb-yeni-teklif" onclick="goTeklifForm()"><span class="icon">＋</span><span>Yeni Teklif</span></div>
     <div class="sb-item servis-only" data-page="tutanaklar" onclick="showPage('tutanaklar')"><span class="icon">📋</span><span>Tutanaklar</span></div>
 
     <div class="sb-section">Kayıtlar</div>
@@ -101,6 +98,7 @@
       <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="topbar-theme-btn" title="Tema Değiştir" style="padding:7px 10px;font-size:15px">🌙</button>
       <button class="btn btn-ghost btn-sm" onclick="exportData()">⬇ Dışa Aktar</button>
       <label class="btn btn-ghost btn-sm" style="cursor:pointer">⬆ İçe Aktar<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
+      <button class="btn btn-primary btn-sm can-write" id="topbar-new-teklif-btn" style="display:none" onclick="goTeklifForm()">＋ Yeni Teklif</button>
       <button class="btn btn-primary btn-sm can-write" id="topbar-new-servis-btn" style="display:none" onclick="goServisForm()">＋ Yeni Servis Girişi</button>
     </div>
   </div>

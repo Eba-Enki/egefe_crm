@@ -299,7 +299,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFontSize(8);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text('Teklif No      :', mm(141.66), mm(50.611)+6);
+  doc.text('Teklif No', mm(141.66), mm(50.611)+6);
 
   // ":" - X: 165.354mm Y: 50.611mm
   doc.text(':', mm(165.354), mm(50.611)+6);
@@ -310,7 +310,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // "Teklif Tarihi" - Arial bold 8pt, X:141.66mm Y:55.109mm color: #2E4050
   doc.setFont('Helvetica', 'bold');
-  doc.text('Teklif Tarihi  :', mm(141.66), mm(55.109)+6);
+  doc.text('Teklif Tarihi', mm(141.66), mm(55.109)+6);
 
   // ":" - X: 165.354mm Y: 55.109mm
   doc.text(':', mm(165.354), mm(55.109)+6);
@@ -321,7 +321,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // "Geçerlilik Tarihi" - Arial bold 8pt, X:141.66mm Y:59.58mm color: #2E4050
   doc.setFont('Helvetica', 'bold');
-  doc.text(trFix('Gecerlilik Tarihi:'), mm(141.66), mm(59.58)+6);
+  doc.text(trFix('Geçerlilik Tarihi'), mm(141.66), mm(59.58)+6);
 
   // ":" - X: 165.354mm Y: 59.58mm
   doc.text(':', mm(165.354), mm(59.58)+6);
@@ -331,16 +331,16 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.text(fmtDate(t.gecerlilikTarihi) || '-', mm(171.249), mm(59.607)+6);
   
   // ── BILL TO SECTION ──
-  // "Firma / Kurum Adı" - X: 15.446mm Y: 42.774mm
+  // "Kurum Adı" - X: 15.446mm Y: 42.774mm
   doc.setFontSize(8);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text('Firma / Kurum Adi', mm(15.446), mm(42.774)+6);
+  doc.text('Kurum Adı', mm(15.446), mm(42.774)+6);
   
   // ":" - X: 41.228mm Y: 42.774mm
   doc.text(':', mm(41.228), mm(42.774)+6);
   
-  // Firma / Kurum Adı value - X: 44.126mm, Y: 42.774mm - Title Case
+  // "Kurum Adı" value - X: 44.126mm, Y: 42.774mm - Title Case
   doc.setFont('Helvetica', 'normal');
   doc.text(trFix(toTitleCase(t.kurum || '')), mm(44.126), mm(42.774)+6);
   
@@ -351,13 +351,13 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   // ":" - X: 41.228mm Y: 47.065mm
   doc.text(':', mm(41.228), mm(47.065)+6);
   
-  // Adres value - X: 44.126mm, Y: 47.065mm - Title Case
+  // "Adres" value - X: 44.126mm, Y: 47.065mm - Title Case
   doc.setFont('Helvetica', 'normal');
   doc.text(trFix(toTitleCase(t.adres || '')), mm(44.126), mm(47.065)+6);
   
   // "İlgili Kişi" - X: 15.446mm, Y: 51.356mm
   doc.setFont('Helvetica', 'bold');
-  doc.text(trFix('Ilgili Kisi'), mm(15.446), mm(51.356)+6);
+  doc.text(trFix('İlgili Kişi'), mm(15.446), mm(51.356)+6);
   
   // ":" - X: 41.228mm, Y: 51.356mm
   doc.text(':', mm(41.228), mm(51.356)+6);
@@ -388,16 +388,16 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFont('Helvetica', 'normal');
   doc.text(t.telefon || '', mm(44.126), mm(59.938)+6);
   
-  // Horizontal Line 2 - X1: 15.446mm X2: 194.63mm Y: 69.667mm thickness: 0.75pt color: #E4F5F9
+  // Horizontal Line 2 - X1: 15.446mm X2: 194.63mm Y: 67.900mm thickness: 0.75pt color: #E4F5F9
   doc.setDrawColor(...C.tableBg);
   doc.setLineWidth(0.75);
-  doc.line(mm(15.446), mm(69.667), mm(194.63), mm(69.667));
+  doc.line(mm(15.446), mm(67.900), mm(194.63), mm(67.900));
   
   // ── TABLE ──
   const tableY = mm(69.667) + mm(0.75);
   doc.autoTable({
     startY: tableY,
-    head: [[' #', trFix('URUN ADI'), 'MIKTAR', 'BIRIM', trFix('BIRIM FIYAT'), 'TUTAR']],
+    head: [[' #', trFix('ÜRÜN ADI VE AÇIKLAMASI'), 'MİKTAR', 'BİRİM', trFix('BİRİM FİYAT'), 'TUTAR']],
     body: satirlar.map(s => [
       s.no,
       s.aciklama,
@@ -420,13 +420,14 @@ function _generateTeklifPDF(t,logoPngDataUrl){
       textColor: C.primary,
       fontStyle: 'bold',
       fontSize: 8,
-      halign: 'center',
+      //halign: 'center',
+      halign: 0: 'center', 1: 'left', 2: 'center', 3: 'center', 4: 'center', 5: 'center',
       cellPadding: {top: 1.6, right: 2, bottom: 1.6, left: 2}
     },
     columnStyles: {
       0: {halign: 'center', cellWidth: mm(9.525)},   // # - center
       1: {halign: 'left', cellWidth: mm(90.652)},    // ÜRÜN ADI - left
-      2: {halign: 'right', cellWidth: mm(16.669)},   // MİKTAR - right-align
+      2: {halign: 'center', cellWidth: mm(16.669)},   // MİKTAR - center
       3: {halign: 'center', cellWidth: mm(16.404)},  // BİRİM - center
       4: {halign: 'right', cellWidth: mm(21.111)},   // BİRİM FİYAT - right-align
       5: {halign: 'right', cellWidth: mm(24.823)}    // TUTAR - right-align
@@ -453,7 +454,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFontSize(8);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textLight);
-  doc.text(trFix('ODEME KOSULU'), mm(17.725), boxY + mm(3.5));
+  doc.text(trFix('ÖDEME KOŞULU'), mm(17.725), boxY + mm(3.5));
   
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
@@ -477,7 +478,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textLight);
-  doc.text(trFix('TAHMINI TESLIMAT'), mm(94.276), boxY + mm(3.5));
+  doc.text(trFix('TAHMİNİ TESLİMAT'), mm(94.276), boxY + mm(3.5));
   
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
@@ -508,17 +509,17 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   // Ara toplam value - right align X2: 193.881mm
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text(pbSymbol + ' ' + fmtN(araToplam), mm(193.881), totalsY + mm(1.7), {align: 'right'});
+  doc.text(fmtN(araToplam), mm(193.881), totalsY + mm(1.7), {align: 'right'});
   
   // Horizontal Line 3 - X1: 137.109mm, X2: 194.63mm, Y: 97.312mm
   doc.setDrawColor(...C.tableBg);
   doc.setLineWidth(0.75);
   doc.line(mm(137.109), totalsY + mm(3.982), mm(194.63), totalsY + mm(3.982));
   
-  // "Genel İskonto" - X: 137.22mm, Y: 99.392mm
+  // "Genel İskonto" - X: 137.22mm, Y: 87.474mm
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textLabel);
-  doc.text(trFix('Genel Iskonto'), mm(137.22), totalsY + mm(6.062));
+  doc.text(trFix('Genel İskonto'), mm(137.22), totalsY + mm(6.062));
   
   // Genel iskonto value
   doc.setFont('Helvetica', 'normal');
@@ -527,13 +528,13 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   // Horizontal Line 4 - X1: 137.109mm, X2: 194.63mm, Y: 103.398mm
   doc.line(mm(137.109), totalsY + mm(10.068), mm(194.63), totalsY + mm(10.068));
   
-  // "KDV" - X: 137.109mm Y: 105.501mm
+  // "KDV" - X: 137.109mm Y: 93.573mm
   doc.setFont('Helvetica', 'bold');
   doc.text('KDV', mm(137.109), totalsY + mm(12.171));
   
   // KDV value
   doc.setFont('Helvetica', 'normal');
-  doc.text(pbSymbol + ' ' + fmtN(kdv), mm(193.881), totalsY + mm(12.171), {align: 'right'});
+  doc.text(fmtN(kdv), mm(193.881), totalsY + mm(12.171), {align: 'right'});
   
   // Horizontal Line 5 - X1: 137.109mm, X2: 194.63mm, Y: 109.483mm
   doc.line(mm(137.109), totalsY + mm(16.153), mm(194.63), totalsY + mm(16.153));
@@ -544,18 +545,18 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setDrawColor(...C.primary);
   doc.setLineWidth(1.5);
   doc.setFillColor(...C.white);
-  doc.roundedRect(mm(141.901), totalBoxY, totalBoxW, mm(14.80), 2, 2, 'FD');
+  doc.roundedRect(mm(141.901), totalBoxY, totalBoxW, mm(12.40), 2, 2, 'FD');
   
-  // "TEKLİF TOPLAMI" - X: 145.228mm, Y: 103.236mm
+  // "TEKLİF TOPLAMI" - X: 145.228mm, Y: 102.635mm
   doc.setFontSize(8);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.primary);
-  doc.text(trFix('TEKLIF TOPLAMI'), mm(145.228), totalBoxY + mm(2.47));
+  doc.text(trFix('TEKLİF TOPLAMI'), mm(145.228), totalBoxY + mm(2.47));
   
-  // Teklif toplamı value - X: 145.228mm, Y: 107.987mm - 11pt bold
+  // Teklif toplamı value - X: 145.228mm, Y: 106.328mm - 11pt bold
   doc.setFontSize(11);
   doc.setTextColor(...C.textMid);
-  doc.text(pbSymbol + ' ' + fmtN(genelToplam), mm(145.228), totalBoxY + mm(7.071));
+  doc.text(`${pbSymbol} ${fmtN(genelToplam)}`, mm(145.228), totalBoxY + mm(7.071));
   
   // Horizontal Line 6 - X: 15.446mm W: 53.975mm Y: 121.389mm
   const sigLineY = totalBoxY + mm(10) + mm(2);
@@ -570,7 +571,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFontSize(7);
   doc.setFont('Helvetica', 'normal');
   doc.setTextColor(...C.textLight);
-  doc.text(trFix('Yetkili Imza / Kase'), mm(15.446), sigLineY + mm(6.058));
+  doc.text(trFix('Yetkili İmza / Kaşe'), mm(15.446), sigLineY + mm(6.058));
   
   // ── FOOTER ──
   // Horizontal Line 8 - X1: 15.446mm Y: 279.929mm X2: 194.556mm thickness: 2pt Color: #1D7D95

@@ -1,4 +1,7 @@
-﻿function addTeklifItem(){teklifItems.push({aciklama:'',miktar:1,birim:'Adet',birimFiyat:0});renderTeklifItems()}
+﻿function getCurSymbol(){const pb=(document.getElementById('tf-paraBirimi')||{}).value||'TRY';return{TRY:'₺',USD:'$',EUR:'€',GBP:'£'}[pb]||'₺';}
+function fmtCur(v){return new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+' '+getCurSymbol();}
+function updateTeklifCurrency(){const sym=getCurSymbol();const h=document.getElementById('ti-cur-sym');if(h)h.textContent=sym;renderTeklifItems();}
+function addTeklifItem(){teklifItems.push({aciklama:'',miktar:1,birim:'Adet',birimFiyat:0});renderTeklifItems()}
 function removeTeklifItem(i){if(teklifItems.length>1)teklifItems.splice(i,1);renderTeklifItems()}
 function renderTeklifItems(){
   document.getElementById('ti-body').innerHTML=teklifItems.map((item,i)=>`<tr>
@@ -10,8 +13,7 @@ function renderTeklifItems(){
     <td class="ti-miktar"><input type="number" value="${item.miktar}" min="0.01" step="0.01" oninput="teklifItems[${i}].miktar=parseFloat(this.value)||0;updateTeklifTotals()"></td>
     <td class="ti-birim"><select onchange="teklifItems[${i}].birim=this.value"><option ${item.birim==='Adet'?'selected':''}>Adet</option><option ${item.birim==='Saat'?'selected':''}>Saat</option><option ${item.birim==='Gün'?'selected':''}>Gün</option><option ${item.birim==='Parça'?'selected':''}>Parça</option></select></td>
     <td class="ti-fiyat"><input type="number" id="ti-fiyat-${i}" value="${item.birimFiyat}" min="0" step="0.01" oninput="teklifItems[${i}].birimFiyat=parseFloat(this.value)||0;updateTeklifTotals()"></td>
-    
-    <td class="ti-total" id="ti-total-${i}">${fmtTL(item.miktar*item.birimFiyat*(1+item.kdvOran/100))}</td>
+    <td class="ti-total" id="ti-total-${i}">${fmtCur(item.miktar*(item.birimFiyat||0))}</td>
     <td class="ti-del"><button class="btn-icon" style="color:var(--red)" onclick="removeTeklifItem(${i})">⊗</button></td>
   </tr>`).join('');
   updateTeklifTotals();
@@ -19,13 +21,13 @@ function renderTeklifItems(){
 function updateTeklifTotals(){
   let toplam=0;
   teklifItems.forEach(function(item,i){
-    const a=item.miktar*item.birimFiyat;
+    const a=item.miktar*(item.birimFiyat||0);
     toplam+=a;
     const el=document.getElementById('ti-total-'+i);
-    if(el)el.textContent=fmtTL(a);
+    if(el)el.textContent=fmtCur(a);
   });
-  const araEl=document.getElementById('tt-ara');if(araEl)araEl.textContent=fmtTL(toplam);
-  const genEl=document.getElementById('tt-genel');if(genEl)genEl.textContent=fmtTL(toplam);
+  const araEl=document.getElementById('tt-ara');if(araEl)araEl.textContent=fmtCur(toplam);
+  const genEl=document.getElementById('tt-genel');if(genEl)genEl.textContent=fmtCur(toplam);
 }
 
 // ════ SAVE TEKLIF ════

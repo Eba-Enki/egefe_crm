@@ -289,7 +289,7 @@
             <div class="field"><label>Teklif No</label><input type="text" id="tf-teklifNo" readonly style="color:var(--accent);background:var(--bg4)"></div>
             <div class="field"><label>Teklif Tarihi</label><input type="date" id="tf-teklifTarihi"></div>
             <div class="field"><label>Geçerlilik Tarihi</label><input type="date" id="tf-gecerlilik"></div>
-            <div class="field"><label>Para Birimi</label><select id="tf-paraBirimi"><option value="TRY">₺ Türk Lirası (TRY)</option><option value="USD">$ Amerikan Doları (USD)</option><option value="EUR">€ Euro (EUR)</option><option value="GBP">£ Sterlin (GBP)</option></select></div>
+            <div class="field"><label>Para Birimi</label><select id="tf-paraBirimi" onchange="updateTeklifCurrency()"><option value="TRY">₺ Türk Lirası (TRY)</option><option value="USD">$ Amerikan Doları (USD)</option><option value="EUR">€ Euro (EUR)</option><option value="GBP">£ Sterlin (GBP)</option></select></div>
           </div>
         </div>
         <div class="form-card">
@@ -300,7 +300,7 @@
                 <th class="ti-aciklama">Açıklama / İşlem <span style="font-weight:400;color:var(--text3)">(üründen seçin veya yazın)</span></th>
                 <th class="ti-miktar">Miktar</th>
                 <th class="ti-birim">Birim</th>
-                <th class="ti-fiyat">Birim Fiyat (₺)</th>
+                <th class="ti-fiyat">Birim Fiyat (<span id="ti-cur-sym">₺</span>)</th>
                 
                 <th class="ti-total">Toplam</th>
                 <th class="ti-del"></th>

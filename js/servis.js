@@ -36,8 +36,40 @@ function durumColor(d){
   return map[d]||'#888';
 }
 
+const ARSIV_DURUMLAR = ['Tamamlandi', 'Reddedildi'];
+let servisTab = 'aktif';
+
+function switchServisTab(tab) {
+  servisTab = tab;
+  document.getElementById('tab-aktif').classList.toggle('active', tab === 'aktif');
+  document.getElementById('tab-arsiv').classList.toggle('active', tab === 'arsiv');
+  var newBtn = document.getElementById('topbar-new-servis-btn');
+  if(newBtn) newBtn.style.display = (tab === 'aktif' && state.currentUser && state.currentUser.rol !== 'izleyici') ? '' : 'none';
+  clearFilters(false);
+}
+
+function arsivdenGeriAl(sid) {
+  var idx = state.servisler.findIndex(function(x){return x.id===sid;});
+  if(idx < 0) return;
+  state.servisler[idx].durum = 'Yeni Gelen';
+  saveAll();
+  renderTable();
+  toast('Kayit aktife alindi.', 'success');
+}
+
 function renderTable(){
+  var aktifSayisi = state.servisler.filter(function(s){return ARSIV_DURUMLAR.indexOf(s.durum)<0;}).length;
+  var arsivSayisi = state.servisler.filter(function(s){return ARSIV_DURUMLAR.indexOf(s.durum)>=0;}).length;
+  var aktifEl = document.getElementById('tab-aktif-count');
+  var arsivEl = document.getElementById('tab-arsiv-count');
+  if(aktifEl) aktifEl.textContent = aktifSayisi;
+  if(arsivEl) arsivEl.textContent = arsivSayisi;
+
   let data=[...state.servisler];
+  const isArsiv = servisTab === 'arsiv';
+  if(!isArsiv) data=data.filter(function(s){return ARSIV_DURUMLAR.indexOf(s.durum)<0;});
+  else data=data.filter(function(s){return ARSIV_DURUMLAR.indexOf(s.durum)>=0;});
+
   const fK=(document.getElementById('f-kurum').value||'').toLowerCase();
   const fS=(document.getElementById('f-seri').value||'').toLowerCase();
   const fD=document.getElementById('f-durum').value;
@@ -51,14 +83,21 @@ function renderTable(){
   if(fTs)data=data.filter(s=>s.gelisTarihi>=fTs);
   if(fTe)data=data.filter(s=>s.gelisTarihi<=fTe);
   data.sort((a,b)=>{const va=a[state.sortCol]||'',vb=b[state.sortCol]||'',dir=state.sortDir==='asc'?1:-1;return va<vb?-dir:va>vb?dir:0});
-  document.getElementById('filter-count').textContent=`${data.length} kayıt`;
-  const canEdit=state.currentUser?.rol!=='izleyici';
+  document.getElementById('filter-count').textContent=data.length+' kayit';
+  const canEdit = !!(state.currentUser && state.currentUser.rol !== 'izleyici' && !isArsiv);
   const tbody=document.getElementById('table-body');
-  if(!data.length){tbody.innerHTML='';document.getElementById('table-empty').style.display='';return}
-  document.getElementById('table-empty').style.display='none';
+  const emptyEl=document.getElementById('table-empty');
+  const emptyMsg=document.getElementById('table-empty-msg');
+  if(!data.length){
+    tbody.innerHTML='';
+    if(emptyMsg) emptyMsg.textContent = isArsiv ? 'Arsivde kayit yok' : 'Kayit bulunamadi';
+    if(emptyEl) emptyEl.style.display='';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display='none';
   tbody.innerHTML=data.map(s=>{
     const hasTeklif=state.teklifler.some(t=>t.servisId===s.id);
-    return`<tr>
+    return`<tr${isArsiv?' style="opacity:0.8"':''}>
       <td><span class="kn-badge">${s.kayitNo}</span></td>
       <td style="font-weight:500;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.kurumAdi||'—'}</td>
       <td class="td-mono">${s.seriNo||'—'}</td>
@@ -70,7 +109,8 @@ function renderTable(){
         <button class="btn-icon" title="${canEdit?'Düzenle':'Görüntüle'}" onclick="goServisForm('${s.id}')">✎</button>
         ${canEdit?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showDurumMenu('${s.id}',this)">⇅</button>`:''}
         ${canEdit?`<button class="btn-icon" title="${hasTeklif?'Teklif Görüntüle':'Tekliflendir'}" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')">${hasTeklif?'◎':'＋◎'}</button>`:''}
-        ${canEdit?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('servis','${s.id}')">⊗</button>`:''}
+        ${isArsiv&&state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" title="Aktife Al" style="color:var(--teal);border-color:rgba(45,212,191,.3)" onclick="arsivdenGeriAl('${s.id}')">↩</button>`:''}
+        ${state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('servis','${s.id}')">⊗</button>`:''}
       </div></td>
     </tr>`;
   }).join('');
@@ -81,7 +121,7 @@ function clearTeklifFilters(){
   ['tf-f-kurum','tf-f-teklif','tf-f-durum','tf-f-ts','tf-f-te'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
   renderTeklifler();
 }
-function clearFilters(){['f-kurum','f-seri'].forEach(id=>document.getElementById(id).value='');['f-durum','f-garanti'].forEach(id=>document.getElementById(id).value='');['f-ts','f-te'].forEach(id=>document.getElementById(id).value='');renderTable()}
+function clearFilters(doRender){if(doRender===false){['f-kurum','f-seri'].forEach(function(id){document.getElementById(id).value='';});['f-durum','f-garanti'].forEach(function(id){document.getElementById(id).value='';});['f-ts','f-te'].forEach(function(id){document.getElementById(id).value='';});return;}['f-kurum','f-seri'].forEach(function(id){document.getElementById(id).value='';});['f-durum','f-garanti'].forEach(function(id){document.getElementById(id).value='';});['f-ts','f-te'].forEach(function(id){document.getElementById(id).value='';});renderTable();}
 function tekliflendir(sid){const ex=state.teklifler.find(t=>t.servisId===sid);if(ex){openTeklifDetay(ex.id)}else{goTeklifForm(null,sid);showPage('teklif-form',true)}}
 
 // ════ SAVE SERVIS ════

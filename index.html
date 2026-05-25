@@ -134,10 +134,14 @@
 
     <!-- ═══ SERVİSLER ═══ -->
     <div id="page-servisler" class="page">
+      <div class="servis-tabs">
+        <button id="tab-aktif" class="servis-tab active" onclick="switchServisTab('aktif')">Aktif Servisler <span id="tab-aktif-count" class="tab-count"></span></button>
+        <button id="tab-arsiv" class="servis-tab" onclick="switchServisTab('arsiv')">Arşiv <span id="tab-arsiv-count" class="tab-count"></span></button>
+      </div>
       <div class="filter-bar">
         <input type="text" id="f-kurum" placeholder="Kurum / müşteri..." oninput="filterTable()">
         <input type="text" id="f-seri" placeholder="Seri no / kayıt no..." oninput="filterTable()">
-        <select id="f-durum" onchange="filterTable()"><option value="">Tüm Durumlar</option><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Kargoya Verildi</option><option>Teslim Edildi</option><option>Reddedildi</option></select>
+        <select id="f-durum" onchange="filterTable()"><option value="">Tüm Durumlar</option><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Kargoya Verildi</option><option>Teslim Edildi</option><option>Tamamlandı</option><option>Reddedildi</option></select>
         <select id="f-garanti" onchange="filterTable()"><option value="">Garanti Tümü</option><option value="Evet">Garantili</option><option value="Hayır">Garantisiz</option></select>
         <input type="date" id="f-ts" oninput="filterTable()"><input type="date" id="f-te" oninput="filterTable()">
         <button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕</button>
@@ -158,7 +162,7 @@
             </tr></thead>
             <tbody id="table-body"></tbody>
           </table>
-          <div id="table-empty" class="empty-state" style="display:none"><div class="icon">⊡</div><h3 style="color:var(--text2)">Kayıt bulunamadı</h3></div>
+          <div id="table-empty" class="empty-state" style="display:none"><div class="icon">⊡</div><h3 style="color:var(--text2)" id="table-empty-msg">Kayıt bulunamadı</h3></div>
         </div>
       </div>
     </div>

@@ -90,7 +90,9 @@ body{
 .sb-item:hover{color:var(--text);background:var(--bg3)}
 .sb-item:active{background:var(--bg4)}
 .sb-item.active{color:var(--accent);background:var(--accent-soft);border-left-color:var(--accent);font-weight:500}
-.sb-item .icon{width:16px;text-align:center;font-size:14px;flex-shrink:0}
+.sb-item .icon{width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.7}
+.sb-item:hover .icon{opacity:1}
+.sb-item.active .icon{opacity:1}
 .sb-item .badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-family:var(--font-mono);padding:2px 6px;border-radius:10px;font-weight:500}
 .sb-bottom{padding:12px 18px;border-top:1px solid var(--border)}
 .sb-user{display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;border-radius:var(--radius-sm);transition:background .15s}

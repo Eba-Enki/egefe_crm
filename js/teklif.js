@@ -170,7 +170,16 @@ function printCurrentTeklif(){if(state.activeTeklifId)printTeklifById(state.acti
 // ════ PDF ════
 function printTeklifById(id){
   const t=state.teklifler.find(x=>x.id===id);if(!t)return;
-  
+  const logoImg=new Image();
+  logoImg.onload=function(){
+    const cv=document.createElement('canvas');cv.width=534;cv.height=252;
+    cv.getContext('2d').drawImage(logoImg,0,0,534,252);
+    _generateTeklifPDF(t,cv.toDataURL('image/png'));
+  };
+  logoImg.onerror=function(){_generateTeklifPDF(t,null);};
+  logoImg.src='brand_assets/logo_if_bg_white.svg';
+}
+function _generateTeklifPDF(t,logoPngDataUrl){
   // Türkçe karakter fix (jsPDF Helvetica için)
   const trFix = (str) => {
     if(!str) return '';
@@ -192,7 +201,9 @@ function printTeklifById(id){
     if(!str) return '';
     return String(str).toLowerCase();
   };
-  
+
+  const fmtN = (v) => new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0);
+
   // Color palette (RGB) - TEKLİF FORMATI'na göre güncellenmiş
   const C = {
     primary:    [29, 125, 149],   // #1D7D95
@@ -209,9 +220,6 @@ function printTeklifById(id){
   // mm → pt conversion
   const mm = (v) => v * 2.83465;
   const pageW = mm(210), pageH = mm(297);
-  
-  // Logo (SVG base64)
-  const logoB64 = LOGO_SVG_B64 || '';
   
   // Ürün satırları + hesaplamalar
   let araToplam = 0;
@@ -240,16 +248,10 @@ function printTeklifById(id){
   
   // ── HEADER ──
   // Logo - X: 19.812mm, Y: 9.737mm, W: 39.793mm, H: 19.389mm
-  if(logoB64) {
+  if(logoPngDataUrl) {
     try {
-      const logoImg = 'data:image/svg+xml;base64,' + logoB64;
-      doc.addImage(logoImg, 'PNG', mm(19.812), mm(9.737), mm(39.793), mm(19.389), '', 'FAST');
-    } catch(e) {
-      doc.setFontSize(12);
-      doc.setFont('Helvetica', 'bold');
-      doc.setTextColor(...C.textMid);
-      doc.text('EGEFE', mm(19.812), mm(9.737)+14);
-    }
+      doc.addImage(logoPngDataUrl, 'PNG', mm(19.812), mm(9.737), mm(39.793), mm(19.389), '', 'FAST');
+    } catch(e) {}
   }
   
   // Vertical Line - X: 63.765mm, Y1: 11.642mm, Y2: 25.517mm, 0.75pt color #C2D0D8
@@ -392,8 +394,8 @@ function printTeklifById(id){
       s.aciklama,
       s.miktar,
       s.birim,
-      fmtTL(s.birimFiyat),
-      fmtTL(s.tutar)
+      fmtN(s.birimFiyat),
+      fmtN(s.tutar)
     ]),
     theme: 'plain',
     styles: {
@@ -497,7 +499,7 @@ function printTeklifById(id){
   // Ara toplam value - right align X2: 188.799mm
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text(pbSymbol + ' ' + fmtTL(araToplam), mm(188.799), totalsY + mm(1.7), {align: 'right'});
+  doc.text(pbSymbol + ' ' + fmtN(araToplam), mm(188.799), totalsY + mm(1.7), {align: 'right'});
   
   // Horizontal Line 3 - X1: 137.109mm, X2: 179.184mm, Y: 97.312mm
   doc.setDrawColor(...C.tableBg);
@@ -522,7 +524,7 @@ function printTeklifById(id){
   
   // KDV value
   doc.setFont('Helvetica', 'normal');
-  doc.text(pbSymbol + ' ' + fmtTL(kdv), mm(188.799), totalsY + mm(12.171), {align: 'right'});
+  doc.text(pbSymbol + ' ' + fmtN(kdv), mm(188.799), totalsY + mm(12.171), {align: 'right'});
   
   // Horizontal Line 5 - X1: 137.109mm, X2: 179.184mm, Y: 109.483mm
   doc.line(mm(137.109), totalsY + mm(16.153), mm(179.184), totalsY + mm(16.153));
@@ -544,7 +546,7 @@ function printTeklifById(id){
   // Teklif toplamı value - X: 145.228mm, Y: 111.971mm - 11pt bold
   doc.setFontSize(11);
   doc.setTextColor(...C.textMid);
-  doc.text(pbSymbol + ' ' + fmtTL(genelToplam), mm(145.228), totalBoxY + mm(7.071));
+  doc.text(pbSymbol + ' ' + fmtN(genelToplam), mm(145.228), totalBoxY + mm(7.071));
   
   // Horizontal Line 6 - X: 15.446mm W: 53.975mm Y: 121.389mm
   const sigLineY = totalBoxY + mm(10) + mm(2);

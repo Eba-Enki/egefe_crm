@@ -420,8 +420,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
       textColor: C.primary,
       fontStyle: 'bold',
       fontSize: 8,
-      //halign: 'center',
-      halign: 0: 'center', 1: 'left', 2: 'center', 3: 'center', 4: 'center', 5: 'center',
+      halign: 'left',
       cellPadding: {top: 1.6, right: 2, bottom: 1.6, left: 2}
     },
     columnStyles: {

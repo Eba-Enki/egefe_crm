@@ -78,6 +78,7 @@ function goTeklifForm(editId,servisId){
     var _fsn=document.getElementById('tf-seriNo');if(_fsn)_fsn.value=t.seriNo||'';
     var _fku=document.getElementById('tf-kurum');if(_fku)_fku.value=t.kurum||'';
     var _fil=document.getElementById('tf-ilgiliKisi');if(_fil)_fil.value=t.ilgiliKisi||'';
+    var _fpb=document.getElementById('tf-paraBirimi');if(_fpb)_fpb.value=t.paraBirimi||'TRY';
     teklifItems=t.satirlar?JSON.parse(JSON.stringify(t.satirlar)):[{aciklama:'',miktar:1,birim:'Adet',birimFiyat:0}];
   } else {
     document.getElementById('tf-teklifNo').value=nextTN();
@@ -85,6 +86,7 @@ function goTeklifForm(editId,servisId){
     document.getElementById('tf-gecerlilik').value='';
     document.getElementById('tf-notlar').value='';
     ['tf-kayitNo','tf-seriNo','tf-kurum','tf-ilgiliKisi','tf-telefon','tf-email'].forEach(function(fid){var e=document.getElementById(fid);if(e)e.value='';});
+    var _fpb0=document.getElementById('tf-paraBirimi');if(_fpb0)_fpb0.value='TRY';
     var _sa0=document.getElementById('tf-servis-ara');if(_sa0)_sa0.dataset.servisid='';
     if(servisId){
       const s=state.servisler.find(x=>x.id===servisId);

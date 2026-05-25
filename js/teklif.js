@@ -30,7 +30,7 @@ function updateTeklifTotals(){
 
 // ════ SAVE TEKLIF ════
 function buildTeklifPayload(){
-  return{teklifNo:document.getElementById('tf-teklifNo').value,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:document.getElementById('tf-kurum').value,ilgiliKisi:document.getElementById('tf-ilgiliKisi').value,teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',satirlar:JSON.parse(JSON.stringify(teklifItems))};
+  return{teklifNo:document.getElementById('tf-teklifNo').value,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:document.getElementById('tf-kurum').value,ilgiliKisi:document.getElementById('tf-ilgiliKisi').value,teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',paraBirimi:(document.getElementById('tf-paraBirimi')||{}).value||'TRY',satirlar:JSON.parse(JSON.stringify(teklifItems))};
 }
 function saveTeklif(andPrint=false){
   const editId=document.getElementById('tf-edit-id').value;
@@ -180,15 +180,30 @@ function printTeklifById(id){
   logoImg.src='brand_assets/logo_if_bg_white.svg';
 }
 function _generateTeklifPDF(t,logoPngDataUrl){
-  // Kesin Turkce karakter fix — String.fromCharCode ile encoding bagımsız
   const _trMap=(function(){var m={};
     var p=[[0x130,'I'],[0x131,'i'],[0x15E,'S'],[0x15F,'s'],[0x11E,'G'],[0x11F,'g'],
            [0xDC,'U'],[0xFC,'u'],[0xD6,'O'],[0xF6,'o'],[0xC7,'C'],[0xE7,'c']];
     p.forEach(function(x){m[String.fromCharCode(x[0])]=x[1];});
     return m;
   })();
-  const trFix=(str)=>{if(!str)return'';return String(str).split('').map(c=>_trMap[c]||c).join('');};
-  
+  // NFC normalize first (handles decomposed chars e.g. g+U+0306 → ğ → g)
+  // then map Turkish, strip ALL combining diacriticals, strip non-Latin-1
+  const trFix=(str)=>{
+    if(!str)return'';
+    return String(str).normalize('NFC').split('').map(c=>{
+      const code=c.charCodeAt(0);
+      if(_trMap[c])return _trMap[c];
+      if(code>=0x0300&&code<=0x036F)return'';
+      if(code>0x00FF)return'';
+      return c;
+    }).join('');
+  };
+  // titleCase: applied after trFix so no Turkish chars remain → toLowerCase safe
+  const titleCase=(str)=>{
+    const s=trFix(str||'');
+    return s.replace(/\S+/g,w=>w[0].toUpperCase()+w.slice(1).toLowerCase());
+  };
+
 
   const fmtN = (v) => new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0);
 
@@ -233,7 +248,8 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({orientation: 'portrait', unit: 'pt', format: 'a4'});
   doc.setFont('Helvetica');
-  
+  doc.setCharSpace(0);
+
   // ── HEADER ──
   // Logo - X: 19.812mm, Y: 9.737mm, W: 39.793mm, H: 19.389mm
   if(logoPngDataUrl) {
@@ -305,7 +321,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // Teklif tarihi value - Arial regular 8pt, X: 171.249mm Y:55.109mm color: #2E4050
   doc.setFont('Helvetica', 'normal');
-  doc.text(fmtDate(t.teklifTarihi) || '-', mm(171.249), mm(55.109)+6);
+  doc.text(trFix(fmtDate(t.teklifTarihi)||'-'), mm(171.249), mm(55.109)+6);
   
   // "Geçerlilik Tarihi" - Arial bold 8pt, X:141.66mm Y:59.58mm color: #2E4050
   doc.setFont('Helvetica', 'bold');
@@ -316,7 +332,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // Geçerlilik tarihi value - Arial regular 8pt, X: 171.249mm Y:59.607mm color: #2E4050
   doc.setFont('Helvetica', 'normal');
-  doc.text(fmtDate(t.gecerlilikTarihi) || '-', mm(171.249), mm(59.607)+6);
+  doc.text(trFix(fmtDate(t.gecerlilikTarihi)||'-'), mm(171.249), mm(59.607)+6);
   
   // ── BILL TO SECTION ──
   // "Kurum Adı" - X: 15.446mm Y: 42.774mm
@@ -330,7 +346,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // "Kurum Adı" value - X: 44.126mm, Y: 42.774mm - Title Case
   doc.setFont('Helvetica', 'normal');
-  doc.text(trFix(t.kurum || ''), mm(44.126), mm(42.774)+6);
+  doc.text(titleCase(t.kurum||''), mm(44.126), mm(42.774)+6);
   
   // "Adres" - X: 15.446mm Y: 47.065mm
   doc.setFont('Helvetica', 'bold');
@@ -341,7 +357,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // "Adres" value - X: 44.126mm, Y: 47.065mm - Title Case
   doc.setFont('Helvetica', 'normal');
-  doc.text(trFix(t.adres || ''), mm(44.126), mm(47.065)+6);
+  doc.text(titleCase(t.adres||''), mm(44.126), mm(47.065)+6);
   
   // "İlgili Kişi" - X: 15.446mm, Y: 51.356mm
   doc.setFont('Helvetica', 'bold');
@@ -352,7 +368,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   // İlgili kişi value - X: 44.126mm, Y: 51.356mm - Title Case
   doc.setFont('Helvetica', 'normal');
-  doc.text(trFix(t.ilgiliKisi || ''), mm(44.126), mm(51.356)+6);
+  doc.text(titleCase(t.ilgiliKisi||''), mm(44.126), mm(51.356)+6);
   
   // "e-posta" - X: 15.446mm, Y: 55.647mm
   doc.setFont('Helvetica', 'bold');
@@ -420,11 +436,13 @@ function _generateTeklifPDF(t,logoPngDataUrl){
       5: {halign: 'right', cellWidth: mm(24.823)}    // TUTAR - right-align
     },
     margin: {left: mm(15.446), right: mm(210 - 179.184 - 15.446)},
-    didDrawPage: (data) => { 
-      tableEndY = data.cursor.y; 
+    didDrawPage: (data) => {
+      tableEndY = data.cursor.y;
     }
   });
-  
+  doc.setCharSpace(0);
+  doc.setFont('Helvetica','normal');
+
   let y = tableEndY + mm(3);
   
   // ── BOTTOM GRID - 3 boxes ──

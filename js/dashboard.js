@@ -33,7 +33,7 @@
   const svgEl=document.getElementById('donut-svg');
   if(svgEl){
     let off=0;
-    svgEl.innerHTML=sg.map(function(seg){const pct=seg.cnt/total;const d='<circle cx="'+CX+'" cy="'+CY+'" r="'+R+'" fill="none" stroke="'+seg.c+'" stroke-width="20" stroke-dasharray="'+(pct*circ).toFixed(2)+' '+(circ-(pct*circ)).toFixed(2)+'" stroke-dashoffset="'+(-off*circ).toFixed(2)+'" transform="rotate(-90 '+CX+' '+CY+'"><title>'+seg.d+': '+seg.cnt+'</title></circle>';off+=pct;return d;}).join('');
+    svgEl.innerHTML=sg.map(function(seg){const pct=seg.cnt/total;const d='<circle cx="'+CX+'" cy="'+CY+'" r="'+R+'" fill="none" stroke="'+seg.c+'" stroke-width="20" stroke-dasharray="'+(pct*circ).toFixed(2)+' '+(circ-(pct*circ)).toFixed(2)+'" stroke-dashoffset="'+(-off*circ).toFixed(2)+'" transform="rotate(-90 '+CX+' '+CY+')"><title>'+seg.d+': '+seg.cnt+'</title></circle>';off+=pct;return d;}).join('');
     document.getElementById('dc-total').textContent=s.length;
   }
   const legendEl=document.getElementById('durum-legend');

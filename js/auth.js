@@ -54,10 +54,9 @@ function applyPortal(){
   var isServis=currentPortal==='servis';
   document.querySelectorAll('.servis-only').forEach(function(el){
     el.style.display=isServis?'':'none';
-  document.querySelectorAll('.satis-only').forEach(function(el){el.style.display=isServis?'none':'';});
-  document.querySelectorAll('.td-sorumlu').forEach(function(el){el.style.display=isServis?'none':'';});
-  var thS=document.getElementById('th-sorumlu');if(thS)thS.style.display=isServis?'none':'';
   });
+  document.querySelectorAll('.satis-only').forEach(function(el){el.style.display=isServis?'none':'';});
+  var thS=document.getElementById('th-sorumlu');if(thS)thS.style.display=isServis?'none':'';
   // Badge
   var badge=document.getElementById('portal-badge');
   if(badge){

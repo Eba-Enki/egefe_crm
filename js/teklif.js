@@ -238,8 +238,8 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   
   const kdv = 0;
   const genelToplam = araToplam + kdv;
-  const pb = t.paraBirimi || 'USD';
-  const pbSymbol = {TRY:'TL',USD:'USD',EUR:'EUR',GBP:'GBP'}[pb] || 'USD';
+  const pb = t.paraBirimi || 'TRY';
+  const pbSymbol = {TRY:'TL',USD:'USD',EUR:'EUR',GBP:'GBP'}[pb] || 'TL';
   
   // jsPDF init
   const { jsPDF } = window.jspdf;
@@ -293,7 +293,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFontSize(14);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text(trFix('TEKLIF MEKTUBU'), mm(141.628), mm(42.395)+11);
+  doc.text(trFix('TEKLİF MEKTUBU'), mm(141.628), mm(42.395)+11);
   
   // "Teklif No" - Arial bold 8pt, X:141.66mm Y: 50.611mm color: #2E4050
   doc.setFontSize(8);
@@ -335,7 +335,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFontSize(8);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text('Kurum Adı', mm(15.446), mm(42.774)+6);
+  doc.text(trFix('Kurum Adı'), mm(15.446), mm(42.774)+6);
   
   // ":" - X: 41.228mm Y: 42.774mm
   doc.text(':', mm(41.228), mm(42.774)+6);
@@ -397,7 +397,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   const tableY = mm(69.667) + mm(0.75);
   doc.autoTable({
     startY: tableY,
-    head: [[' #', trFix('ÜRÜN ADI VE AÇIKLAMASI'), 'MİKTAR', 'BİRİM', trFix('BİRİM FİYAT'), 'TUTAR']],
+    head: [[' #', trFix('URUN ADI VE ACIKLAMASI'), trFix('MIKTAR'), trFix('BIRIM'), trFix('BIRIM FIYAT'), 'TUTAR']],
     body: satirlar.map(s => [
       s.no,
       s.aciklama,
@@ -420,7 +420,7 @@ function _generateTeklifPDF(t,logoPngDataUrl){
       textColor: C.primary,
       fontStyle: 'bold',
       fontSize: 8,
-      halign: 'left',
+      halign: 'center',
       cellPadding: {top: 1.6, right: 2, bottom: 1.6, left: 2}
     },
     columnStyles: {

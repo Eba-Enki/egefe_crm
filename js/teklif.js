@@ -1,5 +1,5 @@
 ﻿function getCurSymbol(){const pb=(document.getElementById('tf-paraBirimi')||{}).value||'TRY';return{TRY:'₺',USD:'$',EUR:'€',GBP:'£'}[pb]||'₺';}
-function fmtCur(v){return new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+' '+getCurSymbol();}
+function fmtCur(v){const pb=(document.getElementById('tf-paraBirimi')||{}).value||'TRY';return new Intl.NumberFormat('tr-TR',{style:'currency',currency:pb,minimumFractionDigits:2}).format(v||0);}
 function updateTeklifCurrency(){const sym=getCurSymbol();const h=document.getElementById('ti-cur-sym');if(h)h.textContent=sym;renderTeklifItems();}
 function addTeklifItem(){teklifItems.push({aciklama:'',miktar:1,birim:'Adet',birimFiyat:0});renderTeklifItems()}
 function removeTeklifItem(i){if(teklifItems.length>1)teklifItems.splice(i,1);renderTeklifItems()}

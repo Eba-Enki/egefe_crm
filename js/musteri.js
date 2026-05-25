@@ -26,7 +26,8 @@ function renderUrunler(){
   const tbody=document.getElementById('urun-table-body');
   if(!data.length){tbody.innerHTML='';document.getElementById('urun-empty').style.display='';return}
   document.getElementById('urun-empty').style.display='none';
-  tbody.innerHTML=data.map(u=>{return`<tr><td class="td-mono" style="color:var(--accent);font-size:11px">${u.urunKodu||'—'}</td><td style="font-weight:500">${u.urunAdi}</td><td style="color:var(--text2)">${u.marka||'—'}</td><td class="td-mono" style="color:var(--text2)">${u.model||'—'}</td><td class="td-mono" style="color:var(--amber)">${u.fiyat?({'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[u.paraBirimi||'TRY']||'₺')+' '+fmtTL(u.fiyat):'—'}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goUrunForm('${u.id}')">✎</button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('urun','${u.id}')">⊗</button></div></td></tr>`;}).join('');
+  const isSatis=currentPortal==='satis';
+  tbody.innerHTML=data.map(u=>{return`<tr><td class="td-mono" style="color:var(--accent);font-size:11px">${u.urunKodu||'—'}</td><td style="font-weight:500">${u.urunAdi}</td><td style="color:var(--text2)">${u.marka||'—'}</td>${isSatis?`<td style="color:var(--text2);font-size:12px">${u.kategori||'—'}</td>`:''}<td class="td-mono" style="color:var(--text2)">${u.model||'—'}</td><td class="td-mono" style="color:var(--amber)">${u.fiyat?({'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[u.paraBirimi||'TRY']||'₺')+' '+fmtTL(u.fiyat):'—'}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goUrunForm('${u.id}')">✎</button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('urun','${u.id}')">⊗</button></div></td></tr>`;}).join('');
 }
 function saveUrun(){
   const urunAdi=document.getElementById('uf-urunAdi').value.trim();if(!urunAdi)return toast('Ürün adı zorunlu.','error');
@@ -34,7 +35,8 @@ function saveUrun(){
   const fiyatEl=document.getElementById('uf-fiyat');const fiyat=fiyatEl?parseFloat(fiyatEl.value)||0:0;
   var urunKoduEl=document.getElementById('uf-urunKodu');var urunKodu=urunKoduEl?urunKoduEl.value.trim():'';
   const pbEl2=document.getElementById('uf-paraBirimi');const paraBirimi=pbEl2?pbEl2.value:'TRY';
-  const payload={urunAdi,urunKodu,marka:document.getElementById('uf-marka').value.trim(),model:document.getElementById('uf-model').value.trim(),kategori:'',fiyat,paraBirimi,aciklama:document.getElementById('uf-aciklama').value.trim()};
+  const katEl=document.getElementById('uf-kategori');
+  const payload={urunAdi,urunKodu,marka:document.getElementById('uf-marka').value.trim(),model:document.getElementById('uf-model').value.trim(),kategori:katEl?katEl.value:'',fiyat,paraBirimi,aciklama:document.getElementById('uf-aciklama').value.trim()};
   if(editId){const idx=state.urunler.findIndex(x=>x.id===editId);if(idx>=0){state.urunler[idx]={...state.urunler[idx],...payload};toast('Güncellendi.','success');}}
   else{state.urunler.push({id:'p'+Date.now(),...payload});toast('Ürün eklendi.','success');}
   saveAll();showPage('urunler');

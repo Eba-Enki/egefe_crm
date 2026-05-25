@@ -119,6 +119,7 @@ function goUrunForm(editId){
   ['uf-urunAdi','uf-urunKodu','uf-marka','uf-model','uf-aciklama'].forEach(function(id){var f=id.replace('uf-','');var el=document.getElementById(id);if(el)el.value=u?u[f]||'':'';});
   const fEl=document.getElementById('uf-fiyat');if(fEl)fEl.value=u?.fiyat||'';
   const pbEl=document.getElementById('uf-paraBirimi');if(pbEl)pbEl.value=u?.paraBirimi||'TRY';
+  const katEl=document.getElementById('uf-kategori');if(katEl)katEl.value=u?.kategori||'';
   showPage('urun-form',true);
 }
 function goKullaniciForm(editId){

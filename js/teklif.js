@@ -180,14 +180,14 @@ function printTeklifById(id){
   logoImg.src='brand_assets/logo_if_bg_white.svg';
 }
 function _generateTeklifPDF(t,logoPngDataUrl){
-  // Türkçe karakter fix (jsPDF Helvetica için)
-  const trFix = (str) => {
-    if(!str) return '';
-    return String(str)
-      .replace(/İ/g,'I').replace(/ı/g,'i').replace(/Ş/g,'S').replace(/ş/g,'s')
-      .replace(/Ğ/g,'G').replace(/ğ/g,'g').replace(/Ü/g,'U').replace(/ü/g,'u')
-      .replace(/Ö/g,'O').replace(/ö/g,'o').replace(/Ç/g,'C').replace(/ç/g,'c');
-  };
+  // Kesin Turkce karakter fix — String.fromCharCode ile encoding bagımsız
+  const _trMap=(function(){var m={};
+    var p=[[0x130,'I'],[0x131,'i'],[0x15E,'S'],[0x15F,'s'],[0x11E,'G'],[0x11F,'g'],
+           [0xDC,'U'],[0xFC,'u'],[0xD6,'O'],[0xF6,'o'],[0xC7,'C'],[0xE7,'c']];
+    p.forEach(function(x){m[String.fromCharCode(x[0])]=x[1];});
+    return m;
+  })();
+  const trFix=(str)=>{if(!str)return'';return String(str).split('').map(c=>_trMap[c]||c).join('');};
   
   // Text case helpers
   const toTitleCase = (str) => {
@@ -499,44 +499,33 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   // ── TOTALS SECTION (Right side) ──
   const totalsY = boxY;
   
-  // "Ara Toplam" - X: 137.109mm Y: 93.33mm
+  // TOTALS — 6.1mm equal row spacing: row1=1.7, row2=7.8, row3=13.9
   doc.setFontSize(8);
   doc.setFont('Helvetica', 'normal');
   doc.setTextColor(...C.textLabel);
   doc.text('Ara Toplam', mm(137.109), totalsY + mm(1.7));
-  
-  // Ara toplam value - right align X2: 193.881mm
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
   doc.text(fmtN(araToplam), mm(193.881), totalsY + mm(1.7), {align: 'right'});
-  
-  // Horizontal Line 3 - X1: 137.109mm, X2: 194.63mm, Y: 97.312mm
+
   doc.setDrawColor(...C.tableBg);
   doc.setLineWidth(0.75);
-  doc.line(mm(137.109), totalsY + mm(3.982), mm(194.63), totalsY + mm(3.982));
-  
-  // "Genel İskonto" - X: 137.22mm, Y: 87.474mm
+  doc.line(mm(137.109), totalsY + mm(4.75), mm(194.63), totalsY + mm(4.75));
+
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textLabel);
-  doc.text(trFix('Genel İskonto'), mm(137.22), totalsY + mm(6.062));
-  
-  // Genel iskonto value
+  doc.text(trFix('Genel Iskonto'), mm(137.22), totalsY + mm(7.8));
   doc.setFont('Helvetica', 'normal');
-  doc.text('- %', mm(193.881), totalsY + mm(6.062), {align: 'right'});
-  
-  // Horizontal Line 4 - X1: 137.109mm, X2: 194.63mm, Y: 103.398mm
-  doc.line(mm(137.109), totalsY + mm(10.068), mm(194.63), totalsY + mm(10.068));
-  
-  // "KDV" - X: 137.109mm Y: 93.573mm
+  doc.text('- %', mm(193.881), totalsY + mm(7.8), {align: 'right'});
+
+  doc.line(mm(137.109), totalsY + mm(10.85), mm(194.63), totalsY + mm(10.85));
+
   doc.setFont('Helvetica', 'bold');
-  doc.text('KDV', mm(137.109), totalsY + mm(12.171));
-  
-  // KDV value
+  doc.text('KDV', mm(137.109), totalsY + mm(13.9));
   doc.setFont('Helvetica', 'normal');
-  doc.text(fmtN(kdv), mm(193.881), totalsY + mm(12.171), {align: 'right'});
-  
-  // Horizontal Line 5 - X1: 137.109mm, X2: 194.63mm, Y: 109.483mm
-  doc.line(mm(137.109), totalsY + mm(16.153), mm(194.63), totalsY + mm(16.153));
+  doc.text(fmtN(kdv), mm(193.881), totalsY + mm(13.9), {align: 'right'});
+
+  doc.line(mm(137.109), totalsY + mm(16.95), mm(194.63), totalsY + mm(16.95));
   
   // Rectangle 4: TEKLİF TOPLAMI - X1:141.901mm, Y: 100.364mm, X2:194.63mm
   const totalBoxY = totalsY + mm(18.269);
@@ -546,16 +535,17 @@ function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFillColor(...C.white);
   doc.roundedRect(mm(141.901), totalBoxY, totalBoxW, mm(12.40), 2, 2, 'FD');
   
-  // "TEKLİF TOPLAMI" - X: 145.228mm, Y: 102.635mm
+  // Rectangle 4 içi dikey ortalama — kutu h=12.40mm, başlık 8pt + değer 11pt
+  // Blok toplam yükseklik ~7.4mm → üst/alt padding = (12.40-7.4)/2 ≈ 2.5mm
   doc.setFontSize(8);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.primary);
-  doc.text(trFix('TEKLİF TOPLAMI'), mm(145.228), totalBoxY + mm(2.47));
-  
-  // Teklif toplamı value - X: 145.228mm, Y: 106.328mm - 11pt bold
+  doc.text(trFix('TEKLIF TOPLAMI'), mm(145.228), totalBoxY + mm(4.0));
+
   doc.setFontSize(11);
+  doc.setFont('Helvetica', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text(`${pbSymbol} ${fmtN(genelToplam)}`, mm(145.228), totalBoxY + mm(7.071));
+  doc.text(`${pbSymbol} ${fmtN(genelToplam)}`, mm(145.228), totalBoxY + mm(9.2));
   
   // Horizontal Line 6 - X: 15.446mm W: 53.975mm Y: 121.389mm
   const sigLineY = totalBoxY + mm(10) + mm(2);

@@ -1,49 +1,208 @@
-﻿function printTutanakData(tutanak){
-  var logoSrc='data:image/svg+xml;base64,'+LOGO_SVG_B64;
-  var tarihStr=fmtDate(tutanak.tarih);
-  var rows=(tutanak.kalemler||[]).map(function(k,i){
-    return '<tr style="background:'+(i%2===0?'#fff':'#f8fafc')+'">'
-      +'<td style="padding:8px 10px;font-size:12px;border:1px solid #c8d4e0;text-align:center;color:#888">'+(i+1)+'</td>'
-      +'<td style="padding:8px 10px;font-size:12px;border:1px solid #c8d4e0;font-weight:500">'+k.kurumAdi+'</td>'
-      +'<td style="padding:8px 10px;font-size:12px;border:1px solid #c8d4e0;font-family:monospace">'+k.seriNo+'</td>'
-      +'<td style="padding:8px 10px;font-size:12px;border:1px solid #c8d4e0;text-align:center">'+k.garantiDurumu+'</td>'
-      +'<td style="padding:8px 10px;font-size:12px;border:1px solid #c8d4e0">'+k.aksesuarlar+'</td>'
-      +'</tr>';
-  }).join('');
-  var pdfHtml='<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>Tutanak '+tutanak.no+'</title>'
-    +'<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;color:#1a2a3a;padding:24px 32px;font-size:13px}'
-    +'.header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid #2d7fa8;padding-bottom:14px;margin-bottom:0}'
-    +'.logo{width:90px;height:90px;object-fit:contain;display:block;background:#fff;padding:4px;border-radius:4px}'
-    +'.firma-block{text-align:right;font-size:11px;color:#444;line-height:1.9}'
-    +'.firma-block strong{font-size:13px;font-weight:700;color:#1a3a5c;display:block;margin-bottom:2px}'
-    +'.title-row{text-align:center;margin:16px 0 6px}.title-main{font-size:20px;font-weight:700;color:#1a3a5c;letter-spacing:.5px}'
-    +'.meta-block{text-align:right;font-size:12px;color:#333;line-height:2;margin-bottom:14px}'
-    +'.meta-block .label{color:#888;font-size:11px}'
-    +'.ibara{font-size:12px;color:#333;line-height:1.8;margin-bottom:16px}'
-    +'table{width:100%;border-collapse:collapse;margin-bottom:12px}'
-    +'thead th{padding:9px 10px;background:#1a3a5c;color:#fff;font-size:11px;font-weight:600;text-align:left}'
-    +'thead th:first-child{text-align:center;width:36px}thead th:nth-child(3){width:130px}thead th:nth-child(4){width:68px;text-align:center}'
-    +'.summary{font-size:12px;color:#555;margin-bottom:20px;padding:8px 12px;background:#f0f5fa;border-radius:4px}'
-    +'.sign-section{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:24px}'
-    +'.sign-box{border-top:2px solid #2d7fa8;padding-top:14px;text-align:center}'
-    +'.sign-title{font-size:13px;font-weight:700;color:#1a3a5c;letter-spacing:.08em}'
-    +'.footer{position:fixed;bottom:0;left:0;right:0;padding:8px 32px;border-top:1px solid #ccd6e0;text-align:center;font-size:11px;color:#666;line-height:1.8;background:#fff}'
-    +'@media print{@page{size:A4;margin:14mm}}</style></head><body>'
-    +'<div class="header"><img class="logo" src="'+logoSrc+'" alt="Egefe">'
-    +'<div class="firma-block"><strong>Egefe Bili&#351;im Sa&#287;l&#305;k San. Ve Tic. A.&#350;.</strong>Harbiye Mah. H&#252;rriyet Cad. No:7/12 &#199;ankaya/Ankara</div></div>'
-    +'<div class="title-row"><div class="title-main">TESL&#304;M TUTANA&#286;I</div></div>'
-    +'<div class="meta-block"><div><span class="label">Tutanak No:&nbsp;</span><strong style="color:#2d7fa8">'+tutanak.no+'</strong></div>'
-    +'<div><span class="label">Tarih:&nbsp;</span><strong>'+tarihStr+'</strong></div></div>'
-    +'<div class="ibara"><strong>'+tarihStr+'</strong> tarihinde a&#351;a&#287;&#305;da seri numaras&#305; yaz&#305;l&#305; olan ARMAS Marka Alkolmetre cihazlar&#305; ar&#305;zas&#305; giderilmek &#252;zere Armas Elektronik San. ve Tic. Ltd. &#350;ti\u0027ne elden teslim edilmi&#351;tir.</div>'
-    +'<table><thead><tr><th>#</th><th>KURUM ADI</th><th>SER&#304; NO</th><th>GARANT&#304;</th><th>AKSESUARLAR</th></tr></thead><tbody>'+rows+'</tbody></table>'
-    +'<div class="summary">Toplam <strong>'+(tutanak.kalemler||[]).length+'</strong> adet cihaz teslim al&#305;nm&#305;&#351;t&#305;r.</div>'
-    +'<div class="sign-section"><div class="sign-box"><div class="sign-title">TESL&#304;M EDEN</div></div>'
-    +'<div class="sign-box"><div class="sign-title">TESL&#304;M ALAN</div></div></div>'
-    +'<div class="footer">Tel: 0 (312) 482 54 51 &nbsp;|&nbsp; Fax: 0 (312) 480 54 52 &nbsp;|&nbsp; E-mail: servis&#64;ege-fe.com</div>'
-    +'</body></html>';
-  var _w2=window.open('','_blank');
-  if(_w2){_w2.document.write(pdfHtml);_w2.document.close();}
-  else{var _b2=new Blob([pdfHtml],{type:'text/html;charset=utf-8'});var _u2=URL.createObjectURL(_b2);var _a2=document.createElement('a');_a2.href=_u2;_a2.target='_blank';document.body.appendChild(_a2);_a2.click();document.body.removeChild(_a2);setTimeout(function(){URL.revokeObjectURL(_u2);},10000);}
+function printTutanakData(tutanak){
+  const logoImg = new Image();
+  logoImg.onload = function(){
+    const cv = document.createElement('canvas');
+    cv.width = 534; cv.height = 252;
+    cv.getContext('2d').drawImage(logoImg, 0, 0, 534, 252);
+    _generateTutanakPDF(tutanak, cv.toDataURL('image/png'));
+  };
+  logoImg.onerror = function(){ _generateTutanakPDF(tutanak, null); };
+  logoImg.src = 'brand_assets/logo_if_bg_white.svg';
+}
+
+async function _generateTutanakPDF(tutanak, logoPngDataUrl){
+  const toB64 = buf => {
+    const bytes = new Uint8Array(buf);
+    let s = '';
+    for(let i = 0; i < bytes.byteLength; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s);
+  };
+  const [regularBuf, boldBuf] = await Promise.all([
+    fetch('fonts/Arial.ttf').then(r => r.arrayBuffer()),
+    fetch('fonts/Arial_Bold.ttf').then(r => r.arrayBuffer())
+  ]);
+
+  const mm = v => v * 2.83465;
+
+  const C = {
+    primary:   [29, 125, 149],
+    textDark:  [26, 46, 59],
+    textMid:   [46, 64, 80],
+    textLight: [143, 164, 176],
+    border:    [194, 208, 216],
+    tableBg:   [228, 245, 249],
+    boxBg:     [247, 249, 250],
+    white:     [255, 255, 255],
+    headerBg:  [26, 58, 92]
+  };
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation: 'portrait', unit: 'pt', format: 'a4'});
+  doc.addFileToVFS('Arial.ttf', toB64(regularBuf));
+  doc.addFont('Arial.ttf', 'Arial', 'normal');
+  doc.addFileToVFS('Arial_Bold.ttf', toB64(boldBuf));
+  doc.addFont('Arial_Bold.ttf', 'Arial', 'bold');
+  doc.setFont('Arial');
+  doc.setCharSpace(0);
+
+  const st = state.settings || {};
+
+  // ── HEADER (teklif ile aynı layout) ──
+  if(logoPngDataUrl){
+    try { doc.addImage(logoPngDataUrl, 'PNG', mm(19.812), mm(9.737), mm(39.793), mm(19.389), '', 'FAST'); } catch(e){}
+  }
+
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.75);
+  doc.line(mm(63.765), mm(11.642), mm(63.765), mm(25.517));
+
+  doc.setFontSize(9);
+  doc.setFont('Arial', 'bold');
+  doc.setTextColor(...C.textMid);
+  doc.text(st.firma || 'Egefe Bilişim Sağlık San. ve Tic. A.Ş.', mm(68.457), mm(11.188)+9);
+
+  doc.setFontSize(8);
+  doc.setFont('Arial', 'normal');
+  doc.setTextColor(...C.textLight);
+  doc.text(st.adres || 'Harbiye Mah. Hürriyet Cad. No:7/12 Çankaya / Ankara', mm(68.457), mm(16.829)+6);
+
+  const vergiText = st.vergiDairesi && st.vergiNo
+    ? `${st.vergiDairesi} Vergi Dairesi: ${st.vergiNo}`
+    : 'Başkent Vergi Dairesi: 5590520620';
+  doc.text(vergiText, mm(68.457), mm(21.192)+6);
+  doc.text(st.web || 'www.ege-fe.com', mm(68.457), mm(25.555)+6);
+
+  doc.setDrawColor(...C.primary);
+  doc.setLineWidth(2);
+  doc.line(mm(15.446), mm(33.955), mm(194.556), mm(33.955));
+
+  // ── TITLE (ortalı) ──
+  doc.setFontSize(15);
+  doc.setFont('Arial', 'bold');
+  doc.setTextColor(...C.textMid);
+  doc.text('TESLİM TUTANAĞI', mm(105), mm(42.395)+11, {align: 'center'});
+
+  // ── META (sağ taraf, teklif ile aynı sütun pozisyonları) ──
+  const tarihStr = fmtDate(tutanak.tarih) || '-';
+
+  doc.setFontSize(8);
+  doc.setFont('Arial', 'bold');
+  doc.setTextColor(...C.textMid);
+  doc.text('Tutanak No', mm(141.66), mm(50.611)+6);
+  doc.text(':', mm(165.354), mm(50.611)+6);
+  doc.setFont('Arial', 'normal');
+  doc.text(tutanak.no || '-', mm(171.249), mm(50.611)+6);
+
+  doc.setFont('Arial', 'bold');
+  doc.text('Tarih', mm(141.66), mm(55.109)+6);
+  doc.text(':', mm(165.354), mm(55.109)+6);
+  doc.setFont('Arial', 'normal');
+  doc.text(tarihStr, mm(171.249), mm(55.109)+6);
+
+  doc.setDrawColor(...C.tableBg);
+  doc.setLineWidth(0.75);
+  doc.line(mm(15.446), mm(64), mm(194.63), mm(64));
+
+  // ── İBARA ──
+  doc.setFontSize(9);
+  doc.setFont('Arial', 'normal');
+  doc.setTextColor(...C.textMid);
+  const ibara = `${tarihStr} tarihinde aşağıda seri numarası yazılı olan ARMAS Marka Alkolmetre cihazları arızası giderilmek üzere Armas Elektronik San. ve Tic. Ltd. Şti'ne elden teslim edilmiştir.`;
+  const ibaraLines = doc.splitTextToSize(ibara, mm(179.108));
+  doc.text(ibaraLines, mm(15.446), mm(69));
+
+  // ── TABLE ──
+  const ibaraEndY = mm(69) + ibaraLines.length * (9 * 1.35);
+  let tableEndY = ibaraEndY + mm(4);
+
+  doc.autoTable({
+    startY: ibaraEndY + mm(4),
+    head: [['#', 'KURUM ADI', 'SERİ NO', 'GARANTİ', 'AKSESUARLAR']],
+    body: (tutanak.kalemler || []).map((k, i) => [
+      i + 1,
+      k.kurumAdi || '—',
+      k.seriNo || '—',
+      k.garantiDurumu || '—',
+      k.aksesuarlar || '—'
+    ]),
+    theme: 'plain',
+    styles: {
+      font: 'Arial',
+      fontSize: 9,
+      cellPadding: {top: 2.5, right: 3, bottom: 2.5, left: 3},
+      textColor: C.textDark,
+      lineColor: C.border,
+      lineWidth: 0.5
+    },
+    headStyles: {
+      fillColor: C.headerBg,
+      textColor: C.white,
+      fontStyle: 'bold',
+      fontSize: 9,
+      cellPadding: {top: 3, right: 3, bottom: 3, left: 3}
+    },
+    columnStyles: {
+      0: {halign: 'center', cellWidth: mm(10)},
+      1: {halign: 'left',   cellWidth: mm(52)},
+      2: {halign: 'left',   cellWidth: mm(35)},
+      3: {halign: 'center', cellWidth: mm(20)},
+      4: {halign: 'left'}
+    },
+    didParseCell: data => {
+      if(data.section === 'head'){
+        const aligns = ['center','left','left','center','left'];
+        data.cell.styles.halign = aligns[data.column.index] || 'left';
+      }
+    },
+    margin: {left: mm(15.446), right: mm(15.446)},
+    didDrawPage: data => { tableEndY = data.cursor.y; }
+  });
+  doc.setCharSpace(0);
+  doc.setFont('Arial', 'normal');
+
+  // ── ÖZET ──
+  const sumY = tableEndY + mm(4);
+  doc.setFillColor(...C.boxBg);
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(mm(15.446), sumY, mm(179.108), mm(8), 1.2, 1.2, 'FD');
+  doc.setFontSize(9);
+  doc.setFont('Arial', 'normal');
+  doc.setTextColor(...C.textMid);
+  doc.text(`Toplam ${(tutanak.kalemler||[]).length} adet cihaz teslim alınmıştır.`, mm(18), sumY + mm(4.5));
+
+  // ── İMZA ──
+  const signY = sumY + mm(16);
+  doc.setDrawColor(...C.primary);
+  doc.setLineWidth(1.5);
+  doc.line(mm(15.446), signY, mm(15.446)+mm(75), signY);
+  doc.setFontSize(9);
+  doc.setFont('Arial', 'bold');
+  doc.setTextColor(...C.textMid);
+  doc.text('TESLİM EDEN', mm(15.446)+mm(37.5), signY+mm(6), {align: 'center'});
+
+  doc.line(mm(194.556)-mm(75), signY, mm(194.556), signY);
+  doc.text('TESLİM ALAN', mm(194.556)-mm(37.5), signY+mm(6), {align: 'center'});
+
+  // ── FOOTER ──
+  doc.setDrawColor(...C.primary);
+  doc.setLineWidth(2);
+  doc.line(mm(15.446), mm(279.929), mm(194.556), mm(279.929));
+  doc.setFontSize(7);
+  doc.setFont('Arial', 'normal');
+  doc.setTextColor(...C.textLight);
+
+  const emailText = st.email || 'servis@ege-fe.com';
+  const telText   = st.tel   || '0 (312) 482 54 51';
+  const faxText   = st.fax   || '0 (312) 480 54 52';
+
+  doc.text('Tel: '+telText,       mm(59.953),  mm(284.604)+5);
+  doc.text('|',                   mm(94.113),  mm(284.604)+5);
+  doc.text('Fax: '+faxText,       mm(97.662),  mm(284.604)+5);
+  doc.text('|',                   mm(122.241), mm(284.604)+5);
+  doc.text('e-posta: '+emailText, mm(125.637), mm(284.604)+5);
+
+  doc.save(`Tutanak_${tutanak.no||'X'}.pdf`);
 }
 
 // ════ TUTANAK ════
@@ -267,4 +426,3 @@ function printTutanakById(no){
   const t = savedTutanaklar.find(x=>x.no===no);
   if(t) printTutanakData(t);
 }
-

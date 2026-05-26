@@ -64,12 +64,6 @@ function renderRaporlar(){
 // ════ TUTANAKLAR ════
 function renderTutanaklar(){
   loadSavedTutanaklar();
-  var yeniGelenler=state.servisler.filter(function(s){return s.durum==='Yeni Gelen';});
-  var statsEl=document.getElementById('tutanak-stats');
-  if(statsEl)statsEl.innerHTML=''
-    +'<div class="stat-card"><div class="stat-label">Yeni Gelen</div><div class="stat-value" style="color:var(--teal)">'+yeniGelenler.length+'</div><div class="stat-sub">Tutanağa aktarılacak</div></div>'
-    +'<div class="stat-card"><div class="stat-label">Toplam Tutanak</div><div class="stat-value" style="color:var(--accent)">'+savedTutanaklar.length+'</div></div>'
-    +'<div class="stat-card"><div class="stat-label">Garantili</div><div class="stat-value" style="color:var(--green)">'+yeniGelenler.filter(function(s){return s.garantiDurumu==='Evet';}).length+'</div></div>';
   var tbody=document.getElementById('tutanak-table-body');
   var emptyEl=document.getElementById('tutanak-empty');
   if(!tbody)return;
@@ -79,11 +73,9 @@ function renderTutanaklar(){
     return '<tr>'
       +'<td><span class="kn-badge">'+t.no+'</span></td>'
       +'<td class="td-mono">'+fmtDate(t.tarih)+'</td>'
-      +'<td style="color:var(--text2)">'+((t.kalemler||[]).length)+' cihaz</td>'
-      +'<td style="color:var(--text2);font-size:12px">'+(t.olusturan||'—')+'</td>'
-      +'<td><div class="action-row" style="justify-content:flex-end">'
-      +'<button class="btn-icon" title="Görüntüle/Yazdır" onclick="previewTutanak(\''+t.no+'\')">🖨</button>'
-      +'<button class="btn-icon" style="color:var(--red)" onclick="deleteTutanak(\''+t.no+'\')">⊗</button>'
+      +'<td style="text-align:right"><div class="action-row" style="justify-content:flex-end">'
+      +'<button class="btn-icon" title="Yazdır" onclick="previewTutanak(\''+t.no+'\')">🖨</button>'
+      +'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteTutanak(\''+t.no+'\')">⊗</button>'
       +'</div></td>'
       +'</tr>';
   }).join('');

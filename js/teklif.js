@@ -101,7 +101,7 @@ function renderTeklifler(){
     <td style="font-family:'DM Mono',monospace;color:var(--amber);font-size:12px">${fmtTL(calcTeklifToplam(t))}</td>
     <td><span class="badge ${TSD[t.durum]||'badge-sf'}">${t.durum}</span>${t.redBilgi?'<span title="'+t.redBilgi.neden+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
     ${currentPortal==='satis'?`<td class="td-sorumlu" style="font-size:12px;color:var(--text3)">${t.sorumlu||'—'}</td>`:''}
-    <td><div class="action-row">
+    <td style="text-align:right"><div class="action-row">
       <button class="btn-icon" title="Detay" onclick="openTeklifDetay('${t.id}')">◎</button>
       ${canEdit?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)">⇅</button>`:''}
       ${canEdit&&t.durum!=='Siparişe Aktarıldı'?`<button class="btn-icon" title="Düzenle" onclick="goTeklifForm('${t.id}')">✎</button>`:''}

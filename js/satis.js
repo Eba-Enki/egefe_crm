@@ -115,7 +115,8 @@ function renderSiparisler(){
       +'<td style="font-weight:500">'+(s.kurum||'—')+'</td>'
       +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+cur+' '+fmtTL(toplam)+'</td>'
       +'<td><span class="badge '+(SP_DURUM_CSS[s.durum]||'badge-sf')+'">'+s.durum+'</span></td>'
-      +'<td><div class="action-row" style="justify-content:flex-end">'
+      +'<td style="font-size:12px;color:var(--text3)">'+(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
+      +'<td style="text-align:right"><div class="action-row">'
       +(canEdit?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)">⇅</button>':'')
       +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'siparis\',\''+s.id+'\')">⊗</button>':'')
       +'</div></td>'

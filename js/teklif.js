@@ -71,7 +71,7 @@ function saveTeklifAndPrint(){saveTeklif(true)}
 
 // ════ TEKLIF LIST ════
 const TSD={'Onay Bekleniyor':'badge-onay-bekl','Onaylandı':'badge-onaylandi','Taslak':'badge-sf','Açık Teklif':'badge-yeni','Kabul Edildi':'badge-onaylandi','Siparişe Aktarıldı':'badge-teslim','Reddedildi':'badge-reddedildi','İptal Edildi':'badge-reddedildi','Tamamlandı':'badge-teslim'};
-const TEKLIF_ARSIV_DURUMLAR=['Tamamlandı'];
+const TEKLIF_ARSIV_DURUMLAR=['Tamamlandı','Siparişe Aktarıldı'];
 let teklifTab='aktif';
 function switchTeklifTab(tab){
   teklifTab=tab;
@@ -137,7 +137,7 @@ function renderTeklifler(){
   </tr>`).join('');
 }
 function changeTeklifDurum(id,yeni){
-  if(!confirm(`Teklif "${yeni}" olarak güncellensin mi? Servis kaydı da değişecek.`))return;
+  if(!confirm(`Teklif "${yeni}" olarak güncellensin mi?`))return;
   const ti=state.teklifler.findIndex(x=>x.id===id);if(ti<0)return;
   state.teklifler[ti].durum=yeni;
   if(yeni==='Onaylandı')state.teklifler[ti].onayTarihi=today();
@@ -150,7 +150,7 @@ function changeTeklifDurum(id,yeni){
       if(yeni==='Onaylandı')state.servisler[si].onayTarihi=today();
     }
   }
-  saveAll();renderTeklifler();renderDashboard();toast(`Teklif ${yeni.toLowerCase()}. Servis kaydı güncellendi.`,'success');
+  saveAll();renderTeklifler();renderDashboard();toast(`Teklif "${yeni}" olarak güncellendi.`,'success');
 }
 
 function openTeklifDetay(id){

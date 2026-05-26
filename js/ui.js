@@ -20,6 +20,9 @@ function showPage(id,skipRender){
     const show=(id===page)&&(page==='kullanici'?isAdmin:canWrite);
     btn.style.display=show?'':'none';
   });
+  document.querySelectorAll('.topbar-tab-group').forEach(function(g){g.style.display='none';});
+  var _tg={teklifler:'topbar-tabs-teklifler',siparisler:'topbar-tabs-siparisler',faturalar:'topbar-tabs-faturalar'}[id];
+  if(_tg){var _tgEl=document.getElementById(_tg);if(_tgEl)_tgEl.style.display='flex';}
   const renders={dashboard:renderDashboard,servisler:renderTable,teklifler:renderTeklifler,musteriler:renderMusteriler,urunler:renderUrunler,raporlar:renderRaporlar,kullanici:renderUserTable,ayarlar:loadSettings,tutanaklar:renderTutanaklar,siparisler:renderSiparisler,faturalar:renderFaturalar,'siparis-form':function(){}};
   if(!skipRender&&renders[id])renders[id]();
 }

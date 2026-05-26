@@ -1,6 +1,29 @@
 ﻿// ════ SİPARİŞLER ════
 const SP_DURUM_LIST=['Hazırlanıyor','Kısmen Sevk Edildi','Tamamlandı','İptal'];
-const SP_DURUM_CSS={'Hazırlanıyor':'badge-yeni','Kısmen Sevk Edildi':'badge-sf','Tamamlandı':'badge-teslim','İptal':'badge-reddedildi'};
+const SP_DURUM_CSS={'Hazırlanıyor':'badge-yeni','Kısmen Sevk Edildi':'badge-sf','Tamamlandı':'badge-teslim','İptal':'badge-reddedildi','Fatura Edildi':'badge-onaylandi'};
+const ARSIV_SIPARISLER=['Tamamlandı','İptal'];
+const ARSIV_FATURALAR=['Ödendi'];
+let siparisTab='aktif';
+let faturaTab='aktif';
+
+function switchSiparisTab(tab){
+  siparisTab=tab;
+  var aktifBtn=document.getElementById('tab-siparis-aktif');
+  var arsivBtn=document.getElementById('tab-siparis-arsiv');
+  if(aktifBtn)aktifBtn.classList.toggle('active',tab==='aktif');
+  if(arsivBtn)arsivBtn.classList.toggle('active',tab==='arsiv');
+  var e=document.getElementById('sp-f-durum');if(e)e.value='';
+  renderSiparisler();
+}
+function switchFaturaTab(tab){
+  faturaTab=tab;
+  var aktifBtn=document.getElementById('tab-fatura-aktif');
+  var arsivBtn=document.getElementById('tab-fatura-arsiv');
+  if(aktifBtn)aktifBtn.classList.toggle('active',tab==='aktif');
+  if(arsivBtn)arsivBtn.classList.toggle('active',tab==='arsiv');
+  var e=document.getElementById('ft-f-durum');if(e)e.value='';
+  renderFaturalar();
+}
 
 function nextSiparisNo(){
   var nums=(state.siparisler||[]).map(function(s){return parseInt((s.siparisNo||'').replace('SIP',''))||0;});
@@ -82,7 +105,17 @@ function showTeklifDurumMenu(tid,btnEl){
 
 function renderSiparisler(){
   if(!state.siparisler)state.siparisler=DB.pload('siparisler',[]);
-  var data=state.siparisler;
+  var allData=state.siparisler;
+  var aktifSayisi=allData.filter(function(s){return ARSIV_SIPARISLER.indexOf(s.durum)<0;}).length;
+  var arsivSayisi=allData.filter(function(s){return ARSIV_SIPARISLER.indexOf(s.durum)>=0;}).length;
+  var aktifEl=document.getElementById('tab-siparis-aktif-count');
+  var arsivEl=document.getElementById('tab-siparis-arsiv-count');
+  if(aktifEl)aktifEl.textContent=aktifSayisi;
+  if(arsivEl)arsivEl.textContent=arsivSayisi;
+  var isArsiv=siparisTab==='arsiv';
+  var data=isArsiv
+    ?allData.filter(function(s){return ARSIV_SIPARISLER.indexOf(s.durum)>=0;})
+    :allData.filter(function(s){return ARSIV_SIPARISLER.indexOf(s.durum)<0;});
   var fK=(document.getElementById('sp-f-kurum')||{}).value||'';
   var fN=(document.getElementById('sp-f-no')||{}).value||'';
   var fD=(document.getElementById('sp-f-durum')||{}).value||'';
@@ -215,7 +248,17 @@ function saveKismiTeslim(){
 
 function renderFaturalar(){
   if(!state.faturalar)state.faturalar=[];
-  var data=state.faturalar;
+  var allData=state.faturalar;
+  var aktifSayisi=allData.filter(function(f){return ARSIV_FATURALAR.indexOf(f.durum)<0;}).length;
+  var arsivSayisi=allData.filter(function(f){return ARSIV_FATURALAR.indexOf(f.durum)>=0;}).length;
+  var aktifEl=document.getElementById('tab-fatura-aktif-count');
+  var arsivEl=document.getElementById('tab-fatura-arsiv-count');
+  if(aktifEl)aktifEl.textContent=aktifSayisi;
+  if(arsivEl)arsivEl.textContent=arsivSayisi;
+  var isArsiv=faturaTab==='arsiv';
+  var data=isArsiv
+    ?allData.filter(function(f){return ARSIV_FATURALAR.indexOf(f.durum)>=0;})
+    :allData.filter(function(f){return ARSIV_FATURALAR.indexOf(f.durum)<0;});
   var fK=(document.getElementById('ft-f-kurum')||{}).value||'';
   var fN=(document.getElementById('ft-f-no')||{}).value||'';
   var fD=(document.getElementById('ft-f-durum')||{}).value||'';

@@ -94,13 +94,15 @@ function renderTeklifler(){
   });
   var fcEl=document.getElementById('teklif-filter-count');
   if(fcEl)fcEl.textContent=filtTl2.length!==tl.length?filtTl2.length+'/'+tl.length+' teklif':tl.length+' teklif';
+  const _thS=document.getElementById('th-sorumlu');
+  const _showSorumlu=_thS&&_thS.style.display!=='none';
   tbody.innerHTML=[...filtTl2].sort((a,b)=>new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi)).map(t=>`<tr>
     <td><span class="kn-badge">${t.teklifNo}</span></td>
     <td class="td-mono" style="color:var(--text2)">${fmtDate(t.teklifTarihi)}</td>
     <td style="font-weight:500">${t.kurum||'—'}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--amber);font-size:12px">${fmtTL(calcTeklifToplam(t))}</td>
     <td><span class="badge ${TSD[t.durum]||'badge-sf'}">${t.durum}</span>${t.redBilgi?'<span title="'+t.redBilgi.neden+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
-    ${currentPortal==='satis'?`<td class="td-sorumlu" style="font-size:12px;color:var(--text3)">${t.sorumlu||'—'}</td>`:''}
+    ${_showSorumlu?`<td class="td-sorumlu" style="font-size:12px;color:var(--text3)">${t.sorumlu||'—'}</td>`:''}
     <td style="text-align:right"><div class="action-row">
       <button class="btn-icon" title="Detay" onclick="openTeklifDetay('${t.id}')">◎</button>
       ${canEdit?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)">⇅</button>`:''}

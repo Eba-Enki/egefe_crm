@@ -30,6 +30,16 @@ function updateTeklifTotals(){
   const genEl=document.getElementById('tt-genel');if(genEl)genEl.textContent=fmtCur(toplam);
 }
 
+// ════ ÖDEME ŞEKLİ ════
+function onOdemeSekliChange(){
+  var sel=document.getElementById('tf-odemeKosulu');
+  var vd=document.getElementById('tf-vade');
+  if(!sel||!vd)return;
+  var isPesin=sel.value==='Peşin';
+  vd.disabled=isPesin;
+  if(isPesin)vd.value='';
+}
+
 // ════ SAVE TEKLIF ════
 function buildTeklifPayload(){
   return{teklifNo:document.getElementById('tf-teklifNo').value,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:document.getElementById('tf-kurum').value,ilgiliKisi:document.getElementById('tf-ilgiliKisi').value,teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',paraBirimi:(document.getElementById('tf-paraBirimi')||{}).value||'TRY',odemeKosulu:(document.getElementById('tf-odemeKosulu')||{}).value||'',vade:(document.getElementById('tf-vade')||{}).value||'',teslimat:(document.getElementById('tf-teslimat')||{}).value||'',satirlar:JSON.parse(JSON.stringify(teklifItems))};
@@ -407,9 +417,9 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   const boxXList = [mm(15.446), mm(53.546), mm(91.91)];
 
   const activeBoxes = [
-    {label: 'ÖDEME KOŞULU',     value: t.odemeKosulu},
-    {label: 'VADE',             value: t.vade},
-    {label: 'TAHMİNİ TESLİMAT', value: t.teslimat}
+    {label: 'ÖDEME ŞEKLİ',      value: t.odemeKosulu},
+    {label: 'VADE',              value: t.vade ? fmtDate(t.vade) : ''},
+    {label: 'TAHMİNİ TESLİMAT', value: t.teslimat ? fmtDate(t.teslimat) : ''}
   ].filter(b => b.value && b.value.trim());
 
   doc.setFontSize(8);

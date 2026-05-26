@@ -319,9 +319,9 @@
         <div class="form-card tf-satis-field" style="display:none">
           <div class="form-section-title">Ticari Koşullar</div>
           <div class="form-grid">
-            <div class="field"><label>Ödeme Koşulu</label><input type="text" id="tf-odemeKosulu" placeholder="Örn: Peşin, 30 gün vadeli..."></div>
-            <div class="field"><label>Vade</label><input type="text" id="tf-vade" placeholder="Örn: 30 gün"></div>
-            <div class="field"><label>Tahmini Teslimat</label><input type="text" id="tf-teslimat" placeholder="Örn: 10-15 iş günü"></div>
+            <div class="field"><label>Ödeme Şekli</label><select id="tf-odemeKosulu" onchange="onOdemeSekliChange()"><option value="">— Seçin —</option><option value="Peşin">Peşin</option><option value="Vadeli">Vadeli</option></select></div>
+            <div class="field"><label>Vade Tarihi</label><input type="date" id="tf-vade" disabled></div>
+            <div class="field"><label>Tahmini Teslimat Tarihi</label><input type="date" id="tf-teslimat"></div>
           </div>
         </div>
         <div class="form-card">

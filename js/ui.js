@@ -139,6 +139,17 @@ function goKullaniciForm(editId){
   showPage('kullanici-form',true);
 }
 
+// ════ TITLE CASE (Türkçe destekli) ════
+function toTitleCase(str){
+  if(!str)return str;
+  return str.split(/\s+/).map(function(w){
+    if(!w)return w;
+    var fc=w.charAt(0);
+    fc=fc==='i'?'İ':fc==='ı'?'I':fc.toLocaleUpperCase('tr-TR');
+    return fc+w.slice(1).toLocaleLowerCase('tr-TR');
+  }).join(' ');
+}
+
 // ════ COMBOS ════
 function getMusteriAds(){return state.musteriler.map(m=>({label:m.kurum,sub:m.kisi||''}))}
 function getUrunAds(){return state.urunler.map(u=>({label:u.urunAdi+(u.marka?' ('+u.marka+')':''),sub:u.model||''}))}
@@ -146,13 +157,18 @@ function comboFilter(inputId,dropId,srcFn){
   var q=document.getElementById(inputId).value.toLowerCase();
   var items=srcFn().filter(function(i){return i.label.toLowerCase().includes(q||'');}).slice(0,10);
   var drop=document.getElementById(dropId);
-  if(!items.length){drop.classList.remove('open');return;}
+  var isMusteri=srcFn===getMusteriAds;
+  if(!items.length&&!isMusteri){drop.classList.remove('open');return;}
   drop._comboItems=items;
-  drop.innerHTML=items.map(function(item,idx){
+  var html=items.map(function(item,idx){
     var safe=item.label.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     var sub=item.sub?'<div class="sub">'+item.sub+'</div>':'';
     return '<div class="combo-item" onmousedown="event.preventDefault();comboPickItem(\''+inputId+'\',\''+dropId+'\','+idx+')">'+safe+sub+'</div>';
   }).join('');
+  if(isMusteri){
+    html+='<div class="combo-item" style="color:var(--accent);border-top:1px solid var(--border);margin-top:2px;font-size:12px;font-weight:500" onmousedown="event.preventDefault();comboAddMusteri(\''+inputId+'\')">＋ Yeni Müşteri Ekle</div>';
+  }
+  drop.innerHTML=html;
   drop.classList.add('open');
 }
 
@@ -164,15 +180,38 @@ function comboPickItem(inputId,dropId,idx){
   var inp=document.getElementById(inputId);
   if(inp)inp.value=item.label;
   comboClose(dropId);
-  // Auto-fill customer fields when kurum selected in teklif form
-  if(inputId==='tf-kurum'){
+  // Auto-fill customer fields on selection
+  if(inputId==='tf-kurum'||inputId==='sf-kurumAdi'){
     var m=state.musteriler.find(function(x){return x.kurum===item.label;});
     if(m){
-      var ki=document.getElementById('tf-ilgiliKisi');if(ki&&!ki.value)ki.value=m.kisi||'';
-      var tel=document.getElementById('tf-telefon');if(tel&&!tel.value)tel.value=m.tel||'';
-      var eml=document.getElementById('tf-email');if(eml&&!eml.value)eml.value=m.email||'';
+      if(inputId==='tf-kurum'){
+        var ki=document.getElementById('tf-ilgiliKisi');if(ki&&!ki.value)ki.value=m.kisi||'';
+        var tel=document.getElementById('tf-telefon');if(tel&&!tel.value)tel.value=m.tel||'';
+        var eml=document.getElementById('tf-email');if(eml&&!eml.value)eml.value=m.email||'';
+      } else {
+        var ki2=document.getElementById('sf-ilgiliKisi');if(ki2&&!ki2.value)ki2.value=m.kisi||'';
+        var tel2=document.getElementById('sf-telefon');if(tel2&&!tel2.value)tel2.value=m.tel||'';
+        var eml2=document.getElementById('sf-email');if(eml2&&!eml2.value)eml2.value=m.email||'';
+      }
     }
   }
+}
+
+function comboAddMusteri(inputId){
+  var q=(document.getElementById(inputId)||{}).value||'';
+  var returnPage=inputId==='tf-kurum'?'teklif-form':'servis-form';
+  state._musterAddReturn={inputId:inputId,returnPage:returnPage};
+  goMusteriForm(null);
+  if(q){var kEl=document.getElementById('mf-kurum');if(kEl)kEl.value=q;}
+  var backBtn=document.querySelector('#page-musteri-form .btn-back');
+  if(backBtn)backBtn.textContent='← Geri';
+}
+
+function cancelMusteriAdd(){
+  var ret=state._musterAddReturn;
+  state._musterAddReturn=null;
+  if(ret)showPage(ret.returnPage,true);
+  else showPage('musteriler');
 }
 function comboFilterServis(){
   var q=document.getElementById('tf-servis-ara').value.toLowerCase();

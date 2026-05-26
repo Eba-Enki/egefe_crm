@@ -232,6 +232,9 @@ tr:hover td{background:rgba(255,255,255,.015)}
 
 /* ── COMBO ── */
 .combo-wrap{position:relative}
+.combo-clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;line-height:1;padding:2px 4px;z-index:2}
+.combo-clear-btn:hover{color:var(--red)}
+input.musteri-locked{background:var(--bg4)!important;cursor:default;padding-right:30px}
 .combo-dropdown{
   display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;
   background:var(--bg3);border:1px solid var(--border2);

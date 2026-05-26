@@ -12,22 +12,24 @@ function saveMusteri(){
   const kurum=toTitleCase(document.getElementById('mf-kurum').value.trim());if(!kurum)return toast('Kurum adı zorunlu.','error');
   const editId=document.getElementById('mf-edit-id').value;
   const payload={kurum,kisi:toTitleCase(document.getElementById('mf-kisi').value.trim()),tel:document.getElementById('mf-tel').value.trim(),email:document.getElementById('mf-email').value.trim(),sehir:toTitleCase(document.getElementById('mf-sehir').value.trim()),adres:toTitleCase(document.getElementById('mf-adres').value.trim()),not:document.getElementById('mf-not').value.trim()};
-  if(editId){const idx=state.musteriler.findIndex(x=>x.id===editId);if(idx>=0){state.musteriler[idx]={...state.musteriler[idx],...payload};toast('Güncellendi.','success');}}
-  else{var mKN='MK'+String(state.musteriler.length+1).padStart(5,'0');state.musteriler.push({id:'m'+Date.now(),kayitNo:mKN,...payload});toast('Müşteri eklendi.','success');}
+  var savedMId;
+  if(editId){const idx=state.musteriler.findIndex(x=>x.id===editId);if(idx>=0){state.musteriler[idx]={...state.musteriler[idx],...payload};savedMId=editId;toast('Güncellendi.','success');}}
+  else{savedMId='m'+Date.now();var mKN='MK'+String(state.musteriler.length+1).padStart(5,'0');state.musteriler.push({id:savedMId,kayitNo:mKN,...payload});toast('Müşteri eklendi.','success');}
   saveAll();
   var ret=state._musterAddReturn;
   if(ret){
     state._musterAddReturn=null;
     showPage(ret.returnPage,true);
     var inp=document.getElementById(ret.inputId);if(inp)inp.value=payload.kurum;
+    lockMusteriField(ret.inputId,savedMId);
     if(ret.inputId==='tf-kurum'){
-      var ki=document.getElementById('tf-ilgiliKisi');if(ki&&!ki.value)ki.value=payload.kisi||'';
-      var tel=document.getElementById('tf-telefon');if(tel&&!tel.value)tel.value=payload.tel||'';
-      var eml=document.getElementById('tf-email');if(eml&&!eml.value)eml.value=payload.email||'';
+      var ki=document.getElementById('tf-ilgiliKisi');if(ki)ki.value=payload.kisi||'';
+      var tel=document.getElementById('tf-telefon');if(tel)tel.value=payload.tel||'';
+      var eml=document.getElementById('tf-email');if(eml)eml.value=payload.email||'';
     } else if(ret.inputId==='sf-kurumAdi'){
-      var ki2=document.getElementById('sf-ilgiliKisi');if(ki2&&!ki2.value)ki2.value=payload.kisi||'';
-      var tel2=document.getElementById('sf-telefon');if(tel2&&!tel2.value)tel2.value=payload.tel||'';
-      var eml2=document.getElementById('sf-email');if(eml2&&!eml2.value)eml2.value=payload.email||'';
+      var ki2=document.getElementById('sf-ilgiliKisi');if(ki2)ki2.value=payload.kisi||'';
+      var tel2=document.getElementById('sf-telefon');if(tel2)tel2.value=payload.tel||'';
+      var eml2=document.getElementById('sf-email');if(eml2)eml2.value=payload.email||'';
     }
   } else {showPage('musteriler');}
 }

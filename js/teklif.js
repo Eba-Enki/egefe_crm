@@ -95,7 +95,7 @@ function renderTeklifler(){
   var fcEl=document.getElementById('teklif-filter-count');
   if(fcEl)fcEl.textContent=filtTl2.length!==tl.length?filtTl2.length+'/'+tl.length+' teklif':tl.length+' teklif';
   const _thS=document.getElementById('th-sorumlu');
-  const _showSorumlu=_thS&&_thS.style.display!=='none';
+  const _showSorumlu=currentPortal==='satis';
   tbody.innerHTML=[...filtTl2].sort((a,b)=>new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi)).map(t=>`<tr>
     <td><span class="kn-badge">${t.teklifNo}</span></td>
     <td class="td-mono" style="color:var(--text2)">${fmtDate(t.teklifTarihi)}</td>

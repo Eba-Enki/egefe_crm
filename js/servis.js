@@ -1,4 +1,33 @@
-﻿function showDurumMenu(sid, btnEl){
+﻿// ════ SERİ NO LİSTESİ ════
+function _seriNoRowHTML(val){
+  return '<div class="seri-no-row" style="display:flex;gap:6px;margin-bottom:4px">'
+    +'<input type="text" class="seri-no-input" placeholder="Seri numarası..." style="flex:1" value="'+(val||'').replace(/"/g,'&quot;')+'">'
+    +'<button type="button" class="btn-icon" style="color:var(--text3);flex-shrink:0" onclick="removeSeriNoRow(this)" title="Kaldır">✕</button>'
+    +'</div>';
+}
+function setSeriNolar(arr){
+  var list=document.getElementById('seri-no-list');if(!list)return;
+  var data=(arr&&arr.length)?arr:[''];
+  list.innerHTML=data.map(function(v){return _seriNoRowHTML(v);}).join('');
+}
+function addSeriNoRow(){
+  var list=document.getElementById('seri-no-list');if(!list)return;
+  list.insertAdjacentHTML('beforeend',_seriNoRowHTML(''));
+  var inputs=list.querySelectorAll('.seri-no-input');
+  if(inputs.length)inputs[inputs.length-1].focus();
+}
+function removeSeriNoRow(btn){
+  var list=document.getElementById('seri-no-list');if(!list)return;
+  var rows=list.querySelectorAll('.seri-no-row');
+  if(rows.length>1){btn.closest('.seri-no-row').remove();}
+  else{var inp=btn.closest('.seri-no-row').querySelector('.seri-no-input');if(inp)inp.value='';}
+}
+function getSeriNolar(){
+  return Array.from(document.querySelectorAll('#seri-no-list .seri-no-input'))
+    .map(function(i){return i.value.trim();}).filter(Boolean);
+}
+
+function showDurumMenu(sid, btnEl){
   // Remove any existing menu
   var existing=document.getElementById('durum-menu-'+sid);
   if(existing){existing.remove();return;}
@@ -143,7 +172,7 @@ function saveServis(){
   const musteriId=(document.getElementById('sf-musteri-id')||{}).value||'';
   if(!kurumVal)return toast('Kurum / müşteri zorunludur.','error');
   if(!musteriId)return toast('Lütfen müşteri listesinden seçin veya "+ Yeni Müşteri Ekle" ile ekleyin.','error');
-  const editId2=document.getElementById('sf-edit-id').value;const payload={kurumAdi:toTitleCase(document.getElementById('sf-kurumAdi').value.trim()),ilgiliKisi:toTitleCase(document.getElementById('sf-ilgiliKisi').value.trim()),telefon:document.getElementById('sf-telefon').value.trim(),email:document.getElementById('sf-email').value.trim(),urunAdi:'',seriNo:document.getElementById('sf-seriNo').value.trim(),garantiDurumu:document.getElementById('sf-garantiDurumu').value,aksesuarlar:[...sfAksesuarlar],aksesyarDiger:document.getElementById('sf-aksesuar-diger').value.trim(),gelisTarihi:document.getElementById('sf-gelisTarihi').value,durum:document.getElementById('sf-durum').value||'Yeni Gelen',kargoTarihi:document.getElementById('sf-kargoTarihi').value,kargoFirmasi:document.getElementById('sf-kargoFirmasi').value,teslimAlan:document.getElementById('sf-teslimAlan').value,notlar:document.getElementById('sf-notlar').value};
+  const editId2=document.getElementById('sf-edit-id').value;const payload={kurumAdi:toTitleCase(document.getElementById('sf-kurumAdi').value.trim()),ilgiliKisi:toTitleCase(document.getElementById('sf-ilgiliKisi').value.trim()),telefon:document.getElementById('sf-telefon').value.trim(),email:document.getElementById('sf-email').value.trim(),urunAdi:'',seriNo:getSeriNolar().join(', '),garantiDurumu:document.getElementById('sf-garantiDurumu').value,aksesuarlar:[...sfAksesuarlar],aksesyarDiger:document.getElementById('sf-aksesuar-diger').value.trim(),gelisTarihi:document.getElementById('sf-gelisTarihi').value,durum:document.getElementById('sf-durum').value||'Yeni Gelen',kargoTarihi:document.getElementById('sf-kargoTarihi').value,kargoFirmasi:document.getElementById('sf-kargoFirmasi').value,teslimAlan:document.getElementById('sf-teslimAlan').value,notlar:document.getElementById('sf-notlar').value};
   if(editId){const idx=state.servisler.findIndex(x=>x.id===editId);if(idx>=0){state.servisler[idx]={...state.servisler[idx],...payload};toast('Kayıt güncellendi.','success');}}
   else{state.servisler.push({id:'s'+Date.now(),kayitNo:nextKN(),...payload,olusturanKullanici:state.currentUser?.username,olusturmaTarihi:new Date().toISOString()});toast('Servis kaydedildi.','success');}
   saveAll();showPage(state.prevPage||'servisler');

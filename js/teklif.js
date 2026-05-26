@@ -445,9 +445,10 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   const boxH = mm(13);
   const boxPadding = 1.4;
   const boxW = mm(36.248);
-  const boxXList = [mm(15.446), mm(53.546), mm(91.91)];
+  const boxXList = [mm(15.446), mm(53.546), mm(91.91), mm(130.274)];
 
   const activeBoxes = [
+    {label: 'CİHAZ SERİ NO',    value: t.seriNo},
     {label: 'ÖDEME ŞEKLİ',      value: t.odemeKosulu},
     {label: 'VADE',              value: t.vade ? fmtDate(t.vade) : ''},
     {label: 'TAHMİNİ TESLİMAT', value: t.teslimat ? fmtDate(t.teslimat) : ''}

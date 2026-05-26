@@ -197,7 +197,11 @@
         <div class="form-card">
           <div class="form-section-title">Cihaz Bilgileri</div>
           <div class="form-grid">
-            <div class="field"><label>Cihaz Seri No</label><input type="text" id="sf-seriNo" placeholder="Seri numarası..."></div>
+            <div class="field form-full">
+              <label>Cihaz Seri No</label>
+              <div id="seri-no-list"></div>
+              <button type="button" class="btn btn-ghost btn-sm" style="margin-top:4px;font-size:11px" onclick="addSeriNoRow()">＋ Seri No Ekle</button>
+            </div>
             <div class="field"><label>Garanti</label><select id="sf-garantiDurumu"><option value="Hayır">Hayır</option><option value="Evet">Evet</option></select></div>
           </div>
           <div class="field" style="margin-top:10px">

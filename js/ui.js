@@ -38,7 +38,7 @@ function goServisForm(editId){
     document.getElementById('sf-ilgiliKisi').value=s.ilgiliKisi||'';
     document.getElementById('sf-telefon').value=s.telefon||'';
     document.getElementById('sf-email').value=s.email||'';
-    document.getElementById('sf-seriNo').value=s.seriNo||'';
+    setSeriNolar(s.seriNo?s.seriNo.split(',').map(function(x){return x.trim();}).filter(Boolean):['']);
     document.getElementById('sf-garantiDurumu').value=s.garantiDurumu||'Hayır';
     document.getElementById('sf-aksesuar-diger').value=s.aksesyarDiger||'';
     document.getElementById('sf-gelisTarihi').value=s.gelisTarihi||'';
@@ -54,7 +54,8 @@ function goServisForm(editId){
   } else {
     document.getElementById('sf-title').textContent='Yeni Servis Kaydı';
     document.getElementById('sf-sub').textContent='Yeni bir cihaz servisi oluşturun';
-    ['sf-kurumAdi','sf-ilgiliKisi','sf-telefon','sf-email','sf-seriNo','sf-aksesuar-diger','sf-gelisTarihi','sf-kargoTarihi','sf-kargoFirmasi','sf-teslimAlan','sf-notlar'].forEach(function(i){var el=document.getElementById(i);if(el)el.value=''});
+    ['sf-kurumAdi','sf-ilgiliKisi','sf-telefon','sf-email','sf-aksesuar-diger','sf-gelisTarihi','sf-kargoTarihi','sf-kargoFirmasi','sf-teslimAlan','sf-notlar'].forEach(function(i){var el=document.getElementById(i);if(el)el.value=''});
+    setSeriNolar(['']);
     document.getElementById('sf-garantiDurumu').value='Hayır';
     document.getElementById('sf-gelisTarihi').value=today();
     var sfDurumEl=document.getElementById('sf-durum');if(sfDurumEl)sfDurumEl.value='Yeni Gelen';

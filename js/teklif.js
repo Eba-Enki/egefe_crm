@@ -92,7 +92,8 @@ function renderTeklifler(){
   const tabTl=isArsiv?arsiv:aktif;
   const ob=aktif.filter(t=>t.durum==='Onay Bekleniyor'),on=aktif.filter(t=>t.durum==='Onaylandı'),re=aktif.filter(t=>t.durum==='Reddedildi');
   const ciro=on.reduce((a,t)=>a+calcTeklifToplam(t),0);
-  document.getElementById('teklif-stats').innerHTML=`
+  var tsEl=document.getElementById('teklif-stats');
+  if(tsEl)tsEl.innerHTML=`
     <div class="stat-card"><div class="stat-label">Toplam Teklif</div><div class="stat-value" style="color:var(--accent)">${aktif.length}</div></div>
     <div class="stat-card"><div class="stat-label">Onay Bekleyen</div><div class="stat-value" style="color:var(--amber)">${ob.length}</div></div>
     <div class="stat-card"><div class="stat-label">Onaylanan</div><div class="stat-value" style="color:var(--green)">${on.length}</div></div>

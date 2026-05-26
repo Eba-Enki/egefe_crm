@@ -377,7 +377,7 @@
     <div id="page-urunler" class="page">
       <div class="filter-bar"><input type="text" id="fu-ara" placeholder="Ara..." oninput="renderUrunler()" style="width:220px"><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="urun-count"></span></div>
       <div class="card"><div class="table-wrap"><table>
-        <thead><tr><th>Ürün Kodu</th><th>Ürün / İşlem Adı</th><th>Marka</th><th class="tf-satis-field" style="display:none">Kategori</th><th>Parametre</th><th>Liste Fiyatı</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead>
+        <thead><tr><th>Ürün Kodu</th><th>Ürün / İşlem Adı</th><th>Marka</th><th class="tf-satis-field" style="display:none">Kategori</th><th><span class="servis-only">Model</span><span class="satis-only">Parametre</span></th><th>Liste Fiyatı</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead>
         <tbody id="urun-table-body"></tbody>
       </table>
       <div id="urun-empty" class="empty-state">
@@ -399,7 +399,7 @@
             <div class="field"><label>Ürün Kodu</label><input type="text" id="uf-urunKodu" placeholder="Örn: SKU-001"></div>
             <div class="field"><label>Marka</label><input type="text" id="uf-marka"></div>
             <div class="field tf-satis-field" style="display:none"><label>Kategori</label><select id="uf-kategori"><option value="">— Seçin —</option></select></div>
-            <div class="field"><label>Parametre</label><input type="text" id="uf-model"></div>
+            <div class="field"><label><span class="servis-only">Model</span><span class="satis-only">Parametre</span></label><input type="text" id="uf-model"></div>
             <div class="field"><label>Liste Fiyatı</label><input type="number" id="uf-fiyat" min="0" step="0.01" placeholder="0.00"></div>
             <div class="field"><label>Para Birimi</label><select id="uf-paraBirimi"><option value="TRY">₺ TL</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option><option value="GBP">£ GBP</option></select></div>
             <div class="field form-full"><label>Açıklama</label><textarea id="uf-aciklama" rows="2"></textarea></div>

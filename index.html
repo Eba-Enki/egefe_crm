@@ -143,7 +143,7 @@
       <div class="filter-bar">
         <input type="text" id="f-kurum" placeholder="Kurum / müşteri..." oninput="filterTable()">
         <input type="text" id="f-seri" placeholder="Seri no / kayıt no..." oninput="filterTable()">
-        <select id="f-durum" onchange="filterTable()"><option value="">Tüm Durumlar</option><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Kargoya Verildi</option><option>Teslim Edildi</option><option>Tamamlandı</option><option>Reddedildi</option></select>
+        <select id="f-durum" onchange="filterTable()"><option value="">Tüm Durumlar</option><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Reddedildi</option><option>Gönderildi</option></select>
         <select id="f-garanti" onchange="filterTable()"><option value="">Garanti Tümü</option><option value="Evet">Garantili</option><option value="Hayır">Garantisiz</option></select>
         <input type="date" id="f-ts" oninput="filterTable()"><input type="date" id="f-te" oninput="filterTable()">
         <button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕</button>
@@ -208,7 +208,7 @@
           <div class="form-section-title">Servis Bilgileri</div>
           <div class="form-grid">
             <div class="field"><label>Geliş Tarihi</label><input type="date" id="sf-gelisTarihi"></div>
-            <div class="field" id="sf-durum-field"><label>Durum</label><select id="sf-durum"><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Kargoya Verildi</option><option>Teslim Edildi</option><option>Reddedildi</option></select></div>
+            <div class="field" id="sf-durum-field"><label>Durum</label><select id="sf-durum"><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Reddedildi</option><option>Gönderildi</option></select></div>
             <div class="field"><label>Kargo Tarihi</label><input type="date" id="sf-kargoTarihi"></div>
             <div class="field"><label>Kargo Firması</label><input type="text" id="sf-kargoFirmasi"></div>
             <div class="field"><label>Teslim Alan</label><input type="text" id="sf-teslimAlan"></div>
@@ -228,10 +228,14 @@
     <!-- ═══ TEKLİFLER ═══ -->
     <div id="page-teklifler" class="page">
       <div class="stats-grid" id="teklif-stats"></div>
+      <div class="tab-bar" style="margin-bottom:12px">
+        <button id="tab-teklif-aktif" class="servis-tab active" onclick="switchTeklifTab('aktif')">Açık Teklifler <span id="tab-teklif-aktif-count" class="tab-count"></span></button>
+        <button id="tab-teklif-arsiv" class="servis-tab" onclick="switchTeklifTab('arsiv')">Arşiv <span id="tab-teklif-arsiv-count" class="tab-count"></span></button>
+      </div>
       <div class="filter-bar">
         <input type="text" id="tf-f-kurum" placeholder="Kurum / müşteri..." oninput="renderTeklifler()">
         <input type="text" id="tf-f-teklif" placeholder="Teklif no..." oninput="renderTeklifler()" style="width:120px">
-        <select id="tf-f-durum" onchange="renderTeklifler()"><option value="">Tüm Durumlar</option><option>Taslak</option><option>Açık Teklif</option><option>Kabul Edildi</option><option>İptal Edildi</option><option>Reddedildi</option><option>Onay Bekleniyor</option><option>Onaylandı</option></select>
+        <select id="tf-f-durum" onchange="renderTeklifler()"><option value="">Tüm Durumlar</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Reddedildi</option><option>Tamamlandı</option></select>
         <input type="date" id="tf-f-ts" oninput="renderTeklifler()" title="Başlangıç">
         <input type="date" id="tf-f-te" oninput="renderTeklifler()" title="Bitiş">
         <button class="btn btn-ghost btn-sm" onclick="clearTeklifFilters()">✕ Temizle</button>

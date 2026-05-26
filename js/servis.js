@@ -3,7 +3,7 @@
   var existing=document.getElementById('durum-menu-'+sid);
   if(existing){existing.remove();return;}
   document.querySelectorAll('.durum-quick-menu').forEach(function(m){m.remove();});
-  const DURUMLAR=['Yeni Gelen','S.F. Bekleniyor','Onay Bekleniyor','Onaylandı','Kargoya Verildi','Tamamlandı','Reddedildi'];
+  const DURUMLAR=['Yeni Gelen','S.F. Bekleniyor','Onay Bekleniyor','Onaylandı','Reddedildi','Gönderildi'];
   const s=state.servisler.find(x=>x.id===sid);
   if(!s)return;
   const menu=document.createElement('div');
@@ -32,11 +32,19 @@
 }
 
 function durumColor(d){
-  const map={'Yeni Gelen':'#2dd4bf','S.F. Bekleniyor':'#f59e0b','Onay Bekleniyor':'#a78bfa','Onaylandı':'#3d9bc4','Kargoya Verildi':'#f472b6','Tamamlandı':'#4ade80','Reddedildi':'#f87171'};
+  const map={'Yeni Gelen':'#2dd4bf','S.F. Bekleniyor':'#f59e0b','Onay Bekleniyor':'#a78bfa','Onaylandı':'#3d9bc4','Reddedildi':'#f87171','Gönderildi':'#4ade80'};
   return map[d]||'#888';
 }
 
-const ARSIV_DURUMLAR = ['Tamamlandı', 'Reddedildi'];
+function quickDurumChange(sid,yeni){
+  var idx=state.servisler.findIndex(function(x){return x.id===sid;});
+  if(idx<0)return;
+  state.servisler[idx].durum=yeni;
+  saveAll();renderTable();renderDashboard();
+  toast('Durum "'+yeni+'" olarak güncellendi.','success');
+}
+
+const ARSIV_DURUMLAR = ['Gönderildi', 'Reddedildi'];
 let servisTab = 'aktif';
 
 function switchServisTab(tab) {

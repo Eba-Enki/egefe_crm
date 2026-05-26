@@ -66,20 +66,37 @@ function saveTeklif(andPrint=false){
 function saveTeklifAndPrint(){saveTeklif(true)}
 
 // ════ TEKLIF LIST ════
-const TSD={'Onay Bekleniyor':'badge-onay-bekl','Onaylandı':'badge-onaylandi','Taslak':'badge-sf','Açık Teklif':'badge-yeni','Kabul Edildi':'badge-onaylandi','Siparişe Aktarıldı':'badge-teslim','Reddedildi':'badge-reddedildi','İptal Edildi':'badge-reddedildi'};
+const TSD={'Onay Bekleniyor':'badge-onay-bekl','Onaylandı':'badge-onaylandi','Taslak':'badge-sf','Açık Teklif':'badge-yeni','Kabul Edildi':'badge-onaylandi','Siparişe Aktarıldı':'badge-teslim','Reddedildi':'badge-reddedildi','İptal Edildi':'badge-reddedildi','Tamamlandı':'badge-teslim'};
+const TEKLIF_ARSIV_DURUMLAR=['Tamamlandı'];
+let teklifTab='aktif';
+function switchTeklifTab(tab){
+  teklifTab=tab;
+  document.getElementById('tab-teklif-aktif').classList.toggle('active',tab==='aktif');
+  document.getElementById('tab-teklif-arsiv').classList.toggle('active',tab==='arsiv');
+  var fDEl=document.getElementById('tf-f-durum');if(fDEl)fDEl.value='';
+  renderTeklifler();
+}
 function renderTeklifler(){
   const tl=state.teklifler;
-  const ob=tl.filter(t=>t.durum==='Onay Bekleniyor'),on=tl.filter(t=>t.durum==='Onaylandı'),re=tl.filter(t=>t.durum==='Reddedildi');
+  const aktif=tl.filter(t=>!TEKLIF_ARSIV_DURUMLAR.includes(t.durum));
+  const arsiv=tl.filter(t=>TEKLIF_ARSIV_DURUMLAR.includes(t.durum));
+  var aktifCntEl=document.getElementById('tab-teklif-aktif-count');
+  var arsivCntEl=document.getElementById('tab-teklif-arsiv-count');
+  if(aktifCntEl)aktifCntEl.textContent=aktif.length;
+  if(arsivCntEl)arsivCntEl.textContent=arsiv.length;
+  const isArsiv=teklifTab==='arsiv';
+  const tabTl=isArsiv?arsiv:aktif;
+  const ob=aktif.filter(t=>t.durum==='Onay Bekleniyor'),on=aktif.filter(t=>t.durum==='Onaylandı'),re=aktif.filter(t=>t.durum==='Reddedildi');
   const ciro=on.reduce((a,t)=>a+calcTeklifToplam(t),0);
   document.getElementById('teklif-stats').innerHTML=`
-    <div class="stat-card"><div class="stat-label">Toplam Teklif</div><div class="stat-value" style="color:var(--accent)">${tl.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Toplam Teklif</div><div class="stat-value" style="color:var(--accent)">${aktif.length}</div></div>
     <div class="stat-card"><div class="stat-label">Onay Bekleyen</div><div class="stat-value" style="color:var(--amber)">${ob.length}</div></div>
     <div class="stat-card"><div class="stat-label">Onaylanan</div><div class="stat-value" style="color:var(--green)">${on.length}</div></div>
     <div class="stat-card"><div class="stat-label">Reddedilen</div><div class="stat-value" style="color:var(--red)">${re.length}</div></div>
     <div class="stat-card"><div class="stat-label">Onaylı Ciro</div><div class="stat-value" style="color:var(--teal);font-size:17px">${fmtTL(ciro)}</div></div>
   `;
   const tbody=document.getElementById('teklif-table-body');
-  if(!tl.length){tbody.innerHTML='';document.getElementById('teklif-empty').style.display='';return}
+  if(!tabTl.length){tbody.innerHTML='';document.getElementById('teklif-empty').style.display='';return}
   document.getElementById('teklif-empty').style.display='none';
   const canEdit=state.currentUser?.rol!=='izleyici';
   var fK2=(document.getElementById('tf-f-kurum')||{}).value||'';
@@ -87,13 +104,13 @@ function renderTeklifler(){
   var fD2=(document.getElementById('tf-f-durum')||{}).value||'';
   var fTS2=(document.getElementById('tf-f-ts')||{}).value||'';
   var fTE2=(document.getElementById('tf-f-te')||{}).value||'';
-  var filtTl2=tl.filter(function(t){
+  var filtTl2=tabTl.filter(function(t){
     return(!fK2||(t.kurum||'').toLowerCase().includes(fK2.toLowerCase()))
       &&(!fTN||(t.teklifNo||'').toLowerCase().includes(fTN.toLowerCase()))
       &&(!fD2||t.durum===fD2)&&(!fTS2||t.teklifTarihi>=fTS2)&&(!fTE2||t.teklifTarihi<=fTE2);
   });
   var fcEl=document.getElementById('teklif-filter-count');
-  if(fcEl)fcEl.textContent=filtTl2.length!==tl.length?filtTl2.length+'/'+tl.length+' teklif':tl.length+' teklif';
+  if(fcEl)fcEl.textContent=filtTl2.length!==tabTl.length?filtTl2.length+'/'+tabTl.length+' teklif':tabTl.length+' teklif';
   var showTemsilci=currentPortal==='satis';
   var thS=document.getElementById('th-sorumlu');
   if(thS)thS.style.display=showTemsilci?'':'none';
@@ -120,7 +137,14 @@ function changeTeklifDurum(id,yeni){
   state.teklifler[ti].durum=yeni;
   if(yeni==='Onaylandı')state.teklifler[ti].onayTarihi=today();
   const sid=state.teklifler[ti].servisId;
-  if(sid){const si=state.servisler.findIndex(x=>x.id===sid);if(si>=0){state.servisler[si].durum=yeni;if(yeni==='Onaylandı')state.servisler[si].onayTarihi=today();}}
+  if(sid){
+    const si=state.servisler.findIndex(x=>x.id===sid);
+    if(si>=0){
+      var servisDurum=yeni==='Tamamlandı'?'Gönderildi':yeni;
+      state.servisler[si].durum=servisDurum;
+      if(yeni==='Onaylandı')state.servisler[si].onayTarihi=today();
+    }
+  }
   saveAll();renderTeklifler();renderDashboard();toast(`Teklif ${yeni.toLowerCase()}. Servis kaydı güncellendi.`,'success');
 }
 

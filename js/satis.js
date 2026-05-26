@@ -60,7 +60,7 @@ function showTeklifDurumMenu(tid,btnEl){
   var t=state.teklifler.find(function(x){return x.id===tid;});
   if(!t)return;
   var SATIS_DUR=['Taslak','Açık Teklif','Kabul Edildi','İptal Edildi','Reddedildi'];
-  var SERVIS_DUR=['Onay Bekleniyor','Onaylandı','Reddedildi'];
+  var SERVIS_DUR=['Onay Bekleniyor','Onaylandı','Reddedildi','Tamamlandı'];
   var durList=currentPortal==='satis'?SATIS_DUR:SERVIS_DUR;
   var menu=document.createElement('div');
   menu.className='durum-quick-menu';

@@ -454,7 +454,7 @@
       <div class="filter-bar">
         <input type="text" id="sp-f-kurum" placeholder="Kurum / müşteri..." oninput="renderSiparisler()">
         <input type="text" id="sp-f-no" placeholder="Sipariş no..." oninput="renderSiparisler()" style="width:120px">
-        <select id="sp-f-durum" onchange="renderSiparisler()"><option value="">Tüm Durumlar</option><option>Hazırlanıyor</option><option>Kısmen Sevk Edildi</option><option>Tamamlandı</option><option>Fatura Edildi</option><option>İptal</option></select>
+        <select id="sp-f-durum" onchange="renderSiparisler()"><option value="">Tüm Durumlar</option><option>Hazırlanıyor</option><option>Kısmi Sevkiyat</option><option>Tamamlandı</option><option>Fatura Edildi</option><option>İptal</option></select>
         <input type="date" id="sp-f-ts" oninput="renderSiparisler()" title="Başlangıç">
         <input type="date" id="sp-f-te" oninput="renderSiparisler()" title="Bitiş">
         <button class="btn btn-ghost btn-sm" onclick="clearSiparisFilters()">✕ Temizle</button>
@@ -520,8 +520,18 @@
           <div class="form-grid" style="margin-bottom:8px">
             <div class="field"><label>Teklif No</label><input type="text" id="sf2-teklif-no" readonly style="background:var(--bg4);color:var(--accent)"></div>
             <div class="field"><label>Kurum</label><input type="text" id="sf2-kurum" readonly style="background:var(--bg4)"></div>
-            <div class="field"><label>Tutar</label><input type="text" id="sf2-tutar" readonly style="background:var(--bg4);color:var(--amber)"></div>
             <div class="field"><label>Satış Temsilcisi</label><input type="text" id="sf2-sorumlu" readonly style="background:var(--bg4)"></div>
+          </div>
+          <div class="form-section-title" style="margin-top:8px">Ürün / Hizmet Listesi</div>
+          <div class="table-wrap" style="max-height:260px;overflow-y:auto">
+            <table>
+              <thead><tr><th>Ürün / Hizmet</th><th style="width:90px;text-align:center">Miktar</th><th style="width:110px;text-align:right">Birim F.</th><th style="width:110px;text-align:right">Toplam</th></tr></thead>
+              <tbody id="sf2-items-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:0 4px">
+            <div id="sf2-odeme-info" style="font-size:12px;color:var(--text3)"></div>
+            <div style="font-size:14px;font-weight:700;color:var(--amber)" id="sf2-items-total"></div>
           </div>
         </div>
         <div class="form-card">
@@ -693,11 +703,12 @@
 <script src="js/init.js?v=4"></script>
 <!-- ─── FATURA MODAL ─── -->
 <div class="modal-overlay" id="modal-fatura">
-  <div class="modal-card" style="max-width:420px">
+  <div class="modal-card" style="max-width:440px">
     <div class="modal-header"><div class="modal-title">Faturaya Aktar</div><button class="modal-close" onclick="closeModal('modal-fatura')">✕</button></div>
     <div class="modal-body">
+      <div id="sp-fatura-ozet" style="background:var(--bg4);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:13px"></div>
       <div class="form-grid">
-        <div class="field form-full"><label>Fatura No <span class="req">*</span></label><input type="text" id="fm-faturaNo" placeholder="FAT-2025-001"></div>
+        <div class="field form-full"><label>Fatura No <span class="req">*</span></label><input type="text" id="fm-faturaNo" placeholder="Fatura numarası girin..."></div>
         <div class="field"><label>Fatura Tarihi <span class="req">*</span></label><input type="date" id="fm-faturaTarihi"></div>
         <div class="field"><label>Vade Tarihi</label><input type="date" id="fm-vadeTarihi"></div>
       </div>
@@ -705,6 +716,20 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-fatura')">İptal</button>
       <button class="btn btn-primary" onclick="saveFatura()">Faturaya Aktar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SİPARİŞ DETAY MODAL ─── -->
+<div class="modal-overlay" id="modal-siparis-detay">
+  <div class="modal-card" style="max-width:660px;max-height:85vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <div class="modal-title" id="sp-detay-title">Sipariş Detay</div>
+      <button class="modal-close" onclick="closeModal('modal-siparis-detay')">✕</button>
+    </div>
+    <div class="modal-body" style="overflow-y:auto"><div id="sp-detay-body"></div></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-siparis-detay')">Kapat</button>
     </div>
   </div>
 </div>

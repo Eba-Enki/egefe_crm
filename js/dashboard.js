@@ -57,7 +57,7 @@
   if(rlEl){
     if(currentPortal==='satis'){
       // Sipariş durum dağılımı
-      const spDurs=[{l:'Hazırlanıyor',c:'#f59e0b'},{l:'Kısmen Sevk Edildi',c:'#2dd4bf'},{l:'Tamamlandı',c:'#4ade80'},{l:'İptal',c:'#f87171'}];
+      const spDurs=[{l:'Hazırlanıyor',c:'#f59e0b'},{l:'Kısmi Sevkiyat',c:'#2dd4bf'},{l:'Tamamlandı',c:'#4ade80'},{l:'Fatura Edildi',c:'#3d9bc4'},{l:'İptal',c:'#f87171'}];
       const spTotal=sps.length||1;
       rlEl.innerHTML=spDurs.map(function(sd){
         const cnt=sps.filter(function(x){return x.durum===sd.l;}).length;

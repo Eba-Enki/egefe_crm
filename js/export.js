@@ -33,7 +33,26 @@ function exportTekliflerExcel(){
 }
 
 
-// ════ SİPARİŞLER ════
+function exportSiparislerExcel(){
+  var data=state.siparisler||[];
+  var fK=(document.getElementById('sp-f-kurum')||{}).value||'';
+  var fN=(document.getElementById('sp-f-no')||{}).value||'';
+  var fD=(document.getElementById('sp-f-durum')||{}).value||'';
+  var fTs=(document.getElementById('sp-f-ts')||{}).value||'';
+  var fTe=(document.getElementById('sp-f-te')||{}).value||'';
+  if(fK)data=data.filter(function(s){return(s.kurum||'').toLowerCase().includes(fK.toLowerCase());});
+  if(fN)data=data.filter(function(s){return(s.siparisNo||'').toLowerCase().includes(fN.toLowerCase());});
+  if(fD)data=data.filter(function(s){return s.durum===fD;});
+  if(fTs)data=data.filter(function(s){var t=s.siparisTarihi||s.teklifTarihi||(s.olusturmaTarihi||'').slice(0,10);return t>=fTs;});
+  if(fTe)data=data.filter(function(s){var t=s.siparisTarihi||s.teklifTarihi||(s.olusturmaTarihi||'').slice(0,10);return t<=fTe;});
+  var rows=data.map(function(s){
+    var toplam=(s.satirlar||[]).reduce(function(a,i){return a+i.miktar*i.birimFiyat;},0);
+    return[s.siparisNo||'',s.kurum||'',toplam,s.siparisTarihi||s.teklifTarihi||'',s.durum||'',s.satisTemsilcisi||s.sorumlu||''];
+  });
+  _dlBlob(_xlsBlob(rows,['Sipariş No','Kurum','Tutar','Tarih','Durum','Satış Temsilcisi']),'siparisler_'+today()+'.xls');
+  toast('Excel indirildi.','success');
+}
+
 // ════ IMPORT / EXPORT ════
 function exportData(){
   const blob=new Blob([JSON.stringify({version:5,exportDate:new Date().toISOString(),servisler:state.servisler,teklifler:state.teklifler,musteriler:state.musteriler,urunler:state.urunler,users:state.users,settings:state.settings},null,2)],{type:'application/json'});

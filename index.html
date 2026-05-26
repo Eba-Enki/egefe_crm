@@ -443,15 +443,19 @@
 
     <!-- ═══ SİPARİŞLER ═══ -->
     <div id="page-siparisler" class="page">
-      <div class="card" style="margin-top:16px">
-        <div class="card-header" style="flex-wrap:wrap;gap:8px">
+      <div class="filter-bar">
+        <input type="text" id="sp-f-kurum" placeholder="Kurum / müşteri..." oninput="renderSiparisler()">
+        <input type="text" id="sp-f-no" placeholder="Sipariş no..." oninput="renderSiparisler()" style="width:120px">
+        <select id="sp-f-durum" onchange="renderSiparisler()"><option value="">Tüm Durumlar</option><option>Hazırlanıyor</option><option>Kısmen Sevk Edildi</option><option>Tamamlandı</option><option>Fatura Edildi</option><option>İptal</option></select>
+        <input type="date" id="sp-f-ts" oninput="renderSiparisler()" title="Başlangıç">
+        <input type="date" id="sp-f-te" oninput="renderSiparisler()" title="Bitiş">
+        <button class="btn btn-ghost btn-sm" onclick="clearSiparisFilters()">✕ Temizle</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportSiparislerExcel()" style="color:var(--green)">⬇ Excel</button>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="siparis-filter-count"></span>
+      </div>
+      <div class="card">
+        <div class="card-header">
           <span class="card-title">Siparişler</span>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-            <input type="text" id="sp-f-kurum" placeholder="Kurum ara..." style="padding:4px 8px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);color:var(--text);width:130px" oninput="renderSiparisler()">
-            <select id="sp-f-durum" style="padding:4px 8px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);color:var(--text)" onchange="renderSiparisler()">
-              <option value="">Tüm Durumlar</option><option>Hazırlanıyor</option><option>Kısmen Sevk Edildi</option><option>Tamamlandı</option><option>İptal</option>
-            </select>
-          </div>
         </div>
         <div class="table-wrap"><table>
           <thead><tr>
@@ -468,13 +472,18 @@
 
     <!-- ═══ FATURALAR ═══ -->
     <div id="page-faturalar" class="page">
-      <div class="stats-grid" id="fatura-stats"></div>
-      <div class="card" style="margin-top:16px">
-        <div class="card-header" style="flex-wrap:wrap;gap:8px">
+      <div class="filter-bar">
+        <input type="text" id="ft-f-kurum" placeholder="Kurum / müşteri..." oninput="renderFaturalar()">
+        <input type="text" id="ft-f-no" placeholder="Fatura no..." oninput="renderFaturalar()" style="width:120px">
+        <select id="ft-f-durum" onchange="renderFaturalar()"><option value="">Tüm Durumlar</option><option>Ödenmedi</option><option>Ödeme Bekleniyor</option><option>Ödendi</option></select>
+        <input type="date" id="ft-f-ts" oninput="renderFaturalar()" title="Başlangıç">
+        <input type="date" id="ft-f-te" oninput="renderFaturalar()" title="Bitiş">
+        <button class="btn btn-ghost btn-sm" onclick="clearFaturaFilters()">✕ Temizle</button>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="fatura-filter-count"></span>
+      </div>
+      <div class="card">
+        <div class="card-header">
           <span class="card-title">Faturalar</span>
-          <div style="display:flex;gap:6px">
-            <input type="text" id="ft-f-kurum" placeholder="Kurum ara..." style="padding:4px 8px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);color:var(--text);width:130px" oninput="renderFaturalar()">
-          </div>
         </div>
         <div class="table-wrap"><table>
           <thead><tr>

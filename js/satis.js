@@ -84,21 +84,20 @@ function renderSiparisler(){
   if(!state.siparisler)state.siparisler=DB.pload('siparisler',[]);
   var data=state.siparisler;
   var fK=(document.getElementById('sp-f-kurum')||{}).value||'';
+  var fN=(document.getElementById('sp-f-no')||{}).value||'';
   var fD=(document.getElementById('sp-f-durum')||{}).value||'';
+  var fTs=(document.getElementById('sp-f-ts')||{}).value||'';
+  var fTe=(document.getElementById('sp-f-te')||{}).value||'';
   var filtered=data.filter(function(s){
-    return(!fK||(s.kurum||'').toLowerCase().includes(fK.toLowerCase()))&&(!fD||s.durum===fD);
+    var tarih=s.siparisTarihi||s.teklifTarihi||(s.olusturmaTarihi||'').slice(0,10);
+    return(!fK||(s.kurum||'').toLowerCase().includes(fK.toLowerCase()))
+      &&(!fN||(s.siparisNo||'').toLowerCase().includes(fN.toLowerCase()))
+      &&(!fD||s.durum===fD)
+      &&(!fTs||tarih>=fTs)
+      &&(!fTe||tarih<=fTe);
   });
-  // Stats
-  var statsEl=document.getElementById('siparis-stats');
-  if(statsEl){
-    var ac=data.filter(function(s){return s.durum==='Hazırlanıyor';}).length;
-    var ks=data.filter(function(s){return s.durum==='Kısmen Sevk Edildi';}).length;
-    var tm=data.filter(function(s){return s.durum==='Tamamlandı';}).length;
-    statsEl.innerHTML='<div class="stat-card"><div class="stat-label">Toplam Sipariş</div><div class="stat-value" style="color:var(--accent)">'+data.length+'</div></div>'
-      +'<div class="stat-card"><div class="stat-label">Hazırlanıyor</div><div class="stat-value" style="color:var(--teal)">'+ac+'</div></div>'
-      +'<div class="stat-card"><div class="stat-label">Kısmen Sevk</div><div class="stat-value" style="color:var(--amber)">'+ks+'</div></div>'
-      +'<div class="stat-card"><div class="stat-label">Tamamlandı</div><div class="stat-value" style="color:var(--green)">'+tm+'</div></div>';
-  }
+  var cntEl=document.getElementById('siparis-filter-count');
+  if(cntEl)cntEl.textContent=filtered.length+' kayıt';
   var tbody=document.getElementById('siparis-table-body');
   var emptyEl=document.getElementById('siparis-empty');
   if(!tbody)return;
@@ -218,19 +217,20 @@ function renderFaturalar(){
   if(!state.faturalar)state.faturalar=[];
   var data=state.faturalar;
   var fK=(document.getElementById('ft-f-kurum')||{}).value||'';
-  var filtered=data.filter(function(f){return!fK||(f.kurum||'').toLowerCase().includes(fK.toLowerCase());});
+  var fN=(document.getElementById('ft-f-no')||{}).value||'';
+  var fD=(document.getElementById('ft-f-durum')||{}).value||'';
+  var fTs=(document.getElementById('ft-f-ts')||{}).value||'';
+  var fTe=(document.getElementById('ft-f-te')||{}).value||'';
+  var filtered=data.filter(function(f){
+    return(!fK||(f.kurum||'').toLowerCase().includes(fK.toLowerCase()))
+      &&(!fN||(f.faturaNo||'').toLowerCase().includes(fN.toLowerCase()))
+      &&(!fD||f.durum===fD)
+      &&(!fTs||(f.faturaTarihi||'')>=fTs)
+      &&(!fTe||(f.faturaTarihi||'')<=fTe);
+  });
+  var cntEl=document.getElementById('fatura-filter-count');
+  if(cntEl)cntEl.textContent=filtered.length+' kayıt';
   var today_ms=new Date().getTime();
-  var statsEl=document.getElementById('fatura-stats');
-  if(statsEl){
-    var topTutar=data.reduce(function(a,f){return a+f.tutar;},0);
-    var odul=data.filter(function(f){return f.durum==='Ödendi';}).length;
-    var bekl=data.filter(function(f){return f.durum==='Ödeme Bekleniyor';}).length;
-    var vgeç=data.filter(function(f){var vd=f.vadeTarihi?new Date(f.vadeTarihi):null;return vd&&!isNaN(vd)&&vd.getTime()<today_ms&&f.durum==='Ödenmedi';}).length;
-    statsEl.innerHTML='<div class="stat-card"><div class="stat-label">Toplam Fatura</div><div class="stat-value" style="color:var(--accent)">'+data.length+'</div></div>'
-      +'<div class="stat-card"><div class="stat-label">Ödeme Bekleniyor</div><div class="stat-value" style="color:var(--amber)">'+bekl+'</div></div>'
-      +'<div class="stat-card"><div class="stat-label">Vadesi Geçen</div><div class="stat-value" style="color:var(--red)">'+vgeç+'</div></div>'
-      +'<div class="stat-card"><div class="stat-label">Toplam Tutar</div><div class="stat-value" style="color:var(--green);font-size:16px">'+fmtTL(topTutar)+'</div></div>';
-  }
   var tbody=document.getElementById('fatura-table-body');
   if(!tbody)return;
   if(!filtered.length){tbody.innerHTML='';document.getElementById('fatura-empty').style.display='';return;}
@@ -253,6 +253,16 @@ function renderFaturalar(){
   }).join('');
 }
 
+function clearSiparisFilters(){
+  ['sp-f-kurum','sp-f-no','sp-f-ts','sp-f-te'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  var e=document.getElementById('sp-f-durum');if(e)e.value='';
+  renderSiparisler();
+}
+function clearFaturaFilters(){
+  ['ft-f-kurum','ft-f-no','ft-f-ts','ft-f-te'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  var e=document.getElementById('ft-f-durum');if(e)e.value='';
+  renderFaturalar();
+}
 function markFaturaOdendi(fid){
   var fi=(state.faturalar||[]).findIndex(function(x){return x.id===fid;});
   if(fi>=0){state.faturalar[fi].durum='Ödendi';saveAll();renderFaturalar();toast('Fatura ödendi olarak işaretlendi.','success');}

@@ -376,7 +376,7 @@ function openParamSecModal(idx,count){
   if(!list)return;
   list.innerHTML=parametreler.map((p,i)=>`<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);user-select:none;transition:background .1s"><input type="checkbox" id="ps-cb-${i}" value="${p.replace(/"/g,'&quot;')}" ${mevcut.includes(p)?'checked':''} onchange="updateParamSecCounter()"><span style="font-size:13px;color:var(--text)">${p}</span></label>`).join('');
   updateParamSecCounter();
-  document.getElementById('modal-parametre-sec').style.display='flex';
+  openModal('modal-parametre-sec');
 }
 function updateParamSecCounter(){
   const all=document.querySelectorAll('#parametre-sec-list input[type=checkbox]');

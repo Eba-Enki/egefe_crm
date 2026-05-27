@@ -153,12 +153,24 @@ function deleteUrunKategori(i){
 }
 
 // ════ AYARLAR ════
+function switchSettingsPanel(name){
+  document.querySelectorAll('.settings-nav-item').forEach(function(el){el.classList.toggle('active',el.dataset.panel===name);});
+  document.querySelectorAll('.settings-panel').forEach(function(el){el.classList.toggle('active',el.id==='sp-'+name);});
+}
+function updateSettingsPreview(){
+  var sp=document.getElementById('set-servis-prefix');var sd=document.getElementById('set-servis-digits');
+  var tp=document.getElementById('set-teklif-prefix');var td=document.getElementById('set-teklif-digits');
+  var ps=document.getElementById('preview-servis');var pt=document.getElementById('preview-teklif');
+  if(sp&&sd&&ps){var p=sp.value.trim().toUpperCase()||'KN';var d=Math.min(9,Math.max(3,parseInt(sd.value)||6));ps.textContent=p+String(1).padStart(d,'0');}
+  if(tp&&td&&pt){var p2=tp.value.trim().toUpperCase()||'TKL';var d2=Math.min(9,Math.max(3,parseInt(td.value)||5));pt.textContent=p2+String(1).padStart(d2,'0');}
+}
 function loadSettings(){
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''});
   var spEl=document.getElementById('set-servis-prefix');if(spEl)spEl.value=state.settings.servisPrefix||'KN';
   var sdEl=document.getElementById('set-servis-digits');if(sdEl)sdEl.value=state.settings.servisDigits||6;
   var tpEl=document.getElementById('set-teklif-prefix');if(tpEl)tpEl.value=state.settings.teklifPrefix||'TKL';
   var tdEl=document.getElementById('set-teklif-digits');if(tdEl)tdEl.value=state.settings.teklifDigits||5;
+  updateSettingsPreview();
   renderUrunKategorileri();
 }
 function saveSettings(){

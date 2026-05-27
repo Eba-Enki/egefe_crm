@@ -50,7 +50,7 @@
 
 <!-- ─── SIDEBAR ─── -->
 <div id="sidebar">
-  <div class="sb-logo" style="display:flex;align-items:center;gap:10px;padding:12px 16px">
+  <div class="sb-logo" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer" onclick="showPage('dashboard')" title="Dashboard'a git">
     <img id="sb-logo-img" src="" alt="Egefe" style="height:52px;object-fit:contain;display:block;mix-blend-mode:screen;flex-shrink:0">
     <div>
       
@@ -590,67 +590,224 @@
 
     <!-- ═══ AYARLAR ═══ -->
     <div id="page-ayarlar" class="page">
-      <div class="form-page" style="max-width:520px">
-        <div class="form-card">
-          <div class="form-section-title">Firma Bilgileri</div>
-          <div class="form-grid" style="gap:12px">
-            <div class="field form-full"><label>Firma Adı</label><input type="text" id="set-firma"></div>
-            <div class="field"><label>Telefon</label><input type="text" id="set-tel"></div>
-            <div class="field"><label>Faks</label><input type="text" id="set-faks"></div>
-            <div class="field form-full"><label>Adres</label><input type="text" id="set-adres"></div>
-            <div class="field"><label>E-posta</label><input type="text" id="set-email"></div>
-            <div class="field"><label>Web</label><input type="text" id="set-web"></div>
-            <div class="field"><label>Vergi Dairesi</label><input type="text" id="set-vergi-dairesi"></div>
-            <div class="field"><label>Vergi Numarası</label><input type="text" id="set-vergi-no"></div>
+      <div class="settings-wrap">
+
+        <!-- Sol Navigasyon -->
+        <aside class="settings-nav">
+          <div class="settings-nav-section">Genel</div>
+          <div class="settings-nav-item active" data-panel="firma" onclick="switchSettingsPanel('firma')">
+            <span class="settings-nav-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </span>
+            <span class="settings-nav-label">Firma Bilgileri</span>
           </div>
-          <div class="form-actions"><button class="btn btn-primary" onclick="saveSettings()">Kaydet</button></div>
-        </div>
-        <div class="form-card" style="margin-top:14px">
-          <div class="form-section-title">Kayıt Numarası Ayarları</div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Yeni oluşturulan kayıtlarda kullanılacak numara formatını belirleyin. Mevcut kayıt numaraları değişmez.</div>
-          <div class="form-grid" style="gap:12px">
-            <div class="field"><label>Servis Kayıt No Ön Eki</label><input type="text" id="set-servis-prefix" placeholder="KN" maxlength="10" style="text-transform:uppercase"></div>
-            <div class="field"><label>Servis No Basamak Sayısı</label><input type="number" id="set-servis-digits" min="3" max="9" placeholder="6"></div>
-            <div class="field"><label>Teklif No Ön Eki</label><input type="text" id="set-teklif-prefix" placeholder="TKL" maxlength="10" style="text-transform:uppercase"></div>
-            <div class="field"><label>Teklif No Basamak Sayısı</label><input type="number" id="set-teklif-digits" min="3" max="9" placeholder="5"></div>
+          <div class="settings-nav-item" data-panel="kayitno" onclick="switchSettingsPanel('kayitno')">
+            <span class="settings-nav-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+            </span>
+            <span class="settings-nav-label">Kayıt Numaraları</span>
           </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:10px">Örnek: Ön ek <strong>KN</strong>, basamak <strong>6</strong> → <strong>KN000001</strong></div>
-          <div class="form-actions"><button class="btn btn-primary" onclick="saveSettings()">Kaydet</button></div>
-        </div>
-        <div class="form-card" style="margin-top:14px">
-          <div class="form-section-title">Görünüm</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0">
-            <div>
-              <div style="font-size:13px;font-weight:500">Tema</div>
-              <div style="font-size:12px;color:var(--text3);margin-top:2px">Koyu veya açık renk şeması</div>
+          <div class="settings-nav-section">Arayüz</div>
+          <div class="settings-nav-item" data-panel="gorunum" onclick="switchSettingsPanel('gorunum')">
+            <span class="settings-nav-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </span>
+            <span class="settings-nav-label">Görünüm</span>
+          </div>
+          <div class="settings-nav-item tf-satis-field" data-panel="kategoriler" onclick="switchSettingsPanel('kategoriler')" style="display:none">
+            <span class="settings-nav-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            </span>
+            <span class="settings-nav-label">Ürün Kategorileri</span>
+          </div>
+          <div class="settings-nav-section">Sistem</div>
+          <div class="settings-nav-item" data-panel="veri" onclick="switchSettingsPanel('veri')">
+            <span class="settings-nav-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </span>
+            <span class="settings-nav-label">Veri Yönetimi</span>
+          </div>
+        </aside>
+
+        <!-- Sağ İçerik -->
+        <div class="settings-content">
+
+          <!-- Panel: Firma Bilgileri -->
+          <div id="sp-firma" class="settings-panel active">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+              <div>
+                <div class="settings-panel-title">Firma Bilgileri</div>
+                <div class="settings-panel-sub">Fatura, tutanak ve tekliflerde görüntülenecek firma kimlik bilgileri</div>
+              </div>
             </div>
-            <div class="theme-switcher" id="theme-switcher">
-              <button onclick="setTheme('dark')" id="btn-theme-dark" class="theme-btn active">🌙 Koyu</button>
-              <button onclick="setTheme('light')" id="btn-theme-light" class="theme-btn">☀ Açık</button>
+            <div class="settings-section">
+              <div class="form-grid" style="gap:14px">
+                <div class="field form-full"><label>Firma Adı</label><input type="text" id="set-firma" placeholder="Şirket adını girin"></div>
+                <div class="field"><label>Telefon</label><input type="text" id="set-tel" placeholder="+90 (312) 000 00 00"></div>
+                <div class="field"><label>Faks</label><input type="text" id="set-faks" placeholder="+90 (312) 000 00 00"></div>
+                <div class="field form-full"><label>Adres</label><input type="text" id="set-adres" placeholder="Şirket adresi"></div>
+                <div class="field"><label>E-posta</label><input type="email" id="set-email" placeholder="info@sirket.com"></div>
+                <div class="field"><label>Web Sitesi</label><input type="text" id="set-web" placeholder="www.sirket.com"></div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-subsection-title">Vergi Bilgileri</div>
+              <div class="form-grid" style="gap:14px">
+                <div class="field"><label>Vergi Dairesi</label><input type="text" id="set-vergi-dairesi" placeholder="Vergi dairesi adı"></div>
+                <div class="field"><label>Vergi Numarası</label><input type="text" id="set-vergi-no" placeholder="1234567890"></div>
+              </div>
+            </div>
+            <div class="settings-footer">
+              <button class="btn btn-ghost" onclick="loadSettings()">Sıfırla</button>
+              <button class="btn btn-primary" onclick="saveSettings()">Değişiklikleri Kaydet</button>
             </div>
           </div>
-        </div>
-        <div class="form-card tf-satis-field" style="margin-top:14px;display:none">
-          <div class="form-section-title">Ürün Kategorileri</div>
-          <div id="urun-kategori-list" style="margin-bottom:12px"></div>
-          <div style="display:flex;gap:8px">
-            <input type="text" id="yeni-kategori-input" placeholder="Yeni kategori adı" style="flex:1">
-            <button class="btn btn-primary" onclick="addUrunKategori()">Ekle</button>
+
+          <!-- Panel: Kayıt Numaraları -->
+          <div id="sp-kayitno" class="settings-panel">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+              </div>
+              <div>
+                <div class="settings-panel-title">Kayıt Numaraları</div>
+                <div class="settings-panel-sub">Yeni kayıtlar için numara ön eki ve basamak sayısını yapılandırın</div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-info-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Mevcut kayıt numaraları değişmez. Bu ayar yalnızca bundan sonra oluşturulacak kayıtları etkiler.
+              </div>
+              <div class="settings-subsection-title">Servis Kayıt Numarası</div>
+              <div class="form-grid" style="gap:14px">
+                <div class="field">
+                  <label>Ön Ek</label>
+                  <input type="text" id="set-servis-prefix" placeholder="KN" maxlength="10" style="text-transform:uppercase" oninput="updateSettingsPreview()">
+                </div>
+                <div class="field">
+                  <label>Basamak Sayısı</label>
+                  <input type="number" id="set-servis-digits" min="3" max="9" placeholder="6" oninput="updateSettingsPreview()">
+                </div>
+              </div>
+              <div class="settings-preview-row">Örnek: <strong id="preview-servis">KN000001</strong></div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-subsection-title">Teklif Numarası</div>
+              <div class="form-grid" style="gap:14px">
+                <div class="field">
+                  <label>Ön Ek</label>
+                  <input type="text" id="set-teklif-prefix" placeholder="TKL" maxlength="10" style="text-transform:uppercase" oninput="updateSettingsPreview()">
+                </div>
+                <div class="field">
+                  <label>Basamak Sayısı</label>
+                  <input type="number" id="set-teklif-digits" min="3" max="9" placeholder="5" oninput="updateSettingsPreview()">
+                </div>
+              </div>
+              <div class="settings-preview-row">Örnek: <strong id="preview-teklif">TKL00001</strong></div>
+            </div>
+            <div class="settings-footer">
+              <button class="btn btn-ghost" onclick="loadSettings()">Sıfırla</button>
+              <button class="btn btn-primary" onclick="saveSettings()">Değişiklikleri Kaydet</button>
+            </div>
           </div>
-        </div>
-        <div class="form-card" style="margin-top:14px">
-          <div class="form-section-title">Veri Yedekleme / Geri Yükleme</div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6">
-            Yedek; servis, teklif, sipariş, fatura, müşteri ve ürün kayıtlarını tek bir JSON dosyasına aktarır. Geri yükleme mevcut verilerle birleştirir, aynı kayıtları tekrar eklemez.
+
+          <!-- Panel: Görünüm -->
+          <div id="sp-gorunum" class="settings-panel">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              </div>
+              <div>
+                <div class="settings-panel-title">Görünüm</div>
+                <div class="settings-panel-sub">Arayüz renk teması ve görsel tercihler</div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">Renk Teması</div>
+                  <div class="settings-row-sub">Koyu veya açık renk şeması seçin. Değişiklik anında uygulanır.</div>
+                </div>
+                <div class="theme-switcher" id="theme-switcher">
+                  <button onclick="setTheme('dark')" id="btn-theme-dark" class="theme-btn active">🌙 Koyu</button>
+                  <button onclick="setTheme('light')" id="btn-theme-light" class="theme-btn">☀ Açık</button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:9px">
-            <button class="btn btn-ghost" style="justify-content:flex-start" onclick="exportData()">⬇ Yedek Al (JSON İndir)</button>
-            <label class="btn btn-ghost" style="justify-content:flex-start;cursor:pointer">⬆ Yedek Yükle (JSON Seç)<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
-            <div style="border-top:1px solid var(--border);margin:4px 0"></div>
-            <button class="btn btn-danger" style="justify-content:flex-start" onclick="clearAllData()">⊗ Tüm Veriyi Sil</button>
+
+          <!-- Panel: Ürün Kategorileri -->
+          <div id="sp-kategoriler" class="settings-panel tf-satis-field" style="display:none">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              </div>
+              <div>
+                <div class="settings-panel-title">Ürün Kategorileri</div>
+                <div class="settings-panel-sub">Ürünleri gruplamak için kullanılan kategori listesini yönetin</div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div id="urun-kategori-list" style="margin-bottom:16px"></div>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="yeni-kategori-input" placeholder="Yeni kategori adı" style="flex:1">
+                <button class="btn btn-primary" onclick="addUrunKategori()">Ekle</button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+
+          <!-- Panel: Veri Yönetimi -->
+          <div id="sp-veri" class="settings-panel">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+              </div>
+              <div>
+                <div class="settings-panel-title">Veri Yönetimi</div>
+                <div class="settings-panel-sub">Yedekleme, geri yükleme ve sistem sıfırlama işlemleri</div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-action-card">
+                <div class="settings-action-info">
+                  <div class="settings-action-label">Yedek Al</div>
+                  <div class="settings-action-sub">Tüm servis, teklif, sipariş, fatura, müşteri ve ürün kayıtları tek bir JSON dosyasına aktarılır</div>
+                </div>
+                <button class="btn btn-ghost" onclick="exportData()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  JSON İndir
+                </button>
+              </div>
+              <div class="settings-action-card">
+                <div class="settings-action-info">
+                  <div class="settings-action-label">Yedek Yükle</div>
+                  <div class="settings-action-sub">Mevcut verilerle birleştirilir; aynı ID'ye sahip kayıtlar tekrar eklenmez</div>
+                </div>
+                <label class="btn btn-ghost" style="cursor:pointer">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  JSON Seç
+                  <input type="file" accept=".json" style="display:none" onchange="importData(event)">
+                </label>
+              </div>
+            </div>
+            <div class="settings-section settings-danger-section">
+              <div class="settings-subsection-title" style="color:var(--red)">Tehlikeli Bölge</div>
+              <div class="settings-action-card" style="border-bottom:none">
+                <div class="settings-action-info">
+                  <div class="settings-action-label" style="color:var(--red)">Tüm Veriyi Sil</div>
+                  <div class="settings-action-sub">Bu işlem geri alınamaz. Tüm kayıtlar kalıcı olarak silinir.</div>
+                </div>
+                <button class="btn btn-danger" onclick="clearAllData()">Veriyi Sil</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /settings-content -->
+      </div><!-- /settings-wrap -->
     </div>
 
   </div><!-- /content -->

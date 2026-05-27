@@ -300,9 +300,9 @@ input.musteri-locked{background:var(--bg4)!important;cursor:default;padding-righ
 }
 .teklif-items td input:focus,.teklif-items td select:focus{border-color:var(--accent);background:var(--bg4)}
 .teklif-items td input:focus-visible,.teklif-items td select:focus-visible{outline:none}
-.ti-aciklama{width:36%}.ti-miktar{width:9%}.ti-birim{width:10%}.ti-fiyat{width:13%}
-.ti-total{width:13%;font-family:var(--font-mono);font-size:12px;color:var(--amber);padding-right:10px!important;text-align:right;white-space:nowrap}
-.ti-del{width:4%;text-align:center}
+.ti-aciklama{width:36%;vertical-align:top}.ti-miktar{width:9%;vertical-align:top}.ti-birim{width:10%;vertical-align:top}.ti-fiyat{width:13%;vertical-align:top}
+.ti-total{width:13%;font-family:var(--font-mono);font-size:12px;color:var(--amber);padding-right:10px!important;text-align:right;white-space:nowrap;vertical-align:top}
+.ti-del{width:4%;text-align:center;vertical-align:top}
 .teklif-totals{background:var(--bg3);padding:13px 16px;display:flex;justify-content:flex-end}
 .totals-inner{min-width:220px}
 .totals-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px}

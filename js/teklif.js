@@ -17,11 +17,11 @@ function renderTeklifItems(){
       ${paramsHtml}
       <div id="cb-ti-${i}" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:500;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;max-height:180px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.4)"></div>
     </td>
-    <td class="ti-miktar" style="vertical-align:middle"><input type="number" value="${item.miktar}" min="0.01" step="0.01" oninput="teklifItems[${i}].miktar=parseFloat(this.value)||0;updateTeklifTotals()"></td>
-    <td class="ti-birim" style="vertical-align:middle"><select onchange="teklifItems[${i}].birim=this.value"><option ${item.birim==='Adet'?'selected':''}>Adet</option><option ${item.birim==='Saat'?'selected':''}>Saat</option><option ${item.birim==='Gün'?'selected':''}>Gün</option><option ${item.birim==='Parça'?'selected':''}>Parça</option></select></td>
-    <td class="ti-fiyat" style="vertical-align:middle"><input type="number" id="ti-fiyat-${i}" value="${item.birimFiyat}" min="0" step="0.01" oninput="teklifItems[${i}].birimFiyat=parseFloat(this.value)||0;updateTeklifTotals()"></td>
-    <td class="ti-total" style="vertical-align:middle" id="ti-total-${i}">${fmtCur(item.miktar*(item.birimFiyat||0))}</td>
-    <td class="ti-del" style="vertical-align:middle"><button class="btn-icon" style="color:var(--red)" onclick="removeTeklifItem(${i})">⊗</button></td>
+    <td class="ti-miktar" style="vertical-align:top"><input type="number" value="${item.miktar}" min="0.01" step="0.01" oninput="teklifItems[${i}].miktar=parseFloat(this.value)||0;updateTeklifTotals()"></td>
+    <td class="ti-birim" style="vertical-align:top"><select onchange="teklifItems[${i}].birim=this.value"><option ${item.birim==='Adet'?'selected':''}>Adet</option><option ${item.birim==='Saat'?'selected':''}>Saat</option><option ${item.birim==='Gün'?'selected':''}>Gün</option><option ${item.birim==='Parça'?'selected':''}>Parça</option></select></td>
+    <td class="ti-fiyat" style="vertical-align:top"><input type="number" id="ti-fiyat-${i}" value="${item.birimFiyat}" min="0" step="0.01" oninput="teklifItems[${i}].birimFiyat=parseFloat(this.value)||0;updateTeklifTotals()"></td>
+    <td class="ti-total" style="vertical-align:top" id="ti-total-${i}">${fmtCur(item.miktar*(item.birimFiyat||0))}</td>
+    <td class="ti-del" style="vertical-align:top"><button class="btn-icon" style="color:var(--red)" onclick="removeTeklifItem(${i})">⊗</button></td>
   </tr>`;}).join('');
   updateTeklifTotals();
 }

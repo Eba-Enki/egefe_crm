@@ -21,7 +21,7 @@ function renderPagination(containerId,currentPage,totalItems,fnName){
   h+='</div>';
   el.innerHTML=h;
 }
-const PAGE_TITLES={dashboard:'Dashboard',servisler:'Servis Kayıtları','servis-form':'Servis Formu',teklifler:'Teklifler',tutanaklar:'Teslim Tutanakları','teklif-form':'Teklif Hazırla',musteriler:'Müşteriler','musteri-form':'Müşteri',urunler:'Ürünler','urun-form':'Ürün',raporlar:'Raporlar',siparisler:'Siparişler',faturalar:'Faturalar','siparis-form':'Sipariş Oluştur',kullanici:'Kullanıcı Yönetimi','kullanici-form':'Kullanıcı',ayarlar:'Ayarlar',tutanaklar:'Tutanaklar'};
+const PAGE_TITLES={dashboard:'Dashboard',servisler:'Servis Kayıtları','servis-form':'Servis Formu',teklifler:'Teklifler',tutanaklar:'Teslim Tutanakları','teklif-form':'Teklif Hazırla',musteriler:'Müşteriler','musteri-form':'Müşteri',urunler:'Ürünler','urun-form':'Ürün',siparisler:'Siparişler',faturalar:'Faturalar','siparis-form':'Sipariş Oluştur',kullanici:'Kullanıcı Yönetimi','kullanici-form':'Kullanıcı',ayarlar:'Ayarlar',tutanaklar:'Tutanaklar'};
 function showPage(id,skipRender){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
@@ -46,7 +46,7 @@ function showPage(id,skipRender){
   document.querySelectorAll('.topbar-tab-group').forEach(function(g){g.style.display='none';});
   var _tg={teklifler:'topbar-tabs-teklifler',siparisler:'topbar-tabs-siparisler',faturalar:'topbar-tabs-faturalar'}[id];
   if(_tg){var _tgEl=document.getElementById(_tg);if(_tgEl)_tgEl.style.display='flex';}
-  const renders={dashboard:renderDashboard,servisler:renderTable,teklifler:renderTeklifler,musteriler:renderMusteriler,urunler:renderUrunler,raporlar:renderRaporlar,kullanici:renderUserTable,ayarlar:loadSettings,tutanaklar:renderTutanaklar,siparisler:renderSiparisler,faturalar:renderFaturalar,'siparis-form':function(){}};
+  const renders={dashboard:renderDashboard,servisler:renderTable,teklifler:renderTeklifler,musteriler:renderMusteriler,urunler:renderUrunler,kullanici:renderUserTable,ayarlar:loadSettings,tutanaklar:renderTutanaklar,siparisler:renderSiparisler,faturalar:renderFaturalar,'siparis-form':function(){}};
   if(!skipRender&&renders[id])renders[id]();
 }
 

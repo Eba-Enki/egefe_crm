@@ -445,7 +445,13 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
       if (data.section === 'head' && data.column.index === 1) data.cell.styles.halign = 'left';
       if (data.section === 'body' && data.column.index === 1) {
         const params = data.row.raw._params || [];
-        if (params.length) data.cell.text = [data.cell.text[0], params.join(', ')];
+        if (params.length) {
+          const p = data.cell.styles.cellPadding;
+          const bpad = typeof p === 'object' ? (p.bottom || 1.5) : (p || 1.5);
+          data.cell.styles.cellPadding = typeof p === 'object'
+            ? Object.assign({}, p, {bottom: bpad + 4})
+            : {top: p||1.5, right: p||2, bottom: bpad+4, left: p||2};
+        }
       }
     },
     didDrawCell: (data) => {
@@ -453,18 +459,16 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
       const params = (data.row.raw._params) || [];
       if (!params.length) return;
       const pad = data.cell.styles.cellPadding;
-      const lpad = (typeof pad === 'object' ? pad.left : pad) || 2;
-      const tpad = (typeof pad === 'object' ? pad.top : pad) || 1.5;
+      const lpad = typeof pad === 'object' ? (pad.left || 2) : 2;
+      const rpad = typeof pad === 'object' ? (pad.right || 2) : 2;
+      const tpad = typeof pad === 'object' ? (pad.top || 1.5) : 1.5;
       const pt2mm = 0.3528;
-      const mainLineH = 8 * pt2mm * 1.15;
       const x = data.cell.x + lpad;
-      const y2 = data.cell.y + tpad + mainLineH + 7 * pt2mm * 0.75;
-      doc.setFillColor(255, 255, 255);
-      doc.rect(data.cell.x + 0.2, data.cell.y + tpad + mainLineH * 0.6, data.cell.width - 0.4, mainLineH + 0.5, 'F');
+      const y = data.cell.y + tpad + 8 * pt2mm + 0.8 + 7 * pt2mm * 0.85;
       doc.setFontSize(7);
       doc.setFont('Arial', 'normal');
       doc.setTextColor(...C.textLight);
-      doc.text(params.join(', '), x, y2, {maxWidth: data.cell.width - lpad - ((typeof pad === 'object' ? pad.right : pad) || 2)});
+      doc.text(params.join(', '), x, y, {maxWidth: data.cell.width - lpad - rpad});
       doc.setFontSize(8);
       doc.setTextColor(...C.textDark);
     },

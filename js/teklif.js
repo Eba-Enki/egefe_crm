@@ -408,7 +408,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   // Pre-split params with 7pt font BEFORE autoTable (avoids state interference)
   const _col1Inner = mm(90.652) - 4; // cell width minus l+r padding (2+2)
   const _p7lh = 7 * 1.15 * 0.3528;  // 7pt line height in mm
-  const _pGap = 7;                   // mm gap between product name and params
+  const _pGap = 6;                   // mm gap between product name and params
   doc.setFontSize(7); doc.setFont('Arial', 'normal');
   const _bodyRows = satirlar.map(s => {
     const params = s.seciliParametreler || [];

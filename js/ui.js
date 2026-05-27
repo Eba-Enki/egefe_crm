@@ -389,12 +389,11 @@ function updateParamSecCounter(){
 function confirmParamSec(){
   const selected=[...document.querySelectorAll('#parametre-sec-list input[type=checkbox]:checked')].map(cb=>cb.value);
   if(selected.length!==_paramSecMax)return toast('Lütfen tam olarak '+_paramSecMax+' parametre seçin.','error');
-  const base=teklifItems[_paramSecIdx].aciklama.replace(/\s*\([^)]*\)/,'');
-  const yeni=base+' ('+selected.join(', ')+')';
-  teklifItems[_paramSecIdx].aciklama=yeni;
+  const base=teklifItems[_paramSecIdx].aciklama.replace(/\s*\([^)]*\)/g,'').trim();
+  teklifItems[_paramSecIdx].aciklama=base;
   teklifItems[_paramSecIdx].seciliParametreler=selected;
   const inp=document.getElementById('ti-aciklama-'+_paramSecIdx);
-  if(inp)inp.value=yeni;
+  if(inp)inp.value=base;
   closeModal('modal-parametre-sec');
   renderTeklifItems();
 }

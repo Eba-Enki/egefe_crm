@@ -236,8 +236,10 @@ function openKismiTeslim(sipId){
   ktEl.innerHTML=(sp.satirlar||[]).map(function(k,i){
     var gonderilen=k.gonderilen||0;
     var kalan=k.miktar-gonderilen;
+    var ksp=k.seciliParametreler||[];
+    var kpHtml=ksp.length?'<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">'+ksp.join(', ')+'</div>':'';
     return '<div style="padding:8px 0;border-bottom:1px solid var(--border)">'
-      +'<div style="font-size:13px;font-weight:500;margin-bottom:6px">'+escXml(k.aciklama||'')+'</div>'
+      +'<div style="font-size:13px;font-weight:500;margin-bottom:6px">'+escXml(k.aciklama||'')+kpHtml+'</div>'
       +'<div style="display:flex;gap:12px;font-size:12px;color:var(--text3);margin-bottom:6px">'
       +'<span>Toplam: <b style="color:var(--text)">'+k.miktar+' '+escXml(k.birim||'Adet')+'</b></span>'
       +'<span>Gönderilen: <b style="color:var(--green)">'+gonderilen+'</b></span>'
@@ -391,7 +393,9 @@ function goSiparisForm(teklifId){
   var toplam=0;
   var itemsHtml=(t.satirlar||[]).map(function(s){
     var satir=s.miktar*(s.birimFiyat||0);toplam+=satir;
-    return '<tr><td style="padding:6px 8px;font-size:13px">'+escXml(s.aciklama||'')+'</td>'
+    var sp=s.seciliParametreler||[];
+    var pHtml=sp.length?'<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">'+sp.join(', ')+'</div>':'';
+    return '<tr><td style="padding:6px 8px;font-size:13px">'+escXml(s.aciklama||'')+pHtml+'</td>'
       +'<td style="padding:6px 8px;font-size:12px;text-align:center">'+s.miktar+' '+escXml(s.birim||'Adet')+'</td>'
       +'<td style="padding:6px 8px;font-size:12px;text-align:right">'+cur+' '+fmtNum(s.birimFiyat||0)+'</td>'
       +'<td style="padding:6px 8px;font-size:12px;text-align:right;color:var(--amber)">'+cur+' '+fmtNum(satir)+'</td>'
@@ -441,8 +445,10 @@ function openSiparisDetay(sipId){
   var rowsHtml=(s.satirlar||[]).map(function(k){
     var gonderilen=k.gonderilen||0;var kalan=k.miktar-gonderilen;
     var satir=k.miktar*(k.birimFiyat||0);toplam+=satir;
+    var rsp=k.seciliParametreler||[];
+    var rpHtml=rsp.length?'<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">'+rsp.join(', ')+'</div>':'';
     return '<tr>'
-      +'<td style="padding:7px 9px;font-size:13px">'+escXml(k.aciklama||'—')+'</td>'
+      +'<td style="padding:7px 9px;font-size:13px">'+escXml(k.aciklama||'—')+rpHtml+'</td>'
       +'<td style="padding:7px 9px;font-size:12px;text-align:center">'+k.miktar+' '+escXml(k.birim||'')+'</td>'
       +'<td style="padding:7px 9px;font-size:12px;text-align:center;color:var(--green)">'+gonderilen+'</td>'
       +'<td style="padding:7px 9px;font-size:12px;text-align:center;color:'+(kalan>0?'var(--amber)':'var(--text3)')+'">'+kalan+'</td>'

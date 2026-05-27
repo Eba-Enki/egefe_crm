@@ -317,24 +317,37 @@ function comboClose(id){const el=document.getElementById(id);if(el)el.classList.
 let tiComboIndex=-1;
 let tiComboHighlight=-1;
 
+function _getTiDrop(){
+  let d=document.getElementById('ti-combo-global');
+  if(!d){
+    d=document.createElement('div');
+    d.id='ti-combo-global';
+    d.style.cssText='display:none;position:fixed;z-index:9999;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;max-height:320px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.4)';
+    document.body.appendChild(d);
+  }
+  return d;
+}
 function openTiCombo(idx){
-  document.querySelectorAll('[id^="cb-ti-"]').forEach(d=>d.style.display='none');
   tiComboIndex=idx;
   tiComboHighlight=-1;
   const input=document.getElementById('ti-aciklama-'+idx);
-  const q=(input?.value||'').toLowerCase();
+  if(!input)return;
+  const q=(input.value||'').toLowerCase();
   const items=state.urunler.filter(u=>(u.urunAdi+' '+(u.marka||'')).toLowerCase().includes(q||'')).slice(0,50);
-  const drop=document.getElementById('cb-ti-'+idx);
-  if(!drop)return;
-  if(!items.length){drop.style.display='none';return}
-  drop.innerHTML=items.map((u,i)=>`<div class="combo-item" id="cb-ti-item-${idx}-${i}"
-    data-idx="${i}" data-urun="${u.urunAdi.replace(/"/g,'&quot;')}" data-fiyat="${u.fiyat||0}" data-model="${u.model||''}"
+  const drop=_getTiDrop();
+  if(!items.length){drop.style.display='none';return;}
+  drop.innerHTML=items.map((u,i)=>`<div class="combo-item" data-combo-idx="${i}"
+    data-urun="${u.urunAdi.replace(/"/g,'&quot;')}" data-fiyat="${u.fiyat||0}" data-model="${u.model||''}"
     onmousedown="event.preventDefault();selectTiUrun(${idx},${i})">${u.urunAdi}${u.marka?' <span style="color:var(--text3);font-size:11px">('+u.marka+')</span>':''}${u.model&&parseInt(u.model)?` <span style="color:var(--accent);font-size:11px;margin-left:6px">${u.model}P</span>`:''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`).join('');
+  const rect=input.getBoundingClientRect();
+  drop.style.top=(rect.bottom+2)+'px';
+  drop.style.left=rect.left+'px';
+  drop.style.width=rect.width+'px';
   drop.style.display='block';
 }
 
 function tiComboHighlightItem(idx, dir){
-  const drop=document.getElementById('cb-ti-'+idx);
+  const drop=_getTiDrop();
   if(!drop||drop.style.display==='none')return;
   const items=drop.querySelectorAll('.combo-item');
   if(!items.length)return;
@@ -345,9 +358,8 @@ function tiComboHighlightItem(idx, dir){
 }
 
 function selectTiUrun(idx, itemIdx){
-  const drop=document.getElementById('cb-ti-'+idx);
-  if(!drop)return;
-  const item=document.getElementById('cb-ti-item-'+idx+'-'+itemIdx);
+  const drop=_getTiDrop();
+  const item=drop.querySelector('[data-combo-idx="'+itemIdx+'"]');
   if(!item)return;
   const val=item.dataset.urun;
   const fiyat=parseFloat(item.dataset.fiyat)||0;
@@ -399,8 +411,8 @@ function confirmParamSec(){
 }
 
 function tiKeydown(event, idx){
-  const drop=document.getElementById('cb-ti-'+idx);
-  const isOpen=drop&&drop.style.display!=='none';
+  const drop=_getTiDrop();
+  const isOpen=drop.style.display!=='none';
   if(event.key==='ArrowDown'){event.preventDefault();if(!isOpen)openTiCombo(idx);else tiComboHighlightItem(idx,1);}
   else if(event.key==='ArrowUp'){event.preventDefault();tiComboHighlightItem(idx,-1);}
   else if(event.key==='Enter'||event.key==='Tab'){
@@ -409,12 +421,12 @@ function tiKeydown(event, idx){
       event.preventDefault();selectTiUrun(idx,0);
     }
   }
-  else if(event.key==='Escape'){if(drop)drop.style.display='none';tiComboHighlight=-1;}
+  else if(event.key==='Escape'){drop.style.display='none';tiComboHighlight=-1;}
 }
 
 document.addEventListener('click',e=>{
-  if(!e.target.closest('[id^="ti-aciklama-"]')&&!e.target.closest('[id^="cb-ti-"]'))
-    document.querySelectorAll('[id^="cb-ti-"]').forEach(d=>d.style.display='none');
+  if(!e.target.closest('[id^="ti-aciklama-"]')&&!e.target.closest('#ti-combo-global'))
+    _getTiDrop().style.display='none';
 });
 
 // ════ AKSESUAR CHIPS (servis formu) ════

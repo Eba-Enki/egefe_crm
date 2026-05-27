@@ -11,11 +11,10 @@ function renderTeklifItems(){
     const params=item.seciliParametreler||[];
     const paramsHtml=params.length?`<div style="font-size:11px;color:rgb(143,164,176);margin-top:3px;padding-left:2px;line-height:1.4">(${params.join(', ')})</div>`:'';
     return `<tr>
-    <td class="ti-aciklama" style="position:relative">
+    <td class="ti-aciklama">
       <input type="text" id="ti-aciklama-${i}" value="${(item.aciklama||'').replace(/"/g,'&quot;')}" placeholder="Yazın veya listeden seçin..." autocomplete="off"
         oninput="teklifItems[${i}].aciklama=this.value;openTiCombo(${i})" onfocus="openTiCombo(${i})" onkeydown="tiKeydown(event,${i})">
       ${paramsHtml}
-      <div id="cb-ti-${i}" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:500;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;max-height:320px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.4)"></div>
     </td>
     <td class="ti-miktar" style="vertical-align:top"><input type="number" value="${item.miktar}" min="0.01" step="0.01" oninput="teklifItems[${i}].miktar=parseFloat(this.value)||0;updateTeklifTotals()"></td>
     <td class="ti-birim" style="vertical-align:top"><select onchange="teklifItems[${i}].birim=this.value"><option ${item.birim==='Adet'?'selected':''}>Adet</option><option ${item.birim==='Saat'?'selected':''}>Saat</option><option ${item.birim==='Gün'?'selected':''}>Gün</option><option ${item.birim==='Parça'?'selected':''}>Parça</option></select></td>

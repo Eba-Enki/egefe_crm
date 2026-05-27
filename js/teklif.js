@@ -416,7 +416,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
     if (paramsStr) {
       const pls = doc.splitTextToSize(paramsStr, _col1Inner);
       row._pls = pls;
-      row._extraPad = pls.length * _p7lh + 1;
+      row._extraPad = pls.length * _p7lh + 2.5;
     }
     return row;
   });

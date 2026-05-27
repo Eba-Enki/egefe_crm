@@ -405,17 +405,26 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
 
   // ── TABLE ──
   const tableY = mm(69.667) + mm(0.75);
+  // Pre-split params with 7pt font BEFORE autoTable (avoids state interference)
+  const _col1Inner = mm(90.652) - 4; // cell width minus l+r padding (2+2)
+  const _p7lh = 7 * 1.15 * 0.3528;  // 7pt line height in mm
+  doc.setFontSize(7); doc.setFont('Arial', 'normal');
+  const _bodyRows = satirlar.map(s => {
+    const params = s.seciliParametreler || [];
+    const paramsStr = params.length ? '(' + params.join(', ') + ')' : '';
+    const row = [s.no, s.aciklama, s.miktar, s.birim, fmtN(s.birimFiyat), fmtN(s.tutar)];
+    if (paramsStr) {
+      const pls = doc.splitTextToSize(paramsStr, _col1Inner);
+      row._pls = pls;
+      row._extraPad = pls.length * _p7lh + 1;
+    }
+    return row;
+  });
+  doc.setFontSize(8); doc.setFont('Arial', 'normal');
   doc.autoTable({
     startY: tableY,
     head: [[' #', 'ÜRÜN ADI VE AÇIKLAMASI', 'MİKTAR', 'BİRİM', 'BİRİM FİYATI', 'TUTAR']],
-    body: satirlar.map(s => {
-      const params = s.seciliParametreler || [];
-      const paramsStr = params.length ? '(' + params.join(', ') + ')' : '';
-      const cellText = paramsStr ? s.aciklama + '\n' + paramsStr : s.aciklama;
-      const row = [s.no, cellText, s.miktar, s.birim, fmtN(s.birimFiyat), fmtN(s.tutar)];
-      row._paramsStr = paramsStr;
-      return row;
-    }),
+    body: _bodyRows,
     theme: 'plain',
     styles: {
       font: 'Arial',
@@ -444,39 +453,34 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
     margin: {left: mm(15.446), right: mm(210 - 179.184 - 15.446)},
     didParseCell: (data) => {
       if (data.section === 'head' && data.column.index === 1) data.cell.styles.halign = 'left';
+      if (data.section === 'body' && data.column.index === 1) {
+        const extra = data.row.raw._extraPad || 0;
+        if (extra > 0) {
+          const p = data.cell.styles.cellPadding;
+          data.cell.styles.cellPadding = typeof p === 'object'
+            ? Object.assign({}, p, {bottom: (p.bottom || 1.5) + extra})
+            : {top: 1.5, right: 2, bottom: 1.5 + extra, left: 2};
+        }
+      }
     },
     didDrawCell: (data) => {
       if (data.section !== 'body' || data.column.index !== 1) return;
-      const ps = data.row.raw._paramsStr || '';
-      if (!ps || !data.cell.text || !data.cell.text.length) return;
-      try {
-        // params lines start with '(' — find first such line
-        let nLines = data.cell.text.length;
-        for (let i = 0; i < data.cell.text.length; i++) {
-          if ((data.cell.text[i] || '').trimLeft().startsWith('(')) { nLines = i; break; }
-        }
-        const pLines = data.cell.text.length - nLines;
-        if (pLines <= 0) return;
-        const tp = data.cell.textPos;
-        if (!tp) return;
-        const pad = data.cell.styles.cellPadding;
-        const lpad = typeof pad==='object'?(pad.left||2):2;
-        const rpad = typeof pad==='object'?(pad.right||2):2;
-        const lineH = 8 * 1.15 * 0.3528;
-        const lastY = tp.y;
-        const firstPY = lastY - (pLines - 1) * lineH;
-        doc.setFillColor(255, 255, 255);
-        doc.rect(data.cell.x + 0.3, firstPY - lineH * 0.82, data.cell.width - 0.6, pLines * lineH + 0.3, 'F');
-        doc.setFontSize(7);
-        doc.setFont('Arial', 'normal');
-        doc.setTextColor(...C.textLight);
-        const maxW = data.cell.width - lpad - rpad;
-        for (let i = 0; i < pLines; i++) {
-          doc.text(data.cell.text[nLines + i] || '', data.cell.x + lpad, firstPY + i * lineH, {maxWidth: maxW});
-        }
-        doc.setFontSize(8);
-        doc.setTextColor(...C.textDark);
-      } catch(e) { /* renklendirme başarısız olursa layout bozulmasın */ }
+      const pls = data.row.raw._pls;
+      if (!pls || !pls.length) return;
+      const extra = data.row.raw._extraPad || 0;
+      const pad = data.cell.styles.cellPadding;
+      const lpad = typeof pad === 'object' ? (pad.left || 2) : 2;
+      // Params area starts just after the product name text (in the extra bottom padding)
+      const paramsAreaTop = data.cell.y + data.cell.height - 1.5 - extra;
+      const pt7asc = 7 * 0.3528 * 0.82; // baseline offset for 7pt text
+      doc.setFontSize(7);
+      doc.setFont('Arial', 'normal');
+      doc.setTextColor(...C.textLight);
+      pls.forEach((line, i) => {
+        doc.text(line, data.cell.x + lpad, paramsAreaTop + pt7asc + i * _p7lh);
+      });
+      doc.setFontSize(8);
+      doc.setTextColor(...C.textDark);
     },
     didDrawPage: (data) => {
       tableEndY = data.cursor.y;

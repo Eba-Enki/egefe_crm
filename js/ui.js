@@ -328,8 +328,8 @@ function openTiCombo(idx){
   if(!drop)return;
   if(!items.length){drop.style.display='none';return}
   drop.innerHTML=items.map((u,i)=>`<div class="combo-item" id="cb-ti-item-${idx}-${i}"
-    data-idx="${i}" data-urun="${u.urunAdi.replace(/"/g,'&quot;')}" data-fiyat="${u.fiyat||0}"
-    onmousedown="event.preventDefault();selectTiUrun(${idx},${i})">${u.urunAdi}${u.marka?' <span style="color:var(--text3);font-size:11px">('+u.marka+')</span>':''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`).join('');
+    data-idx="${i}" data-urun="${u.urunAdi.replace(/"/g,'&quot;')}" data-fiyat="${u.fiyat||0}" data-model="${u.model||''}"
+    onmousedown="event.preventDefault();selectTiUrun(${idx},${i})">${u.urunAdi}${u.marka?' <span style="color:var(--text3);font-size:11px">('+u.marka+')</span>':''}${u.model&&parseInt(u.model)?` <span style="color:var(--accent);font-size:11px;margin-left:6px">${u.model}P</span>`:''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`).join('');
   drop.style.display='block';
 }
 
@@ -351,7 +351,9 @@ function selectTiUrun(idx, itemIdx){
   if(!item)return;
   const val=item.dataset.urun;
   const fiyat=parseFloat(item.dataset.fiyat)||0;
+  const paramCount=parseInt(item.dataset.model)||0;
   teklifItems[idx].aciklama=val;
+  teklifItems[idx].seciliParametreler=[];
   if(fiyat>0)teklifItems[idx].birimFiyat=fiyat;
   drop.style.display='none';
   tiComboHighlight=-1;
@@ -360,6 +362,41 @@ function selectTiUrun(idx, itemIdx){
   const fiyatInp=document.getElementById('ti-fiyat-'+idx);
   if(fiyatInp&&fiyat>0)fiyatInp.value=fiyat;
   updateTeklifTotals();
+  if(paramCount>0&&(state.settings.parametreler||[]).length>0)openParamSecModal(idx,paramCount);
+}
+
+var _paramSecIdx=-1,_paramSecMax=0;
+function openParamSecModal(idx,count){
+  _paramSecIdx=idx;_paramSecMax=count;
+  const mevcut=teklifItems[idx].seciliParametreler||[];
+  const parametreler=state.settings.parametreler||[];
+  const titleEl=document.getElementById('parametre-sec-title');
+  if(titleEl)titleEl.textContent=count+' parametre seçin';
+  const list=document.getElementById('parametre-sec-list');
+  if(!list)return;
+  list.innerHTML=parametreler.map((p,i)=>`<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);user-select:none;transition:background .1s"><input type="checkbox" id="ps-cb-${i}" value="${p.replace(/"/g,'&quot;')}" ${mevcut.includes(p)?'checked':''} onchange="updateParamSecCounter()"><span style="font-size:13px;color:var(--text)">${p}</span></label>`).join('');
+  updateParamSecCounter();
+  document.getElementById('modal-parametre-sec').style.display='flex';
+}
+function updateParamSecCounter(){
+  const all=document.querySelectorAll('#parametre-sec-list input[type=checkbox]');
+  const checked=[...all].filter(c=>c.checked);
+  const n=checked.length;
+  const counterEl=document.getElementById('parametre-sec-counter');
+  if(counterEl)counterEl.textContent=n+' / '+_paramSecMax+' seçildi';
+  all.forEach(cb=>{if(!cb.checked)cb.disabled=(n>=_paramSecMax);});
+}
+function confirmParamSec(){
+  const selected=[...document.querySelectorAll('#parametre-sec-list input[type=checkbox]:checked')].map(cb=>cb.value);
+  if(selected.length!==_paramSecMax)return toast('Lütfen tam olarak '+_paramSecMax+' parametre seçin.','error');
+  const base=teklifItems[_paramSecIdx].aciklama.replace(/\s*\([^)]*\)/,'');
+  const yeni=base+' ('+selected.join(', ')+')';
+  teklifItems[_paramSecIdx].aciklama=yeni;
+  teklifItems[_paramSecIdx].seciliParametreler=selected;
+  const inp=document.getElementById('ti-aciklama-'+_paramSecIdx);
+  if(inp)inp.value=yeni;
+  closeModal('modal-parametre-sec');
+  renderTeklifItems();
 }
 
 function tiKeydown(event, idx){

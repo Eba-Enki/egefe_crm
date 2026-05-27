@@ -147,6 +147,24 @@ function updateSettingsPreview(){
   if(sp&&sd&&ps){var p=sp.value.trim().toUpperCase()||'KN';var d=Math.min(9,Math.max(3,parseInt(sd.value)||6));ps.textContent=p+String(1).padStart(d,'0');}
   if(tp&&td&&pt){var p2=tp.value.trim().toUpperCase()||'TKL';var d2=Math.min(9,Math.max(3,parseInt(td.value)||5));pt.textContent=p2+String(1).padStart(d2,'0');}
 }
+function renderParametreler(){
+  const list=state.settings.parametreler||[];
+  const el=document.getElementById('parametre-list');if(!el)return;
+  if(!list.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">Henüz parametre eklenmedi.</div>';return;}
+  el.innerHTML=list.map((p,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px"><span style="font-size:13px;color:var(--text)">${p}</span><button class="btn-icon" style="color:var(--red);flex-shrink:0" onclick="deleteParametre(${i})">⊗</button></div>`).join('');
+}
+function addParametre(){
+  const inp=document.getElementById('yeni-parametre-input');const val=(inp.value||'').trim();
+  if(!val)return toast('Parametre adı girin.','error');
+  if(!state.settings.parametreler)state.settings.parametreler=[];
+  if(state.settings.parametreler.includes(val))return toast('Bu parametre zaten mevcut.','error');
+  state.settings.parametreler.push(val);saveAll();inp.value='';renderParametreler();
+  toast('Parametre eklendi.','success');
+}
+function deleteParametre(i){
+  state.settings.parametreler.splice(i,1);saveAll();renderParametreler();
+  toast('Parametre silindi.','info');
+}
 function loadSettings(){
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''});
   var spEl=document.getElementById('set-servis-prefix');if(spEl)spEl.value=state.settings.servisPrefix||'KN';
@@ -155,6 +173,7 @@ function loadSettings(){
   var tdEl=document.getElementById('set-teklif-digits');if(tdEl)tdEl.value=state.settings.teklifDigits||5;
   updateSettingsPreview();
   renderUrunKategorileri();
+  renderParametreler();
 }
 function saveSettings(){
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)state.settings[k]=el.value});

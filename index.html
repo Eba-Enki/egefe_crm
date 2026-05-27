@@ -623,6 +623,12 @@
             </span>
             <span class="settings-nav-label">Görünüm</span>
           </div>
+          <div class="settings-nav-item tf-satis-field" data-panel="parametreler" onclick="switchSettingsPanel('parametreler')" style="display:none">
+            <span class="settings-nav-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><line x1="12" y1="14" x2="12" y2="20"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+            </span>
+            <span class="settings-nav-label">Test Parametreleri</span>
+          </div>
           <div class="settings-nav-item tf-satis-field" data-panel="kategoriler" onclick="switchSettingsPanel('kategoriler')" style="display:none">
             <span class="settings-nav-icon">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
@@ -745,6 +751,26 @@
                   <button onclick="setTheme('dark')" id="btn-theme-dark" class="theme-btn active">🌙 Koyu</button>
                   <button onclick="setTheme('light')" id="btn-theme-light" class="theme-btn">☀ Açık</button>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel: Test Parametreleri -->
+          <div id="sp-parametreler" class="settings-panel tf-satis-field" style="display:none">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+              </div>
+              <div>
+                <div class="settings-panel-title">Test Parametreleri</div>
+                <div class="settings-panel-sub">Teklif formunda seçilebilecek 40 sabit test parametresini buradan yönetin</div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div id="parametre-list" style="margin-bottom:16px"></div>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="yeni-parametre-input" placeholder="Parametre adı (ör: Glikoz, Kreatinin...)" style="flex:1">
+                <button class="btn btn-primary" onclick="addParametre()">Ekle</button>
               </div>
             </div>
           </div>
@@ -1015,6 +1041,24 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-red-neden')">İptal</button>
       <button class="btn btn-primary" onclick="saveRedNeden()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: PARAMETRE SEÇİM ── -->
+<div class="modal-overlay" id="modal-parametre-sec">
+  <div class="modal" style="max-width:560px;width:90%">
+    <div class="modal-header">
+      <span class="modal-title" id="parametre-sec-title">Parametre Seçin</span>
+      <span id="parametre-sec-counter" style="font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:3px 10px;border-radius:20px;margin-left:8px">0 / 0 seçildi</span>
+      <button class="close-btn" onclick="closeModal('modal-parametre-sec')" style="margin-left:auto">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:420px;overflow-y:auto">
+      <div id="parametre-sec-list" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:2px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-parametre-sec')">İptal</button>
+      <button class="btn btn-primary" onclick="confirmParamSec()">Tamam</button>
     </div>
   </div>
 </div>

@@ -444,41 +444,39 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
     margin: {left: mm(15.446), right: mm(210 - 179.184 - 15.446)},
     didParseCell: (data) => {
       if (data.section === 'head' && data.column.index === 1) data.cell.styles.halign = 'left';
-      if (data.section === 'body' && data.column.index === 1) {
-        const ps = data.row.raw._paramsStr || '';
-        if (ps) {
-          const pad = data.cell.styles.cellPadding;
-          const avail = data.cell.width - (typeof pad==='object'?(pad.left||2):2) - (typeof pad==='object'?(pad.right||2):2);
-          doc.setFontSize(8); doc.setFont('Arial','normal');
-          data.row.raw._pLines = doc.splitTextToSize(ps, avail).length;
-          data.row.raw._nLines = Math.max(0, data.cell.text.length - data.row.raw._pLines);
-        }
-      }
     },
     didDrawCell: (data) => {
       if (data.section !== 'body' || data.column.index !== 1) return;
       const ps = data.row.raw._paramsStr || '';
-      if (!ps) return;
-      const pLines = data.row.raw._pLines || 0;
-      const nLines = data.row.raw._nLines || 0;
-      if (!pLines) return;
-      const pad = data.cell.styles.cellPadding;
-      const lpad = typeof pad==='object'?(pad.left||2):2;
-      const rpad = typeof pad==='object'?(pad.right||2):2;
-      const lineH = 8 * 1.15 * 0.3528;
-      const lastY = data.cell.textPos.y;
-      const firstPY = lastY - (pLines - 1) * lineH;
-      doc.setFillColor(255, 255, 255);
-      doc.rect(data.cell.x + 0.3, firstPY - lineH * 0.82, data.cell.width - 0.6, pLines * lineH + 0.3, 'F');
-      doc.setFontSize(7);
-      doc.setFont('Arial', 'normal');
-      doc.setTextColor(...C.textLight);
-      const maxW = data.cell.width - lpad - rpad;
-      for (let i = 0; i < pLines; i++) {
-        doc.text(data.cell.text[nLines + i] || '', data.cell.x + lpad, firstPY + i * lineH, {maxWidth: maxW});
-      }
-      doc.setFontSize(8);
-      doc.setTextColor(...C.textDark);
+      if (!ps || !data.cell.text || !data.cell.text.length) return;
+      try {
+        // params lines start with '(' — find first such line
+        let nLines = data.cell.text.length;
+        for (let i = 0; i < data.cell.text.length; i++) {
+          if ((data.cell.text[i] || '').trimLeft().startsWith('(')) { nLines = i; break; }
+        }
+        const pLines = data.cell.text.length - nLines;
+        if (pLines <= 0) return;
+        const tp = data.cell.textPos;
+        if (!tp) return;
+        const pad = data.cell.styles.cellPadding;
+        const lpad = typeof pad==='object'?(pad.left||2):2;
+        const rpad = typeof pad==='object'?(pad.right||2):2;
+        const lineH = 8 * 1.15 * 0.3528;
+        const lastY = tp.y;
+        const firstPY = lastY - (pLines - 1) * lineH;
+        doc.setFillColor(255, 255, 255);
+        doc.rect(data.cell.x + 0.3, firstPY - lineH * 0.82, data.cell.width - 0.6, pLines * lineH + 0.3, 'F');
+        doc.setFontSize(7);
+        doc.setFont('Arial', 'normal');
+        doc.setTextColor(...C.textLight);
+        const maxW = data.cell.width - lpad - rpad;
+        for (let i = 0; i < pLines; i++) {
+          doc.text(data.cell.text[nLines + i] || '', data.cell.x + lpad, firstPY + i * lineH, {maxWidth: maxW});
+        }
+        doc.setFontSize(8);
+        doc.setTextColor(...C.textDark);
+      } catch(e) { /* renklendirme başarısız olursa layout bozulmasın */ }
     },
     didDrawPage: (data) => {
       tableEndY = data.cursor.y;

@@ -169,6 +169,7 @@
         <select id="f-garanti" onchange="filterTable()"><option value="">Garanti Tümü</option><option value="Evet">Garantili</option><option value="Hayır">Garantisiz</option></select>
         <input type="date" id="f-ts" oninput="filterTable()"><input type="date" id="f-te" oninput="filterTable()">
         <button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportServislerExcel()" style="color:var(--green)">⬇ Excel</button>
         <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="filter-count"></span>
       </div>
       <div class="card">

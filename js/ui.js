@@ -323,7 +323,7 @@ function openTiCombo(idx){
   tiComboHighlight=-1;
   const input=document.getElementById('ti-aciklama-'+idx);
   const q=(input?.value||'').toLowerCase();
-  const items=state.urunler.filter(u=>(u.urunAdi+' '+(u.marka||'')).toLowerCase().includes(q||'')).slice(0,12);
+  const items=state.urunler.filter(u=>(u.urunAdi+' '+(u.marka||'')).toLowerCase().includes(q||'')).slice(0,50);
   const drop=document.getElementById('cb-ti-'+idx);
   if(!drop)return;
   if(!items.length){drop.style.display='none';return}

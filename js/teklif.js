@@ -408,6 +408,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   // Pre-split params with 7pt font BEFORE autoTable (avoids state interference)
   const _col1Inner = mm(90.652) - 4; // cell width minus l+r padding (2+2)
   const _p7lh = 7 * 1.15 * 0.3528;  // 7pt line height in mm
+  const _pGap = 2;                   // mm gap between product name and params
   doc.setFontSize(7); doc.setFont('Arial', 'normal');
   const _bodyRows = satirlar.map(s => {
     const params = s.seciliParametreler || [];
@@ -416,7 +417,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
     if (paramsStr) {
       const pls = doc.splitTextToSize(paramsStr, _col1Inner);
       row._pls = pls;
-      row._extraPad = pls.length * _p7lh + 2.5;
+      row._extraPad = pls.length * _p7lh + _pGap + 0.5;
     }
     return row;
   });
@@ -470,8 +471,8 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
       const extra = data.row.raw._extraPad || 0;
       const pad = data.cell.styles.cellPadding;
       const lpad = typeof pad === 'object' ? (pad.left || 2) : 2;
-      // Params area starts just after the product name text (in the extra bottom padding)
-      const paramsAreaTop = data.cell.y + data.cell.height - 1.5 - extra;
+      // Params area starts after product name text + gap
+      const paramsAreaTop = data.cell.y + data.cell.height - 1.5 - extra + _pGap;
       const pt7asc = 7 * 0.3528 * 0.82; // baseline offset for 7pt text
       doc.setFontSize(7);
       doc.setFont('Arial', 'normal');

@@ -690,7 +690,7 @@
 
 <div id="toast-container"></div>
 
-<script src="js/state.js?v=4"></script>
+<script src="js/state.js?v=5"></script>
 <script src="js/auth.js?v=4"></script>
 <script src="js/ui.js?v=4"></script>
 <script src="js/dashboard.js?v=4"></script>
@@ -699,7 +699,7 @@
 <script src="js/tutanak.js?v=4"></script>
 <script src="js/musteri.js?v=4"></script>
 <script src="js/export.js?v=4"></script>
-<script src="js/satis.js?v=4"></script>
+<script src="js/satis.js?v=5"></script>
 <script src="js/init.js?v=4"></script>
 <!-- ─── FATURA MODAL ─── -->
 <div class="modal-overlay" id="modal-fatura">
@@ -716,6 +716,25 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-fatura')">İptal</button>
       <button class="btn btn-primary" onclick="saveFatura()">Faturaya Aktar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FATURA DÜZENLE MODAL ─── -->
+<div class="modal-overlay" id="modal-fatura-edit">
+  <div class="modal-card" style="max-width:440px">
+    <div class="modal-header"><div class="modal-title">Fatura Düzenle</div><button class="modal-close" onclick="closeModal('modal-fatura-edit')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="fe-fatura-id">
+      <div class="form-grid">
+        <div class="field form-full"><label>Fatura No <span class="req">*</span></label><input type="text" id="fe-faturaNo" placeholder="Fatura numarası..."></div>
+        <div class="field"><label>Fatura Tarihi <span class="req">*</span></label><input type="date" id="fe-faturaTarihi"></div>
+        <div class="field"><label>Vade Tarihi</label><input type="date" id="fe-vadeTarihi"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-fatura-edit')">İptal</button>
+      <button class="btn btn-primary" onclick="saveFaturaDuzenle()">Kaydet</button>
     </div>
   </div>
 </div>

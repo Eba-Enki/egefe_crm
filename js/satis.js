@@ -147,7 +147,7 @@ function renderSiparisler(){
       +'<td><span class="kn-badge">'+s.siparisNo+'</span></td>'
       +'<td class="td-mono" style="color:var(--text2)">'+fmtDate(s.siparisTarihi||s.teklifTarihi||s.olusturmaTarihi)+'</td>'
       +'<td style="font-weight:500">'+(s.kurum||'—')+'</td>'
-      +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+cur+' '+fmtTL(toplam)+'</td>'
+      +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+cur+' '+fmtNum(toplam)+'</td>'
       +'<td><span class="badge '+(SP_DURUM_CSS[s.durum]||'badge-sf')+'">'+s.durum+'</span></td>'
       +'<td style="font-size:12px;color:var(--text3)">'+(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
       +'<td style="text-align:right"><div class="action-row">'
@@ -187,7 +187,7 @@ function openFaturaModal(sipId){
     if(ozetEl)ozetEl.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">'
       +'<div><div style="font-size:10px;color:var(--text3);letter-spacing:.05em">SİPARİŞ</div><div style="font-weight:600">'+escXml(sp.siparisNo)+'</div></div>'
       +'<div style="flex:1"><div style="font-size:10px;color:var(--text3);letter-spacing:.05em">MÜŞTERİ</div><div style="font-weight:500">'+escXml(sp.kurum||'')+'</div></div>'
-      +'<div style="text-align:right"><div style="font-size:10px;color:var(--text3);letter-spacing:.05em">TUTAR</div><div style="font-weight:700;color:var(--amber)">'+cur+' '+fmtTL(toplam)+'</div></div>'
+      +'<div style="text-align:right"><div style="font-size:10px;color:var(--text3);letter-spacing:.05em">TUTAR</div><div style="font-weight:700;color:var(--amber)">'+cur+' '+fmtNum(toplam)+'</div></div>'
       +'</div>';
   }
   openModal('modal-fatura');
@@ -295,6 +295,7 @@ function renderFaturalar(){
   if(!filtered.length){tbody.innerHTML='';document.getElementById('fatura-empty').style.display='';return;}
   document.getElementById('fatura-empty').style.display='none';
   var currency={TRY:'₺',USD:'$',EUR:'€',GBP:'£'};
+  var canEdit=state.currentUser&&state.currentUser.rol!=='izleyici';
   tbody.innerHTML=[...filtered].sort(function(a,b){return new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi);}).map(function(f){
     var vadeDate=f.vadeTarihi?new Date(f.vadeTarihi):null;
     var vadeWarn=(vadeDate&&!isNaN(vadeDate)&&vadeDate.getTime()<today_ms&&f.durum==='Ödenmedi')?' <span style="color:var(--red);font-size:10px">⚠ Gecikmiş</span>':'';
@@ -303,12 +304,17 @@ function renderFaturalar(){
       +'<td><span class="kn-badge">'+escXml(f.faturaNo)+'</span></td>'
       +'<td><span class="kn-badge" style="color:var(--teal)">'+escXml(f.siparisNo)+'</span></td>'
       +'<td style="font-weight:500">'+escXml(f.kurum||'—')+'</td>'
-      +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+cur+' '+fmtTL(f.tutar)+'</td>'
+      +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+cur+' '+fmtNum(f.tutar)+'</td>'
       +'<td class="td-mono">'+escXml(f.faturaTarihi||'—')+'</td>'
       +'<td class="td-mono">'+escXml(f.vadeTarihi||'—')+vadeWarn+'</td>'
-      +'<td><span class="badge '+(f.durum==='Ödendi'?'badge-onaylandi':'badge-reddedildi')+'">'+f.durum+'</span>'
-      +(f.durum!=='Ödendi'?'<button class="btn-icon" style="color:var(--green);margin-left:6px" onclick="markFaturaOdendi(\''+f.id+'\')" title="Ödendi İşaretle">✓</button>':'')
-      +'</td></tr>';
+      +'<td><span class="badge '+(f.durum==='Ödendi'?'badge-onaylandi':'badge-reddedildi')+'">'+f.durum+'</span></td>'
+      +'<td style="text-align:right"><div class="action-row">'
+      +(canEdit?'<button class="btn-icon" title="Düzenle" onclick="openFaturaDuzenle(\''+f.id+'\')">✏</button>':'')
+      +(canEdit&&f.durum!=='Ödendi'?'<button class="btn-icon" style="color:var(--green)" onclick="markFaturaOdendi(\''+f.id+'\')" title="Ödendi İşaretle">✓</button>':'')
+      +(canEdit&&f.durum==='Ödendi'?'<button class="btn-icon" style="color:var(--text3)" onclick="markFaturaOdenmedi(\''+f.id+'\')" title="Ödenmedi olarak geri al">↩</button>':'')
+      +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'fatura\',\''+f.id+'\')">⊗</button>':'')
+      +'</div></td>'
+      +'</tr>';
   }).join('');
 }
 
@@ -325,6 +331,34 @@ function clearFaturaFilters(){
 function markFaturaOdendi(fid){
   var fi=(state.faturalar||[]).findIndex(function(x){return x.id===fid;});
   if(fi>=0){state.faturalar[fi].durum='Ödendi';saveAll();renderFaturalar();toast('Fatura ödendi olarak işaretlendi.','success');}
+}
+function markFaturaOdenmedi(fid){
+  var fi=(state.faturalar||[]).findIndex(function(x){return x.id===fid;});
+  if(fi>=0){state.faturalar[fi].durum='Ödenmedi';saveAll();renderFaturalar();toast('Fatura ödenmedi olarak geri alındı.','info');}
+}
+var _editFaturaId='';
+function openFaturaDuzenle(fatId){
+  var f=(state.faturalar||[]).find(function(x){return x.id===fatId;});
+  if(!f)return;
+  _editFaturaId=fatId;
+  var el_id=document.getElementById('fe-fatura-id');if(el_id)el_id.value=fatId;
+  var el_no=document.getElementById('fe-faturaNo');if(el_no)el_no.value=f.faturaNo||'';
+  var el_ft=document.getElementById('fe-faturaTarihi');if(el_ft)el_ft.value=f.faturaTarihi||'';
+  var el_vt=document.getElementById('fe-vadeTarihi');if(el_vt)el_vt.value=f.vadeTarihi||'';
+  openModal('modal-fatura-edit');
+}
+function saveFaturaDuzenle(){
+  var fatNo=(document.getElementById('fe-faturaNo')||{}).value||'';
+  var fatTar=(document.getElementById('fe-faturaTarihi')||{}).value||'';
+  if(!fatNo||!fatTar){toast('Fatura No ve Tarih zorunludur.','error');return;}
+  var fi=(state.faturalar||[]).findIndex(function(x){return x.id===_editFaturaId;});
+  if(fi<0)return;
+  state.faturalar[fi].faturaNo=fatNo;
+  state.faturalar[fi].faturaTarihi=fatTar;
+  state.faturalar[fi].vadeTarihi=(document.getElementById('fe-vadeTarihi')||{}).value||'';
+  saveAll();closeModal('modal-fatura-edit');
+  renderFaturalar();
+  toast('Fatura güncellendi.','success');
 }
 
 function escXml(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -347,12 +381,12 @@ function goSiparisForm(teklifId){
     var satir=s.miktar*(s.birimFiyat||0);toplam+=satir;
     return '<tr><td style="padding:6px 8px;font-size:13px">'+escXml(s.aciklama||'')+'</td>'
       +'<td style="padding:6px 8px;font-size:12px;text-align:center">'+s.miktar+' '+escXml(s.birim||'Adet')+'</td>'
-      +'<td style="padding:6px 8px;font-size:12px;text-align:right">'+cur+' '+fmtTL(s.birimFiyat||0)+'</td>'
-      +'<td style="padding:6px 8px;font-size:12px;text-align:right;color:var(--amber)">'+cur+' '+fmtTL(satir)+'</td>'
+      +'<td style="padding:6px 8px;font-size:12px;text-align:right">'+cur+' '+fmtNum(s.birimFiyat||0)+'</td>'
+      +'<td style="padding:6px 8px;font-size:12px;text-align:right;color:var(--amber)">'+cur+' '+fmtNum(satir)+'</td>'
       +'</tr>';
   }).join('');
   var infoEl=document.getElementById('sf2-items-body');if(infoEl)infoEl.innerHTML=itemsHtml;
-  var totalEl=document.getElementById('sf2-items-total');if(totalEl)totalEl.textContent=cur+' '+fmtTL(toplam);
+  var totalEl=document.getElementById('sf2-items-total');if(totalEl)totalEl.textContent=cur+' '+fmtNum(toplam);
   var opEl=document.getElementById('sf2-odeme-info');
   if(opEl)opEl.textContent=(t.odemeKosulu||'')+(t.vade?' · Vade: '+t.vade:'');
   showPage('siparis-form',true);
@@ -400,8 +434,8 @@ function openSiparisDetay(sipId){
       +'<td style="padding:7px 9px;font-size:12px;text-align:center">'+k.miktar+' '+escXml(k.birim||'')+'</td>'
       +'<td style="padding:7px 9px;font-size:12px;text-align:center;color:var(--green)">'+gonderilen+'</td>'
       +'<td style="padding:7px 9px;font-size:12px;text-align:center;color:'+(kalan>0?'var(--amber)':'var(--text3)')+'">'+kalan+'</td>'
-      +'<td style="padding:7px 9px;font-size:12px;text-align:right">'+cur+' '+fmtTL(k.birimFiyat||0)+'</td>'
-      +'<td style="padding:7px 9px;font-size:12px;text-align:right;color:var(--amber)">'+cur+' '+fmtTL(satir)+'</td>'
+      +'<td style="padding:7px 9px;font-size:12px;text-align:right">'+cur+' '+fmtNum(k.birimFiyat||0)+'</td>'
+      +'<td style="padding:7px 9px;font-size:12px;text-align:right;color:var(--amber)">'+cur+' '+fmtNum(satir)+'</td>'
       +'</tr>';
   }).join('');
   var infoParts='';
@@ -430,7 +464,7 @@ function openSiparisDetay(sipId){
     +'<div style="text-align:right;margin-bottom:'+(s.notlar?'14':'4')+'px">'
     +'<div style="display:inline-block;background:var(--bg3);border-radius:var(--radius-sm);padding:10px 16px">'
     +'<div style="font-size:11px;color:var(--text3);margin-bottom:3px">TOPLAM</div>'
-    +'<div style="font-size:17px;font-weight:700;color:var(--amber)">'+cur+' '+fmtTL(toplam)+'</div>'
+    +'<div style="font-size:17px;font-weight:700;color:var(--amber)">'+cur+' '+fmtNum(toplam)+'</div>'
     +'</div></div>'
     +(s.notlar?'<div style="background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">'+escXml(s.notlar)+'</div>':'');
   document.getElementById('sp-detay-title').textContent=s.siparisNo+' — Detay';

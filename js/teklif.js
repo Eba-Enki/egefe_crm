@@ -405,16 +405,14 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
 
   // ── TABLE ──
   const tableY = mm(69.667) + mm(0.75);
-  const _bodyRows = satirlar.map(s => {
-    const params = s.seciliParametreler || [];
-    const row = [s.no, s.aciklama, s.miktar, s.birim, fmtN(s.birimFiyat), fmtN(s.tutar)];
-    row._params = params;
-    return row;
-  });
   doc.autoTable({
     startY: tableY,
     head: [[' #', 'ÜRÜN ADI VE AÇIKLAMASI', 'MİKTAR', 'BİRİM', 'BİRİM FİYATI', 'TUTAR']],
-    body: _bodyRows,
+    body: satirlar.map(s => {
+      const params = s.seciliParametreler || [];
+      const cellText = params.length ? s.aciklama + '\n' + params.join(', ') : s.aciklama;
+      return [s.no, cellText, s.miktar, s.birim, fmtN(s.birimFiyat), fmtN(s.tutar)];
+    }),
     theme: 'plain',
     styles: {
       font: 'Arial',
@@ -443,34 +441,6 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
     margin: {left: mm(15.446), right: mm(210 - 179.184 - 15.446)},
     didParseCell: (data) => {
       if (data.section === 'head' && data.column.index === 1) data.cell.styles.halign = 'left';
-      if (data.section === 'body' && data.column.index === 1) {
-        const params = data.row.raw._params || [];
-        if (params.length) {
-          const p = data.cell.styles.cellPadding;
-          const bpad = typeof p === 'object' ? (p.bottom || 1.5) : (p || 1.5);
-          data.cell.styles.cellPadding = typeof p === 'object'
-            ? Object.assign({}, p, {bottom: bpad + 4})
-            : {top: p||1.5, right: p||2, bottom: bpad+4, left: p||2};
-        }
-      }
-    },
-    didDrawCell: (data) => {
-      if (data.section !== 'body' || data.column.index !== 1) return;
-      const params = (data.row.raw._params) || [];
-      if (!params.length) return;
-      const pad = data.cell.styles.cellPadding;
-      const lpad = typeof pad === 'object' ? (pad.left || 2) : 2;
-      const rpad = typeof pad === 'object' ? (pad.right || 2) : 2;
-      const tpad = typeof pad === 'object' ? (pad.top || 1.5) : 1.5;
-      const pt2mm = 0.3528;
-      const x = data.cell.x + lpad;
-      const y = data.cell.y + tpad + 8 * pt2mm + 0.8 + 7 * pt2mm * 0.85;
-      doc.setFontSize(7);
-      doc.setFont('Arial', 'normal');
-      doc.setTextColor(...C.textLight);
-      doc.text(params.join(', '), x, y, {maxWidth: data.cell.width - lpad - rpad});
-      doc.setFontSize(8);
-      doc.setTextColor(...C.textDark);
     },
     didDrawPage: (data) => {
       tableEndY = data.cursor.y;

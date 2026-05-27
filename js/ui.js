@@ -365,6 +365,7 @@ function selectTiUrun(idx, itemIdx){
   const fiyat=parseFloat(item.dataset.fiyat)||0;
   const paramCount=parseInt(item.dataset.model)||0;
   teklifItems[idx].aciklama=val;
+  teklifItems[idx]._baseAciklama=val;
   teklifItems[idx].seciliParametreler=[];
   if(fiyat>0)teklifItems[idx].birimFiyat=fiyat;
   drop.style.display='none';
@@ -401,8 +402,9 @@ function updateParamSecCounter(){
 function confirmParamSec(){
   const selected=[...document.querySelectorAll('#parametre-sec-list input[type=checkbox]:checked')].map(cb=>cb.value);
   if(selected.length!==_paramSecMax)return toast('Lütfen tam olarak '+_paramSecMax+' parametre seçin.','error');
-  const base=teklifItems[_paramSecIdx].aciklama.replace(/\s*\([^)]*\)/g,'').trim();
+  const base=teklifItems[_paramSecIdx]._baseAciklama||teklifItems[_paramSecIdx].aciklama.replace(/\s*\([^)]*\)/g,'').trim();
   teklifItems[_paramSecIdx].aciklama=base;
+  teklifItems[_paramSecIdx]._baseAciklama=base;
   teklifItems[_paramSecIdx].seciliParametreler=selected;
   const inp=document.getElementById('ti-aciklama-'+_paramSecIdx);
   if(inp)inp.value=base;

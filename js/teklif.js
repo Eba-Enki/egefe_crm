@@ -74,7 +74,7 @@ function saveTeklifAndPrint(){saveTeklif(true)}
 
 // ════ TEKLIF LIST ════
 const TSD={'Onay Bekleniyor':'badge-onay-bekl','Onaylandı':'badge-onaylandi','Taslak':'badge-sf','Açık Teklif':'badge-yeni','Kabul Edildi':'badge-onaylandi','Siparişe Aktarıldı':'badge-teslim','Reddedildi':'badge-reddedildi','İptal Edildi':'badge-reddedildi','Tamamlandı':'badge-teslim'};
-const TEKLIF_ARSIV_DURUMLAR=['Tamamlandı','Siparişe Aktarıldı'];
+const TEKLIF_ARSIV_DURUMLAR=['Tamamlandı','Siparişe Aktarıldı','Reddedildi'];
 let teklifTab='aktif';
 function switchTeklifTab(tab){
   teklifTab=tab;
@@ -93,7 +93,8 @@ function renderTeklifler(){
   if(arsivCntEl)arsivCntEl.textContent=arsiv.length;
   const isArsiv=teklifTab==='arsiv';
   const tabTl=isArsiv?arsiv:aktif;
-  const ob=aktif.filter(t=>t.durum==='Onay Bekleniyor'),on=aktif.filter(t=>t.durum==='Onaylandı'),re=aktif.filter(t=>t.durum==='Reddedildi');
+  const ob=aktif.filter(t=>t.durum==='Onay Bekleniyor'),on=aktif.filter(t=>t.durum==='Onaylandı');
+  const re=arsiv.filter(t=>t.durum==='Reddedildi');
   const ciro=on.reduce((a,t)=>a+calcTeklifToplam(t),0);
   var tsEl=document.getElementById('teklif-stats');
   if(tsEl)tsEl.innerHTML=`

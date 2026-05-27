@@ -1,12 +1,20 @@
-﻿function renderMusteriler(){
+﻿var musterilerPage=1;var _musteriFilterHash='';
+function setMusterilerPage(n){musterilerPage=n;renderMusteriler();}
+var urunlerPage=1;var _urunFilterHash='';
+function setUrunlerPage(n){urunlerPage=n;renderUrunler();}
+
+function renderMusteriler(){
   let data=[...state.musteriler];
   const q=(document.getElementById('fm-ara').value||'').toLowerCase();
   if(q)data=data.filter(m=>(m.kurum+m.kisi+m.tel).toLowerCase().includes(q));
   document.getElementById('musteri-count').textContent=data.length+' müşteri';
+  var newMH=JSON.stringify([q]);if(newMH!==_musteriFilterHash){musterilerPage=1;_musteriFilterHash=newMH;}
   const tbody=document.getElementById('musteri-table-body');
-  if(!data.length){tbody.innerHTML='';document.getElementById('musteri-empty').style.display='';return}
+  if(!data.length){tbody.innerHTML='';document.getElementById('musteri-empty').style.display='';renderPagination('musteri-pagination',1,0,'setMusterilerPage');return}
   document.getElementById('musteri-empty').style.display='none';
-  tbody.innerHTML=data.map(m=>{return`<tr><td><span class="kn-badge" style="color:var(--accent);font-size:10px">${m.kayitNo||'—'}</span></td><td style="font-weight:500">${m.kurum}</td><td style="color:var(--text2)">${m.kisi||'—'}</td><td class="td-mono">${m.tel||'—'}</td><td style="color:var(--text2)">${m.email||'—'}</td><td>${m.sehir||'—'}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goMusteriForm('${m.id}')">✎</button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('musteri','${m.id}')">⊗</button></div></td></tr>`;}).join('');
+  var pagedM=data.slice((musterilerPage-1)*PAGE_SIZE,musterilerPage*PAGE_SIZE);
+  renderPagination('musteri-pagination',musterilerPage,data.length,'setMusterilerPage');
+  tbody.innerHTML=pagedM.map(m=>{return`<tr><td><span class="kn-badge" style="color:var(--accent);font-size:10px">${m.kayitNo||'—'}</span></td><td style="font-weight:500">${m.kurum}</td><td style="color:var(--text2)">${m.kisi||'—'}</td><td class="td-mono">${m.tel||'—'}</td><td style="color:var(--text2)">${m.email||'—'}</td><td>${m.sehir||'—'}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goMusteriForm('${m.id}')">✎</button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('musteri','${m.id}')">⊗</button></div></td></tr>`;}).join('');
 }
 function saveMusteri(){
   const kurum=toTitleCase(document.getElementById('mf-kurum').value.trim());if(!kurum)return toast('Kurum adı zorunlu.','error');
@@ -40,11 +48,14 @@ function renderUrunler(){
   const q=(document.getElementById('fu-ara').value||'').toLowerCase();
   if(q)data=data.filter(u=>(u.urunAdi+u.marka+u.model+u.kategori).toLowerCase().includes(q));
   document.getElementById('urun-count').textContent=`${data.length} ürün`;
+  var newUH=JSON.stringify([q]);if(newUH!==_urunFilterHash){urunlerPage=1;_urunFilterHash=newUH;}
   const tbody=document.getElementById('urun-table-body');
-  if(!data.length){tbody.innerHTML='';document.getElementById('urun-empty').style.display='';return}
+  if(!data.length){tbody.innerHTML='';document.getElementById('urun-empty').style.display='';renderPagination('urun-pagination',1,0,'setUrunlerPage');return}
   document.getElementById('urun-empty').style.display='none';
   const isSatis=currentPortal==='satis';
-  tbody.innerHTML=data.map(u=>{return`<tr><td class="td-mono" style="color:var(--accent);font-size:11px">${u.urunKodu||'—'}</td><td style="font-weight:500">${u.urunAdi}</td><td style="color:var(--text2)">${u.marka||'—'}</td>${isSatis?`<td style="color:var(--text2);font-size:12px">${u.kategori||'—'}</td>`:''}<td class="td-mono" style="color:var(--text2)">${u.model||'—'}</td><td class="td-mono" style="color:var(--amber)">${u.fiyat?({'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[u.paraBirimi||'TRY']||'₺')+' '+fmtTL(u.fiyat):'—'}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goUrunForm('${u.id}')">✎</button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('urun','${u.id}')">⊗</button></div></td></tr>`;}).join('');
+  var pagedU=data.slice((urunlerPage-1)*PAGE_SIZE,urunlerPage*PAGE_SIZE);
+  renderPagination('urun-pagination',urunlerPage,data.length,'setUrunlerPage');
+  tbody.innerHTML=pagedU.map(u=>{return`<tr><td class="td-mono" style="color:var(--accent);font-size:11px">${u.urunKodu||'—'}</td><td style="font-weight:500">${u.urunAdi}</td><td style="color:var(--text2)">${u.marka||'—'}</td>${isSatis?`<td style="color:var(--text2);font-size:12px">${u.kategori||'—'}</td>`:''}<td class="td-mono" style="color:var(--text2)">${u.model||'—'}</td><td class="td-mono" style="color:var(--amber)">${u.fiyat?({'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[u.paraBirimi||'TRY']||'₺')+' '+fmtTL(u.fiyat):'—'}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goUrunForm('${u.id}')">✎</button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('urun','${u.id}')">⊗</button></div></td></tr>`;}).join('');
 }
 function saveUrun(){
   const urunAdi=document.getElementById('uf-urunAdi').value.trim();if(!urunAdi)return toast('Ürün adı zorunlu.','error');

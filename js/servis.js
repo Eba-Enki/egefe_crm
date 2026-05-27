@@ -1,4 +1,7 @@
-﻿// ════ SERİ NO LİSTESİ ════
+﻿var servisPage=1;var _servisFilterHash='';
+function setServisPage(n){servisPage=n;renderTable();}
+
+// ════ SERİ NO LİSTESİ ════
 function _seriNoRowHTML(val){
   return '<div class="seri-no-row" style="display:flex;gap:6px;margin-bottom:4px">'
     +'<input type="text" class="seri-no-input" placeholder="Seri numarası..." style="flex:1" value="'+(val||'').replace(/"/g,'&quot;')+'">'
@@ -124,6 +127,7 @@ function renderTable(){
   if(fTs)data=data.filter(s=>s.gelisTarihi>=fTs);
   if(fTe)data=data.filter(s=>s.gelisTarihi<=fTe);
   data.sort((a,b)=>{const va=a[state.sortCol]||'',vb=b[state.sortCol]||'',dir=state.sortDir==='asc'?1:-1;return va<vb?-dir:va>vb?dir:0});
+  var newSH=JSON.stringify([fK,fS,fD,fG,fTs,fTe,servisTab]);if(newSH!==_servisFilterHash){servisPage=1;_servisFilterHash=newSH;}
   document.getElementById('filter-count').textContent=data.length+' kayit';
   const canEdit = !!(state.currentUser && state.currentUser.rol !== 'izleyici' && !isArsiv);
   const tbody=document.getElementById('table-body');
@@ -133,10 +137,13 @@ function renderTable(){
     tbody.innerHTML='';
     if(emptyMsg) emptyMsg.textContent = isArsiv ? 'Arsivde kayit yok' : 'Kayit bulunamadi';
     if(emptyEl) emptyEl.style.display='';
+    renderPagination('servis-pagination',1,0,'setServisPage');
     return;
   }
   if(emptyEl) emptyEl.style.display='none';
-  tbody.innerHTML=data.map(s=>{
+  var pagedServis=data.slice((servisPage-1)*PAGE_SIZE,servisPage*PAGE_SIZE);
+  renderPagination('servis-pagination',servisPage,data.length,'setServisPage');
+  tbody.innerHTML=pagedServis.map(s=>{
     const hasTeklif=state.teklifler.some(t=>t.servisId===s.id);
     return`<tr${isArsiv?' style="opacity:0.8"':''}>
       <td><span class="kn-badge">${s.kayitNo}</span></td>

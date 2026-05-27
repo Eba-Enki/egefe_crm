@@ -1,4 +1,7 @@
-﻿function getCurSymbol(){const pb=(document.getElementById('tf-paraBirimi')||{}).value||'TRY';return{TRY:'₺',USD:'$',EUR:'€',GBP:'£'}[pb]||'₺';}
+﻿var tekliflerPage=1;var _teklifFilterHash='';
+function setTekliflerPage(n){tekliflerPage=n;renderTeklifler();}
+
+function getCurSymbol(){const pb=(document.getElementById('tf-paraBirimi')||{}).value||'TRY';return{TRY:'₺',USD:'$',EUR:'€',GBP:'£'}[pb]||'₺';}
 function fmtCur(v){const pb=(document.getElementById('tf-paraBirimi')||{}).value||'TRY';return new Intl.NumberFormat('tr-TR',{style:'currency',currency:pb,minimumFractionDigits:2}).format(v||0);}
 function updateTeklifCurrency(){const sym=getCurSymbol();const h=document.getElementById('ti-cur-sym');if(h)h.textContent=sym;renderTeklifItems();}
 function addTeklifItem(){teklifItems.push({aciklama:'',miktar:1,birim:'Adet',birimFiyat:0});renderTeklifItems()}
@@ -116,10 +119,14 @@ function renderTeklifler(){
   });
   var fcEl=document.getElementById('teklif-filter-count');
   if(fcEl)fcEl.textContent=filtTl2.length!==tabTl.length?filtTl2.length+'/'+tabTl.length+' teklif':tabTl.length+' teklif';
+  var newTH=JSON.stringify([fK2,fTN,fD2,fTS2,fTE2,teklifTab]);if(newTH!==_teklifFilterHash){tekliflerPage=1;_teklifFilterHash=newTH;}
   var showTemsilci=currentPortal==='satis';
   var thS=document.getElementById('th-sorumlu');
   if(thS)thS.style.display=showTemsilci?'':'none';
-  tbody.innerHTML=[...filtTl2].sort((a,b)=>new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi)).map(t=>`<tr>
+  var sortedTl=[...filtTl2].sort((a,b)=>new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi));
+  var pagedTl=sortedTl.slice((tekliflerPage-1)*PAGE_SIZE,tekliflerPage*PAGE_SIZE);
+  renderPagination('teklif-pagination',tekliflerPage,filtTl2.length,'setTekliflerPage');
+  tbody.innerHTML=pagedTl.map(t=>`<tr>
     <td><span class="kn-badge">${t.teklifNo}</span></td>
     <td class="td-mono" style="color:var(--text2)">${fmtDate(t.teklifTarihi)}</td>
     <td style="font-weight:500">${t.kurum||'—'}</td>

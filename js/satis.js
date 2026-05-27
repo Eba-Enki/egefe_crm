@@ -1,4 +1,8 @@
 ﻿// ════ SİPARİŞLER ════
+var siparislerPage=1;var _siparisFilterHash='';
+function setSiparislerPage(n){siparislerPage=n;renderSiparisler();}
+var faturalarPage=1;var _faturaFilterHash='';
+function setFaturalarPage(n){faturalarPage=n;renderFaturalar();}
 const SP_DURUM_LIST=['Hazırlanıyor','Kısmi Sevkiyat','Tamamlandı','İptal'];
 const SP_DURUM_CSS={'Hazırlanıyor':'badge-yeni','Kısmi Sevkiyat':'badge-sf','Tamamlandı':'badge-teslim','İptal':'badge-reddedildi','Fatura Edildi':'badge-onaylandi'};
 const ARSIV_SIPARISLER=['Fatura Edildi','İptal'];
@@ -136,11 +140,15 @@ function renderSiparisler(){
   var tbody=document.getElementById('siparis-table-body');
   var emptyEl=document.getElementById('siparis-empty');
   if(!tbody)return;
-  if(!filtered.length){tbody.innerHTML='';if(emptyEl)emptyEl.style.display='';return;}
+  if(!filtered.length){tbody.innerHTML='';if(emptyEl)emptyEl.style.display='';renderPagination('siparis-pagination',1,0,'setSiparislerPage');return;}
   if(emptyEl)emptyEl.style.display='none';
+  var newSPH=JSON.stringify([fK,fN,fD,fTs,fTe,siparisTab]);if(newSPH!==_siparisFilterHash){siparislerPage=1;_siparisFilterHash=newSPH;}
   var currency={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'};
   var canEdit=state.currentUser&&state.currentUser.rol!=='izleyici';
-  tbody.innerHTML=filtered.sort(function(a,b){return new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi);}).map(function(s){
+  var sortedSp=filtered.sort(function(a,b){return new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi);});
+  var pagedSp=sortedSp.slice((siparislerPage-1)*PAGE_SIZE,siparislerPage*PAGE_SIZE);
+  renderPagination('siparis-pagination',siparislerPage,filtered.length,'setSiparislerPage');
+  tbody.innerHTML=pagedSp.map(function(s){
     var toplam=(s.satirlar||[]).reduce(function(a,i){return a+i.miktar*i.birimFiyat;},0);
     var cur=currency[s.paraBirimi||'TRY']||'₺';
     return '<tr>'
@@ -292,11 +300,15 @@ function renderFaturalar(){
   var today_ms=new Date().getTime();
   var tbody=document.getElementById('fatura-table-body');
   if(!tbody)return;
-  if(!filtered.length){tbody.innerHTML='';document.getElementById('fatura-empty').style.display='';return;}
+  if(!filtered.length){tbody.innerHTML='';document.getElementById('fatura-empty').style.display='';renderPagination('fatura-pagination',1,0,'setFaturalarPage');return;}
   document.getElementById('fatura-empty').style.display='none';
+  var newFH=JSON.stringify([fK,fN,fD,fTs,fTe,faturaTab]);if(newFH!==_faturaFilterHash){faturalarPage=1;_faturaFilterHash=newFH;}
   var currency={TRY:'₺',USD:'$',EUR:'€',GBP:'£'};
   var canEdit=state.currentUser&&state.currentUser.rol!=='izleyici';
-  tbody.innerHTML=[...filtered].sort(function(a,b){return new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi);}).map(function(f){
+  var sortedFt=[...filtered].sort(function(a,b){return new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi);});
+  var pagedFt=sortedFt.slice((faturalarPage-1)*PAGE_SIZE,faturalarPage*PAGE_SIZE);
+  renderPagination('fatura-pagination',faturalarPage,filtered.length,'setFaturalarPage');
+  tbody.innerHTML=pagedFt.map(function(f){
     var vadeDate=f.vadeTarihi?new Date(f.vadeTarihi):null;
     var vadeWarn=(vadeDate&&!isNaN(vadeDate)&&vadeDate.getTime()<today_ms&&f.durum==='Ödenmedi')?' <span style="color:var(--red);font-size:10px">⚠ Gecikmiş</span>':'';
     var cur=currency[f.paraBirimi||'TRY']||'₺';

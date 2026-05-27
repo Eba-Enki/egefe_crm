@@ -178,6 +178,7 @@
           </table>
           <div id="table-empty" class="empty-state" style="display:none"><div class="icon">⊡</div><h3 style="color:var(--text2)" id="table-empty-msg">Kayıt bulunamadı</h3></div>
         </div>
+        <div id="servis-pagination"></div>
       </div>
     </div>
 
@@ -266,6 +267,7 @@
           </table>
           <div id="teklif-empty" class="empty-state" style="display:none"><div class="icon">◎</div><h3 style="color:var(--text2)">Henüz teklif yok</h3></div>
         </div>
+        <div id="teklif-pagination"></div>
       </div>
     </div>
 
@@ -359,7 +361,7 @@
     <!-- ═══ MÜŞTERİLER ═══ -->
     <div id="page-musteriler" class="page">
       <div class="filter-bar"><input type="text" id="fm-ara" placeholder="Ara..." oninput="renderMusteriler()" style="width:220px"><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="musteri-count"></span></div>
-      <div class="card"><div class="table-wrap"><table><thead><tr><th>Kayıt No</th><th>Kurum</th><th>İlgili Kişi</th><th>Telefon</th><th>E-posta</th><th>Şehir</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead><tbody id="musteri-table-body"></tbody></table><div id="musteri-empty" class="empty-state" style="display:none"><div class="icon">⊙</div><h3 style="color:var(--text2)">Müşteri yok</h3></div></div></div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>Kayıt No</th><th>Kurum</th><th>İlgili Kişi</th><th>Telefon</th><th>E-posta</th><th>Şehir</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead><tbody id="musteri-table-body"></tbody></table><div id="musteri-empty" class="empty-state" style="display:none"><div class="icon">⊙</div><h3 style="color:var(--text2)">Müşteri yok</h3></div></div><div id="musteri-pagination"></div></div>
     </div>
 
     <!-- ═══ MÜŞTERİ FORMU (inline) ═══ -->
@@ -397,7 +399,7 @@
       </table>
       <div id="urun-empty" class="empty-state">
         <div class="icon">⊠</div><h3 style="color:var(--text2)">Ürün yok</h3>
-      </div></div></div>
+      </div></div><div id="urun-pagination"></div></div>
     </div>
 
     <!-- ═══ ÜRÜN FORMU (inline) ═══ -->
@@ -475,6 +477,7 @@
           <div class="icon">📦</div><h3 style="color:var(--text2)">Henüz sipariş yok</h3>
           <p style="font-size:13px">Kabul edilen tekliflerden sipariş oluşturun.</p>
         </div></div>
+        <div id="siparis-pagination"></div>
       </div>
     </div>
 
@@ -502,6 +505,7 @@
         <div id="fatura-empty" class="empty-state">
           <div class="icon">🧾</div><h3 style="color:var(--text2)">Henüz fatura yok</h3>
         </div></div>
+        <div id="fatura-pagination"></div>
       </div>
     </div>
 
@@ -692,12 +696,12 @@
 
 <script src="js/state.js?v=5"></script>
 <script src="js/auth.js?v=4"></script>
-<script src="js/ui.js?v=4"></script>
+<script src="js/ui.js?v=5"></script>
 <script src="js/dashboard.js?v=4"></script>
-<script src="js/servis.js?v=4"></script>
-<script src="js/teklif.js?v=4"></script>
+<script src="js/servis.js?v=5"></script>
+<script src="js/teklif.js?v=5"></script>
 <script src="js/tutanak.js?v=4"></script>
-<script src="js/musteri.js?v=4"></script>
+<script src="js/musteri.js?v=5"></script>
 <script src="js/export.js?v=4"></script>
 <script src="js/satis.js?v=5"></script>
 <script src="js/init.js?v=4"></script>

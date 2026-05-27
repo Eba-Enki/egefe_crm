@@ -46,9 +46,9 @@ let sfAksesuarlar=[];
 let teklifItems=[];
 
 function saveAll(){
-  var keys=['users','musteriler','urunler','urunKategoriler','teklifler','settings'];
+  var keys=['users','musteriler','urunler','urunKategoriler','teklifler','settings','siparisler','faturalar'];
   if(currentPortal==='servis') keys=keys.concat(['servisler']);
-  keys.forEach(function(k){DB.psave(k,state[k]);});
+  keys.forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});
 }
 
 function genSample(){

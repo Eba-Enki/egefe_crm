@@ -55,25 +55,69 @@ function exportSiparislerExcel(){
 
 // ════ IMPORT / EXPORT ════
 function exportData(){
-  const blob=new Blob([JSON.stringify({version:5,exportDate:new Date().toISOString(),servisler:state.servisler,teklifler:state.teklifler,musteriler:state.musteriler,urunler:state.urunler,users:state.users,settings:state.settings},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`egefe_yedek_${today()}.json`;a.click();toast('Dışa aktarıldı.','success');
+  var portal=currentPortal||'servis';
+  var data={
+    version:7,
+    portal:portal,
+    exportDate:new Date().toISOString(),
+    servisler:state.servisler||[],
+    teklifler:state.teklifler||[],
+    musteriler:state.musteriler||[],
+    urunler:state.urunler||[],
+    siparisler:state.siparisler||[],
+    faturalar:state.faturalar||[],
+    settings:state.settings||{}
+  };
+  var portal_tag=portal==='satis'?'satis':'servis';
+  var fname='egefe_yedek_'+portal_tag+'_'+today()+'.json';
+  _dlBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),fname);
+  toast('Yedek alındı: '+fname,'success');
 }
 function importData(e){
-  const file=e.target.files[0];if(!file)return;
-  const r=new FileReader();
-  r.onload=ev=>{try{
-    const d=JSON.parse(ev.target.result);if(!d.servisler)throw 0;
-    if(!confirm(`${d.servisler.length} servis kaydı içe aktarılacak. Devam?`))return;
-    const ex=new Set(state.servisler.map(s=>s.kayitNo));
-    state.servisler=[...state.servisler,...d.servisler.filter(s=>!ex.has(s.kayitNo))];
-    if(d.teklifler){const ext=new Set(state.teklifler.map(t=>t.teklifNo));state.teklifler=[...state.teklifler,...d.teklifler.filter(t=>!ext.has(t.teklifNo))]}
-    if(d.musteriler)state.musteriler=[...state.musteriler,...d.musteriler.filter(m=>!state.musteriler.find(x=>x.id===m.id))];
-    if(d.urunler)state.urunler=[...state.urunler,...d.urunler.filter(u=>!state.urunler.find(x=>x.id===u.id))];
-    if(d.settings)state.settings=d.settings;
-    saveAll();renderDashboard();renderTable();toast('İçe aktarıldı.','success');
-  }catch{toast('Dosya okunamadı.','error')}};
+  var file=e.target.files[0];if(!file)return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    try{
+      var d=JSON.parse(ev.target.result);
+      var counts=[];
+      if(d.servisler&&d.servisler.length)counts.push(d.servisler.length+' servis');
+      if(d.teklifler&&d.teklifler.length)counts.push(d.teklifler.length+' teklif');
+      if(d.siparisler&&d.siparisler.length)counts.push(d.siparisler.length+' sipariş');
+      if(d.faturalar&&d.faturalar.length)counts.push(d.faturalar.length+' fatura');
+      if(d.musteriler&&d.musteriler.length)counts.push(d.musteriler.length+' müşteri');
+      if(d.urunler&&d.urunler.length)counts.push(d.urunler.length+' ürün');
+      if(!counts.length){toast('Yedek dosyası boş veya geçersiz.','error');return;}
+      if(!confirm('Yedek içeriği:\n'+counts.join(', ')+'\n\nMevcut verilerle birleştirilecek (aynı kayıtlar atlanır). Devam?'))return;
+      if(d.servisler){var exS=new Set((state.servisler||[]).map(function(s){return s.kayitNo;}));state.servisler=[...(state.servisler||[]),...d.servisler.filter(function(s){return!exS.has(s.kayitNo);})];}
+      if(d.teklifler){var exT=new Set((state.teklifler||[]).map(function(t){return t.teklifNo;}));state.teklifler=[...(state.teklifler||[]),...d.teklifler.filter(function(t){return!exT.has(t.teklifNo);})];}
+      if(d.musteriler){state.musteriler=[...(state.musteriler||[]),...d.musteriler.filter(function(m){return!(state.musteriler||[]).find(function(x){return x.id===m.id;});})];}
+      if(d.urunler){state.urunler=[...(state.urunler||[]),...d.urunler.filter(function(u){return!(state.urunler||[]).find(function(x){return x.id===u.id;});})];}
+      if(d.siparisler){if(!state.siparisler)state.siparisler=[];state.siparisler=[...state.siparisler,...d.siparisler.filter(function(s){return!state.siparisler.find(function(x){return x.id===s.id;});})];}
+      if(d.faturalar){if(!state.faturalar)state.faturalar=[];state.faturalar=[...state.faturalar,...d.faturalar.filter(function(f){return!state.faturalar.find(function(x){return x.id===f.id;});})];}
+      if(d.settings)state.settings=d.settings;
+      saveAll();
+      if(typeof renderDashboard==='function')renderDashboard();
+      if(typeof renderTable==='function')renderTable();
+      if(typeof renderTeklifler==='function')renderTeklifler();
+      if(typeof renderSiparisler==='function')renderSiparisler();
+      if(typeof renderFaturalar==='function')renderFaturalar();
+      toast('Yedek yüklendi: '+counts.join(', '),'success');
+    }catch(err){console.error(err);toast('Dosya okunamadı veya geçersiz format.','error');}
+  };
   r.readAsText(file);e.target.value='';
 }
-function clearAllData(){if(!confirm('TÜM VERİLER silinecek!'))return;if(!confirm('Son onay?'))return;state.servisler=[];state.teklifler=[];saveAll();renderDashboard();renderTable();toast('Veriler silindi.','info')}
+function clearAllData(){
+  if(!confirm('TÜM VERİLER SİLİNECEK!\n\nServis, teklif, sipariş, fatura, müşteri ve ürün kayıtları tamamen kaldırılır. Bu işlem geri alınamaz!'))return;
+  if(!confirm('Son onay: Devam edilsin mi?'))return;
+  state.servisler=[];state.teklifler=[];state.siparisler=[];state.faturalar=[];
+  state.musteriler=[];state.urunler=[];
+  saveAll();
+  if(typeof renderDashboard==='function')renderDashboard();
+  if(typeof renderTable==='function')renderTable();
+  if(typeof renderTeklifler==='function')renderTeklifler();
+  if(typeof renderSiparisler==='function')renderSiparisler();
+  if(typeof renderFaturalar==='function')renderFaturalar();
+  toast('Tüm veriler silindi.','info');
+}
 
 // ════ MODAL HELPERS ════

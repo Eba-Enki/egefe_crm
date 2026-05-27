@@ -16,6 +16,8 @@
   state.teklifler=DB.pload('teklifler',[]);
   state.musteriler=DB.pload('musteriler',[]);
   state.urunler=DB.pload('urunler',[]);
+  state.siparisler=DB.pload('siparisler',[]);
+  state.faturalar=DB.pload('faturalar',[]);
   state.settings=DB.pload('settings',{firma:'Egefe Teknik Servis',tel:'',faks:'',adres:'',email:'',web:''});
   savedTutanaklar=[];
   // Check existing session

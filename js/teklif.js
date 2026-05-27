@@ -170,7 +170,7 @@ function openTeklifDetay(id){
   state.activeTeklifId=id;
   const toplam=calcTeklifToplam(t);
   let ara=0;
-  const sarHtml=(t.satirlar||[]).map(s=>{const a=s.miktar*s.birimFiyat;ara+=a;const sp=s.seciliParametreler||[];const pHtml=sp.length?`<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">${sp.join(', ')}</div>`:'';return`<tr style="border-bottom:1px solid rgba(36,48,69,.4)"><td style="padding:7px 9px;font-size:13px">${s.aciklama||'—'}${pHtml}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2)">${s.miktar} ${s.birim}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2);text-align:right">${fmtTL(s.birimFiyat)}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--amber);text-align:right">${fmtTL(a)}</td></tr>`;}).join('');
+  const sarHtml=(t.satirlar||[]).map(s=>{const a=s.miktar*s.birimFiyat;ara+=a;const sp=s.seciliParametreler||[];const baseAciklama=(sp.length?(s.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim():s.aciklama)||'—';const pHtml=sp.length?`<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">${sp.join(', ')}</div>`:'';return`<tr style="border-bottom:1px solid rgba(36,48,69,.4)"><td style="padding:7px 9px;font-size:13px">${baseAciklama}${pHtml}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2)">${s.miktar} ${s.birim}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2);text-align:right">${fmtTL(s.birimFiyat)}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--amber);text-align:right">${fmtTL(a)}</td></tr>`;}).join('');
   const canEdit=state.currentUser?.rol!=='izleyici';
   document.getElementById('td-title').textContent=`${t.teklifNo} — Detay`;
   var _eb=document.getElementById('td-edit-btn');if(_eb)_eb.style.display=canEdit?'':'none';
@@ -274,7 +274,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
     araToplam += tutar;
     return {
       no: idx + 1,
-      aciklama: s.aciklama || '—',
+      aciklama: ((s.seciliParametreler||[]).length ? (s.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim() : s.aciklama) || '—',
       miktar: s.miktar || 0,
       birim: s.birim || 'Adet',
       birimFiyat: s.birimFiyat || 0,

@@ -160,6 +160,7 @@ function renderSiparisler(){
       +'<td style="font-size:12px;color:var(--text3)">'+(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
       +'<td style="text-align:right"><div class="action-row">'
       +'<button class="btn-icon" title="Detay" onclick="openSiparisDetay(\''+s.id+'\')">◎</button>'
+      +'<button class="btn-icon" title="Üretim Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')">📋</button>'
       +(canEdit&&['Hazırlanıyor','Kısmi Sevkiyat'].indexOf(s.durum)>=0?'<button class="btn-icon" title="Sevkiyat" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')">📦</button>':'')
       +(canEdit&&['Kısmi Sevkiyat','Tamamlandı'].indexOf(s.durum)>=0?'<button class="btn-icon" title="Faturaya Aktar" style="color:var(--amber)" onclick="openFaturaModal(\''+s.id+'\')">🧾</button>':'')
       +(canEdit?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)">⇅</button>':'')
@@ -439,9 +440,11 @@ function saveSiparisForm(){
   showPage('siparisler');
 }
 
+var _activeSiparisDetayId='';
 function openSiparisDetay(sipId){
   var s=(state.siparisler||[]).find(function(x){return x.id===sipId;});
   if(!s)return;
+  _activeSiparisDetayId=sipId;
   var cur={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[s.paraBirimi||'TRY']||'₺';
   var toplam=0;
   var rowsHtml=(s.satirlar||[]).map(function(k){
@@ -492,6 +495,214 @@ function openSiparisDetay(sipId){
   openModal('modal-siparis-detay');
 }
 
+
+// ════ ÜRETİM SİPARİŞ FORMU PDF ════
+function printSiparisUretimFormu(sipId){
+  const s=(state.siparisler||[]).find(x=>x.id===sipId);
+  if(!s)return;
+  const logoImg=new Image();
+  logoImg.onload=function(){
+    const cv=document.createElement('canvas');cv.width=534;cv.height=252;
+    cv.getContext('2d').drawImage(logoImg,0,0,534,252);
+    _generateUretimFormPDF(s,cv.toDataURL('image/png'));
+  };
+  logoImg.onerror=function(){_generateUretimFormPDF(s,null);};
+  logoImg.src='brand_assets/logo_if_bg_white.svg';
+}
+
+async function _generateUretimFormPDF(s,logoPngDataUrl){
+  const toB64=buf=>{const b=new Uint8Array(buf);let r='';for(let i=0;i<b.byteLength;i++)r+=String.fromCharCode(b[i]);return btoa(r);};
+  const [regularBuf,boldBuf]=await Promise.all([
+    fetch('fonts/Arial.ttf').then(r=>r.arrayBuffer()),
+    fetch('fonts/Arial_Bold.ttf').then(r=>r.arrayBuffer())
+  ]);
+  const fmtD=d=>{if(!d)return '—';const p=(d||'').split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:d;};
+
+  const C={
+    primary:[29,125,149],textDark:[26,46,59],textMid:[46,64,80],
+    textLight:[143,164,176],textLabel:[74,96,112],
+    border:[194,208,216],tableBg:[228,245,249],boxBg:[247,249,250],white:[255,255,255]
+  };
+  const mm=v=>v*2.83465;
+  const pageW=mm(210),pageH=mm(297);
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
+  doc.addFileToVFS('Arial.ttf',toB64(regularBuf));
+  doc.addFont('Arial.ttf','Arial','normal');
+  doc.addFileToVFS('Arial_Bold.ttf',toB64(boldBuf));
+  doc.addFont('Arial_Bold.ttf','Arial','bold');
+  doc.setFont('Arial');doc.setCharSpace(0);
+
+  // ── LOGO ──
+  if(logoPngDataUrl){try{doc.addImage(logoPngDataUrl,'PNG',mm(19.812),mm(9.737),mm(39.793),mm(19.389),'','FAST');}catch(e){}}
+
+  doc.setDrawColor(...C.border);doc.setLineWidth(0.75);
+  doc.line(mm(63.765),mm(11.642),mm(63.765),mm(25.517));
+
+  const st=state.settings||{};
+  doc.setFontSize(9);doc.setFont('Arial','bold');doc.setTextColor(...C.textMid);
+  doc.text(st.firma||'Egefe Bilişim Sağlık San. ve Tic. A.Ş.',mm(68.457),mm(11.188)+9);
+  doc.setFontSize(8);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
+  doc.text(st.adres||'Harbiye Mah. Hürriyet Cad. No:7/12 Çankaya / Ankara',mm(68.457),mm(16.829)+6);
+  const vergiText=st.vergiDairesi&&st.vergiNo?`${st.vergiDairesi} Vergi Dairesi: ${st.vergiNo}`:'Başkent Vergi Dairesi: 5590520620';
+  doc.text(vergiText,mm(68.457),mm(21.192)+6);
+  doc.text(st.web||'www.ege-fe.com',mm(68.457),mm(25.555)+6);
+
+  // ── PRİMARY ÇİZGİ ──
+  doc.setDrawColor(...C.primary);doc.setLineWidth(2);
+  doc.line(mm(15.446),mm(33.955),mm(194.556),mm(33.955));
+
+  // ── BAŞLIK (sağ) ──
+  doc.setFontSize(14);doc.setFont('Arial','bold');doc.setTextColor(...C.textMid);
+  doc.text('ÜRETİM SİPARİŞ FORMU',mm(194.556),mm(42.395)+11,{align:'right'});
+
+  // ── SİPARİŞ BİLGİLERİ (sağ) ──
+  const rx1=mm(141.66),rx2=mm(165.354),rx3=mm(171.249);
+  doc.setFontSize(8);
+  doc.setFont('Arial','bold');doc.setTextColor(...C.textMid);
+  doc.text('Sipariş No',rx1,mm(50.611)+6);doc.text(':',rx2,mm(50.611)+6);
+  doc.setFont('Arial','normal');doc.text(s.siparisNo||'-',rx3,mm(50.611)+6);
+
+  doc.setFont('Arial','bold');doc.text('Sipariş Tarihi',rx1,mm(55.109)+6);doc.text(':',rx2,mm(55.109)+6);
+  doc.setFont('Arial','normal');doc.text(fmtD(s.siparisTarihi||(s.olusturmaTarihi||'').slice(0,10)),rx3,mm(55.109)+6);
+
+  if(s.tahminTeslimat){
+    doc.setFont('Arial','bold');doc.text('Tahmini Teslimat',rx1,mm(59.58)+6);doc.text(':',rx2,mm(59.58)+6);
+    doc.setFont('Arial','normal');doc.text(fmtD(s.tahminTeslimat),rx3,mm(59.58)+6);
+  }
+
+  // ── MÜŞTERİ BİLGİLERİ (sol) ──
+  const lx1=mm(15.446),lx2=mm(41.228),lx3=mm(44.126);
+  doc.setFont('Arial','bold');doc.setTextColor(...C.textMid);
+  doc.text('Kurum Adı',lx1,mm(42.774)+6);doc.text(':',lx2,mm(42.774)+6);
+  doc.setFont('Arial','normal');doc.text(s.kurum||'',lx3,mm(42.774)+6);
+
+  doc.setFont('Arial','bold');doc.text('İlgili Kişi',lx1,mm(47.065)+6);doc.text(':',lx2,mm(47.065)+6);
+  doc.setFont('Arial','normal');doc.text(s.ilgiliKisi||'',lx3,mm(47.065)+6);
+
+  doc.setFont('Arial','bold');doc.text('Satış Temsilcisi',lx1,mm(51.356)+6);doc.text(':',lx2,mm(51.356)+6);
+  doc.setFont('Arial','normal');doc.text(s.satisTemsilcisi||s.sorumlu||'',lx3,mm(51.356)+6);
+
+  // ── AYRAÇ ──
+  doc.setDrawColor(...C.tableBg);doc.setLineWidth(0.75);
+  doc.line(mm(15.446),mm(67.9),mm(194.63),mm(67.9));
+
+  // ── TABLO ──
+  const tableY=mm(69.667)+mm(0.75);
+  const colW={no:mm(9),urun:mm(107),miktar:mm(18),birim:mm(18),hazir:mm(22)};
+  const _col1Inner=colW.urun-4;
+  const _p7lh=7*1.15*0.3528;
+  const _pGap=6;
+
+  doc.setFontSize(7);doc.setFont('Arial','normal');
+  const bodyRows=(s.satirlar||[]).map((k,i)=>{
+    const gonderilen=k.gonderilen||0;
+    const kalan=Math.max(0,k.miktar-gonderilen);
+    const base=(k.seciliParametreler&&k.seciliParametreler.length)
+      ?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())
+      :(k.aciklama||'');
+    const params=k.seciliParametreler||[];
+    const paramsStr=params.length?'('+params.join(', ')+')':'';
+    const row=[i+1,base||'—',String(k.miktar),k.birim||'Adet',String(kalan)];
+    if(paramsStr){
+      const pls=doc.splitTextToSize(paramsStr,_col1Inner);
+      row._pls=pls;
+      row._extraPad=pls.length*_p7lh+_pGap+0.5;
+    }
+    return row;
+  });
+  doc.setFontSize(8);doc.setFont('Arial','normal');
+
+  let tableEndY=tableY;
+  doc.autoTable({
+    startY:tableY,
+    head:[['#','ÜRÜN ADI VE ÖZELLİKLERİ','SİP.MİKT.','BİRİM','HAZIRLANACAK']],
+    body:bodyRows,
+    theme:'plain',
+    styles:{font:'Arial',fontSize:8,cellPadding:{top:1.5,right:2,bottom:1.5,left:2},textColor:C.textDark,lineColor:C.tableBg,lineWidth:0.5},
+    headStyles:{fillColor:C.tableBg,textColor:C.primary,fontStyle:'bold',fontSize:8,halign:'center',cellPadding:{top:1.6,right:2,bottom:1.6,left:2}},
+    columnStyles:{
+      0:{halign:'center',valign:'middle',cellWidth:colW.no},
+      1:{halign:'left',valign:'top',cellWidth:colW.urun},
+      2:{halign:'center',valign:'middle',cellWidth:colW.miktar},
+      3:{halign:'center',valign:'middle',cellWidth:colW.birim},
+      4:{halign:'center',valign:'middle',cellWidth:colW.hazir}
+    },
+    margin:{left:mm(15.446),right:mm(15.446)},
+    didParseCell:(data)=>{
+      if(data.section==='head'&&data.column.index===1)data.cell.styles.halign='left';
+      if(data.section==='body'&&data.column.index===1){
+        const extra=data.row.raw._extraPad||0;
+        if(extra>0){
+          const p=data.cell.styles.cellPadding;
+          data.cell.styles.cellPadding=typeof p==='object'
+            ?Object.assign({},p,{bottom:(p.bottom||1.5)+extra})
+            :{top:1.5,right:2,bottom:1.5+extra,left:2};
+        }
+      }
+    },
+    didDrawCell:(data)=>{
+      if(data.section!=='body'||data.column.index!==1)return;
+      const pls=data.row.raw._pls;if(!pls||!pls.length)return;
+      const extra=data.row.raw._extraPad||0;
+      const pad=data.cell.styles.cellPadding;
+      const lpad=typeof pad==='object'?(pad.left||2):2;
+      const paramsAreaTop=data.cell.y+data.cell.height-1.5-extra+_pGap;
+      const pt7asc=7*0.3528*0.82;
+      doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
+      pls.forEach((line,i)=>{doc.text(line,data.cell.x+lpad,paramsAreaTop+pt7asc+i*_p7lh);});
+      doc.setFontSize(8);doc.setTextColor(...C.textDark);
+    },
+    didDrawPage:(data)=>{tableEndY=data.cursor.y;}
+  });
+  doc.setCharSpace(0);doc.setFont('Arial','normal');
+
+  let y=tableEndY+mm(6);
+
+  // ── NOTLAR ──
+  if(s.notlar){
+    doc.setFontSize(8);doc.setFont('Arial','bold');doc.setTextColor(...C.textLabel);
+    doc.text('Not :',mm(15.446),y);
+    doc.setFont('Arial','normal');doc.setTextColor(...C.textMid);
+    const notLines=doc.splitTextToSize(s.notlar,mm(160));
+    doc.text(notLines,mm(24.405),y);
+    y+=notLines.length*mm(4.5)+mm(6);
+  }
+
+  // ── İMZA ALANLARI ──
+  const sigY=y+mm(8);
+  const sigH=mm(24),sigW=mm(78);
+
+  // Hazırlayan
+  doc.setDrawColor(...C.border);doc.setLineWidth(0.75);
+  doc.setFillColor(...C.boxBg);
+  doc.roundedRect(mm(15.446),sigY,sigW,sigH,2,2,'FD');
+  doc.setFontSize(7.5);doc.setFont('Arial','bold');doc.setTextColor(...C.textLight);
+  doc.text('HAZIRLAYANA AİT',mm(15.446)+mm(3),sigY+mm(4.5));
+  doc.setFont('Arial','normal');doc.setTextColor(...C.textMid);
+  doc.text('Ad Soyad :',mm(15.446)+mm(3),sigY+mm(10));
+  doc.text('Tarih :',mm(15.446)+mm(3),sigY+mm(15.5));
+  doc.text('İmza :',mm(15.446)+mm(3),sigY+mm(21));
+
+  // Kontrol / Onay
+  const sig2X=mm(15.446)+sigW+mm(10);
+  doc.setFillColor(...C.boxBg);
+  doc.roundedRect(sig2X,sigY,sigW,sigH,2,2,'FD');
+  doc.setFont('Arial','bold');doc.setTextColor(...C.textLight);
+  doc.text('KONTROL / ONAY',sig2X+mm(3),sigY+mm(4.5));
+  doc.setFont('Arial','normal');doc.setTextColor(...C.textMid);
+  doc.text('Ad Soyad :',sig2X+mm(3),sigY+mm(10));
+  doc.text('Tarih :',sig2X+mm(3),sigY+mm(15.5));
+  doc.text('İmza :',sig2X+mm(3),sigY+mm(21));
+
+  // ── FOOTER ──
+  doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
+  doc.text('Bu form üretim birimi için düzenlenmiştir. Ticari bilgi içermez.',mm(15.446),pageH-mm(10));
+  doc.text(st.firma||'Egefe Bilişim Sağlık San. ve Tic. A.Ş.',pageW-mm(15.446),pageH-mm(10),{align:'right'});
+
+  doc.save('uretim-formu-'+(s.siparisNo||'siparis')+'.pdf');
+}
 
 // ════ RED / İPTAL NEDENİ ════
 function openRedNedenModal(teklifId, yeniDurum) {

@@ -589,9 +589,10 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.line(mm(15.446),mm(67.9),mm(194.63),mm(67.9));
 
   // ── TABLO ──
+  // Sütun genişlikleri: toplam = mm(179.11) = mm(194.556) - mm(15.446)
   const tableY=mm(69.667)+mm(0.75);
-  const colW={no:mm(9),urun:mm(107),miktar:mm(18),birim:mm(18),hazir:mm(22)};
-  const _col1Inner=colW.urun-4;
+  const colW={no:mm(9),kat:mm(28),urun:mm(74),miktar:mm(15),birim:mm(15),param:mm(20),hazir:mm(18)};
+  const _col2Inner=colW.urun-4;  // ürün adı sütunu iç genişliği (params için)
   const _p7lh=7*1.15*0.3528;
   const _pGap=6;
 
@@ -604,9 +605,11 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
       :(k.aciklama||'');
     const params=k.seciliParametreler||[];
     const paramsStr=params.length?'('+params.join(', ')+')':'';
-    const row=[i+1,base||'—',String(k.miktar),k.birim||'Adet',String(kalan)];
+    const urun=(state.urunler||[]).find(u=>u.urunAdi===(k._baseAciklama||k.aciklama));
+    const kategori=urun?(urun.kategori||'—'):'—';
+    const row=[i+1,kategori,base||'—',String(k.miktar),k.birim||'Adet',params.length>0?String(params.length):'—',String(kalan)];
     if(paramsStr){
-      const pls=doc.splitTextToSize(paramsStr,_col1Inner);
+      const pls=doc.splitTextToSize(paramsStr,_col2Inner);
       row._pls=pls;
       row._extraPad=pls.length*_p7lh+_pGap+0.5;
     }
@@ -617,22 +620,24 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   let tableEndY=tableY;
   doc.autoTable({
     startY:tableY,
-    head:[['#','ÜRÜN ADI VE ÖZELLİKLERİ','SİP.MİKT.','BİRİM','HAZIRLANACAK']],
+    head:[['#','KATEGORİ','ÜRÜN ADI VE ÖZELLİKLERİ','SİP.MİKT.','BİRİM','PAR.SAYISI','HAZIRLANACAK']],
     body:bodyRows,
     theme:'plain',
     styles:{font:'Arial',fontSize:8,cellPadding:{top:1.5,right:2,bottom:1.5,left:2},textColor:C.textDark,lineColor:C.tableBg,lineWidth:0.5},
-    headStyles:{fillColor:C.tableBg,textColor:C.primary,fontStyle:'bold',fontSize:8,halign:'center',cellPadding:{top:1.6,right:2,bottom:1.6,left:2}},
+    headStyles:{fillColor:C.tableBg,textColor:C.primary,fontStyle:'bold',fontSize:7.5,halign:'center',cellPadding:{top:1.6,right:2,bottom:1.6,left:2}},
     columnStyles:{
       0:{halign:'center',valign:'middle',cellWidth:colW.no},
-      1:{halign:'left',valign:'top',cellWidth:colW.urun},
-      2:{halign:'center',valign:'middle',cellWidth:colW.miktar},
-      3:{halign:'center',valign:'middle',cellWidth:colW.birim},
-      4:{halign:'center',valign:'middle',cellWidth:colW.hazir}
+      1:{halign:'left',valign:'middle',cellWidth:colW.kat},
+      2:{halign:'left',valign:'top',cellWidth:colW.urun},
+      3:{halign:'center',valign:'middle',cellWidth:colW.miktar},
+      4:{halign:'center',valign:'middle',cellWidth:colW.birim},
+      5:{halign:'center',valign:'middle',cellWidth:colW.param},
+      6:{halign:'center',valign:'middle',cellWidth:colW.hazir}
     },
     margin:{left:mm(15.446),right:mm(15.446)},
     didParseCell:(data)=>{
-      if(data.section==='head'&&data.column.index===1)data.cell.styles.halign='left';
-      if(data.section==='body'&&data.column.index===1){
+      if(data.section==='head'&&(data.column.index===1||data.column.index===2))data.cell.styles.halign='left';
+      if(data.section==='body'&&data.column.index===2){
         const extra=data.row.raw._extraPad||0;
         if(extra>0){
           const p=data.cell.styles.cellPadding;
@@ -643,7 +648,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
       }
     },
     didDrawCell:(data)=>{
-      if(data.section!=='body'||data.column.index!==1)return;
+      if(data.section!=='body'||data.column.index!==2)return;
       const pls=data.row.raw._pls;if(!pls||!pls.length)return;
       const extra=data.row.raw._extraPad||0;
       const pad=data.cell.styles.cellPadding;
@@ -679,7 +684,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.setFillColor(...C.boxBg);
   doc.roundedRect(mm(15.446),sigY,sigW,sigH,2,2,'FD');
   doc.setFontSize(7.5);doc.setFont('Arial','bold');doc.setTextColor(...C.textLight);
-  doc.text('HAZIRLAYANA AİT',mm(15.446)+mm(3),sigY+mm(4.5));
+  doc.text('HAZIRLAYAN',mm(15.446)+mm(3),sigY+mm(4.5));
   doc.setFont('Arial','normal');doc.setTextColor(...C.textMid);
   doc.text('Ad Soyad :',mm(15.446)+mm(3),sigY+mm(10));
   doc.text('Tarih :',mm(15.446)+mm(3),sigY+mm(15.5));

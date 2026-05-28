@@ -593,8 +593,8 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   const tableY=mm(69.667)+mm(0.75);
   const colW={no:mm(9),urun:mm(107),miktar:mm(18),birim:mm(18),hazir:mm(27.1)};
   const _col1Inner=colW.urun-4;
-  const _p7lh=7*1.15*0.3528;
-  const _infoGap=3; // mm, ürün adından bilgi satırlarına boşluk
+  const _infoLineH=mm(6);  // satırlar arası 6mm (baseline-to-baseline)
+  const _infoGap=mm(6);    // ürün adından ilk bilgi satırına boşluk
 
   doc.setFontSize(7);doc.setFont('Arial','normal');
   const bodyRows=(s.satirlar||[]).map((k,i)=>{
@@ -619,7 +619,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
     const row=[i+1,base||'—',String(k.miktar),k.birim||'Adet',String(kalan)];
     if(infoLines.length){
       row._infoLines=infoLines;
-      row._extraPad=infoLines.length*_p7lh+_infoGap+0.5;
+      row._extraPad=infoLines.length*_infoLineH+_infoGap+0.5;
     }
     return row;
   });
@@ -662,7 +662,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
       const infoTop=data.cell.y+data.cell.height-1.5-extra+_infoGap;
       const pt7asc=7*0.3528*0.82;
       doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
-      lines.forEach((line,i)=>{doc.text(line,data.cell.x+lpad,infoTop+pt7asc+i*_p7lh);});
+      lines.forEach((line,i)=>{doc.text(line,data.cell.x+lpad,infoTop+pt7asc+i*_infoLineH);});
       doc.setFontSize(8);doc.setTextColor(...C.textDark);
     },
     didDrawPage:(data)=>{tableEndY=data.cursor.y;}

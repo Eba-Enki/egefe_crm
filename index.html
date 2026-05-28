@@ -697,6 +697,7 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 Mevcut kayıt numaraları değişmez. Bu ayar yalnızca bundan sonra oluşturulacak kayıtları etkiler.
               </div>
+              <div id="settings-servis-kayit">
               <div class="settings-subsection-title">Servis Kayıt Numarası</div>
               <div class="form-grid" style="gap:14px">
                 <div class="field">
@@ -709,6 +710,21 @@
                 </div>
               </div>
               <div class="settings-preview-row">Örnek: <strong id="preview-servis">KN000001</strong></div>
+              </div>
+              <div id="settings-siparis-no" style="display:none">
+              <div class="settings-subsection-title">Sipariş Numarası</div>
+              <div class="form-grid" style="gap:14px">
+                <div class="field">
+                  <label>Ön Ek</label>
+                  <input type="text" id="set-siparis-prefix" placeholder="SIP" maxlength="10" style="text-transform:uppercase" oninput="updateSettingsPreview()">
+                </div>
+                <div class="field">
+                  <label>Basamak Sayısı</label>
+                  <input type="number" id="set-siparis-digits" min="3" max="9" placeholder="5" oninput="updateSettingsPreview()">
+                </div>
+              </div>
+              <div class="settings-preview-row">Örnek: <strong id="preview-siparis">SIP00001</strong></div>
+              </div>
             </div>
             <div class="settings-section">
               <div class="settings-subsection-title">Teklif Numarası</div>

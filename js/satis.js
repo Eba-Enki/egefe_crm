@@ -30,8 +30,10 @@ function switchFaturaTab(tab){
 }
 
 function nextSiparisNo(){
-  var nums=(state.siparisler||[]).map(function(s){return parseInt((s.siparisNo||'').replace('SIP',''))||0;});
-  return 'SIP'+String((nums.length?Math.max.apply(null,nums):0)+1).padStart(5,'0');
+  var p=(state.settings&&state.settings.siparisPrefix)||'SIP';
+  var d=parseInt((state.settings&&state.settings.siparisDigits)||5);
+  var nums=(state.siparisler||[]).map(function(s){return parseInt((s.siparisNo||'').replace(/^[A-Za-z]+/,''))||0;});
+  return p+String((nums.length?Math.max.apply(null,nums):0)+1).padStart(d,'0');
 }
 
 function tekliftenSipariseAktar(teklifId){

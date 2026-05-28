@@ -144,8 +144,10 @@ function updateSettingsPreview(){
   var sp=document.getElementById('set-servis-prefix');var sd=document.getElementById('set-servis-digits');
   var tp=document.getElementById('set-teklif-prefix');var td=document.getElementById('set-teklif-digits');
   var ps=document.getElementById('preview-servis');var pt=document.getElementById('preview-teklif');
+  var sipp=document.getElementById('set-siparis-prefix');var sipd=document.getElementById('set-siparis-digits');var prs=document.getElementById('preview-siparis');
   if(sp&&sd&&ps){var p=sp.value.trim().toUpperCase()||'KN';var d=Math.min(9,Math.max(3,parseInt(sd.value)||6));ps.textContent=p+String(1).padStart(d,'0');}
   if(tp&&td&&pt){var p2=tp.value.trim().toUpperCase()||'TKL';var d2=Math.min(9,Math.max(3,parseInt(td.value)||5));pt.textContent=p2+String(1).padStart(d2,'0');}
+  if(sipp&&sipd&&prs){var p3=sipp.value.trim().toUpperCase()||'SIP';var d3=Math.min(9,Math.max(3,parseInt(sipd.value)||5));prs.textContent=p3+String(1).padStart(d3,'0');}
 }
 function renderParametreler(){
   const list=state.settings.parametreler||[];
@@ -171,6 +173,14 @@ function loadSettings(){
   var sdEl=document.getElementById('set-servis-digits');if(sdEl)sdEl.value=state.settings.servisDigits||6;
   var tpEl=document.getElementById('set-teklif-prefix');if(tpEl)tpEl.value=state.settings.teklifPrefix||'TKL';
   var tdEl=document.getElementById('set-teklif-digits');if(tdEl)tdEl.value=state.settings.teklifDigits||5;
+  var sipPEl=document.getElementById('set-siparis-prefix');if(sipPEl)sipPEl.value=state.settings.siparisPrefix||'SIP';
+  var sipDEl=document.getElementById('set-siparis-digits');if(sipDEl)sipDEl.value=state.settings.siparisDigits||5;
+  // Portal'a göre kayıt numarası bölümünü göster/gizle
+  var servisDiv=document.getElementById('settings-servis-kayit');
+  var siparisDiv=document.getElementById('settings-siparis-no');
+  var isSatis=typeof currentPortal!=='undefined'&&currentPortal==='satis';
+  if(servisDiv)servisDiv.style.display=isSatis?'none':'';
+  if(siparisDiv)siparisDiv.style.display=isSatis?'':'none';
   updateSettingsPreview();
   renderUrunKategorileri();
   renderParametreler();
@@ -181,6 +191,8 @@ function saveSettings(){
   var sdEl=document.getElementById('set-servis-digits');if(sdEl&&sdEl.value)state.settings.servisDigits=Math.min(9,Math.max(3,parseInt(sdEl.value)||6));
   var tpEl=document.getElementById('set-teklif-prefix');if(tpEl&&tpEl.value.trim())state.settings.teklifPrefix=tpEl.value.trim().toUpperCase();
   var tdEl=document.getElementById('set-teklif-digits');if(tdEl&&tdEl.value)state.settings.teklifDigits=Math.min(9,Math.max(3,parseInt(tdEl.value)||5));
+  var sipPEl=document.getElementById('set-siparis-prefix');if(sipPEl&&sipPEl.value.trim())state.settings.siparisPrefix=sipPEl.value.trim().toUpperCase();
+  var sipDEl=document.getElementById('set-siparis-digits');if(sipDEl&&sipDEl.value)state.settings.siparisDigits=Math.min(9,Math.max(3,parseInt(sipDEl.value)||5));
   saveAll();toast('Ayarlar kaydedildi.','success');
 }
 

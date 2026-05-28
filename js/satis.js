@@ -160,7 +160,7 @@ function renderSiparisler(){
       +'<td style="font-size:12px;color:var(--text3)">'+(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
       +'<td style="text-align:right"><div class="action-row">'
       +'<button class="btn-icon" title="Detay" onclick="openSiparisDetay(\''+s.id+'\')">◎</button>'
-      +'<button class="btn-icon" title="Sipariş Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')">📋</button>'
+      +(ARSIV_SIPARISLER.indexOf(s.durum)<0?'<button class="btn-icon" title="Sipariş Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')">📋</button>':'')
       +(canEdit&&['Hazırlanıyor','Kısmi Sevkiyat'].indexOf(s.durum)>=0
         ?(s.formYazdirildi
           ?'<button class="btn-icon" title="Sevkiyat" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')">📦</button>'
@@ -449,6 +449,8 @@ function openSiparisDetay(sipId){
   var s=(state.siparisler||[]).find(function(x){return x.id===sipId;});
   if(!s)return;
   _activeSiparisDetayId=sipId;
+  var _pb=document.getElementById('sp-detay-print-btn');
+  if(_pb)_pb.style.display=ARSIV_SIPARISLER.indexOf(s.durum)>=0?'none':'';
   var cur={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[s.paraBirimi||'TRY']||'₺';
   var toplam=0;
   var rowsHtml=(s.satirlar||[]).map(function(k){

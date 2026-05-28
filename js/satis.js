@@ -160,8 +160,12 @@ function renderSiparisler(){
       +'<td style="font-size:12px;color:var(--text3)">'+(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
       +'<td style="text-align:right"><div class="action-row">'
       +'<button class="btn-icon" title="Detay" onclick="openSiparisDetay(\''+s.id+'\')">◎</button>'
-      +'<button class="btn-icon" title="Üretim Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')">📋</button>'
-      +(canEdit&&['Hazırlanıyor','Kısmi Sevkiyat'].indexOf(s.durum)>=0?'<button class="btn-icon" title="Sevkiyat" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')">📦</button>':'')
+      +'<button class="btn-icon" title="Sipariş Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')">📋</button>'
+      +(canEdit&&['Hazırlanıyor','Kısmi Sevkiyat'].indexOf(s.durum)>=0
+        ?(s.formYazdirildi
+          ?'<button class="btn-icon" title="Sevkiyat" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')">📦</button>'
+          :'<button class="btn-icon" title="Önce sipariş formu yazdırın" style="color:var(--text3);cursor:not-allowed" disabled>📦</button>')
+        :'')
       +(canEdit&&['Kısmi Sevkiyat','Tamamlandı'].indexOf(s.durum)>=0?'<button class="btn-icon" title="Faturaya Aktar" style="color:var(--amber)" onclick="openFaturaModal(\''+s.id+'\')">🧾</button>':'')
       +(canEdit?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)">⇅</button>':'')
       +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'siparis\',\''+s.id+'\')">⊗</button>':'')
@@ -555,7 +559,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
 
   // ── BAŞLIK (sağ) ──
   doc.setFontSize(14);doc.setFont('Arial','bold');doc.setTextColor(...C.textMid);
-  doc.text('ÜRETİM SİPARİŞ FORMU',mm(194.556),mm(42.395)+11,{align:'right'});
+  doc.text('SİPARİŞ FORMU',mm(194.556),mm(42.395)+11,{align:'right'});
 
   // ── SİPARİŞ BİLGİLERİ (sağ) ──
   const rx1=mm(141.66),rx2=mm(165.354),rx3=mm(171.249);
@@ -589,17 +593,15 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.line(mm(15.446),mm(67.9),mm(194.63),mm(67.9));
 
   // ── TABLO ──
-  // 5 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
+  // 4 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
   const tableY=mm(69.667)+mm(0.75);
-  const colW={no:mm(9),urun:mm(107),miktar:mm(18),birim:mm(18),hazir:mm(27.1)};
+  const colW={no:mm(9),urun:mm(127),miktar:mm(23),birim:mm(20.1)};
   const _col1Inner=colW.urun-4;
-  const _infoLineH=mm(6);  // satırlar arası 6mm (baseline-to-baseline)
-  const _infoGap=mm(6);    // ürün adından ilk bilgi satırına boşluk
+  const _infoLineH=mm(3);  // satırlar arası 3mm (baseline-to-baseline)
+  const _infoGap=mm(3);    // ürün adından ilk bilgi satırına boşluk
 
   doc.setFontSize(7);doc.setFont('Arial','normal');
   const bodyRows=(s.satirlar||[]).map((k,i)=>{
-    const gonderilen=k.gonderilen||0;
-    const kalan=Math.max(0,k.miktar-gonderilen);
     const base=(k.seciliParametreler&&k.seciliParametreler.length)
       ?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())
       :(k.aciklama||'');
@@ -616,7 +618,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
       doc.splitTextToSize(pLine,_col1Inner).forEach(l=>infoLines.push(l));
     }
 
-    const row=[i+1,base||'—',String(k.miktar),k.birim||'Adet',String(kalan)];
+    const row=[i+1,base||'—',String(k.miktar),k.birim||'Adet'];
     if(infoLines.length){
       row._infoLines=infoLines;
       row._extraPad=infoLines.length*_infoLineH+_infoGap+0.5;
@@ -628,7 +630,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   let tableEndY=tableY;
   doc.autoTable({
     startY:tableY,
-    head:[['#','ÜRÜN ADI VE ÖZELLİKLERİ','SİP.MİKT.','BİRİM','HAZIRLANACAK']],
+    head:[['#','ÜRÜN ADI VE ÖZELLİKLERİ','MİKTAR','BİRİM']],
     body:bodyRows,
     theme:'plain',
     styles:{font:'Arial',fontSize:8,cellPadding:{top:1.5,right:2,bottom:1.5,left:2},textColor:C.textDark,lineColor:C.tableBg,lineWidth:0.5},
@@ -637,8 +639,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
       0:{halign:'center',valign:'middle',cellWidth:colW.no},
       1:{halign:'left',valign:'top',cellWidth:colW.urun},
       2:{halign:'center',valign:'middle',cellWidth:colW.miktar},
-      3:{halign:'center',valign:'middle',cellWidth:colW.birim},
-      4:{halign:'center',valign:'middle',cellWidth:colW.hazir}
+      3:{halign:'center',valign:'middle',cellWidth:colW.birim}
     },
     margin:{left:mm(15.446),right:mm(15.446)},
     didParseCell:(data)=>{
@@ -712,7 +713,10 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.text('Bu form üretim birimi için düzenlenmiştir. Ticari bilgi içermez.',mm(15.446),pageH-mm(10));
   doc.text(st.firma||'Egefe Bilişim Sağlık San. ve Tic. A.Ş.',pageW-mm(15.446),pageH-mm(10),{align:'right'});
 
-  doc.save('uretim-formu-'+(s.siparisNo||'siparis')+'.pdf');
+  doc.save('siparis-formu-'+(s.siparisNo||'siparis')+'.pdf');
+  // Formu yazdırıldı olarak işaretle → sevkiyat butonu aktifleşir
+  const _spIdx=(state.siparisler||[]).findIndex(x=>x.id===s.id);
+  if(_spIdx>=0){state.siparisler[_spIdx].formYazdirildi=true;saveAll();renderSiparisler();}
 }
 
 // ════ RED / İPTAL NEDENİ ════

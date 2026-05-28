@@ -244,8 +244,8 @@ function openKismiTeslim(sipId){
     var gonderilen=k.gonderilen||0;
     var kalan=k.miktar-gonderilen;
     var ksp=k.seciliParametreler||[];
-    var kBase=ksp.length?(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim():k.aciklama||'';
-    var kpHtml=ksp.length?'<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">('+ksp.join(', ')+')</div>':'';
+    var kBase=ksp.length?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim()):k.aciklama||'';
+    var kpHtml=ksp.length?'<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">('+ksp.map(function(p){return typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad);}).join(', ')+')</div>':'';
     return '<div style="padding:8px 0;border-bottom:1px solid var(--border)">'
       +'<div style="font-size:13px;font-weight:500;margin-bottom:6px">'+escXml(kBase)+kpHtml+'</div>'
       +'<div style="display:flex;gap:12px;font-size:12px;color:var(--text3);margin-bottom:6px">'
@@ -402,8 +402,8 @@ function goSiparisForm(teklifId){
   var itemsHtml=(t.satirlar||[]).map(function(s){
     var satir=s.miktar*(s.birimFiyat||0);toplam+=satir;
     var sp=s.seciliParametreler||[];
-    var sBase=sp.length?(s.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim():s.aciklama||'';
-    var pHtml=sp.length?'<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">('+sp.join(', ')+')</div>':'';
+    var sBase=sp.length?(s._baseAciklama||(s.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim()):s.aciklama||'';
+    var pHtml=sp.length?'<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">('+sp.map(function(p){return typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad);}).join(', ')+')</div>':'';
     return '<tr><td style="padding:6px 8px;font-size:13px">'+escXml(sBase)+pHtml+'</td>'
       +'<td style="padding:6px 8px;font-size:12px;text-align:center">'+s.miktar+' '+escXml(s.birim||'Adet')+'</td>'
       +'<td style="padding:6px 8px;font-size:12px;text-align:right">'+cur+' '+fmtNum(s.birimFiyat||0)+'</td>'
@@ -459,8 +459,8 @@ function openSiparisDetay(sipId){
     var gonderilen=k.gonderilen||0;var kalan=k.miktar-gonderilen;
     var satir=k.miktar*(k.birimFiyat||0);toplam+=satir;
     var rsp=k.seciliParametreler||[];
-    var rBase=rsp.length?(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim()||'—':k.aciklama||'—';
-    var rpHtml=rsp.length?'<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">('+rsp.join(', ')+')</div>':'';
+    var rBase=rsp.length?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())||'—':k.aciklama||'—';
+    var rpHtml=rsp.length?'<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">('+rsp.map(function(p){return typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad);}).join(', ')+')</div>':'';
     return '<tr>'
       +'<td style="padding:7px 9px;font-size:13px">'+escXml(rBase)+rpHtml+'</td>'
       +'<td style="padding:7px 9px;font-size:12px;text-align:center">'+k.miktar+' '+escXml(k.birim||'')+'</td>'
@@ -618,7 +618,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
     if(kategori) infoLines.push('Kategori: '+kategori);
     if(params.length>0){
       infoLines.push('Parametre Sayısı: '+params.length);
-      const pLine='Parametreler: '+params.join(', ');
+      const pLine='Parametreler: '+params.map(p=>typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad)).join(', ');
       doc.splitTextToSize(pLine,_col1Inner).forEach(l=>infoLines.push(l));
     }
 

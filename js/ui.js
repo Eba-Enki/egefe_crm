@@ -382,12 +382,19 @@ var _paramSecIdx=-1,_paramSecMax=0;
 function openParamSecModal(idx,count){
   _paramSecIdx=idx;_paramSecMax=count;
   const mevcut=teklifItems[idx].seciliParametreler||[];
+  const mevMap={};
+  mevcut.forEach(p=>{const ad=typeof p==='string'?p:p.ad;const deger=typeof p==='string'?'':(p.deger||'');mevMap[ad]=deger;});
   const parametreler=state.settings.parametreler||[];
   const titleEl=document.getElementById('parametre-sec-title');
   if(titleEl)titleEl.textContent=count+' parametre seçin';
   const list=document.getElementById('parametre-sec-list');
   if(!list)return;
-  list.innerHTML=parametreler.map((p,i)=>`<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);user-select:none;transition:background .1s"><input type="checkbox" id="ps-cb-${i}" value="${p.replace(/"/g,'&quot;')}" ${mevcut.includes(p)?'checked':''} onchange="updateParamSecCounter()"><span style="font-size:13px;color:var(--text)">${p}</span></label>`).join('');
+  list.style.gridTemplateColumns='1fr';
+  list.innerHTML=parametreler.map((p,i)=>{
+    const isChecked=p in mevMap;
+    const val=isChecked?(mevMap[p]||''):'';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;background:var(--bg3);border:1px solid var(--border)"><input type="checkbox" id="ps-cb-${i}" value="${p.replace(/"/g,'&quot;')}" ${isChecked?'checked':''} onchange="updateParamSecCounter()"><label for="ps-cb-${i}" style="font-size:13px;color:var(--text);flex:1;cursor:pointer">${p}</label><input type="text" id="ps-val-${i}" value="${val.replace(/"/g,'&quot;')}" placeholder="değer" style="width:110px;font-size:12px;padding:3px 8px;border-radius:4px;border:1px solid var(--border2);background:var(--bg4);color:var(--text)" ${isChecked?'':'disabled'}></div>`;
+  }).join('');
   updateParamSecCounter();
   openModal('modal-parametre-sec');
 }
@@ -397,11 +404,21 @@ function updateParamSecCounter(){
   const n=checked.length;
   const counterEl=document.getElementById('parametre-sec-counter');
   if(counterEl)counterEl.textContent=n+' / '+_paramSecMax+' seçildi';
-  all.forEach(cb=>{if(!cb.checked)cb.disabled=(n>=_paramSecMax);});
+  all.forEach((cb,i)=>{
+    if(!cb.checked)cb.disabled=(n>=_paramSecMax);
+    const vi=document.getElementById('ps-val-'+i);
+    if(vi)vi.disabled=!cb.checked;
+  });
 }
 function confirmParamSec(){
-  const selected=[...document.querySelectorAll('#parametre-sec-list input[type=checkbox]:checked')].map(cb=>cb.value);
-  if(selected.length!==_paramSecMax)return toast('Lütfen tam olarak '+_paramSecMax+' parametre seçin.','error');
+  const checkboxes=[...document.querySelectorAll('#parametre-sec-list input[type=checkbox]:checked')];
+  if(checkboxes.length!==_paramSecMax)return toast('Lütfen tam olarak '+_paramSecMax+' parametre seçin.','error');
+  const selected=checkboxes.map(cb=>{
+    const i=cb.id.replace('ps-cb-','');
+    const vi=document.getElementById('ps-val-'+i);
+    const deger=vi?vi.value.trim():'';
+    return deger?{ad:cb.value,deger:deger}:{ad:cb.value};
+  });
   const base=teklifItems[_paramSecIdx]._baseAciklama||teklifItems[_paramSecIdx].aciklama.replace(/\s*\([^)]*\)/g,'').trim();
   teklifItems[_paramSecIdx].aciklama=base;
   teklifItems[_paramSecIdx]._baseAciklama=base;

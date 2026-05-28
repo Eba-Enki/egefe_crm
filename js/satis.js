@@ -589,12 +589,12 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.line(mm(15.446),mm(67.9),mm(194.63),mm(67.9));
 
   // ── TABLO ──
-  // Sütun genişlikleri: toplam = mm(179.11) = mm(194.556) - mm(15.446)
+  // 5 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
   const tableY=mm(69.667)+mm(0.75);
-  const colW={no:mm(9),kat:mm(28),urun:mm(74),miktar:mm(15),birim:mm(15),param:mm(20),hazir:mm(18)};
-  const _col2Inner=colW.urun-4;  // ürün adı sütunu iç genişliği (params için)
+  const colW={no:mm(9),urun:mm(107),miktar:mm(18),birim:mm(18),hazir:mm(27.1)};
+  const _col1Inner=colW.urun-4;
   const _p7lh=7*1.15*0.3528;
-  const _pGap=6;
+  const _infoGap=3; // mm, ürün adından bilgi satırlarına boşluk
 
   doc.setFontSize(7);doc.setFont('Arial','normal');
   const bodyRows=(s.satirlar||[]).map((k,i)=>{
@@ -604,14 +604,22 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
       ?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())
       :(k.aciklama||'');
     const params=k.seciliParametreler||[];
-    const paramsStr=params.length?'('+params.join(', ')+')':'';
     const urun=(state.urunler||[]).find(u=>u.urunAdi===(k._baseAciklama||k.aciklama));
-    const kategori=urun?(urun.kategori||'—'):'—';
-    const row=[i+1,kategori,base||'—',String(k.miktar),k.birim||'Adet',params.length>0?String(params.length):'—',String(kalan)];
-    if(paramsStr){
-      const pls=doc.splitTextToSize(paramsStr,_col2Inner);
-      row._pls=pls;
-      row._extraPad=pls.length*_p7lh+_pGap+0.5;
+    const kategori=urun?(urun.kategori||''):'';
+
+    // Hücre içinde alt alta gösterilecek bilgi satırları
+    const infoLines=[];
+    if(kategori) infoLines.push('Kategori: '+kategori);
+    if(params.length>0){
+      infoLines.push('Parametre Sayısı: '+params.length);
+      const pLine='Parametreler: '+params.join(', ');
+      doc.splitTextToSize(pLine,_col1Inner).forEach(l=>infoLines.push(l));
+    }
+
+    const row=[i+1,base||'—',String(k.miktar),k.birim||'Adet',String(kalan)];
+    if(infoLines.length){
+      row._infoLines=infoLines;
+      row._extraPad=infoLines.length*_p7lh+_infoGap+0.5;
     }
     return row;
   });
@@ -620,24 +628,22 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   let tableEndY=tableY;
   doc.autoTable({
     startY:tableY,
-    head:[['#','KATEGORİ','ÜRÜN ADI VE ÖZELLİKLERİ','SİP.MİKT.','BİRİM','PAR.SAYISI','HAZIRLANACAK']],
+    head:[['#','ÜRÜN ADI VE ÖZELLİKLERİ','SİP.MİKT.','BİRİM','HAZIRLANACAK']],
     body:bodyRows,
     theme:'plain',
     styles:{font:'Arial',fontSize:8,cellPadding:{top:1.5,right:2,bottom:1.5,left:2},textColor:C.textDark,lineColor:C.tableBg,lineWidth:0.5},
-    headStyles:{fillColor:C.tableBg,textColor:C.primary,fontStyle:'bold',fontSize:7.5,halign:'center',cellPadding:{top:1.6,right:2,bottom:1.6,left:2}},
+    headStyles:{fillColor:C.tableBg,textColor:C.primary,fontStyle:'bold',fontSize:8,halign:'center',cellPadding:{top:1.6,right:2,bottom:1.6,left:2}},
     columnStyles:{
       0:{halign:'center',valign:'middle',cellWidth:colW.no},
-      1:{halign:'left',valign:'middle',cellWidth:colW.kat},
-      2:{halign:'left',valign:'top',cellWidth:colW.urun},
-      3:{halign:'center',valign:'middle',cellWidth:colW.miktar},
-      4:{halign:'center',valign:'middle',cellWidth:colW.birim},
-      5:{halign:'center',valign:'middle',cellWidth:colW.param},
-      6:{halign:'center',valign:'middle',cellWidth:colW.hazir}
+      1:{halign:'left',valign:'top',cellWidth:colW.urun},
+      2:{halign:'center',valign:'middle',cellWidth:colW.miktar},
+      3:{halign:'center',valign:'middle',cellWidth:colW.birim},
+      4:{halign:'center',valign:'middle',cellWidth:colW.hazir}
     },
     margin:{left:mm(15.446),right:mm(15.446)},
     didParseCell:(data)=>{
-      if(data.section==='head'&&(data.column.index===1||data.column.index===2))data.cell.styles.halign='left';
-      if(data.section==='body'&&data.column.index===2){
+      if(data.section==='head'&&data.column.index===1)data.cell.styles.halign='left';
+      if(data.section==='body'&&data.column.index===1){
         const extra=data.row.raw._extraPad||0;
         if(extra>0){
           const p=data.cell.styles.cellPadding;
@@ -648,15 +654,15 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
       }
     },
     didDrawCell:(data)=>{
-      if(data.section!=='body'||data.column.index!==2)return;
-      const pls=data.row.raw._pls;if(!pls||!pls.length)return;
+      if(data.section!=='body'||data.column.index!==1)return;
+      const lines=data.row.raw._infoLines;if(!lines||!lines.length)return;
       const extra=data.row.raw._extraPad||0;
       const pad=data.cell.styles.cellPadding;
       const lpad=typeof pad==='object'?(pad.left||2):2;
-      const paramsAreaTop=data.cell.y+data.cell.height-1.5-extra+_pGap;
+      const infoTop=data.cell.y+data.cell.height-1.5-extra+_infoGap;
       const pt7asc=7*0.3528*0.82;
       doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
-      pls.forEach((line,i)=>{doc.text(line,data.cell.x+lpad,paramsAreaTop+pt7asc+i*_p7lh);});
+      lines.forEach((line,i)=>{doc.text(line,data.cell.x+lpad,infoTop+pt7asc+i*_p7lh);});
       doc.setFontSize(8);doc.setTextColor(...C.textDark);
     },
     didDrawPage:(data)=>{tableEndY=data.cursor.y;}

@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh run *)",
+      "Bash(where gh *)",
+      "PowerShell(Get-Command gh -ErrorAction SilentlyContinue)",
+      "Bash(git rm *)",
+      "Bash(Get-Content \"d:/Eba Asus Yedek 09.02.2025/Şirketler Web Siteleri/egefe/js/ui.js\" -Raw)",
+      "Bash(powershell -command \"Select-String -Path 'index.html' -Pattern 'aktar|export|yedek|backup' | Select-Object LineNumber, Line | Format-Table -Wrap\")",
+      "Bash(node serve.mjs)",
+      "Bash(Start-Sleep -Seconds 2)",
+      "Bash(Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing)",
+      "Bash(Select-Object -ExpandProperty StatusCode)",
+      "PowerShell(Start-Sleep -Seconds 1; \\(Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing\\).StatusCode)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "PowerShell(Set-Location \"d:\\\\Eba Asus Yedek 09.02.2025\\\\Şirketler Web Siteleri\\\\egefe\"; Start-Process node -ArgumentList \"serve.mjs\" -WindowStyle Hidden; Start-Sleep -Seconds 2; \\(Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing\\).StatusCode)",
+      "PowerShell(Get-Command node -ErrorAction SilentlyContinue; \\(Get-Command node\\).Source)",
+      "PowerShell(Get-ChildItem \"C:\\\\\", \"$env:LOCALAPPDATA\", \"$env:APPDATA\" -Recurse -Filter \"node.exe\" -ErrorAction SilentlyContinue 2>&1 | Select-Object -First 5 FullName)",
+      "Bash(python -c ' *)",
+      "Bash(del favicon_uri.txt)",
+      "Read(//d/Eba Asus Yedek 09.02.2025/�irketler Web Siteleri/egefe/**)"
+    ],
+    "additionalDirectories": [
+      "d:\\Eba Asus Yedek 09.02.2025\\�irketler Web Siteleri\\egefe"
+    ]
+  }
+}

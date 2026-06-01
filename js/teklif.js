@@ -362,48 +362,64 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
 
   // ── BILL TO SECTION ──
   doc.setFontSize(8);
-  doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text('Kurum Adı', mm(15.446), mm(42.774)+6);
-  doc.text(':', mm(41.228), mm(42.774)+6);
+  const _lx1=mm(15.446),_lx2=mm(41.228),_lx3=mm(44.126);
+  const _lMaxW=mm(93); // right column starts at mm(141.66), leave buffer
+  const _rGap=mm(4.291);  // baseline-to-baseline normal row gap
+  const _lh8=8*1.15;      // 8pt line height in pt (unit='pt' doc)
+  let _curY=mm(42.774)+6;
 
-  doc.setFont('Arial', 'normal');
-  doc.text(titleCase(t.kurum||''), mm(44.126), mm(42.774)+6);
+  // Kurum Adı — wrap long names
+  doc.setFont('Arial','bold');
+  doc.text('Kurum Adı',_lx1,_curY); doc.text(':',_lx2,_curY);
+  doc.setFont('Arial','normal');
+  const _kurumLines=doc.splitTextToSize(titleCase(t.kurum||''),_lMaxW);
+  doc.text(_kurumLines,_lx3,_curY);
+  _curY+=(_kurumLines.length-1)*_lh8+_rGap;
 
-  doc.setFont('Arial', 'bold');
-  doc.text('Adres', mm(15.446), mm(47.065)+6);
-  doc.text(':', mm(41.228), mm(47.065)+6);
+  // Adres + Şehir — look up from musteriler, wrap
+  const _mRec=(state.musteriler||[]).find(function(m){return m.kurum===t.kurum;});
+  const _adresParts=[(_mRec&&_mRec.adres)||'',(_mRec&&_mRec.sehir)||''].filter(Boolean);
+  const _adresVal=_adresParts.join(', ');
+  doc.setFont('Arial','bold');
+  doc.text('Adres',_lx1,_curY); doc.text(':',_lx2,_curY);
+  doc.setFont('Arial','normal');
+  if(_adresVal){
+    const _adresLines=doc.splitTextToSize(titleCase(_adresVal),_lMaxW);
+    doc.text(_adresLines,_lx3,_curY);
+    _curY+=(_adresLines.length-1)*_lh8+_rGap;
+  } else {
+    _curY+=_rGap;
+  }
 
-  doc.setFont('Arial', 'normal');
-  doc.text(titleCase(t.adres||''), mm(44.126), mm(47.065)+6);
+  // İlgili Kişi
+  doc.setFont('Arial','bold');
+  doc.text('İlgili Kişi',_lx1,_curY); doc.text(':',_lx2,_curY);
+  doc.setFont('Arial','normal');
+  doc.text(titleCase(t.ilgiliKisi||''),_lx3,_curY);
+  _curY+=_rGap;
 
-  doc.setFont('Arial', 'bold');
-  doc.text('İlgili Kişi', mm(15.446), mm(51.356)+6);
-  doc.text(':', mm(41.228), mm(51.356)+6);
+  // e-posta
+  doc.setFont('Arial','bold');
+  doc.text('e-posta',_lx1,_curY); doc.text(':',_lx2,_curY);
+  doc.setFont('Arial','normal');
+  doc.text(t.email||'',_lx3,_curY);
+  _curY+=_rGap;
 
-  doc.setFont('Arial', 'normal');
-  doc.text(titleCase(t.ilgiliKisi||''), mm(44.126), mm(51.356)+6);
-
-  doc.setFont('Arial', 'bold');
-  doc.text('e-posta', mm(15.446), mm(55.647)+6);
-  doc.text(':', mm(41.228), mm(55.647)+6);
-
-  doc.setFont('Arial', 'normal');
-  doc.text(t.email || '', mm(44.126), mm(55.647)+6);
-
-  doc.setFont('Arial', 'bold');
-  doc.text('Tel', mm(15.446), mm(59.938)+6);
-  doc.text(':', mm(41.228), mm(59.938)+6);
-
-  doc.setFont('Arial', 'normal');
-  doc.text(t.telefon || '', mm(44.126), mm(59.938)+6);
+  // Tel
+  doc.setFont('Arial','bold');
+  doc.text('Tel',_lx1,_curY); doc.text(':',_lx2,_curY);
+  doc.setFont('Arial','normal');
+  doc.text(t.telefon||'',_lx3,_curY);
+  _curY+=_rGap;
 
   doc.setDrawColor(...C.tableBg);
   doc.setLineWidth(0.75);
-  doc.line(mm(15.446), mm(67.900), mm(194.63), mm(67.900));
+  const _divY=Math.max(mm(67.900),_curY+mm(3));
+  doc.line(mm(15.446),_divY,mm(194.63),_divY);
 
   // ── TABLE ──
-  const tableY = mm(69.667) + mm(0.75);
+  const tableY=_divY+mm(2.517);
   // Pre-split params with 7pt font BEFORE autoTable (avoids state interference)
   const _col1Inner = mm(90.652) - 4; // cell width minus l+r padding (2+2)
   const _p7lh = 7 * 1.15 * 0.3528;  // 7pt line height in mm

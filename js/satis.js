@@ -582,23 +582,47 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
 
   // ── MÜŞTERİ BİLGİLERİ (sol) ──
   const lx1=mm(15.446),lx2=mm(41.228),lx3=mm(44.126);
+  const _slMaxW=mm(93),_slRGap=mm(4.291),_slLh8=8*1.15;
+  let _scurY=mm(42.774)+6;
+  const _smRec=(state.musteriler||[]).find(function(m){return m.kurum===s.kurum;});
+
+  // Kurum Adı — wrap long names
   doc.setFont('Arial','bold');doc.setTextColor(...C.textMid);
-  doc.text('Kurum Adı',lx1,mm(42.774)+6);doc.text(':',lx2,mm(42.774)+6);
-  doc.setFont('Arial','normal');doc.text(s.kurum||'',lx3,mm(42.774)+6);
+  doc.text('Kurum Adı',lx1,_scurY);doc.text(':',lx2,_scurY);
+  doc.setFont('Arial','normal');
+  const _skurumLines=doc.splitTextToSize(s.kurum||'',_slMaxW);
+  doc.text(_skurumLines,lx3,_scurY);
+  _scurY+=(_skurumLines.length-1)*_slLh8+_slRGap;
 
-  doc.setFont('Arial','bold');doc.text('İlgili Kişi',lx1,mm(47.065)+6);doc.text(':',lx2,mm(47.065)+6);
-  doc.setFont('Arial','normal');doc.text(s.ilgiliKisi||'',lx3,mm(47.065)+6);
+  // Adres + Şehir
+  const _sAdresParts=[(_smRec&&_smRec.adres)||'',(_smRec&&_smRec.sehir)||''].filter(Boolean);
+  const _sAdresVal=_sAdresParts.join(', ');
+  doc.setFont('Arial','bold');doc.text('Adres',lx1,_scurY);doc.text(':',lx2,_scurY);
+  doc.setFont('Arial','normal');
+  if(_sAdresVal){
+    const _sAdresLines=doc.splitTextToSize(_sAdresVal,_slMaxW);
+    doc.text(_sAdresLines,lx3,_scurY);
+    _scurY+=(_sAdresLines.length-1)*_slLh8+_slRGap;
+  } else { _scurY+=_slRGap; }
 
-  doc.setFont('Arial','bold');doc.text('Satış Temsilcisi',lx1,mm(51.356)+6);doc.text(':',lx2,mm(51.356)+6);
-  doc.setFont('Arial','normal');doc.text(s.satisTemsilcisi||s.sorumlu||'',lx3,mm(51.356)+6);
+  // İlgili Kişi
+  doc.setFont('Arial','bold');doc.text('İlgili Kişi',lx1,_scurY);doc.text(':',lx2,_scurY);
+  doc.setFont('Arial','normal');doc.text(s.ilgiliKisi||'',lx3,_scurY);
+  _scurY+=_slRGap;
+
+  // Satış Temsilcisi
+  doc.setFont('Arial','bold');doc.text('Satış Temsilcisi',lx1,_scurY);doc.text(':',lx2,_scurY);
+  doc.setFont('Arial','normal');doc.text(s.satisTemsilcisi||s.sorumlu||'',lx3,_scurY);
+  _scurY+=_slRGap;
 
   // ── AYRAÇ ──
   doc.setDrawColor(...C.tableBg);doc.setLineWidth(0.75);
-  doc.line(mm(15.446),mm(67.9),mm(194.63),mm(67.9));
+  const _sdivY=Math.max(mm(67.9),_scurY+mm(3));
+  doc.line(mm(15.446),_sdivY,mm(194.63),_sdivY);
 
   // ── TABLO ──
   // 4 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
-  const tableY=mm(69.667)+mm(0.75);
+  const tableY=_sdivY+mm(2.517);
   const colW={no:mm(9),urun:mm(127),miktar:mm(23),birim:mm(20.1)};
   const _col1Inner=colW.urun-4;
   const _infoLineH=mm(3);  // satırlar arası 3mm (baseline-to-baseline)

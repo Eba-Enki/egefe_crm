@@ -15,4 +15,5 @@ function initApp() {
   document.getElementById('main').style.display = '';
   document.getElementById('portal-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'none';
+  renderFooter();
 }

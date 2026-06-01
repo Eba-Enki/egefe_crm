@@ -185,6 +185,18 @@ function loadSettings(){
   renderUrunKategorileri();
   renderParametreler();
 }
+function renderFooter(){
+  var s=state.settings||{};
+  var tel=s.tel||'0 (312) 482 54 51';
+  var faks=s.faks||'0 (312) 480 54 52';
+  var email=s.email||'info@ege-fe.com';
+  var parts=[];
+  parts.push('Tel: '+tel);
+  parts.push('Fax: '+faks);
+  parts.push('E-mail: '+email);
+  var el=document.getElementById('footer-contact-text');
+  if(el)el.innerHTML=parts.join(' &nbsp;|&nbsp; ');
+}
 function saveSettings(){
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)state.settings[k]=el.value});
   var spEl=document.getElementById('set-servis-prefix');if(spEl&&spEl.value.trim())state.settings.servisPrefix=spEl.value.trim().toUpperCase();
@@ -193,7 +205,7 @@ function saveSettings(){
   var tdEl=document.getElementById('set-teklif-digits');if(tdEl&&tdEl.value)state.settings.teklifDigits=Math.min(9,Math.max(3,parseInt(tdEl.value)||5));
   var sipPEl=document.getElementById('set-siparis-prefix');if(sipPEl&&sipPEl.value.trim())state.settings.siparisPrefix=sipPEl.value.trim().toUpperCase();
   var sipDEl=document.getElementById('set-siparis-digits');if(sipDEl&&sipDEl.value)state.settings.siparisDigits=Math.min(9,Math.max(3,parseInt(sipDEl.value)||5));
-  saveAll();toast('Ayarlar kaydedildi.','success');
+  saveAll();renderFooter();toast('Ayarlar kaydedildi.','success');
 }
 
 // ════ CONFIRM DELETE ════

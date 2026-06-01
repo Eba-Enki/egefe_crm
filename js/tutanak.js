@@ -209,7 +209,7 @@ async function _generateTutanakPDF(tutanak, logoPngDataUrl){
   doc.setFont('Arial', 'normal');
   doc.setTextColor(...C.textLight);
 
-  const emailText = st.email || 'servis@ege-fe.com';
+  const emailText = st.email || 'info@ege-fe.com';
   const telText   = st.tel   || '0 (312) 482 54 51';
   const faxText   = st.fax   || '0 (312) 480 54 53';
 

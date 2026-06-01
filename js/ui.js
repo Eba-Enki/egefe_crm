@@ -46,7 +46,7 @@ function showPage(id,skipRender){
   document.querySelectorAll('.topbar-tab-group').forEach(function(g){g.style.display='none';});
   var _tg={teklifler:'topbar-tabs-teklifler',siparisler:'topbar-tabs-siparisler',faturalar:'topbar-tabs-faturalar'}[id];
   if(_tg){var _tgEl=document.getElementById(_tg);if(_tgEl)_tgEl.style.display='flex';}
-  const renders={dashboard:renderDashboard,servisler:renderTable,teklifler:renderTeklifler,musteriler:renderMusteriler,urunler:renderUrunler,kullanici:renderUserTable,ayarlar:loadSettings,tutanaklar:renderTutanaklar,siparisler:renderSiparisler,faturalar:renderFaturalar,'siparis-form':function(){}};
+  const renders={dashboard:renderDashboard,servisler:renderTable,teklifler:renderTeklifler,musteriler:renderMusteriler,urunler:renderUrunler,kullanici:renderUserTable,ayarlar:loadSettings,tutanaklar:renderTutanaklar,siparisler:renderSiparisler,faturalar:renderFaturalar,'siparis-form':function(){},'stok-dashboard':renderStokDashboard,'ham-stok':renderHamStok,'ham-giris':renderHamGirisForm,'ham-cikis':renderHamCikisForm,'bitmis-stok':renderBitmisStok,'bitmis-giris':renderBitmisGirisForm,'bitmis-cikis':renderBitmisCikisForm,'stok-hareket':renderStokHareket,'stok-ayarlar':loadStokAyarlar};
   if(!skipRender&&renders[id])renders[id]();
 }
 

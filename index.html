@@ -40,6 +40,16 @@
       <div class="portal-sub">Teklifler, siparişler ve müşteri yönetimi</div>
       <div class="portal-card-cta">Portala Giriş <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
     </div>
+    <div class="portal-card" onclick="selectPortal('stok')">
+      <div class="portal-card-icon" style="background:linear-gradient(135deg,#16a34a,#0d9488)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+      </div>
+      <div class="portal-title">Stok Takip Portalı</div>
+      <div class="portal-sub">Ham ve bitmiş ürün stok yönetimi</div>
+      <div class="portal-card-cta">Portala Giriş <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+    </div>
   </div>
 </div>
 
@@ -68,20 +78,37 @@
     </div>
   </div>
   <nav class="sb-nav">
-    <div class="sb-section">Ana</div>
-    <div class="sb-item" data-page="dashboard" onclick="showPage('dashboard')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span>Dashboard</span></div>
+    <!-- ─── CRM Portalleri ─── -->
+    <div class="sb-section crm-only">Ana</div>
+    <div class="sb-item crm-only" data-page="dashboard" onclick="showPage('dashboard')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span>Dashboard</span></div>
     <div class="sb-item servis-only" data-page="servisler" onclick="showPage('servisler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span>Servisler</span><span class="badge" id="sb-badge" style="display:none">0</span></div>
-    <div class="sb-item" data-page="teklifler" onclick="showPage('teklifler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span>Teklifler</span></div>
+    <div class="sb-item crm-only" data-page="teklifler" onclick="showPage('teklifler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span>Teklifler</span></div>
     <div class="sb-item satis-only" data-page="siparisler" style="display:none" onclick="showPage('siparisler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span>Siparişler</span></div>
     <div class="sb-item satis-only" data-page="faturalar" style="display:none" onclick="showPage('faturalar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span><span>Faturalar</span></div>
     <div class="sb-item servis-only" data-page="tutanaklar" onclick="showPage('tutanaklar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span><span>Tutanaklar</span></div>
+    <div class="sb-section crm-only">Kayıtlar</div>
+    <div class="sb-item crm-only" data-page="musteriler" onclick="showPage('musteriler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>Müşteriler</span></div>
+    <div class="sb-item crm-only" data-page="urunler" onclick="showPage('urunler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><span>Ürünler</span></div>
+    <div class="sb-section crm-only admin-only">Yönetim</div>
+    <div class="sb-item crm-only admin-only" data-page="kullanici" onclick="showPage('kullanici')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span><span>Kullanıcılar</span></div>
+    <div class="sb-item crm-only admin-only" data-page="ayarlar" onclick="showPage('ayarlar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Ayarlar</span></div>
 
-    <div class="sb-section">Kayıtlar</div>
-    <div class="sb-item" data-page="musteriler" onclick="showPage('musteriler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>Müşteriler</span></div>
-    <div class="sb-item" data-page="urunler" onclick="showPage('urunler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><span>Ürünler</span></div>
-    <div class="sb-section admin-only">Yönetim</div>
-    <div class="sb-item admin-only" data-page="kullanici" onclick="showPage('kullanici')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span><span>Kullanıcılar</span></div>
-    <div class="sb-item admin-only" data-page="ayarlar" onclick="showPage('ayarlar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Ayarlar</span></div>
+    <!-- ─── Stok Takip Portalı ─── -->
+    <div class="sb-section stok-only" style="display:none">Ana</div>
+    <div class="sb-item stok-only" data-page="stok-dashboard" style="display:none" onclick="showPage('stok-dashboard')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span>Dashboard</span></div>
+    <div class="sb-section stok-only" style="display:none">Ham Ürün</div>
+    <div class="sb-item stok-only" data-page="ham-stok" style="display:none" onclick="showPage('ham-stok')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span><span>Stok Görünümü</span></div>
+    <div class="sb-item stok-only can-write" data-page="ham-giris" style="display:none" onclick="showPage('ham-giris')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span>Yeni Giriş</span></div>
+    <div class="sb-item stok-only can-write" data-page="ham-cikis" style="display:none" onclick="showPage('ham-cikis')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span><span>Stok Çıkışı</span></div>
+    <div class="sb-section stok-only" style="display:none">Bitmiş Ürün</div>
+    <div class="sb-item stok-only" data-page="bitmis-stok" style="display:none" onclick="showPage('bitmis-stok')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></span><span>Stok Görünümü</span></div>
+    <div class="sb-item stok-only can-write" data-page="bitmis-giris" style="display:none" onclick="showPage('bitmis-giris')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span>Yeni Giriş</span></div>
+    <div class="sb-item stok-only can-write" data-page="bitmis-cikis" style="display:none" onclick="showPage('bitmis-cikis')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span><span>Stok Çıkışı</span></div>
+    <div class="sb-section stok-only" style="display:none">Raporlar</div>
+    <div class="sb-item stok-only" data-page="stok-hareket" style="display:none" onclick="showPage('stok-hareket')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span>Hareket Geçmişi</span></div>
+    <div class="sb-section stok-only admin-only" style="display:none">Yönetim</div>
+    <div class="sb-item stok-only admin-only" data-page="kullanici" style="display:none" onclick="showPage('kullanici')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span><span>Kullanıcılar</span></div>
+    <div class="sb-item stok-only admin-only" data-page="stok-ayarlar" style="display:none" onclick="showPage('stok-ayarlar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Ayarlar</span></div>
   </nav>
   <div class="sb-bottom">
     <div style="margin-bottom:6px"><button class="btn btn-ghost btn-sm" style="width:100%;font-size:11px" onclick="switchPortal()">← Portal Seçim Sayfası</button></div>
@@ -852,8 +879,167 @@
       </div><!-- /settings-wrap -->
     </div>
 
+    <!-- ═══ STOK DASHBOARD ═══ -->
+    <div id="page-stok-dashboard" class="page stok-only" style="display:none">
+      <div id="stok-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card"><div class="card-header"><span class="card-title">Kritik Stok Uyarıları</span><span id="stok-kritik-say" style="font-size:10px;color:var(--red);font-family:var(--font-mono)"></span></div><div id="stok-kritik-list" style="padding:0"></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">Son Hareketler</span></div><div id="stok-son-hareket" style="padding:0"></div></div>
+      </div>
+    </div>
+
+    <!-- ═══ HAM STOK GÖRÜNÜMÜ ═══ -->
+    <div id="page-ham-stok" class="page stok-only" style="display:none">
+      <div class="filter-bar" style="margin-bottom:14px">
+        <select id="hs-f-kat" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
+        <select id="hs-f-param" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Parametreler</option></select>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)"><input type="checkbox" id="hs-f-kritik" onchange="renderHamStok()"> Sadece Kritik</label>
+        <button class="btn btn-primary btn-sm can-write" onclick="showPage('ham-giris')">+ Yeni Giriş</button>
+      </div>
+      <div id="ham-stok-wrap"></div>
+    </div>
+
+    <!-- ═══ HAM STOK GİRİŞ ═══ -->
+    <div id="page-ham-giris" class="page stok-only" style="display:none">
+      <div class="form-wrap"><div class="form-card">
+        <div class="form-section-title" id="hg-form-title">Ham Stok Girişi</div>
+        <input type="hidden" id="hg-edit-id">
+        <div class="form-grid">
+          <div class="field"><label>LOT No <span class="req">*</span></label><input type="text" id="hg-lot" placeholder="ör. LOT2024-001"></div>
+          <div class="field"><label>Giriş Tarihi <span class="req">*</span></label><input type="date" id="hg-tarih"></div>
+          <div class="field"><label>Kategori <span class="req">*</span></label><select id="hg-kategori" onchange="hgCalcStrips()"></select></div>
+          <div class="field"><label>Parametre <span class="req">*</span></label><select id="hg-parametre"></select></div>
+          <div class="field"><label>Sheet Miktarı <span class="req">*</span></label><input type="number" id="hg-sheet" min="1" placeholder="Adet" oninput="hgCalcStrips()"></div>
+          <div class="field"><label>Strip Önizleme</label><div id="hg-strip-prev" style="padding:9px 12px;background:var(--bg3);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;color:var(--teal);border:1px solid var(--border)">—</div></div>
+          <div class="field form-full"><label>Notlar</label><textarea id="hg-notlar" rows="2" placeholder="Opsiyonel not..."></textarea></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn btn-primary" onclick="saveHamGiris()">Kaydet</button>
+          <button class="btn btn-ghost" onclick="showPage('ham-stok')">İptal</button>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ═══ HAM STOK ÇIKIŞ ═══ -->
+    <div id="page-ham-cikis" class="page stok-only" style="display:none">
+      <div class="form-wrap"><div class="form-card">
+        <div class="form-section-title">Stok Çıkışı / Kit Üretimi</div>
+        <div class="form-grid">
+          <div class="field"><label>Çıkış Tarihi <span class="req">*</span></label><input type="date" id="hc-tarih"></div>
+          <div class="field"><label>Kategori <span class="req">*</span></label><select id="hc-kategori" onchange="hcKategoriChange()"></select></div>
+          <div class="field"><label>Kit Miktarı <span class="req">*</span></label><input type="number" id="hc-kit" min="1" placeholder="Adet" oninput="hcUpdateStrips()"></div>
+          <div class="field"><label>Müşteri / Amaç <span class="req">*</span></label><input type="text" id="hc-aciklama" placeholder="ör. X Firması, Demo, E-ticaret..."></div>
+          <div class="field form-full"><label>Notlar</label><textarea id="hc-notlar" rows="2"></textarea></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Parametre Satırları</div>
+          <button class="btn btn-ghost btn-sm" onclick="hcAddSatir()">+ Parametre Ekle</button>
+        </div>
+        <div id="hc-satirlar"></div>
+        <div id="hc-stok-uyari" style="display:none;margin-top:10px;padding:10px 14px;background:var(--red-soft);border:1px solid rgba(248,113,113,.3);border-radius:var(--radius-sm);font-size:12px;color:var(--red)"></div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn btn-primary" onclick="saveHamCikis()">Stoktan Düş</button>
+          <button class="btn btn-ghost" onclick="showPage('ham-stok')">İptal</button>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ═══ BİTMİŞ STOK GÖRÜNÜMÜ ═══ -->
+    <div id="page-bitmis-stok" class="page stok-only" style="display:none">
+      <div class="filter-bar" style="margin-bottom:14px">
+        <select id="bs-f-kat" onchange="renderBitmisStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
+        <input type="text" id="bs-f-arama" placeholder="Ürün adı / LOT..." oninput="renderBitmisStok()">
+        <button class="btn btn-primary btn-sm can-write" onclick="showPage('bitmis-giris')">+ Yeni Giriş</button>
+      </div>
+      <div id="bitmis-stok-wrap"></div>
+    </div>
+
+    <!-- ═══ BİTMİŞ STOK GİRİŞ ═══ -->
+    <div id="page-bitmis-giris" class="page stok-only" style="display:none">
+      <div class="form-wrap"><div class="form-card">
+        <div class="form-section-title" id="bg-form-title">Bitmiş Ürün Girişi</div>
+        <input type="hidden" id="bg-edit-id">
+        <div class="form-grid">
+          <div class="field"><label>LOT No <span class="req">*</span></label><input type="text" id="bg-lot" placeholder="ör. KLOT2024-001"></div>
+          <div class="field"><label>Giriş Tarihi <span class="req">*</span></label><input type="date" id="bg-tarih"></div>
+          <div class="field form-full"><label>Ürün Adı <span class="req">*</span></label><input type="text" id="bg-urun-adi" placeholder="ör. 4'lü İdrar Test Kiti"></div>
+          <div class="field"><label>Kategori <span class="req">*</span></label><select id="bg-kategori" onchange="bgRenderParams()"></select></div>
+          <div class="field"><label>Miktar <span class="req">*</span></label><input type="number" id="bg-miktar" min="1" placeholder="Adet"></div>
+          <div class="field form-full">
+            <label>Parametreler</label>
+            <div id="bg-params" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border)"></div>
+          </div>
+          <div class="field form-full"><label>Notlar</label><textarea id="bg-notlar" rows="2"></textarea></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn btn-primary" onclick="saveBitmisGiris()">Kaydet</button>
+          <button class="btn btn-ghost" onclick="showPage('bitmis-stok')">İptal</button>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ═══ BİTMİŞ STOK ÇIKIŞ ═══ -->
+    <div id="page-bitmis-cikis" class="page stok-only" style="display:none">
+      <div class="form-wrap"><div class="form-card">
+        <div class="form-section-title">Bitmiş Ürün Çıkışı</div>
+        <div class="form-grid">
+          <div class="field"><label>Çıkış Tarihi <span class="req">*</span></label><input type="date" id="bc-tarih"></div>
+          <div class="field form-full"><label>Müşteri / Amaç <span class="req">*</span></label><input type="text" id="bc-aciklama" placeholder="ör. X Firması, Demo, E-ticaret..."></div>
+          <div class="field form-full"><label>Notlar</label><textarea id="bc-notlar" rows="2"></textarea></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Çıkış Kalemleri</div>
+          <button class="btn btn-ghost btn-sm" onclick="bcAddSatir()">+ Ürün / LOT Ekle</button>
+        </div>
+        <div id="bc-satirlar"></div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn btn-primary" onclick="saveBitmisCikis()">Stoktan Düş</button>
+          <button class="btn btn-ghost" onclick="showPage('bitmis-stok')">İptal</button>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ═══ HAREKET GEÇMİŞİ ═══ -->
+    <div id="page-stok-hareket" class="page stok-only" style="display:none">
+      <div class="filter-bar" style="margin-bottom:14px">
+        <input type="date" id="sh-tarih-s" oninput="renderStokHareket()" title="Başlangıç">
+        <input type="date" id="sh-tarih-e" oninput="renderStokHareket()" title="Bitiş">
+        <select id="sh-tip" onchange="renderStokHareket()" style="min-width:150px">
+          <option value="">Tüm Hareketler</option>
+          <option value="ham-giris">Ham Giriş</option>
+          <option value="ham-cikis">Ham Çıkış</option>
+          <option value="bitmis-giris">Bitmiş Giriş</option>
+          <option value="bitmis-cikis">Bitmiş Çıkış</option>
+        </select>
+        <select id="sh-kat" onchange="renderStokHareket()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
+        <input type="text" id="sh-lot" placeholder="LOT No..." oninput="renderStokHareket()" style="width:140px">
+        <button class="btn btn-ghost btn-sm" onclick="stokExportCSV()">⬇ CSV</button>
+        <button class="btn btn-ghost btn-sm" onclick="stokPrintHareket()">⬇ PDF</button>
+      </div>
+      <div id="stok-hareket-wrap"></div>
+    </div>
+
+    <!-- ═══ STOK AYARLAR ═══ -->
+    <div id="page-stok-ayarlar" class="page stok-only" style="display:none">
+      <div class="two-col" style="align-items:start">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Kategori Yapılandırması</span></div>
+          <div class="card-body" id="stok-kat-body"></div>
+          <div style="padding:0 16px 16px"><button class="btn btn-primary btn-sm" onclick="saveStokAyarlar()">Kaydet</button></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Parametreler</span><button class="btn btn-primary btn-sm" onclick="stokParamEkle()">+ Ekle</button></div>
+          <div class="card-body" style="padding:0" id="stok-param-body"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-header"><span class="card-title">Minimum Stok Eşikleri</span><span style="font-size:11px;color:var(--text3)">Parametre + kategori bazında</span></div>
+        <div class="card-body" id="stok-esik-body"></div>
+      </div>
+    </div>
+
   </div><!-- /content -->
-  
+
   <div id="app-footer" style="position:fixed;bottom:0;left:var(--sidebar-w);right:0;background:var(--bg2);border-top:1px solid var(--border);padding:6px 26px;text-align:center;font-size:11px;color:var(--text3);z-index:10">
     <span id="footer-contact-text">Tel: 0 (312) 482 54 51 &nbsp;|&nbsp; Fax: 0 (312) 480 54 52 &nbsp;|&nbsp; E-mail: info@ege-fe.com</span>
   </div>
@@ -907,6 +1093,8 @@
 <script src="js/musteri.js?v=5"></script>
 <script src="js/export.js?v=5"></script>
 <script src="js/satis.js?v=5"></script>
+<script src="js/stok.js?v=1"></script>
+<script src="js/stok-rapor.js?v=1"></script>
 <script src="js/init.js?v=4"></script>
 <!-- ─── FATURA MODAL ─── -->
 <div class="modal-overlay" id="modal-fatura">

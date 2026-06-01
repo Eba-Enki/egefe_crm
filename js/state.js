@@ -25,7 +25,7 @@ const DB={
   pload(k,d){return DB.load('ege_'+(currentPortal||'servis')+'_'+k,d)},
   psave(k,v){DB.save('ege_'+(currentPortal||'servis')+'_'+k,v)}
 };
-let currentPortal=''; // 'servis' or 'satis'
+let currentPortal=''; // 'servis' | 'satis' | 'stok'
 const AKSESUAR_LIST=['Yazıcı','Yazıcı Batarya','Batarya','A. Şarj Aleti','Yazıcı Şarj Aleti','Bağlantı Kablo'];
 const DURUM_LIST=['Yeni Gelen','S.F. Bekleniyor','Onay Bekleniyor','Onaylandı','Kargoya Verildi','Tamamlandı','Reddedildi'];
 const DURUM_COLORS=['#2dd4bf','#f59e0b','#a78bfa','#3d9bc4','#f472b6','#4ade80','#f87171'];
@@ -46,6 +46,10 @@ let sfAksesuarlar=[];
 let teklifItems=[];
 
 function saveAll(){
+  if(currentPortal==='stok'){
+    ['users','hamStokLotlar','hamStokCikislar','bitmisStokLotlar','bitmisCikislar','stokSettings'].forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});
+    return;
+  }
   var keys=['users','musteriler','urunler','urunKategoriler','teklifler','settings','siparisler','faturalar'];
   if(currentPortal==='servis') keys=keys.concat(['servisler']);
   keys.forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});

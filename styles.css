@@ -486,6 +486,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
 .portal-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-left:10px}
 .portal-badge-servis{background:var(--teal-soft);color:var(--teal)}
 .portal-badge-satis{background:var(--amber-soft);color:var(--amber)}
+.portal-badge-stok{background:var(--green-soft);color:var(--green)}
 
 /* Light theme overrides */
 [data-theme="light"] .field input,[data-theme="light"] .field select,[data-theme="light"] .field textarea,

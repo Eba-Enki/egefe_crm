@@ -1,6 +1,5 @@
 ﻿function selectPortal(pkey){
   currentPortal=pkey;
-  // Set default users for this portal
   var defaultServisUsers=[
     {id:'u1',ad:'Admin',username:'admin',sifre:'admin',rol:'admin',email:'',sonGiris:null},
     {id:'u2',ad:'Teknisyen',username:'teknisyen',sifre:'1234',rol:'teknisyen',email:'',sonGiris:null},
@@ -10,17 +9,30 @@
     {id:'s1',ad:'Satış Admin',username:'satis',sifre:'satis',rol:'admin',email:'',sonGiris:null},
     {id:'s2',ad:'Satış Uzmanı',username:'uzman',sifre:'1234',rol:'teknisyen',email:'',sonGiris:null}
   ];
-  // Load portal-specific state
-  state.users=DB.pload('users', pkey==='servis'?defaultServisUsers:defaultSatisUsers);
-  state.servisler=pkey==='servis'?DB.pload('servisler',genSample()):[];
-  state.teklifler=DB.pload('teklifler',[]);
-  state.musteriler=DB.pload('musteriler',[]);
-  state.urunler=DB.pload('urunler',[]);
-  state.siparisler=DB.pload('siparisler',[]);
-  state.faturalar=DB.pload('faturalar',[]);
-  state.settings=DB.pload('settings',{firma:'Egefe Teknik Servis',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[]});
-  if(!state.settings.parametreler)state.settings.parametreler=[];
-  savedTutanaklar=[];
+  var defaultStokUsers=[
+    {id:'st1',ad:'Stok Admin',username:'stok',sifre:'stok',rol:'admin',email:'',sonGiris:null},
+    {id:'st2',ad:'Depo Sorumlusu',username:'depo',sifre:'1234',rol:'teknisyen',email:'',sonGiris:null}
+  ];
+  if(pkey==='stok'){
+    state.users=DB.pload('users',defaultStokUsers);
+    state.hamStokLotlar=DB.pload('hamStokLotlar',[]);
+    state.hamStokCikislar=DB.pload('hamStokCikislar',[]);
+    state.bitmisStokLotlar=DB.pload('bitmisStokLotlar',[]);
+    state.bitmisCikislar=DB.pload('bitmisCikislar',[]);
+    state.stokSettings=DB.pload('stokSettings',null);
+    savedTutanaklar=[];
+  } else {
+    state.users=DB.pload('users', pkey==='servis'?defaultServisUsers:defaultSatisUsers);
+    state.servisler=pkey==='servis'?DB.pload('servisler',genSample()):[];
+    state.teklifler=DB.pload('teklifler',[]);
+    state.musteriler=DB.pload('musteriler',[]);
+    state.urunler=DB.pload('urunler',[]);
+    state.siparisler=DB.pload('siparisler',[]);
+    state.faturalar=DB.pload('faturalar',[]);
+    state.settings=DB.pload('settings',{firma:'Egefe Teknik Servis',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[]});
+    if(!state.settings.parametreler)state.settings.parametreler=[];
+    savedTutanaklar=[];
+  }
   // Check existing session
   var saved=sessionStorage.getItem('ege_ses_'+pkey);
   if(saved){
@@ -40,7 +52,7 @@
   // Show login
   document.getElementById('portal-screen').style.display='none';
   var nameEl=document.getElementById('login-portal-name');
-  if(nameEl)nameEl.textContent=pkey==='servis'?'Teknik Servis Portalı':'Satış Pazarlama Portalı';
+  if(nameEl)nameEl.textContent=pkey==='servis'?'Teknik Servis Portalı':pkey==='satis'?'Satış Pazarlama Portalı':'Stok Takip Portalı';
   document.getElementById('login-screen').style.display='flex';
 }
 
@@ -53,26 +65,23 @@ function backToPortal(){
 }
 
 function applyPortal(){
-  // Show/hide portal-specific sidebar items
   var isServis=currentPortal==='servis';
-  document.querySelectorAll('.servis-only').forEach(function(el){
-    el.style.display=isServis?'':'none';
-  });
-  document.querySelectorAll('.satis-only').forEach(function(el){el.style.display=isServis?'none':'';});
-  // Badge
+  var isSatis=currentPortal==='satis';
+  var isStok=currentPortal==='stok';
+  document.querySelectorAll('.servis-only').forEach(function(el){el.style.display=isServis?'':'none';});
+  document.querySelectorAll('.satis-only').forEach(function(el){el.style.display=isSatis?'':'none';});
+  document.querySelectorAll('.stok-only').forEach(function(el){el.style.display=isStok?'':'none';});
+  document.querySelectorAll('.crm-only').forEach(function(el){el.style.display=isStok?'none':'';});
   var badge=document.getElementById('portal-badge');
   if(badge){
-    badge.textContent=isServis?'Teknik Servis':'Satış & Pazarlama';
-    badge.className='portal-badge '+(isServis?'portal-badge-servis':'portal-badge-satis');
+    badge.textContent=isServis?'Teknik Servis':isSatis?'Satış & Pazarlama':'Stok Takip';
+    badge.className='portal-badge '+(isServis?'portal-badge-servis':isSatis?'portal-badge-satis':'portal-badge-stok');
   }
-  // Sidebar portal name
   var sbpn=document.getElementById('sb-portal-name');
-  if(sbpn)sbpn.textContent=isServis?'Teknik Servis Portalı':'Satış Pazarlama Portalı';
-  // Show/hide teklif form portal-specific fields
+  if(sbpn)sbpn.textContent=isServis?'Teknik Servis Portalı':isSatis?'Satış Pazarlama Portalı':'Stok Takip Portalı';
   document.querySelectorAll('.tf-servis-field').forEach(function(el){el.style.display=isServis?'':'none';});
-  document.querySelectorAll('.tf-satis-field').forEach(function(el){el.style.display=isServis?'none':'';});
-  // Dashboard default page
-  var defaultPage=isServis?'dashboard':'teklifler';
+  document.querySelectorAll('.tf-satis-field').forEach(function(el){el.style.display=isSatis?'':'none';});
+  var defaultPage=isStok?'stok-dashboard':isServis?'dashboard':'teklifler';
   showPage(defaultPage);
 }
 

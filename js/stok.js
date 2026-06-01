@@ -184,7 +184,15 @@ function renderStokDashboard(){
   }
 }
 
-// ─── HAM STOK GÖRÜNÜMÜ ───────────────────────────────────────────────────────
+// ─── HAM STOK GÖRÜNÜMÜ (Accordion) ──────────────────────────────────────────
+
+var _expandedParams=new Set();
+
+function toggleHamStokParam(paramAd){
+  if(_expandedParams.has(paramAd)) _expandedParams.delete(paramAd);
+  else _expandedParams.add(paramAd);
+  renderHamStok();
+}
 
 function renderHamStok(){
   stokInit();
@@ -212,8 +220,6 @@ function renderHamStok(){
   }
 
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
-
-  // Parametre objelerini kisaltma ile indeksle
   var paramObjs={};
   stokParamList().forEach(function(p){paramObjs[p.kisaltma||p.ad]=p;});
 
@@ -226,77 +232,108 @@ function renderHamStok(){
   });
 
   var allKats=stokKatList();
-  var html='<div class="table-wrap"><table class="compact-table" style="border-collapse:collapse"><thead><tr>'
-    +'<th style="min-width:160px">Parametre</th><th>Kategori</th><th>Cut-off</th><th>LOT No</th>'
-    +'<th style="text-align:right">Mevcut Sheet</th><th style="text-align:right">Mevcut Strip</th>'
-    +'<th>SKT</th><th>Giriş Tarihi</th><th>Durum</th><th></th>'
+
+  // ─ Accordion header tablosu
+  var html='<div class="table-wrap"><table class="compact-table"><thead><tr>'
+    +'<th style="width:28px"></th>'
+    +'<th>Parametre</th>'
+    +'<th style="width:60px;text-align:center">LOT</th>'
+    +'<th>Kategori Özeti</th>'
+    +'<th style="width:90px">Durum</th>'
     +'</tr></thead><tbody>';
 
   Object.keys(paramGroups).sort().forEach(function(paramAd){
     var pObj=paramObjs[paramAd]||{};
-    // "Amphetamine (AMP)" formatı
     var kisaltma=pObj.kisaltma||paramAd;
     var tamAd=pObj.ad&&pObj.ad!==kisaltma?pObj.ad+' ('+kisaltma+')':kisaltma;
-
     var katMap=paramGroups[paramAd];
-    // Kategori sırasını ayarlara göre koru
     var kats=allKats.filter(function(k){return katMap[k.id]&&katMap[k.id].length>0;});
-
-    // Toplam LOT sayısı (parametre rowspan için)
     var totalLots=kats.reduce(function(a,k){return a+(katMap[k.id]||[]).length;},0);
-    var paramFirstRow=true;
+    var expanded=_expandedParams.has(paramAd);
 
-    kats.forEach(function(kat){
-      var katLots=(katMap[kat.id]||[]).slice().sort(function(a,b){
-        // Cut-off büyükten küçüğe, sonra tarih eskiden yeniye
-        var co=(parseFloat(b.cutoff)||0)-(parseFloat(a.cutoff)||0);
-        return co!==0?co:(a.tarih||'').localeCompare(b.tarih||'');
-      });
-      var katFirstRow=true;
-
-      katLots.forEach(function(lot){
-        var ms=stokMevcutSheet(lot);
-        var skt=stokSktInfo(lot.sktTarih);
-        var sps=stokSPS(lot.kategoriId);
-        var esik=((state.stokSettings.minStokEsikleri||[]).find(function(e){return e.parametreAd===paramAd&&e.kategoriId===kat.id;})||{}).minSheet||1;
-        var durum=lot.mevcutStrip===0
-          ?'<span class="badge" style="background:var(--bg4);color:var(--text3)">Tükendi</span>'
-          :skt.doldu?'<span class="badge badge-reddedildi">SKT Geçti</span>'
-          :stokBadge(lot.mevcutStrip,sps,esik);
-
-        html+='<tr>';
-
-        // Parametre hücresi — sadece ilk LOT satırında, tüm LOTları kapsayan rowspan
-        if(paramFirstRow){
-          html+='<td rowspan="'+totalLots+'" style="font-weight:600;color:var(--accent);vertical-align:middle;'
-            +'border-right:2px solid var(--border2);border-bottom:2px solid var(--border2);background:var(--bg2);line-height:1.4">'
-            +stokEsc(tamAd)+'</td>';
-          paramFirstRow=false;
-        }
-
-        // Kategori hücresi — her kategorinin ilk LOT satırında rowspan
-        if(katFirstRow){
-          html+='<td rowspan="'+katLots.length+'" style="vertical-align:middle;text-align:center;'
-            +'border-right:1px solid var(--border);border-bottom:1px solid var(--border2);'
-            +'font-size:11px;color:var(--text2);font-weight:500">'
-            +stokEsc(kat.ad)+'</td>';
-          katFirstRow=false;
-        }
-
-        html+='<td style="font-family:var(--font-mono)">'+stokEsc(lot.cutoff||'—')+'</td>'
-          +'<td><span class="kn-badge">'+stokEsc(lot.lotNo)+'</span></td>'
-          +'<td style="text-align:right;font-family:var(--font-mono)">'+(lot.mevcutStrip===0?'<span style="color:var(--text3)">0</span>':stokFmtN(ms))+'</td>'
-          +'<td style="text-align:right;font-family:var(--font-mono)">'+(lot.mevcutStrip===0?'<span style="color:var(--text3)">0</span>':stokFmtN(lot.mevcutStrip))+'</td>'
-          +'<td style="font-family:var(--font-mono);font-size:11px;color:'+skt.renk+'">'+stokEsc(lot.sktTarih||'—')+(skt.etiket?'<br><span style="font-size:10px">('+skt.etiket+')</span>':'')+'</td>'
-          +'<td style="font-size:11px;color:var(--text3)">'+stokEsc(lot.tarih||'')+'</td>'
-          +'<td>'+durum+'</td>'
-          +'<td><div class="action-row">'
-            +(canWrite?'<button class="btn-icon" title="Düzenle" onclick="goHamGirisEdit(\''+lot.id+'\')">✏</button>':'')
-            +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="stokSilHamLot(\''+lot.id+'\')">⊗</button>':'')
-          +'</div></td>'
-          +'</tr>';
-      });
+    // Kategori özeti: "İdrar: 2160 str • Ağız: 225 str"
+    var ozetParts=kats.map(function(kat){
+      var topStrip=(katMap[kat.id]||[]).reduce(function(a,l){return a+l.mevcutStrip;},0);
+      var sps=stokSPS(kat.id);
+      return stokEsc(kat.ad)+': <b>'+stokFmtN(Math.floor(topStrip/sps))+'</b> sh / <b>'+stokFmtN(topStrip)+'</b> str';
     });
+
+    // Genel durum = en kötü kategori durumu
+    var enKotu='teslim'; // green = yeterli
+    kats.forEach(function(kat){
+      var topStrip=(katMap[kat.id]||[]).reduce(function(a,l){return a+l.mevcutStrip;},0);
+      var sps=stokSPS(kat.id);
+      var esik=((state.stokSettings.minStokEsikleri||[]).find(function(e){return e.parametreAd===paramAd&&e.kategoriId===kat.id;})||{}).minSheet||1;
+      var sheetEq=sps>0?topStrip/sps:0;
+      if(sheetEq<=esik) enKotu='reddedildi';
+      else if(sheetEq<=esik*3&&enKotu!=='reddedildi') enKotu='sf';
+    });
+    var durumBadgeHtml={
+      'reddedildi':'<span class="badge badge-reddedildi">Kritik</span>',
+      'sf':'<span class="badge badge-sf">Düşük</span>',
+      'teslim':'<span class="badge badge-teslim">Yeterli</span>'
+    }[enKotu];
+
+    // Header satırı
+    html+='<tr style="cursor:pointer;background:var(--bg3);border-bottom:1px solid var(--border)" onclick="toggleHamStokParam(\''+paramAd.replace(/'/g,"\\'")+'\')">'
+      +'<td style="text-align:center;color:var(--accent);font-size:13px;font-weight:700">'+(expanded?'▼':'▶')+'</td>'
+      +'<td style="font-weight:600;color:var(--text)">'+stokEsc(tamAd)+'</td>'
+      +'<td style="text-align:center;font-family:var(--font-mono);color:var(--text3)">'+totalLots+'</td>'
+      +'<td style="font-size:11px;color:var(--text3)">'+ozetParts.join(' &nbsp;•&nbsp; ')+'</td>'
+      +'<td>'+durumBadgeHtml+'</td>'
+      +'</tr>';
+
+    // Accordion içerik satırı
+    if(expanded){
+      // İçerideki sub-tablo
+      var subHtml='<table class="compact-table" style="width:100%;margin:0">'
+        +'<thead><tr style="background:var(--bg4)">'
+        +'<th>Kategori</th><th>Cut-off</th><th>LOT No</th>'
+        +'<th style="text-align:right">Mevcut Sheet</th><th style="text-align:right">Mevcut Strip</th>'
+        +'<th>SKT</th><th>Giriş Tarihi</th><th>Durum</th><th></th>'
+        +'</tr></thead><tbody>';
+
+      kats.forEach(function(kat){
+        var katLots=(katMap[kat.id]||[]).slice().sort(function(a,b){
+          var co=(parseFloat(b.cutoff)||0)-(parseFloat(a.cutoff)||0);
+          return co!==0?co:(a.tarih||'').localeCompare(b.tarih||'');
+        });
+        var katFirstRow=true;
+        katLots.forEach(function(lot){
+          var ms=stokMevcutSheet(lot);
+          var skt=stokSktInfo(lot.sktTarih);
+          var sps=stokSPS(lot.kategoriId);
+          var esik=((state.stokSettings.minStokEsikleri||[]).find(function(e){return e.parametreAd===paramAd&&e.kategoriId===kat.id;})||{}).minSheet||1;
+          var durum=lot.mevcutStrip===0
+            ?'<span class="badge" style="background:var(--bg4);color:var(--text3)">Tükendi</span>'
+            :skt.doldu?'<span class="badge badge-reddedildi">SKT Geçti</span>'
+            :stokBadge(lot.mevcutStrip,sps,esik);
+
+          subHtml+='<tr style="opacity:'+(lot.mevcutStrip===0?'.5':'1')+'">';
+          if(katFirstRow){
+            subHtml+='<td rowspan="'+katLots.length+'" style="vertical-align:middle;font-weight:500;color:var(--text2);border-right:1px solid var(--border);font-size:11px">'+stokEsc(kat.ad)+'</td>';
+            katFirstRow=false;
+          }
+          subHtml+='<td style="font-family:var(--font-mono)">'+stokEsc(lot.cutoff||'—')+'</td>'
+            +'<td><span class="kn-badge">'+stokEsc(lot.lotNo)+'</span></td>'
+            +'<td style="text-align:right;font-family:var(--font-mono)">'+stokFmtN(ms)+'</td>'
+            +'<td style="text-align:right;font-family:var(--font-mono)">'+stokFmtN(lot.mevcutStrip)+'</td>'
+            +'<td style="font-family:var(--font-mono);font-size:11px;color:'+skt.renk+'">'+stokEsc(lot.sktTarih||'—')+(skt.etiket?' ('+skt.etiket+')':'')+'</td>'
+            +'<td style="font-size:11px;color:var(--text3)">'+stokEsc(lot.tarih||'')+'</td>'
+            +'<td>'+durum+'</td>'
+            +'<td><div class="action-row">'
+              +(canWrite?'<button class="btn-icon" title="Düzenle" onclick="event.stopPropagation();goHamGirisEdit(\''+lot.id+'\')">✏</button>':'')
+              +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="event.stopPropagation();stokSilHamLot(\''+lot.id+'\')">⊗</button>':'')
+            +'</div></td>'
+            +'</tr>';
+        });
+      });
+
+      subHtml+='</tbody></table>';
+      html+='<tr style="border-bottom:2px solid var(--border2)">'
+        +'<td colspan="5" style="padding:0 0 8px 32px;background:var(--bg)">'+subHtml+'</td>'
+        +'</tr>';
+    }
   });
 
   wrap.innerHTML=html+'</tbody></table></div>';

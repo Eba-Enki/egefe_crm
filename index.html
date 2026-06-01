@@ -910,6 +910,7 @@
           <div class="field"><label>Giriş Tarihi <span class="req">*</span></label><input type="date" id="hg-tarih"></div>
           <div class="field"><label>Kategori <span class="req">*</span></label><select id="hg-kategori" onchange="hgCalcStrips()"></select></div>
           <div class="field"><label>Parametre <span class="req">*</span></label><select id="hg-parametre"></select></div>
+          <div class="field"><label>Cut-off Değeri</label><input type="text" id="hg-cutoff" placeholder="ör. 500 ng/mL"></div>
           <div class="field"><label>Sheet Miktarı <span class="req">*</span></label><input type="number" id="hg-sheet" min="1" placeholder="Adet" oninput="hgCalcStrips()"></div>
           <div class="field"><label>Strip Önizleme</label><div id="hg-strip-prev" style="padding:9px 12px;background:var(--bg3);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;color:var(--teal);border:1px solid var(--border)">—</div></div>
           <div class="field"><label>Son Kullanma Tarihi</label><input type="date" id="hg-skt"></div>
@@ -1029,8 +1030,8 @@
         <div class="card-body">
           <input type="hidden" id="param-edit-idx" value="">
           <div class="form-grid">
-            <div class="field"><label>Parametre Adı <span class="req">*</span></label><input type="text" id="param-ad" placeholder="ör. AMP" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
-            <div class="field"><label>Cut-off Değeri</label><input type="text" id="param-cutoff" placeholder="ör. 500 — boş bırakılabilir"></div>
+            <div class="field"><label>Parametre Adı <span class="req">*</span></label><input type="text" id="param-ad" placeholder="ör. Amphetamine"></div>
+            <div class="field"><label>Kısaltma <span class="req">*</span></label><input type="text" id="param-kisaltma" placeholder="ör. AMP" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
             <div class="field" style="display:flex;align-items:flex-end;padding-bottom:4px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="param-aktif" checked> Aktif</label></div>
           </div>
           <div style="display:flex;gap:10px;margin-top:14px">

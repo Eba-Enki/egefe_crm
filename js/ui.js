@@ -21,12 +21,26 @@ function renderPagination(containerId,currentPage,totalItems,fnName){
   h+='</div>';
   el.innerHTML=h;
 }
-const PAGE_TITLES={dashboard:'Dashboard',servisler:'Servis Kayıtları','servis-form':'Servis Formu',teklifler:'Teklifler',tutanaklar:'Teslim Tutanakları','teklif-form':'Teklif Hazırla',musteriler:'Müşteriler','musteri-form':'Müşteri',urunler:'Ürünler','urun-form':'Ürün',siparisler:'Siparişler',faturalar:'Faturalar','siparis-form':'Sipariş Oluştur',kullanici:'Kullanıcı Yönetimi','kullanici-form':'Kullanıcı',ayarlar:'Ayarlar',tutanaklar:'Tutanaklar'};
+const PAGE_TITLES={dashboard:'Dashboard',servisler:'Servis Kayıtları','servis-form':'Servis Formu',teklifler:'Teklifler',tutanaklar:'Teslim Tutanakları','teklif-form':'Teklif Hazırla',musteriler:'Müşteriler','musteri-form':'Müşteri',urunler:'Ürünler','urun-form':'Ürün',siparisler:'Siparişler',faturalar:'Faturalar','siparis-form':'Sipariş Oluştur',kullanici:'Kullanıcı Yönetimi','kullanici-form':'Kullanıcı',ayarlar:'Ayarlar',
+'stok-dashboard':'<strong>STOK - DASHBOARD</strong>',
+'ham-stok':'<strong>SHEET / STRİP STOK DURUMU</strong>',
+'ham-girisler':'<strong>SHEET / STRİP STOK GİRİŞ LİSTESİ</strong>',
+'ham-giris':'Stok Girişi',
+'ham-cikislar':'<strong>SHEET / STRİP STOK ÇIKIŞ LİSTESİ</strong>',
+'ham-cikis':'Stok Çıkışı',
+'stok-parametreler':'<strong>STOK - PARAMETRELER</strong>',
+'bitmis-stok':'<strong>TİCARİ ÜRÜN STOK DURUMU</strong>',
+'bitmis-girisler':'<strong>TİCARİ ÜRÜN STOK GİRİŞ LİSTESİ</strong>',
+'bitmis-giris':'Ticari Ürün Girişi',
+'bitmis-cikislar':'<strong>TİCARİ ÜRÜN STOK ÇIKIŞ LİSTESİ</strong>',
+'bitmis-cikis':'Ticari Ürün Çıkışı',
+'stok-hareket':'<strong>STOK - HAREKETLER</strong>',
+'stok-ayarlar':'<strong>STOK - AYARLAR</strong>'};
 function showPage(id,skipRender){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
   document.querySelectorAll('.sb-item[data-page]').forEach(i=>i.classList.toggle('active',i.dataset.page===id));
-  document.getElementById('topbar-title').textContent=PAGE_TITLES[id]||id;
+  document.getElementById('topbar-title').innerHTML=PAGE_TITLES[id]||id;
   const canWrite=state.currentUser?.rol!=='izleyici';
   const isAdmin=state.currentUser?.rol==='admin';
   const pageTopbarBtns={

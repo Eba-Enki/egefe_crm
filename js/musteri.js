@@ -187,8 +187,8 @@ function loadSettings(){
 }
 function renderFooter(){
   var s=state.settings||{};
-  var tel=s.tel||'0 (312) 482 54 51';
-  var faks=s.faks||'0 (312) 480 54 52';
+  var tel=s.tel||'0(312) 482 54 53';
+  var faks=s.faks||'0(312) 482 54 51';
   var email=s.email||'info@ege-fe.com';
   var parts=[];
   parts.push('Tel: '+tel);

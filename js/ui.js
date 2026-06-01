@@ -211,6 +211,17 @@ function unlockMusteriField(inputId){
   }
 }
 
+function musteriBlurValidate(inputId){
+  var cfg=_MUSTERI_COMBO_CFG[inputId];
+  if(!cfg)return;
+  var inp=document.getElementById(inputId);
+  var hid=document.getElementById(cfg.hidden);
+  if(inp&&inp.value.trim()&&hid&&!hid.value){
+    inp.value='';
+    toast('Lütfen listeden kayıtlı bir müşteri seçin.','error');
+  }
+}
+
 function clearMusteriSelection(inputId){
   unlockMusteriField(inputId);
   var inp=document.getElementById(inputId);

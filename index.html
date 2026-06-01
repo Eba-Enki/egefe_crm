@@ -205,7 +205,7 @@
             <div class="field form-full">
               <label>Kurum / Müşteri</label>
               <div class="combo-wrap">
-                <input type="text" id="sf-kurumAdi" placeholder="Listeden seçin..." autocomplete="off" oninput="comboFilter('sf-kurumAdi','cb-sf-kurum',getMusteriAds)" onfocus="comboFilter('sf-kurumAdi','cb-sf-kurum',getMusteriAds)" onblur="setTimeout(function(){comboClose('cb-sf-kurum');},200)">
+                <input type="text" id="sf-kurumAdi" placeholder="Listeden seçin..." autocomplete="off" oninput="comboFilter('sf-kurumAdi','cb-sf-kurum',getMusteriAds)" onfocus="comboFilter('sf-kurumAdi','cb-sf-kurum',getMusteriAds)" onblur="setTimeout(function(){comboClose('cb-sf-kurum');musteriBlurValidate('sf-kurumAdi');},200)">
                 <button type="button" class="combo-clear-btn" id="sf-kurum-clear-btn" style="display:none" onclick="clearMusteriSelection('sf-kurumAdi')" title="Seçimi temizle">✕</button>
                 <input type="hidden" id="sf-musteri-id">
                 <div class="combo-dropdown" id="cb-sf-kurum"></div>
@@ -297,7 +297,7 @@
                 <input type="text" id="tf-kurum" placeholder="Listeden seçin..." autocomplete="off"
                   oninput="comboFilter('tf-kurum','cb-tf-musteri',getMusteriAds)"
                   onfocus="comboFilter('tf-kurum','cb-tf-musteri',getMusteriAds)"
-                  onblur="setTimeout(function(){comboClose('cb-tf-musteri');},200)">
+                  onblur="setTimeout(function(){comboClose('cb-tf-musteri');musteriBlurValidate('tf-kurum');},200)">
                 <button type="button" class="combo-clear-btn" id="tf-kurum-clear-btn" style="display:none" onclick="clearMusteriSelection('tf-kurum')" title="Seçimi temizle">✕</button>
                 <input type="hidden" id="tf-musteri-id">
                 <div class="combo-dropdown" id="cb-tf-musteri"></div>

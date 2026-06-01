@@ -47,7 +47,7 @@ let teklifItems=[];
 
 function saveAll(){
   if(currentPortal==='stok'){
-    ['users','hamStokLotlar','hamStokCikislar','bitmisStokLotlar','bitmisCikislar','stokSettings'].forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});
+    ['users','hamStokGirisler','hamStokLotlar','hamStokCikislar','bitmisStokGirisler','bitmisStokLotlar','bitmisCikislar','stokSettings'].forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});
     return;
   }
   var keys=['users','musteriler','urunler','urunKategoriler','teklifler','settings','siparisler','faturalar'];

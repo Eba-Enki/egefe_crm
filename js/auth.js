@@ -15,8 +15,10 @@
   ];
   if(pkey==='stok'){
     state.users=DB.pload('users',defaultStokUsers);
+    state.hamStokGirisler=DB.pload('hamStokGirisler',[]);
     state.hamStokLotlar=DB.pload('hamStokLotlar',[]);
     state.hamStokCikislar=DB.pload('hamStokCikislar',[]);
+    state.bitmisStokGirisler=DB.pload('bitmisStokGirisler',[]);
     state.bitmisStokLotlar=DB.pload('bitmisStokLotlar',[]);
     state.bitmisCikislar=DB.pload('bitmisCikislar',[]);
     state.stokSettings=DB.pload('stokSettings',null);

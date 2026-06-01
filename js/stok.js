@@ -95,12 +95,20 @@ function stokBadge(toplamStrip, sps, esik){
   return '<span class="badge badge-teslim">Yeterli</span>';
 }
 
+function stokFmtSkt(skt){
+  // YYYY-MM → MM.YYYY görünümü
+  if(!skt) return '—';
+  var p=skt.split('-');
+  return p.length>=2?p[1]+'.'+p[0]:skt;
+}
+
 function stokSktInfo(skt){
+  // skt: "YYYY-MM" formatında
   if(!skt) return {renk:'var(--text3)',etiket:'',doldu:false};
-  var today=stokToday();
-  if(skt<today) return {renk:'var(--red)',etiket:'Doldu',doldu:true};
-  var d30=new Date(); d30.setDate(d30.getDate()+30);
-  if(skt<=d30.toISOString().slice(0,10)) return {renk:'var(--amber)',etiket:'Yaklaşıyor',doldu:false};
+  var nowYM=new Date().toISOString().slice(0,7); // "YYYY-MM"
+  if(skt<nowYM) return {renk:'var(--red)',etiket:'Doldu',doldu:true};
+  var d3=new Date(); d3.setMonth(d3.getMonth()+3);
+  if(skt<=d3.toISOString().slice(0,7)) return {renk:'var(--amber)',etiket:'Yaklaşıyor',doldu:false};
   return {renk:'var(--text2)',etiket:'',doldu:false};
 }
 
@@ -318,7 +326,7 @@ function renderHamStok(){
             +'<td><span class="kn-badge">'+stokEsc(lot.lotNo)+'</span></td>'
             +'<td style="text-align:right;font-family:var(--font-mono)">'+stokFmtN(ms)+'</td>'
             +'<td style="text-align:right;font-family:var(--font-mono)">'+stokFmtN(lot.mevcutStrip)+'</td>'
-            +'<td style="font-family:var(--font-mono);font-size:11px;color:'+skt.renk+'">'+stokEsc(lot.sktTarih||'—')+(skt.etiket?' ('+skt.etiket+')':'')+'</td>'
+            +'<td style="font-family:var(--font-mono);font-size:11px;color:'+skt.renk+'">'+stokFmtSkt(lot.sktTarih)+(skt.etiket?' ('+skt.etiket+')':'')+'</td>'
             +'<td style="font-size:11px;color:var(--text3)">'+stokEsc(lot.tarih||'')+'</td>'
             +'<td>'+durum+'</td>'
             +'<td><div class="action-row">'
@@ -638,7 +646,7 @@ function renderBitmisStok(){
       +'<td style="text-align:right;font-family:var(--font-mono)">'+stokFmtN(l.miktar)+'</td>'
       +'<td style="text-align:right;font-family:var(--font-mono);color:'+(l.mevcutMiktar===0?'var(--red)':'var(--text)')+'">'+stokFmtN(l.mevcutMiktar)+'</td>'
       +'<td style="font-size:12px;color:var(--text3)">'+stokEsc(l.tarih||'')+'</td>'
-      +'<td style="font-family:var(--font-mono);font-size:12px;color:'+skt.renk+'">'+stokEsc(l.sktTarih||'—')+(skt.etiket?' <span style="font-size:10px">('+skt.etiket+')</span>':'')+'</td>'
+      +'<td style="font-family:var(--font-mono);font-size:12px;color:'+skt.renk+'">'+stokFmtSkt(l.sktTarih)+(skt.etiket?' <span style="font-size:10px">('+skt.etiket+')</span>':'')+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" onclick="goBitmisGirisEdit(\''+l.id+'\')">✏</button>':'')
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="stokSilBitmisLot(\''+l.id+'\')">⊗</button>':'')

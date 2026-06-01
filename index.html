@@ -131,27 +131,18 @@
 
     <!-- ═══ DASHBOARD ═══ -->
     <div id="page-dashboard" class="page">
-      <div class="stats-grid" id="stat-cards"></div>
-      <div class="two-col">
+      <div id="db-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px"></div>
+      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px">
         <div class="card">
-          <div class="card-header"><span class="card-title">Durum Dağılımı</span></div>
-          <div class="card-body" id="durum-chart-wrap">
-            <div style="position:relative;width:130px;height:130px;margin:0 auto">
-              <svg id="donut-svg" width="130" height="130" viewBox="0 0 130 130"><circle cx="65" cy="65" r="50" fill="none" stroke="#1a2333" stroke-width="20"/></svg>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column"><span style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace" id="dc-total">0</span><span style="font-size:10px;color:var(--text3)">Toplam</span></div>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:7px;margin-top:14px" id="durum-legend"></div>
-          </div>
+          <div class="card-header"><span class="card-title" id="db-chart-title">Durum Dağılımı</span></div>
+          <div class="card-body" id="db-chart-body"></div>
         </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title" id="recent-list-title">Son Eklenen</span></div>
-          <div class="card-body" style="padding:0"><div id="recent-list" style="padding:8px 18px"></div></div>
+        <div class="card" style="display:flex;flex-direction:column">
+          <div class="card-header"><span class="card-title" id="db-list-title">Son Aktivite</span><span id="db-list-badge" style="font-size:10px;color:var(--text3);font-family:var(--font-mono)"></span></div>
+          <div style="flex:1;overflow:hidden" id="db-list-body"></div>
         </div>
       </div>
-      <div style="margin-top:16px" class="card">
-        <div class="card-header"><span class="card-title">Aylık Aktivite</span></div>
-        <div class="card-body" id="monthly-chart" style="height:100px;position:relative"></div>
-      </div>
+      <div id="db-secondary" style="margin-top:16px"></div>
     </div>
 
     <!-- ═══ SERVİSLER ═══ -->
@@ -909,7 +900,7 @@
 <script src="js/state.js?v=5"></script>
 <script src="js/auth.js?v=5"></script>
 <script src="js/ui.js?v=5"></script>
-<script src="js/dashboard.js?v=4"></script>
+<script src="js/dashboard.js?v=5"></script>
 <script src="js/servis.js?v=5"></script>
 <script src="js/teklif.js?v=5"></script>
 <script src="js/tutanak.js?v=4"></script>

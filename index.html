@@ -100,6 +100,7 @@
     <div class="sb-item stok-only" data-page="ham-stok" style="display:none" onclick="showPage('ham-stok')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span><span>Stok Görünümü</span></div>
     <div class="sb-item stok-only can-write" data-page="ham-giris" style="display:none" onclick="showPage('ham-giris')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span>Yeni Giriş</span></div>
     <div class="sb-item stok-only can-write" data-page="ham-cikis" style="display:none" onclick="showPage('ham-cikis')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span><span>Stok Çıkışı</span></div>
+    <div class="sb-item stok-only admin-only" data-page="stok-parametreler" style="display:none" onclick="showPage('stok-parametreler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><line x1="12" y1="14" x2="12" y2="20"/><line x1="9" y1="17" x2="15" y2="17"/></svg></span><span>Parametreler</span></div>
     <div class="sb-section stok-only" style="display:none">Bitmiş Ürün</div>
     <div class="sb-item stok-only" data-page="bitmis-stok" style="display:none" onclick="showPage('bitmis-stok')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></span><span>Stok Görünümü</span></div>
     <div class="sb-item stok-only can-write" data-page="bitmis-giris" style="display:none" onclick="showPage('bitmis-giris')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span>Yeni Giriş</span></div>
@@ -911,6 +912,7 @@
           <div class="field"><label>Parametre <span class="req">*</span></label><select id="hg-parametre"></select></div>
           <div class="field"><label>Sheet Miktarı <span class="req">*</span></label><input type="number" id="hg-sheet" min="1" placeholder="Adet" oninput="hgCalcStrips()"></div>
           <div class="field"><label>Strip Önizleme</label><div id="hg-strip-prev" style="padding:9px 12px;background:var(--bg3);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;color:var(--teal);border:1px solid var(--border)">—</div></div>
+          <div class="field"><label>Son Kullanma Tarihi</label><input type="date" id="hg-skt"></div>
           <div class="field form-full"><label>Notlar</label><textarea id="hg-notlar" rows="2" placeholder="Opsiyonel not..."></textarea></div>
         </div>
         <div style="display:flex;gap:10px;margin-top:18px">
@@ -965,6 +967,7 @@
           <div class="field form-full"><label>Ürün Adı <span class="req">*</span></label><input type="text" id="bg-urun-adi" placeholder="ör. 4'lü İdrar Test Kiti"></div>
           <div class="field"><label>Kategori <span class="req">*</span></label><select id="bg-kategori" onchange="bgRenderParams()"></select></div>
           <div class="field"><label>Miktar <span class="req">*</span></label><input type="number" id="bg-miktar" min="1" placeholder="Adet"></div>
+          <div class="field"><label>Son Kullanma Tarihi</label><input type="date" id="bg-skt"></div>
           <div class="field form-full">
             <label>Parametreler</label>
             <div id="bg-params" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border)"></div>
@@ -1019,18 +1022,38 @@
       <div id="stok-hareket-wrap"></div>
     </div>
 
+    <!-- ═══ STOK PARAMETRELER ═══ -->
+    <div id="page-stok-parametreler" class="page stok-only" style="display:none">
+      <div class="card" id="param-form-card" style="display:none;margin-bottom:16px">
+        <div class="card-header"><span class="card-title" id="param-form-title">Yeni Parametre</span></div>
+        <div class="card-body">
+          <input type="hidden" id="param-edit-idx" value="">
+          <div class="form-grid">
+            <div class="field"><label>Parametre Adı <span class="req">*</span></label><input type="text" id="param-ad" placeholder="ör. AMP" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+            <div class="field"><label>Cut-off Değeri</label><input type="text" id="param-cutoff" placeholder="ör. 500 — boş bırakılabilir"></div>
+            <div class="field" style="display:flex;align-items:flex-end;padding-bottom:4px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="param-aktif" checked> Aktif</label></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <button class="btn btn-primary btn-sm" onclick="saveStokParam()">Kaydet</button>
+            <button class="btn btn-ghost btn-sm" onclick="paramFormKapat()">İptal</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Parametre Listesi</span>
+          <button class="btn btn-primary btn-sm" onclick="stokParamFormAc()">+ Yeni Parametre</button>
+        </div>
+        <div id="stok-param-tablo"></div>
+      </div>
+    </div>
+
     <!-- ═══ STOK AYARLAR ═══ -->
     <div id="page-stok-ayarlar" class="page stok-only" style="display:none">
-      <div class="two-col" style="align-items:start">
-        <div class="card">
-          <div class="card-header"><span class="card-title">Kategori Yapılandırması</span></div>
-          <div class="card-body" id="stok-kat-body"></div>
-          <div style="padding:0 16px 16px"><button class="btn btn-primary btn-sm" onclick="saveStokAyarlar()">Kaydet</button></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">Parametreler</span><button class="btn btn-primary btn-sm" onclick="stokParamEkle()">+ Ekle</button></div>
-          <div class="card-body" style="padding:0" id="stok-param-body"></div>
-        </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Kategori Yapılandırması</span></div>
+        <div class="card-body" id="stok-kat-body"></div>
+        <div style="padding:0 16px 16px"><button class="btn btn-primary btn-sm" onclick="saveStokAyarlar()">Kaydet</button></div>
       </div>
       <div class="card" style="margin-top:16px">
         <div class="card-header"><span class="card-title">Minimum Stok Eşikleri</span><span style="font-size:11px;color:var(--text3)">Parametre + kategori bazında</span></div>

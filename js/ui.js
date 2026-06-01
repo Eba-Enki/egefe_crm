@@ -64,6 +64,11 @@ function showPage(id,skipRender){
   if(!skipRender&&renders[id])renders[id]();
 }
 
+function goPortalDashboard(){
+  if(currentPortal==='stok') showPage('stok-dashboard');
+  else showPage('dashboard');
+}
+
 // Form page navigators
 function goServisForm(editId){
   if(state.currentUser?.rol==='izleyici'){toast('Yetki yok.','error');return}

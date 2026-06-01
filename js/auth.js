@@ -15,6 +15,7 @@
   ];
   if(pkey==='stok'){
     state.users=DB.pload('users',defaultStokUsers);
+    state.settings={};  // footer varsayılan değerleri kullansın
     state.hamStokGirisler=DB.pload('hamStokGirisler',[]);
     state.hamStokLotlar=DB.pload('hamStokLotlar',[]);
     state.hamStokCikislar=DB.pload('hamStokCikislar',[]);

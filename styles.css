@@ -178,6 +178,8 @@ th.sortable:hover{color:var(--text2)}
 td{padding:9px 11px;border-bottom:1px solid rgba(36,48,69,.6);font-size:13px;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.015)}
+.compact-table td{padding:5px 10px;font-size:12px}
+.compact-table th{padding:5px 10px}
 .td-mono{font-family:var(--font-mono);font-size:12px}
 
 /* ── BADGES ── */

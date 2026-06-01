@@ -230,7 +230,7 @@ function renderHamStok(){
     return;
   }
 
-  var html='<div class="table-wrap"><table><thead><tr>'
+  var html='<div class="table-wrap"><table class="compact-table"><thead><tr>'
     +'<th>Parametre</th><th>Cut-off</th><th>Kategori</th><th>LOT No</th>'
     +'<th style="text-align:right">Mevcut Sheet</th><th style="text-align:right">Mevcut Strip</th>'
     +'<th>Giriş Tarihi</th><th>SKT</th><th>Durum</th><th></th>'
@@ -344,6 +344,7 @@ function saveHamGiris(){
   var tarih=(document.getElementById('hg-tarih')||{}).value;
   var katId=(document.getElementById('hg-kategori')||{}).value;
   var paramKey=(document.getElementById('hg-parametre')||{}).value;
+  var cutoff=((document.getElementById('hg-cutoff')||{}).value||'').trim();
   var sheetStr=(document.getElementById('hg-sheet')||{}).value;
   var sktTarih=(document.getElementById('hg-skt')||{}).value||'';
   var notlar=(document.getElementById('hg-notlar')||{}).value.trim();
@@ -566,7 +567,7 @@ function renderBitmisStok(){
   }
 
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
-  var html='<div class="table-wrap"><table><thead><tr><th>Ürün Adı</th><th>LOT No</th><th>Kategori</th><th>Parametreler</th><th style="text-align:right">Giren</th><th style="text-align:right">Mevcut</th><th>Giriş Tarihi</th><th>SKT</th><th></th></tr></thead><tbody>';
+  var html='<div class="table-wrap"><table class="compact-table"><thead><tr><th>Ürün Adı</th><th>LOT No</th><th>Kategori</th><th>Parametreler</th><th style="text-align:right">Giren</th><th style="text-align:right">Mevcut</th><th>Giriş Tarihi</th><th>SKT</th><th></th></tr></thead><tbody>';
   lots.slice().sort(function(a,b){return (b.tarih||'').localeCompare(a.tarih||'');}).forEach(function(l){
     var kat=stokKatById(l.kategoriId)||{ad:l.kategoriId};
     var paramStr=(l.parametreler||[]).join(', ');
@@ -810,7 +811,7 @@ function renderStokHareket(){
   var TIP={'ham-giris':'Ham Giriş','ham-cikis':'Ham Çıkış / Kit','bitmis-giris':'Bitmiş Giriş','bitmis-cikis':'Bitmiş Çıkış'};
   var TCOL={'ham-giris':'var(--teal)','ham-cikis':'var(--amber)','bitmis-giris':'var(--green)','bitmis-cikis':'var(--red)'};
 
-  var html='<div class="table-wrap"><table><thead><tr>'
+  var html='<div class="table-wrap"><table class="compact-table"><thead><tr>'
     +'<th>Tarih</th><th>Tür</th><th>LOT / Ref</th><th>Açıklama</th><th>Kategori</th><th style="text-align:right">Miktar</th><th>Kullanıcı</th>'
     +'</tr></thead><tbody>';
   filtered.forEach(function(h){
@@ -957,7 +958,7 @@ function stokParamTabloRender(){
     return;
   }
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
-  var html='<div class="table-wrap"><table><thead><tr><th style="width:40px">#</th><th>Parametre Adı</th><th>Kısaltma</th><th style="text-align:center">Durum</th><th></th></tr></thead><tbody>';
+  var html='<div class="table-wrap"><table class="compact-table"><thead><tr><th style="width:40px">#</th><th>Parametre Adı</th><th>Kısaltma</th><th style="text-align:center">Durum</th><th></th></tr></thead><tbody>';
   params.forEach(function(p,i){
     var kisaltma=p.kisaltma||p.ad;
     html+='<tr>'
@@ -990,7 +991,7 @@ function stokRenderEsikler(){
 
   if(!paramAdlar.length){el.innerHTML='<div style="color:var(--text3);font-size:13px">Önce parametre tanımlayın.</div>';return;}
 
-  var html='<div style="overflow-x:auto"><table><thead><tr><th>Parametre</th>'
+  var html='<div style="overflow-x:auto"><table class="compact-table"><thead><tr><th>Parametre</th>'
     +kats.map(function(k){return '<th style="text-align:center">'+stokEsc(k.ad)+'<div style="font-size:10px;color:var(--text3);font-weight:400">min sheet</div></th>';}).join('')
     +'</tr></thead><tbody>';
   paramAdlar.forEach(function(ad){

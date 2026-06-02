@@ -32,7 +32,7 @@
       <div class="portal-card-cta">Portala Giriş <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
     </div>
     <div class="portal-card" onclick="selectPortal('satis')">
-      <div class="portal-card-icon">
+      <div class="portal-card-icon" style="background:linear-gradient(135deg,#3aa8c1,#1d7d95)">
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><polyline points="2 20 22 20"/>
         </svg>
@@ -48,7 +48,7 @@
         </svg>
       </div>
       <div class="portal-title">Stok Takip Portalı</div>
-      <div class="portal-sub">Ham ve bitmiş ürün stok yönetimi</div>
+      <div class="portal-sub">Yarı mamul ve hazır ürün stok yönetimi</div>
       <div class="portal-card-cta">Portala Giriş <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
     </div>
   </div>
@@ -1076,10 +1076,10 @@
         <input type="date" id="sh-tarih-e" oninput="renderStokHareket()" title="Bitiş">
         <select id="sh-tip" onchange="renderStokHareket()" style="min-width:150px">
           <option value="">Tüm Hareketler</option>
-          <option value="ham-giris">Ham Giriş</option>
-          <option value="ham-cikis">Ham Çıkış</option>
-          <option value="bitmis-giris">Bitmiş Giriş</option>
-          <option value="bitmis-cikis">Bitmiş Çıkış</option>
+          <option value="ham-giris">Yarı Mamul Giriş</option>
+          <option value="ham-cikis">Yarı Mamul Çıkış</option>
+          <option value="bitmis-giris">Hazır Ürün Giriş</option>
+          <option value="bitmis-cikis">Hazır Ürün Çıkış</option>
         </select>
         <select id="sh-kat" onchange="renderStokHareket()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
         <input type="text" id="sh-lot" placeholder="LOT No..." oninput="renderStokHareket()" style="width:140px">

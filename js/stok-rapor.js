@@ -2,53 +2,7 @@
 //  STOK TAKİP — RAPOR (CSV + PDF)
 // ═══════════════════════════════════════════════════════
 
-function stokExportHamStokExcel(){
-  stokInit();
-  var paramObjs={};
-  stokParamList().forEach(function(p){paramObjs[p.kisaltma||p.ad]=p;});
-
-  var rows=[['Parametre Adı','Kısaltma','Kategori','Cut-off','LOT No','Mevcut Sheet','Mevcut Strip','SKT','Giriş Tarihi','Durum']];
-
-  (state.hamStokLotlar||[]).slice().sort(function(a,b){
-    return (a.parametreAd||'').localeCompare(b.parametreAd||'')
-      ||(a.kategoriId||'').localeCompare(b.kategoriId||'')
-      ||((parseFloat(b.cutoff)||0)-(parseFloat(a.cutoff)||0));
-  }).forEach(function(l){
-    var pObj=paramObjs[l.parametreAd]||{};
-    var kat=(stokKatById(l.kategoriId)||{}).ad||l.kategoriId;
-    var sps=stokSPS(l.kategoriId);
-    var ms=stokMevcutSheet(l);
-    var skt=stokSktInfo(l.sktTarih);
-    var esik=((state.stokSettings.minStokEsikleri||[]).find(function(e){return e.parametreAd===l.parametreAd&&e.kategoriId===l.kategoriId;})||{}).minSheet||1;
-    var sheetEq=sps>0?l.mevcutStrip/sps:0;
-    var durum=l.mevcutStrip===0?'Tükendi'
-      :skt.doldu?'SKT Geçti'
-      :sheetEq<=esik?'Kritik'
-      :sheetEq<=esik*3?'Düşük':'Yeterli';
-    rows.push([
-      pObj.ad||l.parametreAd,
-      l.parametreAd,
-      kat,
-      l.cutoff||'',
-      l.lotNo||'',
-      String(ms),
-      String(l.mevcutStrip),
-      stokFmtSkt(l.sktTarih),
-      l.tarih||'',
-      durum
-    ]);
-  });
-
-  var csv=rows.map(function(r){
-    return r.map(function(c){return '"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');
-  }).join('\r\n');
-  var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');
-  a.href=url;a.download='Ham_Stok_Listesi_'+new Date().toISOString().slice(0,10)+'.csv';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-  toast('Stok listesi Excel dosyası indirildi.','success');
-}
+// stokExportHamStokExcel → stok.js içinde _xlsxDownload ile tanımlı
 
 function stokExportCSV(){
   stokInit();

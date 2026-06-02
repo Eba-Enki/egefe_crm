@@ -60,6 +60,29 @@ function showPage(id,skipRender){
   document.querySelectorAll('.topbar-tab-group').forEach(function(g){g.style.display='none';});
   var _tg={teklifler:'topbar-tabs-teklifler',siparisler:'topbar-tabs-siparisler',faturalar:'topbar-tabs-faturalar'}[id];
   if(_tg){var _tgEl=document.getElementById(_tg);if(_tgEl)_tgEl.style.display='flex';}
+  // Stok topbar butonları
+  var stokBtnMap={
+    'ham-stok':     {excel:true},
+    'ham-girisler': {excel:true,giris:true},
+    'ham-cikislar': {excel:true,hamCikis:true},
+    'bitmis-stok':  {excel:true},
+    'bitmis-girisler':{excel:true,bmGiris:true},
+    'bitmis-cikislar':{excel:true,bmCikis:true},
+    'stok-hareket': {excel:true,pdf:true},
+    'stok-parametreler':{param:true}
+  };
+  if(currentPortal==='stok'){
+    var sbm=stokBtnMap[id]||{};
+    var _se=document.getElementById('topbar-stok-excel');    if(_se)_se.style.display=sbm.excel?'':'none';
+    var _sp=document.getElementById('topbar-stok-pdf');      if(_sp)_sp.style.display=sbm.pdf?'':'none';
+    var _shg=document.getElementById('topbar-stok-ham-giris');if(_shg)_shg.style.display=(sbm.giris&&canWrite)?'':'none';
+    var _shc=document.getElementById('topbar-stok-ham-cikis');if(_shc)_shc.style.display=(sbm.hamCikis&&canWrite)?'':'none';
+    var _sbg=document.getElementById('topbar-stok-bitmis-giris');if(_sbg)_sbg.style.display=(sbm.bmGiris&&canWrite)?'':'none';
+    var _sbc=document.getElementById('topbar-stok-bitmis-cikis');if(_sbc)_sbc.style.display=(sbm.bmCikis&&canWrite)?'':'none';
+    var _spm=document.getElementById('topbar-stok-param');   if(_spm)_spm.style.display=(sbm.param&&isAdmin)?'':'none';
+  } else {
+    ['topbar-stok-excel','topbar-stok-pdf','topbar-stok-ham-giris','topbar-stok-ham-cikis','topbar-stok-bitmis-giris','topbar-stok-bitmis-cikis','topbar-stok-param'].forEach(function(bid){var b=document.getElementById(bid);if(b)b.style.display='none';});
+  }
   const renders={dashboard:renderDashboard,servisler:renderTable,teklifler:renderTeklifler,musteriler:renderMusteriler,urunler:renderUrunler,kullanici:renderUserTable,ayarlar:loadSettings,tutanaklar:renderTutanaklar,siparisler:renderSiparisler,faturalar:renderFaturalar,'siparis-form':function(){},'stok-dashboard':renderStokDashboard,'ham-stok':renderHamStok,'ham-girisler':renderHamGirisler,'ham-giris':renderHamGirisForm,'ham-cikislar':renderHamCikislar,'ham-cikis':renderHamCikisForm,'bitmis-stok':renderBitmisStok,'bitmis-girisler':renderBitmisGirisler,'bitmis-giris':renderBitmisGirisForm,'bitmis-cikislar':renderBitmisCikislar,'bitmis-cikis':renderBitmisCikisForm,'stok-hareket':renderStokHareket,'stok-ayarlar':loadStokAyarlar,'stok-parametreler':renderStokParametreler};
   if(!skipRender&&renders[id])renders[id]();
 }
@@ -67,6 +90,22 @@ function showPage(id,skipRender){
 function goPortalDashboard(){
   if(currentPortal==='stok') showPage('stok-dashboard');
   else showPage('dashboard');
+}
+
+function stokSayfaExcel(){
+  var aktifSayfa=document.querySelector('.page.active');
+  var id=aktifSayfa?aktifSayfa.id.replace('page-',''):'';
+  var fnMap={
+    'ham-stok':stokExportHamStokExcel,
+    'ham-girisler':stokExportHamGirislerExcel,
+    'ham-cikislar':stokExportHamCikislarExcel,
+    'bitmis-stok':stokExportBitmisStokExcel,
+    'bitmis-girisler':stokExportBitmisGirislerExcel,
+    'bitmis-cikislar':stokExportBitmisCikislarExcel,
+    'stok-hareket':stokExportHareketExcel
+  };
+  if(fnMap[id]) fnMap[id]();
+  else toast('Bu sayfa için Excel export yok.','info');
 }
 
 // Form page navigators

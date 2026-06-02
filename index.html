@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
@@ -144,14 +145,23 @@
     </div>
     <div class="topbar-actions" id="topbar-actions">
       <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="topbar-theme-btn" title="Tema Değiştir" style="padding:7px 10px;font-size:15px">🌙</button>
-      <button class="btn btn-ghost btn-sm" onclick="exportData()">⬇ Dışa Aktar</button>
-      <label class="btn btn-ghost btn-sm" style="cursor:pointer">⬆ İçe Aktar<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
-      <button class="btn btn-primary btn-sm can-write" id="topbar-new-musteri-btn" style="display:none" onclick="goMusteriForm()">＋ Yeni Müşteri</button>
-      <button class="btn btn-primary btn-sm can-write" id="topbar-new-urun-btn" style="display:none" onclick="goUrunForm()">＋ Yeni Ürün</button>
-      <button class="btn btn-primary btn-sm can-write" id="topbar-new-tutanak-btn" style="display:none" onclick="openYeniTutanak()">＋ Yeni Tutanak</button>
-      <button class="btn btn-primary btn-sm admin-only" id="topbar-new-kullanici-btn" style="display:none" onclick="goKullaniciForm()">＋ Yeni Kullanıcı</button>
-      <button class="btn btn-primary btn-sm can-write" id="topbar-new-teklif-btn" style="display:none" onclick="goTeklifForm()">＋ Yeni Teklif</button>
-      <button class="btn btn-primary btn-sm can-write" id="topbar-new-servis-btn" style="display:none" onclick="goServisForm()">＋ Yeni Servis Girişi</button>
+      <!-- CRM portalleri -->
+      <button class="btn btn-ghost btn-sm crm-only" onclick="exportData()">⬇ Dışa Aktar</button>
+      <label class="btn btn-ghost btn-sm crm-only" style="cursor:pointer">⬆ İçe Aktar<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
+      <button class="btn btn-primary btn-sm can-write crm-only" id="topbar-new-musteri-btn" style="display:none" onclick="goMusteriForm()">＋ Yeni Müşteri</button>
+      <button class="btn btn-primary btn-sm can-write crm-only" id="topbar-new-urun-btn" style="display:none" onclick="goUrunForm()">＋ Yeni Ürün</button>
+      <button class="btn btn-primary btn-sm can-write crm-only" id="topbar-new-tutanak-btn" style="display:none" onclick="openYeniTutanak()">＋ Yeni Tutanak</button>
+      <button class="btn btn-primary btn-sm admin-only crm-only" id="topbar-new-kullanici-btn" style="display:none" onclick="goKullaniciForm()">＋ Yeni Kullanıcı</button>
+      <button class="btn btn-primary btn-sm can-write crm-only" id="topbar-new-teklif-btn" style="display:none" onclick="goTeklifForm()">＋ Yeni Teklif</button>
+      <button class="btn btn-primary btn-sm can-write crm-only" id="topbar-new-servis-btn" style="display:none" onclick="goServisForm()">＋ Yeni Servis Girişi</button>
+      <!-- Stok portali -->
+      <button class="btn btn-ghost btn-sm stok-only" id="topbar-stok-excel" style="display:none" onclick="stokSayfaExcel()">⬇ Excel</button>
+      <button class="btn btn-ghost btn-sm stok-only" id="topbar-stok-pdf" style="display:none" onclick="stokPrintHareket()">⬇ PDF</button>
+      <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-ham-giris" style="display:none" onclick="goHamGirisYeni()">＋ Yeni Stok Girişi</button>
+      <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-ham-cikis" style="display:none" onclick="goHamCikisYeni()">＋ Stok Çıkışı</button>
+      <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-bitmis-giris" style="display:none" onclick="goBitmisGirisYeni()">＋ Yeni Ticari Giriş</button>
+      <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-bitmis-cikis" style="display:none" onclick="gobitmisCikisYeni()">＋ Ticari Çıkışı</button>
+      <button class="btn btn-primary btn-sm admin-only stok-only" id="topbar-stok-param" style="display:none" onclick="stokParamFormAc()">＋ Yeni Parametre</button>
     </div>
   </div>
 
@@ -891,14 +901,17 @@
 
     <!-- ═══ HAM STOK GÖRÜNÜMÜ ═══ -->
     <div id="page-ham-stok" class="page stok-only" style="display:none">
-      <div class="filter-bar" style="margin-bottom:14px">
+      <div class="servis-tabs" style="margin-bottom:0">
+        <button id="tab-hamstok-aktif" class="servis-tab active" onclick="switchHamStokTab('aktif')">Aktif <span id="tab-hamstok-aktif-count" class="tab-count"></span></button>
+        <button id="tab-hamstok-arsiv" class="servis-tab" onclick="switchHamStokTab('arsiv')">Arşiv — Tükenmiş <span id="tab-hamstok-arsiv-count" class="tab-count"></span></button>
+      </div>
+      <div class="filter-bar" style="margin-bottom:14px;margin-top:12px">
         <select id="hs-f-kat" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
         <select id="hs-f-param" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Parametreler</option></select>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)"><input type="checkbox" id="hs-f-kritik" onchange="renderHamStok()"> Sadece Kritik</label>
-        <button class="btn btn-ghost btn-sm" onclick="stokExportHamStokExcel()">⬇ Excel</button>
-        <button class="btn btn-primary btn-sm can-write" onclick="showPage('ham-giris')">+ Yeni Giriş</button>
       </div>
       <div id="ham-stok-wrap"></div>
+      <div id="ham-stok-pagination" style="margin-top:12px"></div>
     </div>
 
     <!-- ═══ HAM STOK GİRİŞLER LİSTESİ ═══ -->
@@ -907,9 +920,9 @@
         <input type="text" id="hgl-arama" placeholder="Evrak No / LOT / Parametre..." oninput="renderHamGirisler()" style="min-width:220px">
         <input type="date" id="hgl-ts" oninput="renderHamGirisler()" title="Başlangıç">
         <input type="date" id="hgl-te" oninput="renderHamGirisler()" title="Bitiş">
-        <button class="btn btn-primary btn-sm can-write" onclick="goHamGirisYeni()">+ Yeni Stok Girişi</button>
       </div>
       <div id="ham-girisler-wrap"></div>
+      <div id="ham-girisler-pagination" style="margin-top:12px"></div>
     </div>
 
     <!-- ═══ HAM STOK GİRİŞ FORMU (çok kalemli) ═══ -->
@@ -924,7 +937,7 @@
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px">
           <div style="font-size:13px;font-weight:600;color:var(--text)">Kalemler</div>
-          <button class="btn btn-ghost btn-sm" onclick="hgAddKalem()">+ Kalem Ekle</button>
+          <button class="btn-brand" onclick="hgAddKalem()">＋ Kalem Ekle</button>
         </div>
         <div id="hg-kalemler"></div>
         <div style="display:flex;gap:10px;margin-top:18px">
@@ -937,12 +950,12 @@
     <!-- ═══ HAM STOK ÇIKIŞLAR LİSTESİ ═══ -->
     <div id="page-ham-cikislar" class="page stok-only" style="display:none">
       <div class="filter-bar" style="margin-bottom:14px">
-        <input type="text" id="hcl-arama" placeholder="Evrak No / Müşteri..." oninput="renderHamCikislar()" style="min-width:220px">
+        <input type="text" id="hcl-arama" placeholder="Evrak No / Çıkış Nedeni..." oninput="renderHamCikislar()" style="min-width:220px">
         <input type="date" id="hcl-ts" oninput="renderHamCikislar()" title="Başlangıç">
         <input type="date" id="hcl-te" oninput="renderHamCikislar()" title="Bitiş">
-        <button class="btn btn-primary btn-sm can-write" onclick="goHamCikisYeni()">+ Stok Çıkışı</button>
       </div>
       <div id="ham-cikislar-wrap"></div>
+      <div id="ham-cikislar-pagination" style="margin-top:12px"></div>
     </div>
 
     <!-- ═══ HAM STOK ÇIKIŞ FORMU ═══ -->
@@ -957,12 +970,12 @@
           <div class="field"><label>Çıkış Tarihi <span class="req">*</span></label><input type="date" id="hc-tarih"></div>
           <div class="field"><label>Kategori <span class="req">*</span></label><select id="hc-kategori" onchange="hcKategoriChange()"></select></div>
           <div class="field"><label>Kit Miktarı <span class="req">*</span></label><input type="number" id="hc-kit" min="1" placeholder="Adet" oninput="hcUpdateStrips()"></div>
-          <div class="field"><label>Müşteri / Amaç <span class="req">*</span></label><input type="text" id="hc-aciklama" placeholder="ör. X Firması, Demo, E-ticaret..."></div>
+          <div class="field"><label>Çıkış Nedeni <span class="req">*</span></label><select id="hc-aciklama"></select></div>
           <div class="field form-full"><label>Notlar</label><textarea id="hc-notlar" rows="2"></textarea></div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px">
           <div style="font-size:13px;font-weight:600;color:var(--text)">Parametre Satırları</div>
-          <button class="btn btn-ghost btn-sm" onclick="hcAddSatir()">+ Parametre Ekle</button>
+          <button class="btn-brand" onclick="hcAddSatir()">＋ Parametre Ekle</button>
         </div>
         <div id="hc-satirlar"></div>
         <div id="hc-stok-uyari" style="display:none;margin-top:10px;padding:10px 14px;background:var(--red-soft);border:1px solid rgba(248,113,113,.3);border-radius:var(--radius-sm);font-size:12px;color:var(--red)"></div>
@@ -975,11 +988,16 @@
 
     <!-- ═══ TİCARİ STOK GÖRÜNÜMÜ ═══ -->
     <div id="page-bitmis-stok" class="page stok-only" style="display:none">
-      <div class="filter-bar" style="margin-bottom:14px">
+      <div class="servis-tabs" style="margin-bottom:0">
+        <button id="tab-bitmis-aktif" class="servis-tab active" onclick="switchBitmisStokTab('aktif')">Aktif <span id="tab-bitmis-aktif-count" class="tab-count"></span></button>
+        <button id="tab-bitmis-arsiv" class="servis-tab" onclick="switchBitmisStokTab('arsiv')">Arşiv — Tükenmiş <span id="tab-bitmis-arsiv-count" class="tab-count"></span></button>
+      </div>
+      <div class="filter-bar" style="margin-bottom:14px;margin-top:12px">
         <select id="bs-f-kat" onchange="renderBitmisStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
         <input type="text" id="bs-f-arama" placeholder="Ürün adı / LOT..." oninput="renderBitmisStok()">
       </div>
       <div id="bitmis-stok-wrap"></div>
+      <div id="bitmis-stok-pagination" style="margin-top:12px"></div>
     </div>
 
     <!-- ═══ TİCARİ STOK GİRİŞLER LİSTESİ ═══ -->
@@ -991,6 +1009,7 @@
         <button class="btn btn-primary btn-sm can-write" onclick="goBitmisGirisYeni()">+ Yeni Stok Girişi</button>
       </div>
       <div id="bitmis-girisler-wrap"></div>
+      <div id="bitmis-girisler-pagination" style="margin-top:12px"></div>
     </div>
 
     <!-- ═══ TİCARİ STOK GİRİŞ FORMU (çok kalemli) ═══ -->
@@ -1005,7 +1024,7 @@
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px">
           <div style="font-size:13px;font-weight:600;color:var(--text)">Kalemler</div>
-          <button class="btn btn-ghost btn-sm" onclick="bgAddKalem()">+ Kalem Ekle</button>
+          <button class="btn-brand" onclick="bgAddKalem()">＋ Kalem Ekle</button>
         </div>
         <div id="bg-kalemler"></div>
         <div style="display:flex;gap:10px;margin-top:18px">
@@ -1018,12 +1037,12 @@
     <!-- ═══ TİCARİ STOK ÇIKIŞLAR LİSTESİ ═══ -->
     <div id="page-bitmis-cikislar" class="page stok-only" style="display:none">
       <div class="filter-bar" style="margin-bottom:14px">
-        <input type="text" id="bcl-arama" placeholder="Evrak No / Müşteri / Ürün..." oninput="renderBitmisCikislar()" style="min-width:220px">
+        <input type="text" id="bcl-arama" placeholder="Evrak No / Çıkış Nedeni / Ürün..." oninput="renderBitmisCikislar()" style="min-width:220px">
         <input type="date" id="bcl-ts" oninput="renderBitmisCikislar()" title="Başlangıç">
         <input type="date" id="bcl-te" oninput="renderBitmisCikislar()" title="Bitiş">
-        <button class="btn btn-primary btn-sm can-write" onclick="gobitmisCikisYeni()">+ Stok Çıkışı</button>
       </div>
       <div id="bitmis-cikislar-wrap"></div>
+      <div id="bitmis-cikislar-pagination" style="margin-top:12px"></div>
     </div>
 
     <!-- ═══ TİCARİ STOK ÇIKIŞ FORMU ═══ -->
@@ -1036,12 +1055,12 @@
         <input type="hidden" id="bc-evrak">
         <div class="form-grid">
           <div class="field"><label>Çıkış Tarihi <span class="req">*</span></label><input type="date" id="bc-tarih"></div>
-          <div class="field form-full"><label>Müşteri / Amaç <span class="req">*</span></label><input type="text" id="bc-aciklama" placeholder="ör. X Firması, Demo, E-ticaret..."></div>
+          <div class="field form-full"><label>Çıkış Nedeni <span class="req">*</span></label><select id="bc-aciklama"></select></div>
           <div class="field form-full"><label>Notlar</label><textarea id="bc-notlar" rows="2"></textarea></div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px">
           <div style="font-size:13px;font-weight:600;color:var(--text)">Çıkış Kalemleri</div>
-          <button class="btn btn-ghost btn-sm" onclick="bcAddSatir()">+ Ürün / LOT Ekle</button>
+          <button class="btn-brand" onclick="bcAddSatir()">＋ Ürün / LOT Ekle</button>
         </div>
         <div id="bc-satirlar"></div>
         <div style="display:flex;gap:10px;margin-top:18px">
@@ -1065,10 +1084,9 @@
         </select>
         <select id="sh-kat" onchange="renderStokHareket()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
         <input type="text" id="sh-lot" placeholder="LOT No..." oninput="renderStokHareket()" style="width:140px">
-        <button class="btn btn-ghost btn-sm" onclick="stokExportCSV()">⬇ CSV</button>
-        <button class="btn btn-ghost btn-sm" onclick="stokPrintHareket()">⬇ PDF</button>
       </div>
       <div id="stok-hareket-wrap"></div>
+      <div id="stok-hareket-pagination" style="margin-top:12px"></div>
     </div>
 
     <!-- ═══ STOK PARAMETRELER ═══ -->
@@ -1091,9 +1109,9 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">Parametre Listesi</span>
-          <button class="btn btn-primary btn-sm" onclick="stokParamFormAc()">+ Yeni Parametre</button>
         </div>
         <div id="stok-param-tablo"></div>
+        <div id="stok-param-pagination" style="padding:8px 16px"></div>
       </div>
     </div>
 
@@ -1116,7 +1134,17 @@
           </div>
         </div>
       </div>
-      <div class="card">
+      <div class="card" style="margin-top:16px">
+        <div class="card-header"><span class="card-title">Çıkış Nedenleri</span><span style="font-size:11px;color:var(--text3)">Ham ve ticari çıkış formlarında seçim listesi</span></div>
+        <div class="card-body">
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <input type="text" id="neden-yeni" placeholder="ör. Müşteri Siparişi" style="flex:1">
+            <button class="btn-brand" onclick="stokNedenEkle()">＋ Ekle</button>
+          </div>
+          <div id="stok-neden-listesi"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
         <div class="card-header"><span class="card-title">Minimum Stok Eşikleri</span><span style="font-size:11px;color:var(--text3)">Parametre + kategori bazında</span></div>
         <div class="card-body" id="stok-esik-body"></div>
       </div>

@@ -1339,13 +1339,59 @@ function stokTumHareketler(){
 
 function loadStokAyarlar(){
   stokInit();
+  // Her açılışta kilitle
+  var pg=document.getElementById('page-stok-ayarlar');
+  if(pg) pg.classList.add('sa-locked');
   stokRenderKatAyar();
   stokRenderEsikler();
-  // Prefix alanlarını doldur
+  stokNedenRender();
   var hcpEl=document.getElementById('set-ham-cikis-prefix');
   if(hcpEl){hcpEl.value=state.stokSettings.hamCikisPrefix||'HC'; stokPrefixPrev();}
   var tcpEl=document.getElementById('set-ticari-cikis-prefix');
   if(tcpEl){tcpEl.value=state.stokSettings.ticariCikisPrefix||'TC'; stokPrefixPrev();}
+}
+
+function stokAyarDuzenle(){
+  var pg=document.getElementById('page-stok-ayarlar');
+  if(pg) pg.classList.remove('sa-locked');
+}
+
+function stokAyarKilitle(){
+  var pg=document.getElementById('page-stok-ayarlar');
+  if(pg) pg.classList.add('sa-locked');
+}
+
+function stokNedenRender(){
+  var el=document.getElementById('stok-neden-listesi'); if(!el) return;
+  var nedenleri=(state.stokSettings&&state.stokSettings.cikisNedenleri)||[];
+  if(!nedenleri.length){el.innerHTML='<div style="padding:8px 0;font-size:13px;color:var(--text3)">Henüz neden tanımlanmamış.</div>';return;}
+  el.innerHTML='<div style="display:flex;flex-direction:column;gap:4px">'+nedenleri.map(function(n,i){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border)">'
+      +'<span style="font-size:13px;color:var(--text)">'+stokEsc(n)+'</span>'
+      +'<button class="btn-icon sa-action" style="color:var(--red);flex-shrink:0" onclick="stokNedenSil('+i+')">⊗</button>'
+      +'</div>';
+  }).join('')+'</div>';
+}
+
+function stokNedenEkle(){
+  var el=document.getElementById('neden-yeni'); if(!el) return;
+  var val=el.value.trim(); if(!val) return toast('Neden boş olamaz.','error');
+  stokInit();
+  if(state.stokSettings.cikisNedenleri.includes(val)) return toast('Bu neden zaten var.','info');
+  state.stokSettings.cikisNedenleri.push(val);
+  el.value='';
+  saveAll(); stokNedenRender(); toast('Neden eklendi.','success');
+}
+
+function stokNedenSil(i){
+  if(!confirm('Bu nedeni silmek istiyor musunuz?')) return;
+  stokInit();
+  state.stokSettings.cikisNedenleri.splice(i,1);
+  saveAll(); stokNedenRender(); toast('Neden silindi.','info');
+}
+
+function saveStokEsikler(){
+  toast('Eşikler otomatik kaydedilir. Güncellendi.','success');
 }
 
 function stokPrefixPrev(){

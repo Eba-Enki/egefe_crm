@@ -163,6 +163,16 @@ body{
 [data-theme="light"] .btn-brand{background:#1d7d95}
 [data-theme="light"] .btn-brand:hover{background:#2d91ab}
 
+/* ── STOK AYARLAR KİLİT MODU ── */
+#page-stok-ayarlar.sa-locked input,
+#page-stok-ayarlar.sa-locked select,
+#page-stok-ayarlar.sa-locked textarea{pointer-events:none;background:var(--bg3)!important;border-color:var(--border)!important;cursor:default;color:var(--text2)}
+#page-stok-ayarlar.sa-locked .sa-action{display:none!important}
+#page-stok-ayarlar.sa-locked .sa-view-bar{display:flex!important}
+#page-stok-ayarlar.sa-locked .sa-edit-bar{display:none!important}
+#page-stok-ayarlar:not(.sa-locked) .sa-view-bar{display:none!important}
+#page-stok-ayarlar:not(.sa-locked) .sa-edit-bar{display:flex!important}
+
 /* ── STATS ── */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:20px}
 .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:15px 17px;box-shadow:var(--shadow-sm)}

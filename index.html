@@ -142,6 +142,14 @@
         <button id="tab-fatura-aktif" class="servis-tab active" onclick="switchFaturaTab('aktif')">Açık Faturalar <span id="tab-fatura-aktif-count" class="tab-count"></span></button>
         <button id="tab-fatura-arsiv" class="servis-tab" onclick="switchFaturaTab('arsiv')">Ödendi <span id="tab-fatura-arsiv-count" class="tab-count"></span></button>
       </div>
+      <div id="topbar-tabs-hamstok" class="topbar-tab-group" style="display:none">
+        <button id="tab-hamstok-aktif" class="servis-tab active" onclick="switchHamStokTab('aktif')">Aktif <span id="tab-hamstok-aktif-count" class="tab-count"></span></button>
+        <button id="tab-hamstok-arsiv" class="servis-tab" onclick="switchHamStokTab('arsiv')">Arşiv — Tükenmiş <span id="tab-hamstok-arsiv-count" class="tab-count"></span></button>
+      </div>
+      <div id="topbar-tabs-bitmis-stok" class="topbar-tab-group" style="display:none">
+        <button id="tab-bitmis-aktif" class="servis-tab active" onclick="switchBitmisStokTab('aktif')">Aktif <span id="tab-bitmis-aktif-count" class="tab-count"></span></button>
+        <button id="tab-bitmis-arsiv" class="servis-tab" onclick="switchBitmisStokTab('arsiv')">Arşiv — Tükenmiş <span id="tab-bitmis-arsiv-count" class="tab-count"></span></button>
+      </div>
     </div>
     <div class="topbar-actions" id="topbar-actions">
       <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="topbar-theme-btn" title="Tema Değiştir" style="padding:7px 10px;font-size:15px">🌙</button>
@@ -155,7 +163,7 @@
       <button class="btn btn-primary btn-sm can-write crm-only" id="topbar-new-teklif-btn" style="display:none" onclick="goTeklifForm()">＋ Yeni Teklif</button>
       <button class="btn btn-primary btn-sm can-write crm-only" id="topbar-new-servis-btn" style="display:none" onclick="goServisForm()">＋ Yeni Servis Girişi</button>
       <!-- Stok portali -->
-      <button class="btn btn-ghost btn-sm stok-only" id="topbar-stok-excel" style="display:none" onclick="stokSayfaExcel()">⬇ Excel</button>
+      <button class="btn btn-ghost btn-sm stok-only" id="topbar-stok-excel" style="display:none;color:var(--green)" onclick="stokSayfaExcel()">⬇ Excel</button>
       <button class="btn btn-ghost btn-sm stok-only" id="topbar-stok-pdf" style="display:none" onclick="stokPrintHareket()">⬇ PDF</button>
       <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-ham-giris" style="display:none" onclick="goHamGirisYeni()">＋ Yeni Stok Girişi</button>
       <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-ham-cikis" style="display:none" onclick="goHamCikisYeni()">＋ Stok Çıkışı</button>
@@ -901,11 +909,7 @@
 
     <!-- ═══ HAM STOK GÖRÜNÜMÜ ═══ -->
     <div id="page-ham-stok" class="page stok-only" style="display:none">
-      <div class="servis-tabs" style="margin-bottom:0">
-        <button id="tab-hamstok-aktif" class="servis-tab active" onclick="switchHamStokTab('aktif')">Aktif <span id="tab-hamstok-aktif-count" class="tab-count"></span></button>
-        <button id="tab-hamstok-arsiv" class="servis-tab" onclick="switchHamStokTab('arsiv')">Arşiv — Tükenmiş <span id="tab-hamstok-arsiv-count" class="tab-count"></span></button>
-      </div>
-      <div class="filter-bar" style="margin-bottom:14px;margin-top:12px">
+      <div class="filter-bar" style="margin-bottom:14px">
         <select id="hs-f-kat" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
         <select id="hs-f-param" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Parametreler</option></select>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)"><input type="checkbox" id="hs-f-kritik" onchange="renderHamStok()"> Sadece Kritik</label>
@@ -988,11 +992,7 @@
 
     <!-- ═══ TİCARİ STOK GÖRÜNÜMÜ ═══ -->
     <div id="page-bitmis-stok" class="page stok-only" style="display:none">
-      <div class="servis-tabs" style="margin-bottom:0">
-        <button id="tab-bitmis-aktif" class="servis-tab active" onclick="switchBitmisStokTab('aktif')">Aktif <span id="tab-bitmis-aktif-count" class="tab-count"></span></button>
-        <button id="tab-bitmis-arsiv" class="servis-tab" onclick="switchBitmisStokTab('arsiv')">Arşiv — Tükenmiş <span id="tab-bitmis-arsiv-count" class="tab-count"></span></button>
-      </div>
-      <div class="filter-bar" style="margin-bottom:14px;margin-top:12px">
+      <div class="filter-bar" style="margin-bottom:14px">
         <select id="bs-f-kat" onchange="renderBitmisStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
         <input type="text" id="bs-f-arama" placeholder="Ürün adı / LOT..." oninput="renderBitmisStok()">
       </div>

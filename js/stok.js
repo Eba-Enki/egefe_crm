@@ -1531,7 +1531,13 @@ function _xlsxDownload(rows,headers,sheetName,fileName){
   var wb=XLSX.utils.book_new();
   var ws=XLSX.utils.aoa_to_sheet([headers].concat(rows));
   XLSX.utils.book_append_sheet(wb,ws,sheetName);
-  XLSX.writeFile(wb,fileName+'.xlsx');
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download=fileName+'.xlsx';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
 function stokExportHamStokExcel(){

@@ -522,7 +522,7 @@ function renderHamGirisForm(){
       return;
     }
   }
-  _hgKalemler=[];
+  _hgKalemler=[{kategoriId:'',parametreAd:'',cutoff:'',lotNo:'',sheetMiktar:0,sktTarih:''}];
   if(document.getElementById('hg-evrak')) document.getElementById('hg-evrak').value='';
   var tarihEl=document.getElementById('hg-tarih');
   if(tarihEl) tarihEl.value=stokToday();
@@ -533,35 +533,44 @@ function renderHamGirisForm(){
 function hgAddKalem(){
   _hgKalemler.push({kategoriId:'',parametreAd:'',cutoff:'',lotNo:'',sheetMiktar:0,sktTarih:''});
   hgRenderKalemler();
+  var el=document.getElementById('hg-kat-'+(_hgKalemler.length-1));
+  if(el) el.focus();
 }
 
 function hgRemoveKalem(i){_hgKalemler.splice(i,1);hgRenderKalemler();}
 
+function hgSktChange(i,val){
+  val=(val||'').trim();
+  if(!val){_hgKalemler[i].sktTarih='';return;}
+  var p=val.split('.');
+  if(p.length===2&&/^\d{1,2}$/.test(p[0])&&/^\d{4}$/.test(p[1]))
+    _hgKalemler[i].sktTarih=p[1]+'-'+p[0].padStart(2,'0');
+}
+
+function hgSktKeydown(i,e){
+  if(e.key==='Enter'){e.preventDefault();hgAddKalem();}
+}
+
 function hgRenderKalemler(){
   var el=document.getElementById('hg-kalemler'); if(!el) return;
-  if(!_hgKalemler.length){
-    el.innerHTML='<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center">+ Kalem Ekle butonuyla satır ekleyin.</div>';
-    return;
-  }
-  var katOptions='<option value="">Seçin...</option>'+stokKatList().map(function(k){return '<option value="'+k.id+'">'+k.ad+'</option>';}).join('');
-  var paramOptions='<option value="">Seçin...</option>'+stokParamList().filter(function(p){return p.aktif!==false;}).map(function(p){var k=p.kisaltma||p.ad;return '<option value="'+stokEsc(k)+'">'+stokEsc(k+(p.ad&&p.ad!==k?' — '+p.ad:''))+'</option>';}).join('');
-
-  el.innerHTML=_hgKalemler.map(function(k,i){
+  var rows=_hgKalemler.map(function(k,i){
     var sps=k.kategoriId?stokSPS(k.kategoriId):0;
     var prevTxt=k.sheetMiktar&&sps?(k.sheetMiktar+' × '+sps+' = '+stokFmtN(k.sheetMiktar*sps)+' strip'):'—';
     var katOpts=stokKatList().map(function(kat){return '<option value="'+kat.id+'"'+(k.kategoriId===kat.id?' selected':'')+'>'+kat.ad+'</option>';}).join('');
     var paramOpts=stokParamList().filter(function(p){return p.aktif!==false;}).map(function(p){var kk=p.kisaltma||p.ad;return '<option value="'+stokEsc(kk)+'"'+(k.parametreAd===kk?' selected':'')+'>'+stokEsc(kk+(p.ad&&p.ad!==kk?' — '+p.ad:''))+'</option>';}).join('');
-    return '<div style="display:grid;grid-template-columns:130px 150px 100px 130px 80px 120px 1fr auto;gap:8px;align-items:end;padding:10px 12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:8px">'
-      +'<div class="field" style="margin:0"><label style="font-size:10px">Kategori *</label><select onchange="_hgKalemler['+i+'].kategoriId=this.value;hgRenderKalemler()"><option value="">Seçin...</option>'+katOpts+'</select></div>'
+    var sktDisp=k.sktTarih?(k.sktTarih.split('-')[1]+'.'+k.sktTarih.split('-')[0]):'';
+    return '<div style="display:grid;grid-template-columns:130px 150px 100px 130px 80px 110px 1fr auto;gap:8px;align-items:end;padding:10px 12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:8px">'
+      +'<div class="field" style="margin:0"><label style="font-size:10px">Kategori *</label><select id="hg-kat-'+i+'" onchange="_hgKalemler['+i+'].kategoriId=this.value;hgRenderKalemler()"><option value="">Seçin...</option>'+katOpts+'</select></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">Parametre *</label><select onchange="_hgKalemler['+i+'].parametreAd=this.value"><option value="">Seçin...</option>'+paramOpts+'</select></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">Cut-off</label><input type="text" value="'+stokEsc(k.cutoff||'')+'" placeholder="ör. 500" onchange="_hgKalemler['+i+'].cutoff=this.value.trim()"></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">LOT No *</label><input type="text" value="'+stokEsc(k.lotNo||'')+'" placeholder="ör. LOT-001" onchange="_hgKalemler['+i+'].lotNo=this.value.trim()"></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">Sheet *</label><input type="number" min="1" value="'+(k.sheetMiktar||'')+'" onchange="_hgKalemler['+i+'].sheetMiktar=parseInt(this.value)||0;hgRenderKalemler()"></div>'
-      +'<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY)</label><input type="month" value="'+stokEsc(k.sktTarih||'')+'" onchange="_hgKalemler['+i+'].sktTarih=this.value"></div>'
+      +'<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY)</label><input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" onchange="hgSktChange('+i+',this.value)" onkeydown="hgSktKeydown('+i+',event)"></div>'
       +'<div style="font-family:var(--font-mono);font-size:11px;color:var(--teal);padding-bottom:4px;white-space:nowrap">'+prevTxt+'</div>'
       +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="hgRemoveKalem('+i+')">⊗</button>'
       +'</div>';
   }).join('');
+  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="hgAddKalem()">＋ Kalem Ekle</button></div>';
 }
 
 function saveHamGiris(){
@@ -690,7 +699,7 @@ var _hcSatirlar=[];
 
 function renderHamCikisForm(){
   stokInit();
-  _hcSatirlar=[];
+  _hcSatirlar=[{paramKey:'',lotId:''}];
   // Evrak no göster
   var evrak=(document.getElementById('hc-evrak')||{}).value||nextHamCikisEvrak();
   if(document.getElementById('hc-evrak')) document.getElementById('hc-evrak').value=evrak;
@@ -705,11 +714,13 @@ function renderHamCikisForm(){
   hcRenderSatirlar();
 }
 
-function hcKategoriChange(){_hcSatirlar=[];hcRenderSatirlar();}
+function hcKategoriChange(){_hcSatirlar=[{paramKey:'',lotId:''}];hcRenderSatirlar();}
 
 function hcAddSatir(){
   _hcSatirlar.push({paramKey:'',lotId:''});
   hcRenderSatirlar();
+  var el=document.getElementById('hc-param-'+(_hcSatirlar.length-1));
+  if(el) el.focus();
 }
 
 function hcRemoveSatir(idx){
@@ -717,28 +728,25 @@ function hcRemoveSatir(idx){
   hcRenderSatirlar();
 }
 
+function hcLotKeydown(i,e){
+  if(e.key==='Enter'){e.preventDefault();hcAddSatir();}
+}
+
 function hcRenderSatirlar(){
   var katId=(document.getElementById('hc-kategori')||{}).value||'';
   var kitMiktar=parseInt((document.getElementById('hc-kit')||{}).value)||0;
   var el=document.getElementById('hc-satirlar'); if(!el) return;
 
-  if(!_hcSatirlar.length){
-    el.innerHTML='<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center">Parametre ekleyin.</div>';
-    return;
-  }
-
   var params=stokParamList().filter(function(p){return p.aktif!==false;});
   var lots=(state.hamStokLotlar||[]).filter(function(l){return l.kategoriId===katId&&l.mevcutStrip>0;});
 
-  el.innerHTML=_hcSatirlar.map(function(s,i){
-    // Parametre dropdown (kisaltma değeri)
+  var rows=_hcSatirlar.map(function(s,i){
     var paramOptions=params.map(function(p){
       var k=p.kisaltma||p.ad;
       var label=k+(p.ad&&p.ad!==k?' — '+p.ad:'');
       return '<option value="'+stokEsc(k)+'"'+(s.paramKey===k?' selected':'')+'>'+stokEsc(label)+'</option>';
     }).join('');
 
-    // LOT listesi: sadece kisaltma ile filtrele, cutoff bilgisini LOT'tan göster
     var filtLots=lots.filter(function(l){
       if(!s.paramKey) return true;
       return l.parametreAd===s.paramKey;
@@ -755,12 +763,14 @@ function hcRenderSatirlar(){
 
     return '<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:8px">'
       +'<div class="field" style="margin:0"><label style="font-size:11px">Parametre</label>'
-        +'<select onchange="hcParamChange('+i+',this.value)"><option value="">Seçin...</option>'+paramOptions+'</select></div>'
+        +'<select id="hc-param-'+i+'" onchange="hcParamChange('+i+',this.value)"><option value="">Seçin...</option>'+paramOptions+'</select></div>'
       +'<div class="field" style="margin:0"><label style="font-size:11px">LOT <span style="color:var(--text3);font-weight:400">'+stokEsc(mevcutInfo)+'</span></label>'
-        +'<select onchange="hcLotChange('+i+',this.value)"><option value="">LOT Seçin...</option>'+lotOptions+'</select></div>'
+        +'<select onchange="hcLotChange('+i+',this.value)" onkeydown="hcLotKeydown('+i+',event)"><option value="">LOT Seçin...</option>'+lotOptions+'</select></div>'
       +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="hcRemoveSatir('+i+')">⊗</button>'
       +'</div>';
   }).join('');
+
+  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="hcAddSatir()">＋ Parametre Ekle</button></div>';
 
   // Stok uyarı güncelle
   hcStokUyariGuncelle();
@@ -1007,7 +1017,7 @@ function renderBitmisGirisForm(){
       return;
     }
   }
-  _bgKalemler=[];
+  _bgKalemler=[{lotNo:'',urunAdi:'',kategoriId:'',parametreler:[],miktar:0,sktTarih:''}];
   if(document.getElementById('bg-evrak')) document.getElementById('bg-evrak').value='';
   if(document.getElementById('bg-tarih')) document.getElementById('bg-tarih').value=stokToday();
   if(document.getElementById('bg-notlar')) document.getElementById('bg-notlar').value='';
@@ -1017,25 +1027,36 @@ function renderBitmisGirisForm(){
 function bgAddKalem(){
   _bgKalemler.push({lotNo:'',urunAdi:'',kategoriId:'',parametreler:[],miktar:0,sktTarih:''});
   bgRenderKalemler();
+  var el=document.getElementById('bg-kat-'+(_bgKalemler.length-1));
+  if(el) el.focus();
 }
 
 function bgRemoveKalem(i){_bgKalemler.splice(i,1);bgRenderKalemler();}
 
+function bgSktChange(i,val){
+  val=(val||'').trim();
+  if(!val){_bgKalemler[i].sktTarih='';return;}
+  var p=val.split('.');
+  if(p.length===2&&/^\d{1,2}$/.test(p[0])&&/^\d{4}$/.test(p[1]))
+    _bgKalemler[i].sktTarih=p[1]+'-'+p[0].padStart(2,'0');
+}
+
+function bgSktKeydown(i,e){
+  if(e.key==='Enter'){e.preventDefault();bgAddKalem();}
+}
+
 function bgRenderKalemler(){
   var el=document.getElementById('bg-kalemler'); if(!el) return;
-  if(!_bgKalemler.length){
-    el.innerHTML='<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center">+ Kalem Ekle butonuyla satır ekleyin.</div>';
-    return;
-  }
   var paramAdlar=[...new Set(stokParamList().filter(function(p){return p.aktif!==false;}).map(function(p){return p.kisaltma||p.ad;}))].sort();
-  el.innerHTML=_bgKalemler.map(function(k,i){
+  var rows=_bgKalemler.map(function(k,i){
     var katOpts=stokKatList().map(function(kat){return '<option value="'+kat.id+'"'+(k.kategoriId===kat.id?' selected':'')+'>'+kat.ad+'</option>';}).join('');
     var paramCheckboxes=paramAdlar.map(function(ad){
-      return '<label style="display:flex;align-items:center;gap:5px;font-size:11px;white-space:nowrap"><input type="checkbox" onchange="bgKalemParamToggle('+i+',\''+stokEsc(ad)+'\',this.checked)" '+(( k.parametreler||[]).includes(ad)?'checked':'')+'>'+stokEsc(ad)+'</label>';
+      return '<label style="display:flex;align-items:center;gap:5px;font-size:11px;white-space:nowrap"><input type="checkbox" onchange="bgKalemParamToggle('+i+',\''+stokEsc(ad)+'\',this.checked)" '+((k.parametreler||[]).includes(ad)?'checked':'')+'>'+stokEsc(ad)+'</label>';
     }).join('');
+    var sktDisp=k.sktTarih?(k.sktTarih.split('-')[1]+'.'+k.sktTarih.split('-')[0]):'';
     return '<div style="padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:10px">'
       +'<div style="display:grid;grid-template-columns:130px 1fr 80px 120px auto;gap:8px;align-items:end;margin-bottom:8px">'
-        +'<div class="field" style="margin:0"><label style="font-size:10px">Kategori *</label><select onchange="_bgKalemler['+i+'].kategoriId=this.value"><option value="">Seçin...</option>'+katOpts+'</select></div>'
+        +'<div class="field" style="margin:0"><label style="font-size:10px">Kategori *</label><select id="bg-kat-'+i+'" onchange="_bgKalemler['+i+'].kategoriId=this.value"><option value="">Seçin...</option>'+katOpts+'</select></div>'
         +'<div class="field" style="margin:0"><label style="font-size:10px">Ürün Adı *</label><input type="text" value="'+stokEsc(k.urunAdi||'')+'" placeholder="ör. 4\'lü İdrar Test Kiti" onchange="_bgKalemler['+i+'].urunAdi=this.value.trim()"></div>'
         +'<div class="field" style="margin:0"><label style="font-size:10px">Miktar *</label><input type="number" min="1" value="'+(k.miktar||'')+'" onchange="_bgKalemler['+i+'].miktar=parseInt(this.value)||0"></div>'
         +'<div class="field" style="margin:0"><label style="font-size:10px">LOT No *</label><input type="text" value="'+stokEsc(k.lotNo||'')+'" placeholder="ör. KLOT-001" onchange="_bgKalemler['+i+'].lotNo=this.value.trim()"></div>'
@@ -1043,12 +1064,13 @@ function bgRenderKalemler(){
       +'</div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
         +'<span style="font-size:10px;color:var(--text3);font-weight:500">SKT:</span>'
-        +'<input type="month" value="'+stokEsc(k.sktTarih||'')+'" style="font-size:11px;padding:2px 6px;background:var(--bg4);border:1px solid var(--border);border-radius:4px;color:var(--text)" onchange="_bgKalemler['+i+'].sktTarih=this.value">'
+        +'<input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" style="font-size:11px;padding:2px 6px;width:76px;background:var(--bg4);border:1px solid var(--border);border-radius:4px;color:var(--text)" onchange="bgSktChange('+i+',this.value)" onkeydown="bgSktKeydown('+i+',event)">'
         +'<span style="font-size:10px;color:var(--text3);font-weight:500;margin-left:8px">Parametreler:</span>'
         +paramCheckboxes
       +'</div>'
       +'</div>';
   }).join('');
+  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bgAddKalem()">＋ Kalem Ekle</button></div>';
 }
 
 function bgKalemParamToggle(i,ad,checked){
@@ -1178,7 +1200,7 @@ var _bcSatirlar=[];
 
 function renderBitmisCikisForm(){
   stokInit();
-  _bcSatirlar=[];
+  _bcSatirlar=[{lotId:'',miktar:1}];
   var evrak=(document.getElementById('bc-evrak')||{}).value||nextTicariCikisEvrak();
   if(document.getElementById('bc-evrak')) document.getElementById('bc-evrak').value=evrak;
   var dispEl=document.getElementById('bc-evrak-display');
@@ -1193,29 +1215,32 @@ function renderBitmisCikisForm(){
 function bcAddSatir(){
   _bcSatirlar.push({lotId:'',miktar:1});
   bcRenderSatirlar();
+  var el=document.getElementById('bc-lot-'+(_bcSatirlar.length-1));
+  if(el) el.focus();
 }
 
 function bcRemoveSatir(idx){_bcSatirlar.splice(idx,1);bcRenderSatirlar();}
 
+function bcMiktarKeydown(i,e){
+  if(e.key==='Enter'){e.preventDefault();bcAddSatir();}
+}
+
 function bcRenderSatirlar(){
   var el=document.getElementById('bc-satirlar'); if(!el) return;
   var lots=(state.bitmisStokLotlar||[]).filter(function(l){return l.mevcutMiktar>0;});
-  if(!_bcSatirlar.length){
-    el.innerHTML='<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center">Ürün / LOT ekleyin.</div>';
-    return;
-  }
-  el.innerHTML=_bcSatirlar.map(function(s,i){
+  var rows=_bcSatirlar.map(function(s,i){
     var lotOptions=lots.map(function(l){
       var kat=stokKatById(l.kategoriId)||{ad:''};
       return '<option value="'+l.id+'"'+(s.lotId===l.id?' selected':'')+'>'+stokEsc(l.lotNo)+' — '+stokEsc(l.urunAdi)+' ('+stokEsc(kat.ad)+') Mevcut: '+stokFmtN(l.mevcutMiktar)+'</option>';
     }).join('');
     if(!lotOptions) lotOptions='<option value="">— Mevcut LOT yok —</option>';
     return '<div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:8px">'
-      +'<div class="field" style="margin:0"><label style="font-size:11px">Ürün / LOT</label><select onchange="bcLotChange('+i+',this.value)"><option value="">Seçin...</option>'+lotOptions+'</select></div>'
-      +'<div class="field" style="margin:0;width:90px"><label style="font-size:11px">Miktar</label><input type="number" min="1" value="'+s.miktar+'" onchange="bcMiktarChange('+i+',this.value)"></div>'
+      +'<div class="field" style="margin:0"><label style="font-size:11px">Ürün / LOT</label><select id="bc-lot-'+i+'" onchange="bcLotChange('+i+',this.value)"><option value="">Seçin...</option>'+lotOptions+'</select></div>'
+      +'<div class="field" style="margin:0;width:90px"><label style="font-size:11px">Miktar</label><input type="number" min="1" value="'+s.miktar+'" onchange="bcMiktarChange('+i+',this.value)" onkeydown="bcMiktarKeydown('+i+',event)"></div>'
       +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="bcRemoveSatir('+i+')">⊗</button>'
       +'</div>';
   }).join('');
+  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bcAddSatir()">＋ Ürün / LOT Ekle</button></div>';
 }
 
 function bcLotChange(idx,val){_bcSatirlar[idx].lotId=val;bcRenderSatirlar();}

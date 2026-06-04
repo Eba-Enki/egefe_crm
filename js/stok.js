@@ -643,21 +643,24 @@ function renderHamCikislar(){
   cikislar=cikislar.slice((_hamCikislarPage-1)*PAGE_SIZE,_hamCikislarPage*PAGE_SIZE);
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
   var html='<div class="table-wrap"><table class="compact-table"><thead><tr>'
-    +'<th style="width:28px"></th><th>Evrak No</th><th>Tarih</th><th>Kategori</th>'
-    +'<th>Çıkış Nedeni</th><th style="width:50px;text-align:center">Kit</th><th>Parametreler Özeti</th><th></th>'
+    +'<th style="width:28px"></th><th>Evrak No</th><th style="width:90px">Tarih</th><th>Kategori</th>'
+    +'<th>Çıkış Nedeni</th><th style="width:50px;text-align:center">Kit</th><th>Özet</th><th></th>'
     +'</tr></thead><tbody>';
   cikislar.forEach(function(c){
     var expanded=_expandedHamCikislar.has(c.id);
     var kat=(stokKatById(c.kategoriId)||{}).ad||c.kategoriId||'';
-    var params=(c.satirlar||[]).map(function(s){return s.parametreAd+(s.cutoff?' ('+s.cutoff+')':'');}).join(' • ');
+    var satirArr=(c.satirlar||[]);
+    var paramsEsc=satirArr.map(function(s){return stokEsc(s.parametreAd+(s.cutoff?' ('+s.cutoff+')':''));});
+    var ozetDisp=paramsEsc.slice(0,3).join(' • ')+(paramsEsc.length>3?' <span style="font-size:11px;color:var(--accent);font-weight:500">+'+(paramsEsc.length-3)+'</span>':'');
+    var tarihDispC=c.tarih?c.tarih.split('-').reverse().join('.'):'—';
     html+='<tr style="cursor:pointer;background:var(--bg3)" onclick="toggleHamCikis(\''+c.id+'\')">'
       +'<td style="text-align:center;color:var(--amber);font-weight:700">'+(expanded?'▼':'▶')+'</td>'
       +'<td><span class="kn-badge">'+stokEsc(c.evrakNo||'—')+'</span></td>'
-      +'<td style="font-family:var(--font-mono);font-size:12px">'+stokEsc(c.tarih||'')+'</td>'
+      +'<td style="font-family:var(--font-mono);font-size:12px">'+tarihDispC+'</td>'
       +'<td style="font-size:12px">'+stokEsc(kat)+'</td>'
       +'<td style="font-size:12px">'+stokEsc(c.aciklama||'')+'</td>'
       +'<td style="text-align:center;font-family:var(--font-mono)">'+stokFmtN(c.kitMiktari)+'</td>'
-      +'<td style="font-size:11px;color:var(--text3)">'+stokEsc(params)+'</td>'
+      +'<td style="font-size:12px;color:var(--text2)">'+ozetDisp+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilHamCikis(\''+c.id+'\')">⊗</button>':'')
       +'</div></td>'

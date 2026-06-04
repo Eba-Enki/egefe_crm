@@ -1381,9 +1381,7 @@ function stokTumHareketler(){
 
 function loadStokAyarlar(){
   stokInit();
-  // Her açılışta kilitle
-  var pg=document.getElementById('page-stok-ayarlar');
-  if(pg) pg.classList.add('sa-locked');
+  switchStokSettingsPanel('ham-kat');
   stokRenderKatAyar();
   stokRenderEsikler();
   stokNedenRender();
@@ -1393,14 +1391,20 @@ function loadStokAyarlar(){
   if(tcpEl){tcpEl.value=state.stokSettings.ticariCikisPrefix||'TC'; stokPrefixPrev();}
 }
 
-function stokAyarDuzenle(){
-  var pg=document.getElementById('page-stok-ayarlar');
-  if(pg) pg.classList.remove('sa-locked');
+function switchStokSettingsPanel(name){
+  var wrap=document.getElementById('page-stok-ayarlar'); if(!wrap) return;
+  wrap.querySelectorAll('.settings-nav-item').forEach(function(el){el.classList.toggle('active',el.dataset.panel===name);});
+  wrap.querySelectorAll('.settings-panel').forEach(function(el){el.classList.toggle('active',el.id==='ssp-'+name);});
 }
 
-function stokAyarKilitle(){
-  var pg=document.getElementById('page-stok-ayarlar');
-  if(pg) pg.classList.add('sa-locked');
+function stokCikisAyarSifirla(){
+  stokInit();
+  var hcpEl=document.getElementById('set-ham-cikis-prefix');
+  if(hcpEl) hcpEl.value=state.stokSettings.hamCikisPrefix||'HC';
+  var tcpEl=document.getElementById('set-ticari-cikis-prefix');
+  if(tcpEl) tcpEl.value=state.stokSettings.ticariCikisPrefix||'TC';
+  stokPrefixPrev();
+  stokNedenRender();
 }
 
 function stokNedenRender(){

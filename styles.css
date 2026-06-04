@@ -608,3 +608,18 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
   --accent-soft:rgba(2,79,152,.1);--accent-glow:rgba(2,79,152,.25);
   --sb-section-color:rgba(2,79,152,.7);
 }
+
+/* Stok Yönetim — Yeşil #16a34a */
+[data-portal="stok"]{
+  --accent:#22c55e;--accent2:#16a34a;
+  --accent-soft:rgba(34,197,94,.13);--accent-glow:rgba(34,197,94,.25);
+  --sb-section-color:rgba(34,197,94,.65);
+  --shadow-md:0 4px 12px rgba(0,0,0,.4),0 2px 4px rgba(0,0,0,.3),0 0 0 1px rgba(34,197,94,.06);
+  --shadow-lg:0 16px 40px rgba(0,0,0,.5),0 6px 16px rgba(0,0,0,.35),0 0 0 1px rgba(34,197,94,.08);
+  --shadow-xl:0 32px 80px rgba(0,0,0,.55),0 12px 32px rgba(0,0,0,.4),0 0 0 1px rgba(34,197,94,.1);
+}
+[data-portal="stok"][data-theme="light"]{
+  --accent:#16a34a;--accent2:#15803d;
+  --accent-soft:rgba(22,163,74,.1);--accent-glow:rgba(22,163,74,.25);
+  --sb-section-color:rgba(22,163,74,.7);
+}

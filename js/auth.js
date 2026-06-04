@@ -56,7 +56,7 @@
   // Show login
   document.getElementById('portal-screen').style.display='none';
   var nameEl=document.getElementById('login-portal-name');
-  if(nameEl)nameEl.textContent=pkey==='servis'?'Teknik Servis Portalı':pkey==='satis'?'Satış Pazarlama Portalı':'Stok Takip Portalı';
+  if(nameEl)nameEl.textContent=pkey==='servis'?'Teknik Servis Portalı':pkey==='satis'?'Satış Pazarlama Portalı':'Stok Yönetim Portalı';
   document.getElementById('login-screen').style.display='flex';
 }
 
@@ -79,11 +79,11 @@ function applyPortal(){
   document.querySelectorAll('.crm-only').forEach(function(el){el.style.display=isStok?'none':'';});
   var badge=document.getElementById('portal-badge');
   if(badge){
-    badge.textContent=isServis?'Teknik Servis':isSatis?'Satış & Pazarlama':'Stok Takip';
+    badge.textContent=isServis?'Teknik Servis':isSatis?'Satış & Pazarlama':'Stok Yönetim';
     badge.className='portal-badge '+(isServis?'portal-badge-servis':isSatis?'portal-badge-satis':'portal-badge-stok');
   }
   var sbpn=document.getElementById('sb-portal-name');
-  if(sbpn)sbpn.textContent=isServis?'Teknik Servis Portalı':isSatis?'Satış Pazarlama Portalı':'Stok Takip Portalı';
+  if(sbpn)sbpn.textContent=isServis?'Teknik Servis Portalı':isSatis?'Satış Pazarlama Portalı':'Stok Yönetim Portalı';
   document.querySelectorAll('.tf-servis-field').forEach(function(el){el.style.display=isServis?'':'none';});
   document.querySelectorAll('.tf-satis-field').forEach(function(el){el.style.display=isSatis?'':'none';});
   var defaultPage=isStok?'stok-dashboard':isServis?'dashboard':'teklifler';

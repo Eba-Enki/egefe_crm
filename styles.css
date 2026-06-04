@@ -195,6 +195,16 @@ tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.015)}
 .compact-table td{padding:5px 10px;font-size:12px}
 .compact-table th{padding:5px 10px}
+.compact-table td input,.compact-table td select{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:5px 8px;
+  font-family:var(--font-body);font-size:12px;color:var(--text);
+  outline:none;transition:border-color .15s,box-shadow .15s;
+}
+.compact-table td input:hover,.compact-table td select:hover{border-color:var(--border2)}
+.compact-table td input:focus,.compact-table td select:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(61,155,196,.15);
+}
 .td-mono{font-family:var(--font-mono);font-size:12px}
 
 /* ── BADGES ── */
@@ -508,7 +518,8 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
 /* Light theme overrides */
 [data-theme="light"] .field input,[data-theme="light"] .field select,[data-theme="light"] .field textarea,
 [data-theme="light"] .filter-bar input,[data-theme="light"] .filter-bar select,
-[data-theme="light"] .teklif-items td input,[data-theme="light"] .teklif-items td select{
+[data-theme="light"] .teklif-items td input,[data-theme="light"] .teklif-items td select,
+[data-theme="light"] .compact-table td input,[data-theme="light"] .compact-table td select{
   background:var(--bg3);border-color:var(--border);color:var(--text);
 }
 [data-theme="light"] .combo-dropdown{background:var(--bg2);border-color:var(--border2);box-shadow:var(--shadow-lg)}

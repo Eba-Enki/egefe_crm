@@ -941,11 +941,13 @@ function renderBitmisGirisler(){
     +'</tr></thead><tbody>';
   girisler.forEach(function(g){
     var expanded=_expandedBitmisGirisler.has(g.id);
-    var urunStr=(g.kalemler||[]).map(function(k){return k.urunAdi;}).join(' • ');
+    var katOzetMap={};(g.kalemler||[]).forEach(function(k){var katAd=(stokTicariKatById(k.kategoriId)||{}).ad||k.kategoriId||'—';katOzetMap[katAd]=(katOzetMap[katAd]||0)+1;});
+    var urunStr=Object.keys(katOzetMap).map(function(kat){return kat+' ('+katOzetMap[kat]+')';}).join(' • ');
+    var tarihDisp=g.tarih?g.tarih.split('-').reverse().join('.'):'—';
     html+='<tr style="cursor:pointer;background:var(--bg3)" onclick="toggleBitmisGiris(\''+g.id+'\')">'
       +'<td style="text-align:center;color:var(--green);font-weight:700">'+(expanded?'▼':'▶')+'</td>'
       +'<td><span class="kn-badge">'+stokEsc(g.evrakNo)+'</span></td>'
-      +'<td style="font-family:var(--font-mono);font-size:12px">'+stokEsc(g.tarih)+'</td>'
+      +'<td style="font-family:var(--font-mono);font-size:12px">'+tarihDisp+'</td>'
       +'<td style="text-align:center;font-family:var(--font-mono);color:var(--text3)">'+((g.kalemler||[]).length)+'</td>'
       +'<td style="font-size:12px;color:var(--text2)">'+stokEsc(urunStr)+'</td>'
       +'<td style="font-size:11px;color:var(--text3)">'+stokEsc(g.notlar||'')+'</td>'
@@ -959,7 +961,7 @@ function renderBitmisGirisler(){
         +'<th>Ürün Adı</th><th>Kategori</th><th>LOT No</th><th style="text-align:right">Miktar</th><th>SKT</th><th>Parametreler</th>'
         +'</tr></thead><tbody>';
       (g.kalemler||[]).forEach(function(k){
-        var kat=(stokKatById(k.kategoriId)||{}).ad||k.kategoriId;
+        var kat=(stokTicariKatById(k.kategoriId)||{}).ad||k.kategoriId;
         subHtml+='<tr>'
           +'<td style="font-weight:500">'+stokEsc(k.urunAdi)+'</td>'
           +'<td style="font-size:11px">'+stokEsc(kat)+'</td>'
@@ -1167,14 +1169,16 @@ function renderBitmisCikislar(){
     +'</tr></thead><tbody>';
   cikislar.forEach(function(c){
     var expanded=_expandedBitmisCikislar.has(c.id);
-    var urunStr=(c.satirlar||[]).map(function(s){return s.urunAdi;}).join(' • ');
+    var katOzetMap={};(c.satirlar||[]).forEach(function(s){var katAd=(stokTicariKatById(s.kategoriId)||{}).ad||s.kategoriId||'—';katOzetMap[katAd]=(katOzetMap[katAd]||0)+1;});
+    var urunStr=Object.keys(katOzetMap).map(function(kat){return kat+' ('+katOzetMap[kat]+')';}).join(' • ');
+    var tarihDispC=c.tarih?c.tarih.split('-').reverse().join('.'):'—';
     var toplam=(c.satirlar||[]).reduce(function(a,s){return a+s.miktar;},0);
     html+='<tr style="cursor:pointer;background:var(--bg3)" onclick="toggleBitmisCikis(\''+c.id+'\')">'
       +'<td style="text-align:center;color:var(--amber);font-weight:700">'+(expanded?'▼':'▶')+'</td>'
       +'<td><span class="kn-badge">'+stokEsc(c.evrakNo||'—')+'</span></td>'
-      +'<td style="font-family:var(--font-mono);font-size:12px">'+stokEsc(c.tarih||'')+'</td>'
+      +'<td style="font-family:var(--font-mono);font-size:12px">'+tarihDispC+'</td>'
       +'<td style="font-size:12px">'+stokEsc(c.aciklama||'')+'</td>'
-      +'<td style="font-size:11px;color:var(--text3)">'+stokEsc(urunStr)+'</td>'
+      +'<td style="font-size:12px;color:var(--text2)">'+stokEsc(urunStr)+'</td>'
       +'<td style="text-align:right;font-family:var(--font-mono)">'+stokFmtN(toplam)+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilBitmisCikis(\''+c.id+'\')">⊗</button>':'')

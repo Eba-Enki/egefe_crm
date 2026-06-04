@@ -183,7 +183,7 @@ function applyPortal(){
   if(sbpn)sbpn.textContent=isServis?'Teknik Servis Portalı':isSatis?'Satış Pazarlama Portalı':'Stok Yönetim Portalı';
   document.querySelectorAll('.tf-servis-field').forEach(function(el){el.style.display=isServis?'':'none';});
   document.querySelectorAll('.tf-satis-field').forEach(function(el){el.style.display=isSatis?'':'none';});
-  var defaultPage=isStok?'stok-dashboard':isServis?'dashboard':'teklifler';
+  var defaultPage=isStok?'stok-dashboard':'dashboard';
   showPage(defaultPage);
 }
 

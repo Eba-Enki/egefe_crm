@@ -127,6 +127,19 @@ body{
 .content{padding:24px;padding-bottom:60px;flex:1}
 .td-sorumlu{display:none}
 
+/* ── BASE INPUT ── */
+input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=color]):not([type=date]),
+select,textarea{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:8px 11px;
+  font-family:var(--font-body);font-size:13px;color:var(--text);
+  outline:none;transition:border-color .15s,box-shadow .15s;
+}
+input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=color]):not([type=date]):focus,
+select:focus,textarea:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(61,155,196,.15);
+}
+
 /* ── BUTTONS ── */
 .btn{
   display:inline-flex;align-items:center;gap:7px;

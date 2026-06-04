@@ -429,21 +429,23 @@ function renderHamGirisler(){
   girisler=girisler.slice((_hamGirislerPage-1)*PAGE_SIZE,_hamGirislerPage*PAGE_SIZE);
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
   var html='<div class="table-wrap"><table class="compact-table"><thead><tr>'
-    +'<th style="width:28px"></th><th>Evrak No</th><th>Tarih</th><th style="width:50px;text-align:center">Kalem</th>'
-    +'<th>Parametreler Özeti</th><th>Notlar</th><th></th>'
+    +'<th style="width:28px"></th><th>Evrak No</th><th style="width:90px">Tarih</th><th style="width:50px;text-align:center">Kalem</th>'
+    +'<th>Özet</th><th style="width:180px">Notlar</th><th></th>'
     +'</tr></thead><tbody>';
   girisler.forEach(function(g){
     var expanded=_expandedHamGirisler.has(g.id);
-    var kalemStr=(g.kalemler||[]).map(function(k){return k.parametreAd+(k.cutoff?' ('+k.cutoff+')':'');}).join(' • ');
-    var katStr=[...new Set((g.kalemler||[]).map(function(k){return (stokKatById(k.kategoriId)||{}).ad||k.kategoriId;}))].join(', ');
+    var katOzetMap={};(g.kalemler||[]).forEach(function(k){var katAd=(stokKatById(k.kategoriId)||{}).ad||k.kategoriId||'—';katOzetMap[katAd]=(katOzetMap[katAd]||0)+1;});
+    var ozetStr=Object.keys(katOzetMap).map(function(kat){return kat+' ('+katOzetMap[kat]+')';}).join(' • ');
+    var tarihDisp=g.tarih?g.tarih.split('-').reverse().join('.'):'—';
+    var notlarFull=g.notlar||'';
     // Header satır
     html+='<tr style="cursor:pointer;background:var(--bg3)" onclick="toggleHamGiris(\''+g.id+'\')">'
       +'<td style="text-align:center;color:var(--accent);font-weight:700">'+(expanded?'▼':'▶')+'</td>'
       +'<td><span class="kn-badge">'+stokEsc(g.evrakNo)+'</span></td>'
-      +'<td style="font-family:var(--font-mono);font-size:12px">'+stokEsc(g.tarih)+'</td>'
+      +'<td style="font-family:var(--font-mono);font-size:12px">'+tarihDisp+'</td>'
       +'<td style="text-align:center;font-family:var(--font-mono);color:var(--text3)">'+((g.kalemler||[]).length)+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)">'+stokEsc(kalemStr)+'</td>'
-      +'<td style="font-size:11px;color:var(--text3)">'+stokEsc(g.notlar||'')+'</td>'
+      +'<td style="font-size:12px;color:var(--text2)">'+stokEsc(ozetStr)+'</td>'
+      +'<td style="font-size:11px;color:var(--text3);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+stokEsc(notlarFull)+'">'+stokEsc(notlarFull)+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" onclick="event.stopPropagation();goHamGirisEdit(\''+g.id+'\')">✏</button>':'')
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilHamGiris(\''+g.id+'\')">⊗</button>':'')

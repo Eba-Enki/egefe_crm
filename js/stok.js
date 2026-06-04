@@ -830,7 +830,7 @@ function saveHamCikis(){
   });
 
   saveAll();
-  toast(stokFmtN(kitMiktar)+' kit çıkışı yapıldı ('+evrakNo+').','success');
+  toast(stokFmtN(kitMiktar)+' Kit çıkışı yapıldı ('+evrakNo+').','success');
   showPage('ham-cikislar');
 }
 
@@ -863,7 +863,7 @@ function renderBitmisStok(){
 
   var wrap=document.getElementById('bitmis-stok-wrap'); if(!wrap) return;
   if(!lots.length){
-    wrap.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">'+(_bitmisStokTab==='arsiv'?'Tükenmiş ürün yok.':'Ticari ürün kaydı bulunamadı.')+'</div>';
+    wrap.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">'+(_bitmisStokTab==='arsiv'?'Tükenmiş ürün yok.':'Hazır ürün kaydı bulunamadı.')+'</div>';
     var bpg=document.getElementById('bitmis-stok-pagination');if(bpg)bpg.innerHTML=''; return;
   }
   var totalBS=lots.length;
@@ -912,7 +912,7 @@ function renderBitmisGirisler(){
     return true;
   }).sort(function(a,b){return (b.tarih||'').localeCompare(a.tarih||'');});
   var wrap=document.getElementById('bitmis-girisler-wrap'); if(!wrap) return;
-  if(!girisler.length){wrap.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)">Ticari ürün girişi bulunamadı.</div>';renderPagination('bitmis-girisler-pagination',1,0,'setBitmisGirislerPage');return;}
+  if(!girisler.length){wrap.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)">Hazır ürün girişi bulunamadı.</div>';renderPagination('bitmis-girisler-pagination',1,0,'setBitmisGirislerPage');return;}
   var totalBG=girisler.length;
   girisler=girisler.slice((_bitmisGirislerPage-1)*PAGE_SIZE,_bitmisGirislerPage*PAGE_SIZE);
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
@@ -994,7 +994,7 @@ function renderBitmisGirisForm(){
   var editId=(document.getElementById('bg-edit-id')||{}).value||'';
   _bgEditGirisId=editId||null;
   var titleEl=document.getElementById('bg-form-title');
-  if(titleEl) titleEl.textContent=_bgEditGirisId?'Ticari Giriş Düzenle':'Yeni Ticari Ürün Girişi';
+  if(titleEl) titleEl.textContent=_bgEditGirisId?'Hazır Ürün Girişi Düzenle':'Yeni Hazır Ürün Girişi';
 
   if(_bgEditGirisId){
     var g=(state.bitmisStokGirisler||[]).find(function(x){return x.id===_bgEditGirisId;});
@@ -1086,7 +1086,7 @@ function saveBitmisGiris(){
     toast('Giriş belgesi güncellendi.','success');
   } else {
     state.bitmisStokGirisler.push({id:girisId,evrakNo:evrakNo,tarih:tarih,notlar:notlar,kalemler:kalemlerSaved,olusturmaTarihi:new Date().toISOString(),olusturanKullanici:kullanici});
-    toast('Ticari ürün girişi kaydedildi.','success');
+    toast('Hazır ürün girişi kaydedildi.','success');
   }
   kalemlerSaved.forEach(function(k){
     state.bitmisStokLotlar.push({id:k.lotId,girisId:girisId,evrakNo:evrakNo,lotNo:k.lotNo,tarih:tarih,urunAdi:k.urunAdi,kategoriId:k.kategoriId,parametreler:k.parametreler,miktar:k.miktar,mevcutMiktar:k.miktar,sktTarih:k.sktTarih,olusturmaTarihi:new Date().toISOString(),olusturanKullanici:kullanici});
@@ -1113,7 +1113,7 @@ function renderBitmisCikislar(){
     return true;
   }).sort(function(a,b){return (b.tarih||'').localeCompare(a.tarih||'');});
   var wrap=document.getElementById('bitmis-cikislar-wrap'); if(!wrap) return;
-  if(!cikislar.length){wrap.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)">Ticari ürün çıkışı bulunamadı.</div>';renderPagination('bitmis-cikislar-pagination',1,0,'setBitmisCikislarPage');return;}
+  if(!cikislar.length){wrap.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)">Hazır ürün çıkışı bulunamadı.</div>';renderPagination('bitmis-cikislar-pagination',1,0,'setBitmisCikislarPage');return;}
   var totalBC=cikislar.length;
   cikislar=cikislar.slice((_bitmisCikislarPage-1)*PAGE_SIZE,_bitmisCikislarPage*PAGE_SIZE);
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
@@ -1254,7 +1254,7 @@ function saveBitmisCikis(){
   });
 
   saveAll();
-  toast('Ticari ürün çıkışı kaydedildi ('+evrakNo+').','success');
+  toast('Hazır ürün çıkışı kaydedildi ('+evrakNo+').','success');
   showPage('bitmis-cikislar');
 }
 
@@ -1375,19 +1375,19 @@ function stokNedenRender(){
 
 function stokNedenEkle(){
   var el=document.getElementById('neden-yeni'); if(!el) return;
-  var val=el.value.trim(); if(!val) return toast('Neden boş olamaz.','error');
+  var val=el.value.trim(); if(!val) return toast('Çıkış nedeni boş olamaz.','error');
   stokInit();
-  if(state.stokSettings.cikisNedenleri.includes(val)) return toast('Bu neden zaten var.','info');
+  if(state.stokSettings.cikisNedenleri.includes(val)) return toast('Bu çıkış nedeni zaten var.','info');
   state.stokSettings.cikisNedenleri.push(val);
   el.value='';
-  saveAll(); stokNedenRender(); toast('Neden eklendi.','success');
+  saveAll(); stokNedenRender(); toast('Çıkış nedeni eklendi.','success');
 }
 
 function stokNedenSil(i){
   if(!confirm('Bu nedeni silmek istiyor musunuz?')) return;
   stokInit();
   state.stokSettings.cikisNedenleri.splice(i,1);
-  saveAll(); stokNedenRender(); toast('Neden silindi.','info');
+  saveAll(); stokNedenRender(); toast('Çıkış nedeni silindi.','info');
 }
 
 function saveStokEsikler(){
@@ -1409,7 +1409,7 @@ function saveStokPrefixler(){
   var tp=((document.getElementById('set-ticari-cikis-prefix')||{}).value||'').trim().toUpperCase()||'TC';
   state.stokSettings.hamCikisPrefix=hp;
   state.stokSettings.ticariCikisPrefix=tp;
-  saveAll(); toast('Önekler kaydedildi.','success');
+  saveAll(); toast('Ön Ekler kaydedildi.','success');
   stokPrefixPrev();
 }
 
@@ -1596,7 +1596,7 @@ function stokExportHamStokExcel(){
     var ms=sps>0?Math.floor(l.mevcutStrip/sps):0;
     return [l.lotNo,l.parametreAd,l.cutoff||'',kat,l.tarih||'',l.sheetGiren||0,l.stripGiren||0,l.mevcutStrip||0,ms,stokFmtSkt(l.sktTarih),l.evrakNo||'',l.mevcutStrip===0?'Tükendi':'Mevcut'];
   });
-  _xlsxDownload(rows,headers,'Ham Stok','ham-stok-listesi');
+  _xlsxDownload(rows,headers,'Yarı Mamul Stok','yari-mamul-stok-listesi');
 }
 
 function stokExportHamGirislerExcel(){
@@ -1609,7 +1609,7 @@ function stokExportHamGirislerExcel(){
       rows.push([g.evrakNo,g.tarih||'',k.lotNo,k.parametreAd,k.cutoff||'',kat,k.sheetGiren||0,k.stripGiren||0,stokFmtSkt(k.sktTarih),g.notlar||'']);
     });
   });
-  _xlsxDownload(rows,headers,'Ham Girişler','ham-girisler');
+  _xlsxDownload(rows,headers,'Yarı Mamul Girişler','yari-mamul-girisler');
 }
 
 function stokExportHamCikislarExcel(){
@@ -1622,7 +1622,7 @@ function stokExportHamCikislarExcel(){
       rows.push([c.evrakNo||'',c.tarih||'',kat,c.aciklama||'',c.kitMiktari||0,s.parametreAd,s.cutoff||'',s.lotNo,s.stripCikis||0,c.notlar||'']);
     });
   });
-  _xlsxDownload(rows,headers,'Ham Çıkışlar','ham-cikislar');
+  _xlsxDownload(rows,headers,'Yarı Mamul Çıkışlar','yari-mamul-cikislar');
 }
 
 function stokExportBitmisStokExcel(){
@@ -1632,7 +1632,7 @@ function stokExportBitmisStokExcel(){
     var kat=(stokKatById(l.kategoriId)||{}).ad||l.kategoriId;
     return [l.lotNo,l.urunAdi||'',kat,(l.parametreler||[]).join(', '),l.tarih||'',l.miktar||0,l.mevcutMiktar||0,stokFmtSkt(l.sktTarih),l.evrakNo||'',l.mevcutMiktar===0?'Tükendi':'Mevcut'];
   });
-  _xlsxDownload(rows,headers,'Ticari Stok','ticari-stok-listesi');
+  _xlsxDownload(rows,headers,'Harzır Ürün Stok','hazir-urun-stok-listesi');
 }
 
 function stokExportBitmisGirislerExcel(){
@@ -1645,7 +1645,7 @@ function stokExportBitmisGirislerExcel(){
       rows.push([g.evrakNo,g.tarih||'',k.urunAdi||'',k.lotNo,kat,k.miktar||0,stokFmtSkt(k.sktTarih),(k.parametreler||[]).join(', '),g.notlar||'']);
     });
   });
-  _xlsxDownload(rows,headers,'Ticari Girişler','ticari-girisler');
+  _xlsxDownload(rows,headers,'Hazır Ürün Girişler','hazir-urun-girisler');
 }
 
 function stokExportBitmisCikislarExcel(){
@@ -1657,7 +1657,7 @@ function stokExportBitmisCikislarExcel(){
       rows.push([c.evrakNo||'',c.tarih||'',c.aciklama||'',s.urunAdi||'',s.lotNo||'',s.miktar||0,c.notlar||'']);
     });
   });
-  _xlsxDownload(rows,headers,'Ticari Çıkışlar','ticari-cikislar');
+  _xlsxDownload(rows,headers,'Hazır Ürün Çıkışlar','hazir-urun-cikislar');
 }
 
 function stokExportHareketExcel(){

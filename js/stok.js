@@ -12,11 +12,11 @@ var STOK_KAT_DEFAULT = [
 
 function stokInit(){
   if(!state.stokSettings){
-    state.stokSettings={kategoriler:JSON.parse(JSON.stringify(STOK_KAT_DEFAULT)),parametreler:[],minStokEsikleri:[],hamCikisPrefix:'HC',ticariCikisPrefix:'TC'};
+    state.stokSettings={kategoriler:JSON.parse(JSON.stringify(STOK_KAT_DEFAULT)),parametreler:[],globalEsik:1,hamCikisPrefix:'HC',ticariCikisPrefix:'TC'};
   }
   if(!state.stokSettings.kategoriler) state.stokSettings.kategoriler=JSON.parse(JSON.stringify(STOK_KAT_DEFAULT));
   if(!state.stokSettings.parametreler) state.stokSettings.parametreler=[];
-  if(!state.stokSettings.minStokEsikleri) state.stokSettings.minStokEsikleri=[];
+  if(state.stokSettings.globalEsik===undefined) state.stokSettings.globalEsik=1;
   if(!state.stokSettings.hamCikisPrefix) state.stokSettings.hamCikisPrefix='HC';
   if(!state.stokSettings.ticariCikisPrefix) state.stokSettings.ticariCikisPrefix='TC';
   if(!state.stokSettings.cikisNedenleri) state.stokSettings.cikisNedenleri=['Müşteri Siparişi','Demo / Numune','E-ticaret','İç Kullanım','İade','Diğer'];
@@ -79,7 +79,7 @@ function stokKritikler(){
       var toplamStrip=lots.reduce(function(a,l){return a+l.mevcutStrip;},0);
       var sps=stokSPS(kat.id);
       var sheetEq=sps>0?toplamStrip/sps:0;
-      var esik=((state.stokSettings.minStokEsikleri||[]).find(function(e){return e.parametreAd===ad&&e.kategoriId===kat.id;})||{}).minSheet||1;
+      var esik=state.stokSettings.globalEsik||1;
       if(sheetEq<=esik){
         sonuc.push({ad:ad,kat:kat,toplamStrip:toplamStrip,sps:sps,sheetEq:sheetEq,esik:esik});
       }
@@ -324,7 +324,7 @@ function renderHamStok(){
     kats.forEach(function(kat){
       var topStrip=(katMap[kat.id]||[]).reduce(function(a,l){return a+l.mevcutStrip;},0);
       var sps=stokSPS(kat.id);
-      var esik=((state.stokSettings.minStokEsikleri||[]).find(function(e){return e.parametreAd===paramAd&&e.kategoriId===kat.id;})||{}).minSheet||1;
+      var esik=state.stokSettings.globalEsik||1;
       var sheetEq=sps>0?topStrip/sps:0;
       if(sheetEq<=esik) enKotu='reddedildi';
       else if(sheetEq<=esik*3&&enKotu!=='reddedildi') enKotu='sf';
@@ -364,7 +364,7 @@ function renderHamStok(){
           var ms=stokMevcutSheet(lot);
           var skt=stokSktInfo(lot.sktTarih);
           var sps=stokSPS(lot.kategoriId);
-          var esik=((state.stokSettings.minStokEsikleri||[]).find(function(e){return e.parametreAd===paramAd&&e.kategoriId===kat.id;})||{}).minSheet||1;
+          var esik=state.stokSettings.globalEsik||1;
           var durum=lot.mevcutStrip===0
             ?'<span class="badge" style="background:var(--bg4);color:var(--text3)">Tükendi</span>'
             :skt.doldu?'<span class="badge badge-reddedildi">SKT Geçti</span>'
@@ -1542,31 +1542,15 @@ function stokParamSil(i){
 
 function stokRenderEsikler(){
   var el=document.getElementById('stok-esik-body'); if(!el) return;
-  var paramAdlar=[...new Set(stokParamList().filter(function(p){return p.aktif!==false;}).map(function(p){return p.ad;}))].sort();
-  var kats=stokKatList();
-
-  if(!paramAdlar.length){el.innerHTML='<div style="color:var(--text3);font-size:13px">Önce parametre tanımlayın.</div>';return;}
-
-  var html='<div style="overflow-x:auto"><table class="compact-table"><thead><tr><th>Parametre</th>'
-    +kats.map(function(k){return '<th style="text-align:center">'+stokEsc(k.ad)+'<div style="font-size:10px;color:var(--text3);font-weight:400">min sheet</div></th>';}).join('')
-    +'</tr></thead><tbody>';
-  paramAdlar.forEach(function(ad){
-    html+='<tr><td style="font-weight:500">'+stokEsc(ad)+'</td>';
-    kats.forEach(function(k){
-      var esik=((state.stokSettings.minStokEsikleri||[]).find(function(e){return e.parametreAd===ad&&e.kategoriId===k.id;})||{}).minSheet||1;
-      html+='<td style="text-align:center"><input type="number" min="0" value="'+esik+'" style="width:60px;text-align:center;padding:4px 6px;font-family:var(--font-mono);font-size:13px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)" onchange="stokEsikGuncelle(\''+stokEsc(ad)+'\',\''+k.id+'\',this.value)"></td>';
-    });
-    html+='</tr>';
-  });
-  el.innerHTML=html+'</tbody></table></div>';
+  var esik=state.stokSettings.globalEsik||1;
+  el.innerHTML='<div style="display:flex;align-items:center;gap:14px">'
+    +'<label style="font-size:13px;color:var(--text2)">Parametreler Eşiği <span style="font-size:11px;color:var(--text3)">(min sheet — tüm parametrelere uygulanır)</span></label>'
+    +'<input type="number" min="0" value="'+esik+'" style="width:80px;text-align:center;padding:6px 8px;font-family:var(--font-mono);font-size:14px;font-weight:600;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text)" onchange="stokEsikGuncelle(this.value)">'
+    +'</div>';
 }
 
-function stokEsikGuncelle(ad,katId,val){
-  if(!state.stokSettings.minStokEsikleri) state.stokSettings.minStokEsikleri=[];
-  var idx=state.stokSettings.minStokEsikleri.findIndex(function(e){return e.parametreAd===ad&&e.kategoriId===katId;});
-  var v=parseFloat(val)||0;
-  if(idx>=0) state.stokSettings.minStokEsikleri[idx].minSheet=v;
-  else state.stokSettings.minStokEsikleri.push({parametreAd:ad,kategoriId:katId,minSheet:v});
+function stokEsikGuncelle(val){
+  state.stokSettings.globalEsik=parseFloat(val)||0;
   saveAll();
 }
 

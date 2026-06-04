@@ -1544,7 +1544,7 @@ function stokRenderEsikler(){
   var el=document.getElementById('stok-esik-body'); if(!el) return;
   var esik=state.stokSettings.globalEsik||1;
   el.innerHTML='<div style="display:flex;align-items:center;gap:14px">'
-    +'<label style="font-size:13px;color:var(--text2)">Parametreler Eşiği <span style="font-size:11px;color:var(--text3)">(min sheet — tüm parametrelere uygulanır)</span></label>'
+    +'<label style="font-size:13px;color:var(--text2)">Parametreler için minimum stok eşiği <span style="font-size:11px;color:var(--text3)">(min sheet — tüm parametrelere uygulanır)</span></label>'
     +'<input type="number" min="0" value="'+esik+'" style="width:80px;text-align:center;padding:6px 8px;font-family:var(--font-mono);font-size:14px;font-weight:600;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text)" onchange="stokEsikGuncelle(this.value)">'
     +'</div>';
 }

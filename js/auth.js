@@ -115,6 +115,7 @@ function selectPortal(pkey){
         document.getElementById('portal-screen').style.display='none';
         applyUser(found);
         applyPortal();
+        _applyPageRestrictions(found);
         initApp();
         return;
       }
@@ -197,16 +198,19 @@ function applyUser(u){
   var isAdmin=u.rol==='yönetici'||u.rol==='admin';
   document.querySelectorAll('.admin-only').forEach(function(el){el.style.display=isAdmin?'':'none';});
   document.querySelectorAll('.can-write').forEach(function(el){el.style.display=u.rol==='izleyici'?'none':'';});
+}
 
-  // Sayfa izinleri — yönetici her şeyi görür
-  if(!isAdmin&&u.izinler&&currentPortal&&u.izinler[currentPortal]){
-    var allowedPages=u.izinler[currentPortal].sayfalar||[];
-    document.querySelectorAll('.sb-item[data-page]').forEach(function(el){
-      if(el.style.display!=='none'&&!allowedPages.includes(el.dataset.page)){
-        el.style.display='none';
-      }
-    });
-  }
+function _applyPageRestrictions(u){
+  if(!u) return;
+  var isAdmin=u.rol==='yönetici'||u.rol==='admin';
+  if(isAdmin) return;
+  if(!u.izinler||!currentPortal||!u.izinler[currentPortal]) return;
+  var allowedPages=u.izinler[currentPortal].sayfalar||[];
+  document.querySelectorAll('.sb-item[data-page]').forEach(function(el){
+    if(el.style.display!=='none'&&!allowedPages.includes(el.dataset.page)){
+      el.style.display='none';
+    }
+  });
 }
 
 function switchPortal(){
@@ -253,6 +257,7 @@ function doLogin(){
   } else {
     applyUser(user);
     applyPortal();
+    _applyPageRestrictions(user);
     initApp();
   }
 }

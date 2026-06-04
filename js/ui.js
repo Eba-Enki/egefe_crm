@@ -537,10 +537,11 @@ function toast(msg,type='info'){
 
 function applyLogoForTheme(t){
   var isDark=(t||localStorage.getItem('ege_theme')||'dark')==='dark';
-  var svgSrc='data:image/svg+xml;base64,'+LOGO_SVG_B64;
+  var src=isDark?'data:image/jpeg;base64,'+LOGO_PNG_B64:'data:image/jpeg;base64,'+LOGO_B64;
   document.querySelectorAll('#login-logo-img,#sb-logo-img,#portal-logo-img').forEach(function(el){
-    el.src=svgSrc;
-    el.style.filter=isDark?'brightness(0) invert(1)':'none';
+    el.src=src;
+    el.style.filter='none';
+    el.style.mixBlendMode=isDark?'screen':'normal';
   });
 }
 function setTheme(t){

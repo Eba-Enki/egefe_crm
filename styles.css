@@ -3,7 +3,7 @@
   --bg:#0d1219;--bg2:#141b25;--bg3:#1a2333;--bg4:#202d40;
   --border:#243045;--border2:#2e3d58;
   --text:#e2e8f4;--text2:#8fa3c0;--text3:#516180;
-  --accent:#3d9bc4;--accent2:#2d7fa8;--accent-soft:rgba(61,155,196,.13);
+  --accent:#3d9bc4;--accent2:#2d7fa8;--accent-soft:rgba(61,155,196,.13);--accent-glow:rgba(61,155,196,.25);
   --teal:#2dd4bf;--teal-soft:rgba(45,212,191,.12);
   --amber:#f59e0b;--amber-soft:rgba(245,158,11,.12);
   --red:#f87171;--red-soft:rgba(248,113,113,.12);
@@ -25,7 +25,7 @@
   --bg:#f0f4f8;--bg2:#ffffff;--bg3:#f5f7fa;--bg4:#edf1f7;
   --border:#d1d9e4;--border2:#b8c4d4;
   --text:#1a2a3a;--text2:#4a6080;--text3:#8a9ab0;
-  --accent:#2d7fa8;--accent2:#1f6690;--accent-soft:rgba(45,127,168,.1);
+  --accent:#2d7fa8;--accent2:#1f6690;--accent-soft:rgba(45,127,168,.1);--accent-glow:rgba(45,127,168,.25);
   --teal:#0f9d87;--teal-soft:rgba(15,157,135,.1);
   --amber:#d97706;--amber-soft:rgba(217,119,6,.1);
   --red:#dc4444;--red-soft:rgba(220,68,68,.1);
@@ -79,7 +79,7 @@ body{
 #sidebar-overlay.open{display:block}
 .sb-logo{border-bottom:1px solid var(--border)}
 .sb-nav{flex:1;padding:10px 0;overflow-y:auto}
-.sb-section{padding:4px 18px 3px;font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:5px}
+.sb-section{padding:4px 18px 3px;font-size:10px;font-weight:500;color:var(--sb-section-color,var(--text3));text-transform:uppercase;letter-spacing:.08em;margin-top:5px}
 .sb-item{
   display:flex;align-items:center;gap:10px;
   padding:6px 18px;cursor:pointer;
@@ -138,7 +138,7 @@ body{
 }
 .btn:active{transform:translateY(1px)}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(61,155,196,.25)}.btn-primary:hover{background:var(--accent2);box-shadow:0 4px 16px rgba(61,155,196,.35)}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px var(--accent-glow)}.btn-primary:hover{background:var(--accent2);box-shadow:0 4px 16px var(--accent-glow)}
 .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--bg3);color:var(--text)}
 .btn-danger{background:var(--red-soft);color:var(--red);border:1px solid rgba(248,113,113,.2)}.btn-danger:hover{background:rgba(248,113,113,.2)}
 .btn-amber{background:var(--amber-soft);color:var(--amber);border:1px solid rgba(245,158,11,.2)}.btn-amber:hover{background:rgba(245,158,11,.2)}
@@ -485,15 +485,15 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
   background:linear-gradient(160deg,rgba(61,155,196,.06) 0%,transparent 60%);
   opacity:0;transition:opacity .25s;pointer-events:none;
 }
-.portal-card:hover{border-color:var(--accent);transform:translateY(-6px);box-shadow:0 20px 48px rgba(61,155,196,.18),0 4px 16px rgba(0,0,0,.1)}
+.portal-card:hover{border-color:var(--card-accent,var(--accent));transform:translateY(-6px);box-shadow:0 20px 48px var(--card-glow,rgba(61,155,196,.18)),0 4px 16px rgba(0,0,0,.1)}
 .portal-card:hover::before{opacity:1}
 .portal-card:active{transform:translateY(-2px)}
 .portal-card:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
 .portal-card-icon{
   width:64px;height:64px;border-radius:18px;
-  background:linear-gradient(140deg,#3d9bc4 0%,#2d7fa8 100%);
+  background:linear-gradient(140deg,#3aa8c1 0%,#2d91ab 100%);
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 8px 24px rgba(45,127,168,.35);
+  box-shadow:0 8px 24px rgba(58,168,193,.35);
   margin-bottom:2px;flex-shrink:0;
   transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
 }
@@ -576,4 +576,35 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
 @media (max-width:480px){
   .stats-grid{grid-template-columns:1fr 1fr}
   .topbar-actions .btn-ghost:not(:last-child){display:none}
+}
+
+/* ── PORTAL THEMES ── */
+/* Teknik Servis — Teal #3AA8C1 */
+[data-portal="servis"]{
+  --accent:#3aa8c1;--accent2:#2d91ab;
+  --accent-soft:rgba(58,168,193,.13);--accent-glow:rgba(58,168,193,.25);
+  --sb-section-color:rgba(58,168,193,.65);
+  --shadow-md:0 4px 12px rgba(0,0,0,.4),0 2px 4px rgba(0,0,0,.3),0 0 0 1px rgba(58,168,193,.06);
+  --shadow-lg:0 16px 40px rgba(0,0,0,.5),0 6px 16px rgba(0,0,0,.35),0 0 0 1px rgba(58,168,193,.08);
+  --shadow-xl:0 32px 80px rgba(0,0,0,.55),0 12px 32px rgba(0,0,0,.4),0 0 0 1px rgba(58,168,193,.1);
+}
+[data-portal="servis"][data-theme="light"]{
+  --accent:#2d91ab;--accent2:#1d7d95;
+  --accent-soft:rgba(45,145,171,.1);--accent-glow:rgba(45,145,171,.25);
+  --sb-section-color:rgba(29,125,149,.7);
+}
+
+/* Satış Pazarlama — Navy: #024F98 (açık mod) / #1565d8 (koyu mod) */
+[data-portal="satis"]{
+  --accent:#1565d8;--accent2:#0d52bd;
+  --accent-soft:rgba(21,101,216,.13);--accent-glow:rgba(21,101,216,.25);
+  --sb-section-color:rgba(21,101,216,.65);
+  --shadow-md:0 4px 12px rgba(0,0,0,.4),0 2px 4px rgba(0,0,0,.3),0 0 0 1px rgba(21,101,216,.06);
+  --shadow-lg:0 16px 40px rgba(0,0,0,.5),0 6px 16px rgba(0,0,0,.35),0 0 0 1px rgba(21,101,216,.08);
+  --shadow-xl:0 32px 80px rgba(0,0,0,.55),0 12px 32px rgba(0,0,0,.4),0 0 0 1px rgba(21,101,216,.1);
+}
+[data-portal="satis"][data-theme="light"]{
+  --accent:#024f98;--accent2:#013b76;
+  --accent-soft:rgba(2,79,152,.1);--accent-glow:rgba(2,79,152,.25);
+  --sb-section-color:rgba(2,79,152,.7);
 }

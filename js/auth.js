@@ -1,5 +1,6 @@
 ﻿function selectPortal(pkey){
   currentPortal=pkey;
+  document.documentElement.setAttribute('data-portal',pkey);
   var defaultServisUsers=[
     {id:'u1',ad:'Admin',username:'admin',sifre:'admin',rol:'admin',email:'',sonGiris:null},
     {id:'u2',ad:'Teknisyen',username:'teknisyen',sifre:'1234',rol:'teknisyen',email:'',sonGiris:null},
@@ -60,6 +61,7 @@
 }
 
 function backToPortal(){
+  document.documentElement.removeAttribute('data-portal');
   document.getElementById('login-screen').style.display='none';
   document.getElementById('portal-screen').style.display='flex';
   document.getElementById('login-user').value='';
@@ -90,6 +92,7 @@ function applyPortal(){
 
 function switchPortal(){
   if(!confirm('Portala geri dönmek istiyor musunuz? Mevcut oturum kapatılacak.'))return;
+  document.documentElement.removeAttribute('data-portal');
   sessionStorage.removeItem('ege_ses_'+currentPortal);
   state.currentUser=null;
   currentPortal='';
@@ -116,7 +119,7 @@ function applyUser(u){
   document.querySelectorAll('.admin-only').forEach(el=>el.style.display=u.rol==='admin'?'':'none');
   document.querySelectorAll('.can-write').forEach(el=>el.style.display=u.rol==='izleyici'?'none':'');
 }
-function doLogout(){if(!confirm('Çıkış yapılsın mı?'))return;sessionStorage.removeItem('ege_ses_'+currentPortal);state.currentUser=null;document.getElementById('login-screen').style.display='none';document.getElementById('portal-screen').style.display='flex';}
+function doLogout(){if(!confirm('Çıkış yapılsın mı?'))return;document.documentElement.removeAttribute('data-portal');sessionStorage.removeItem('ege_ses_'+currentPortal);state.currentUser=null;document.getElementById('login-screen').style.display='none';document.getElementById('portal-screen').style.display='flex';}
 document.getElementById('login-pass').addEventListener('keydown',e=>e.key==='Enter'&&doLogin());
 document.getElementById('login-user').addEventListener('keydown',e=>e.key==='Enter'&&document.getElementById('login-pass').focus());
 

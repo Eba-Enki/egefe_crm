@@ -9,16 +9,14 @@ document.addEventListener('DOMContentLoaded', function(){
   applyLogoForTheme(t);
 });
 
-// Logo set on load based on theme (dark=PNG, light=JPG)
+// Logo set on load based on theme — SVG variants for all logo placements
 var _initTheme=localStorage.getItem('ege_theme')||'dark';
-var _initSrc=_initTheme==='dark'?'data:image/jpeg;base64,'+LOGO_PNG_B64:'data:image/jpeg;base64,'+LOGO_B64;
-var _initBlend=_initTheme==='dark'?'screen':'multiply';
-document.querySelectorAll('#login-logo-img,#sb-logo-img').forEach(function(el){
-  el.src=_initSrc;
-  el.style.mixBlendMode=_initBlend;
+var _initLogoSrc=_initTheme==='dark'?'brand_assets/logo_if_bg_color.svg':'brand_assets/logo_if_bg_white.svg';
+document.querySelectorAll('#login-logo-img,#sb-logo-img,#portal-logo-img').forEach(function(el){
+  el.src=_initLogoSrc;
+  el.style.mixBlendMode='normal';
+  el.style.filter='none';
 });
-var _pLogoEl=document.getElementById('portal-logo-img');
-if(_pLogoEl){_pLogoEl.src=_initTheme==='dark'?'brand_assets/logo_if_bg_color.svg':'brand_assets/logo_if_bg_white.svg';_pLogoEl.style.mixBlendMode='normal';}
 
 // ════ DATA ════
 const DB={

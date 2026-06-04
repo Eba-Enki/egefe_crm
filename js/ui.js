@@ -537,14 +537,12 @@ function toast(msg,type='info'){
 
 function applyLogoForTheme(t){
   var isDark=(t||localStorage.getItem('ege_theme')||'dark')==='dark';
-  var src=isDark?'data:image/jpeg;base64,'+LOGO_PNG_B64:'data:image/jpeg;base64,'+LOGO_B64;
-  document.querySelectorAll('#login-logo-img,#sb-logo-img').forEach(function(el){
+  var src=isDark?'brand_assets/logo_if_bg_color.svg':'brand_assets/logo_if_bg_white.svg';
+  document.querySelectorAll('#login-logo-img,#sb-logo-img,#portal-logo-img').forEach(function(el){
     el.src=src;
     el.style.filter='none';
-    el.style.mixBlendMode=isDark?'screen':'multiply';
+    el.style.mixBlendMode='normal';
   });
-  var pLogo=document.getElementById('portal-logo-img');
-  if(pLogo){pLogo.src=isDark?'brand_assets/logo_if_bg_color.svg':'brand_assets/logo_if_bg_white.svg';pLogo.style.mixBlendMode='normal';}
 }
 function setTheme(t){
   document.documentElement.setAttribute('data-theme',t);

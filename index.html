@@ -1092,36 +1092,55 @@
         <button class="btn btn-ghost btn-sm" onclick="stokAyarKilitle()">🔒 Kilitle</button>
       </div>
 
-      <div class="two-col" style="align-items:start;margin-bottom:16px">
+      <!-- Kategoriler -->
+      <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Kategoriler</div>
+      <div class="two-col" style="align-items:start;margin-bottom:20px">
         <div class="card">
-          <div class="card-header"><span class="card-title">Kategori Yapılandırması</span></div>
+          <div class="card-header">
+            <span class="card-title">Yarı Mamul (Ham) Kategorileri</span>
+            <span style="font-size:11px;color:var(--text3)">Sheet & Strip stok grubu</span>
+          </div>
           <div class="card-body" id="stok-kat-body"></div>
           <div class="sa-action" style="padding:0 16px 16px"><button class="btn btn-primary btn-sm" onclick="saveStokAyarlar()">Kaydet</button></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:16px">
-          <div class="card">
-            <div class="card-header"><span class="card-title">Evrak No Ön Ekleri</span></div>
-            <div class="card-body">
-              <div class="form-grid" style="gap:12px">
-                <div class="field"><label>Yarı Mamul Çıkış Ön Eki</label><input type="text" id="set-ham-cikis-prefix" placeholder="ör. HC" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"><div style="font-size:11px;color:var(--text3);margin-top:4px" id="set-ham-cikis-prev"></div></div>
-                <div class="field"><label>Hazır Ürün Çıkış Ön Eki</label><input type="text" id="set-ticari-cikis-prefix" placeholder="ör. TC" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"><div style="font-size:11px;color:var(--text3);margin-top:4px" id="set-ticari-cikis-prev"></div></div>
-              </div>
-              <div class="sa-action"><button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="saveStokPrefixler()">Kaydet</button></div>
-            </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Hazır Ürün Kategorileri</span>
+            <span style="font-size:11px;color:var(--text3)">Ticari stok grubu</span>
           </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">Çıkış Nedenleri</span><span style="font-size:11px;color:var(--text3)">Çıkış formlarında seçim listesi</span></div>
-            <div class="card-body">
-              <div class="sa-action" style="display:flex;gap:8px;margin-bottom:12px">
-                <input type="text" id="neden-yeni" placeholder="ör. Müşteri Siparişi" style="flex:1">
-                <button class="btn-brand" onclick="stokNedenEkle()">＋ Ekle</button>
-              </div>
-              <div id="stok-neden-listesi"></div>
+          <div class="card-body" id="stok-ticarikat-body"></div>
+          <div class="sa-action" style="padding:0 16px 16px"><button class="btn btn-primary btn-sm" onclick="saveTicariKatAyarlar()">Kaydet</button></div>
+        </div>
+      </div>
+
+      <!-- Evrak & Çıkış Nedenleri -->
+      <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Evrak & Çıkış</div>
+      <div class="two-col" style="align-items:start;margin-bottom:20px">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Evrak No Ön Ekleri</span></div>
+          <div class="card-body">
+            <div class="form-grid" style="gap:12px">
+              <div class="field"><label>Yarı Mamul Çıkış Ön Eki</label><input type="text" id="set-ham-cikis-prefix" placeholder="ör. HC" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"><div style="font-size:11px;color:var(--text3);margin-top:4px" id="set-ham-cikis-prev"></div></div>
+              <div class="field"><label>Hazır Ürün Çıkış Ön Eki</label><input type="text" id="set-ticari-cikis-prefix" placeholder="ör. TC" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"><div style="font-size:11px;color:var(--text3);margin-top:4px" id="set-ticari-cikis-prev"></div></div>
             </div>
+            <div class="sa-action"><button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="saveStokPrefixler()">Kaydet</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Çıkış Nedenleri</span><span style="font-size:11px;color:var(--text3)">Çıkış formlarında seçim listesi</span></div>
+          <div class="card-body">
+            <div class="sa-action" style="display:flex;gap:8px;margin-bottom:12px">
+              <input type="text" id="neden-yeni" placeholder="ör. Müşteri Siparişi" style="flex:1">
+              <button class="btn-brand" onclick="stokNedenEkle()">＋ Ekle</button>
+            </div>
+            <div id="stok-neden-listesi"></div>
           </div>
         </div>
       </div>
-      <div class="card">
+
+      <!-- Minimum Stok Eşiği -->
+      <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Stok Eşiği</div>
+      <div class="card" style="margin-bottom:20px">
         <div class="card-header"><span class="card-title">Minimum Stok Eşiği</span></div>
         <div class="card-body" id="stok-esik-body"></div>
         <div class="sa-action" style="padding:0 16px 16px"><button class="btn btn-primary btn-sm" onclick="saveStokEsikler()">Eşikleri Kaydet</button></div>

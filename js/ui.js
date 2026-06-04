@@ -541,7 +541,7 @@ function applyLogoForTheme(t){
   document.querySelectorAll('#login-logo-img,#sb-logo-img,#portal-logo-img').forEach(function(el){
     el.src=src;
     el.style.filter='none';
-    el.style.mixBlendMode=isDark?'screen':'normal';
+    el.style.mixBlendMode=isDark?'screen':'multiply';
   });
 }
 function setTheme(t){

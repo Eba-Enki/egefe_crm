@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function(){
 // Logo set on load based on theme (dark=PNG, light=JPG)
 var _initTheme=localStorage.getItem('ege_theme')||'dark';
 var _initSrc=_initTheme==='dark'?'data:image/jpeg;base64,'+LOGO_PNG_B64:'data:image/jpeg;base64,'+LOGO_B64;
-var _initBlend=_initTheme==='dark'?'screen':'normal';
+var _initBlend=_initTheme==='dark'?'screen':'multiply';
 document.querySelectorAll('#login-logo-img,#sb-logo-img,#portal-logo-img').forEach(function(el){
   el.src=_initSrc;
   el.style.mixBlendMode=_initBlend;

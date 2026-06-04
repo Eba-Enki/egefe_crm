@@ -1045,29 +1045,42 @@ function bgSktKeydown(i,e){
   if(e.key==='Enter'){e.preventDefault();bgAddKalem();}
 }
 
+function bgChipToggle(btn,i,ad){
+  if(!_bgKalemler[i]) return;
+  if(!_bgKalemler[i].parametreler) _bgKalemler[i].parametreler=[];
+  var params=_bgKalemler[i].parametreler;
+  var idx=params.indexOf(ad);
+  if(idx>=0){
+    params.splice(idx,1);
+    btn.style.background='transparent'; btn.style.color='var(--text2)'; btn.style.borderColor='var(--border)';
+  } else {
+    params.push(ad);
+    btn.style.background='var(--accent)'; btn.style.color='#fff'; btn.style.borderColor='var(--accent)';
+  }
+}
+
 function bgRenderKalemler(){
   var el=document.getElementById('bg-kalemler'); if(!el) return;
   var paramAdlar=[...new Set(stokParamList().filter(function(p){return p.aktif!==false;}).map(function(p){return p.kisaltma||p.ad;}))].sort();
   var rows=_bgKalemler.map(function(k,i){
     var katOpts=stokKatList().map(function(kat){return '<option value="'+kat.id+'"'+(k.kategoriId===kat.id?' selected':'')+'>'+kat.ad+'</option>';}).join('');
-    var paramCheckboxes=paramAdlar.map(function(ad){
-      return '<label style="display:flex;align-items:center;gap:5px;font-size:11px;white-space:nowrap"><input type="checkbox" onchange="bgKalemParamToggle('+i+',\''+stokEsc(ad)+'\',this.checked)" '+((k.parametreler||[]).includes(ad)?'checked':'')+'>'+stokEsc(ad)+'</label>';
-    }).join('');
     var sktDisp=k.sktTarih?(k.sktTarih.split('-')[1]+'.'+k.sktTarih.split('-')[0]):'';
+    var chips=paramAdlar.map(function(ad){
+      var sel=(k.parametreler||[]).includes(ad);
+      return '<button type="button" onclick="bgChipToggle(this,'+i+',\''+stokEsc(ad)+'\')" style="padding:3px 10px;border-radius:12px;font-size:11px;cursor:pointer;background:'+(sel?'var(--accent)':'transparent')+';color:'+(sel?'#fff':'var(--text2)')+';border:1px solid '+(sel?'var(--accent)':'var(--border)')+'">'+stokEsc(ad)+'</button>';
+    }).join('');
     return '<div style="padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:10px">'
-      +'<div style="display:grid;grid-template-columns:130px 1fr 80px 120px auto;gap:8px;align-items:end;margin-bottom:8px">'
+      +'<div style="display:grid;grid-template-columns:120px minmax(120px,1fr) 72px 110px 84px auto;gap:8px;align-items:end;margin-bottom:8px">'
         +'<div class="field" style="margin:0"><label style="font-size:10px">Kategori *</label><select id="bg-kat-'+i+'" onchange="_bgKalemler['+i+'].kategoriId=this.value"><option value="">Seçin...</option>'+katOpts+'</select></div>'
         +'<div class="field" style="margin:0"><label style="font-size:10px">Ürün Adı *</label><input type="text" value="'+stokEsc(k.urunAdi||'')+'" placeholder="ör. 4\'lü İdrar Test Kiti" onchange="_bgKalemler['+i+'].urunAdi=this.value.trim()"></div>'
         +'<div class="field" style="margin:0"><label style="font-size:10px">Miktar *</label><input type="number" min="1" value="'+(k.miktar||'')+'" onchange="_bgKalemler['+i+'].miktar=parseInt(this.value)||0"></div>'
         +'<div class="field" style="margin:0"><label style="font-size:10px">LOT No *</label><input type="text" value="'+stokEsc(k.lotNo||'')+'" placeholder="ör. KLOT-001" onchange="_bgKalemler['+i+'].lotNo=this.value.trim()"></div>'
+        +'<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY)</label><input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" onchange="bgSktChange('+i+',this.value)" onkeydown="bgSktKeydown('+i+',event)"></div>'
         +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="bgRemoveKalem('+i+')">⊗</button>'
       +'</div>'
-      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
-        +'<span style="font-size:10px;color:var(--text3);font-weight:500">SKT:</span>'
-        +'<input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" style="font-size:11px;padding:2px 6px;width:76px;background:var(--bg4);border:1px solid var(--border);border-radius:4px;color:var(--text)" onchange="bgSktChange('+i+',this.value)" onkeydown="bgSktKeydown('+i+',event)">'
-        +'<span style="font-size:10px;color:var(--text3);font-weight:500;margin-left:8px">Parametreler:</span>'
-        +paramCheckboxes
-      +'</div>'
+      +(paramAdlar.length
+        ?'<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span style="font-size:10px;color:var(--text3);font-weight:500;margin-right:2px;flex-shrink:0">Parametreler:</span>'+chips+'</div>'
+        :'')
       +'</div>';
   }).join('');
   el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bgAddKalem()">＋ Kalem Ekle</button></div>';
@@ -1440,25 +1453,65 @@ function saveStokPrefixler(){
 
 function stokRenderKatAyar(){
   var el=document.getElementById('stok-kat-body'); if(!el) return;
-  el.innerHTML=stokKatList().map(function(k,i){
-    return '<div style="margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)">'
-      +'<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">'+stokEsc(k.ad)+'</div>'
-      +'<div class="form-grid" style="gap:10px">'
-        +'<div class="field" style="margin:0"><label style="font-size:11px">Sheet Boyu (mm)</label><input type="number" id="kat-sb-'+i+'" value="'+k.sheetBoyu+'" min="1"></div>'
-        +'<div class="field" style="margin:0"><label style="font-size:11px">Kesim Böleni (mm)</label><input type="number" id="kat-kb-'+i+'" value="'+k.kesimBoleni+'" min="1"></div>'
-        +'<div class="field" style="margin:0"><label style="font-size:11px">Fire (%)</label><input type="number" id="kat-fp-'+i+'" value="'+k.firePct+'" min="0" max="50"></div>'
-        +'<div class="field" style="margin:0"><label style="font-size:11px;color:var(--teal)">= Strip/Sheet</label><div style="padding:8px;background:var(--bg3);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;color:var(--teal)">'+stokSPS(k.id)+'</div></div>'
-      +'</div>'
-      +'</div>';
+  var kats=stokKatList();
+  var rows=kats.map(function(k,i){
+    return '<tr>'
+      +'<td><input type="text" id="kat-ad-'+i+'" value="'+stokEsc(k.ad)+'" style="width:100%;min-width:90px"></td>'
+      +'<td style="text-align:center"><input type="number" id="kat-sb-'+i+'" value="'+k.sheetBoyu+'" min="1" style="width:68px;text-align:center"></td>'
+      +'<td style="text-align:center"><input type="number" id="kat-kb-'+i+'" value="'+k.kesimBoleni+'" min="1" style="width:68px;text-align:center"></td>'
+      +'<td style="text-align:center"><input type="number" id="kat-fp-'+i+'" value="'+k.firePct+'" min="0" max="50" style="width:54px;text-align:center"></td>'
+      +'<td style="text-align:center;font-family:var(--font-mono);font-size:13px;color:var(--teal);font-weight:600">'+stokSPS(k.id)+'</td>'
+      +'<td><button class="btn-icon sa-action" style="color:var(--red)" onclick="stokKatSil('+i+')" title="Sil">⊗</button></td>'
+      +'</tr>';
   }).join('');
+  var newRow='<tr class="sa-action">'
+    +'<td><input type="text" id="kat-yeni-ad" placeholder="Kategori adı" style="width:100%"></td>'
+    +'<td><input type="number" id="kat-yeni-sb" placeholder="300" min="1" style="width:68px;text-align:center"></td>'
+    +'<td><input type="number" id="kat-yeni-kb" placeholder="3" min="1" style="width:68px;text-align:center"></td>'
+    +'<td><input type="number" id="kat-yeni-fp" placeholder="0" min="0" max="50" style="width:54px;text-align:center"></td>'
+    +'<td style="text-align:center;font-size:11px;color:var(--text3)">—</td>'
+    +'<td><button class="btn-icon sa-action" style="color:var(--teal)" onclick="stokKatEkle()" title="Ekle">＋</button></td>'
+    +'</tr>';
+  el.innerHTML='<div class="table-wrap"><table class="compact-table">'
+    +'<thead><tr>'
+    +'<th>Kategori Adı</th>'
+    +'<th style="text-align:center">Sheet Boyu<br><span style="font-size:10px;font-weight:400">(mm)</span></th>'
+    +'<th style="text-align:center">Kesim Böleni<br><span style="font-size:10px;font-weight:400">(mm)</span></th>'
+    +'<th style="text-align:center">Fire<br><span style="font-size:10px;font-weight:400">(%)</span></th>'
+    +'<th style="text-align:center;color:var(--teal)">Strip/<br>Sheet</th>'
+    +'<th></th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows+newRow+'</tbody>'
+    +'</table></div>';
+}
+
+function stokKatEkle(){
+  stokInit();
+  var ad=((document.getElementById('kat-yeni-ad')||{}).value||'').trim();
+  var sb=parseInt((document.getElementById('kat-yeni-sb')||{}).value)||300;
+  var kb=parseInt((document.getElementById('kat-yeni-kb')||{}).value)||3;
+  var fp=parseFloat((document.getElementById('kat-yeni-fp')||{}).value)||0;
+  if(!ad) return toast('Kategori adı zorunludur.','error');
+  state.stokSettings.kategoriler.push({id:'kat'+Date.now(),ad:ad,sheetBoyu:sb,kesimBoleni:kb,firePct:fp});
+  saveAll(); toast('Kategori eklendi.','success'); stokRenderKatAyar();
+}
+
+function stokKatSil(i){
+  var kat=stokKatList()[i];
+  if(!kat) return;
+  if(!confirm('"'+kat.ad+'" kategorisini silmek istiyor musunuz?')) return;
+  stokInit();
+  state.stokSettings.kategoriler.splice(i,1);
+  saveAll(); toast('Kategori silindi.','info'); stokRenderKatAyar();
 }
 
 function saveStokAyarlar(){
   stokKatList().forEach(function(k,i){
+    var ad=((document.getElementById('kat-ad-'+i)||{}).value||'').trim()||k.ad;
     var sb=parseInt((document.getElementById('kat-sb-'+i)||{}).value)||k.sheetBoyu;
     var kb=parseInt((document.getElementById('kat-kb-'+i)||{}).value)||k.kesimBoleni;
     var fp=parseFloat((document.getElementById('kat-fp-'+i)||{}).value)||0;
-    k.sheetBoyu=sb; k.kesimBoleni=kb; k.firePct=fp;
+    k.ad=ad; k.sheetBoyu=sb; k.kesimBoleni=kb; k.firePct=fp;
   });
   saveAll();
   toast('Kategori ayarları kaydedildi.','success');

@@ -316,7 +316,7 @@ function renderHamStok(){
     var ozetParts=kats.map(function(kat){
       var topStrip=(katMap[kat.id]||[]).reduce(function(a,l){return a+l.mevcutStrip;},0);
       var sps=stokSPS(kat.id);
-      return stokEsc(kat.ad)+': <b>'+stokFmtN(Math.floor(topStrip/sps))+'</b> sh / <b>'+stokFmtN(topStrip)+'</b> str';
+      return stokEsc(kat.ad)+': <b>'+stokFmtN(Math.floor(topStrip/sps))+'</b> Sheet / <b>'+stokFmtN(topStrip)+'</b> Strip';
     });
 
     // Genel durum = en kötü kategori durumu

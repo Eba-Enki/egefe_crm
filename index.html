@@ -106,8 +106,6 @@
     <div class="sb-item stok-only" data-page="bitmis-stok" style="display:none" onclick="showPage('bitmis-stok')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></span><span>Hazır Ürün Stok Listesi</span></div>
     <div class="sb-item stok-only" data-page="bitmis-girisler" style="display:none" onclick="showPage('bitmis-girisler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Hazır Ürün Stok Girişler</span></div>
     <div class="sb-item stok-only" data-page="bitmis-cikislar" style="display:none" onclick="showPage('bitmis-cikislar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Hazır Ürün Stok Çıkışlar</span></div>
-    <div class="sb-section stok-only" style="display:none">Raporlar</div>
-    <div class="sb-item stok-only" data-page="stok-hareket" style="display:none" onclick="showPage('stok-hareket')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span>Hareket Geçmişi</span></div>
     <div class="sb-section stok-only admin-only" style="display:none">Yönetim</div>
     <div class="sb-item stok-only admin-only" data-page="kullanici" style="display:none" onclick="showPage('kullanici')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span><span>Kullanıcılar</span></div>
     <div class="sb-item stok-only admin-only" data-page="stok-ayarlar" style="display:none" onclick="showPage('stok-ayarlar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Ayarlar</span></div>
@@ -164,7 +162,6 @@
       <button class="btn btn-primary btn-sm can-write crm-only" id="topbar-new-servis-btn" style="display:none" onclick="goServisForm()">＋ Yeni Servis Girişi</button>
       <!-- Stok portali -->
       <button class="btn btn-ghost btn-sm stok-only" id="topbar-stok-excel" style="display:none;color:var(--green)" onclick="stokSayfaExcel()">⬇ Excel</button>
-      <button class="btn btn-ghost btn-sm stok-only" id="topbar-stok-pdf" style="display:none" onclick="stokPrintHareket()">⬇ PDF</button>
       <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-ham-giris" style="display:none" onclick="goHamGirisYeni()">＋ Yeni Yarı Mamul Giriş</button>
       <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-ham-cikis" style="display:none" onclick="goHamCikisYeni()">＋ Yarı Mamul Çıkışı</button>
       <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-bitmis-giris" style="display:none" onclick="goBitmisGirisYeni()">＋ Yeni Hazır Ürün Giriş</button>
@@ -1067,25 +1064,6 @@
           <button class="btn btn-ghost" onclick="showPage('bitmis-cikislar')">İptal</button>
         </div>
       </div></div>
-    </div>
-
-    <!-- ═══ HAREKET GEÇMİŞİ ═══ -->
-    <div id="page-stok-hareket" class="page stok-only" style="display:none">
-      <div class="filter-bar" style="margin-bottom:14px">
-        <input type="date" id="sh-tarih-s" oninput="renderStokHareket()" title="Başlangıç">
-        <input type="date" id="sh-tarih-e" oninput="renderStokHareket()" title="Bitiş">
-        <select id="sh-tip" onchange="renderStokHareket()" style="min-width:150px">
-          <option value="">Tüm Hareketler</option>
-          <option value="ham-giris">Yarı Mamul Giriş</option>
-          <option value="ham-cikis">Yarı Mamul Çıkış</option>
-          <option value="bitmis-giris">Hazır Ürün Giriş</option>
-          <option value="bitmis-cikis">Hazır Ürün Çıkış</option>
-        </select>
-        <select id="sh-kat" onchange="renderStokHareket()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
-        <input type="text" id="sh-lot" placeholder="LOT No..." oninput="renderStokHareket()" style="width:140px">
-      </div>
-      <div id="stok-hareket-wrap"></div>
-      <div id="stok-hareket-pagination" style="margin-top:12px"></div>
     </div>
 
     <!-- ═══ STOK PARAMETRELER ═══ -->

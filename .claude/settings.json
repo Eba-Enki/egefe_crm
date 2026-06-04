@@ -18,7 +18,14 @@
       "PowerShell(Get-ChildItem \"C:\\\\\", \"$env:LOCALAPPDATA\", \"$env:APPDATA\" -Recurse -Filter \"node.exe\" -ErrorAction SilentlyContinue 2>&1 | Select-Object -First 5 FullName)",
       "Bash(python -c ' *)",
       "Bash(del favicon_uri.txt)",
-      "Read(//d/Eba Asus Yedek 09.02.2025/�irketler Web Siteleri/egefe/**)"
+      "Read(//d/Eba Asus Yedek 09.02.2025/�irketler Web Siteleri/egefe/**)",
+      "Bash(node \"d:\\\\Eba Asus Yedek 09.02.2025\\\\Şirketler Web Siteleri\\\\egefe\\\\screenshot.mjs\" http://localhost:3000 portal-karti)",
+      "Read(//c/Users/ebaul/AppData/Roaming/**)",
+      "Read(//c/Users/ebaul/AppData/Local/**)",
+      "PowerShell($env:PATH -split \";\" | ForEach-Object { $_ } | Select-Object -First 30)",
+      "Read(//c/Users/ebaul/**)",
+      "Read(//d/Eba Eba Asus Yedek 09.02.2025/Şirketler Web Siteleri/egefe/js/**)",
+      "PowerShell(\\(Get-Content \"d:\\\\Eba Asus Yedek 09.02.2025\\\\Şirketler Web Siteleri\\\\egefe\\\\index.html\" | Measure-Object -Line\\).Lines)"
     ],
     "additionalDirectories": [
       "d:\\Eba Asus Yedek 09.02.2025\\�irketler Web Siteleri\\egefe"

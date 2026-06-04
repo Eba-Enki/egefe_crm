@@ -113,8 +113,8 @@ function selectPortal(pkey){
       if(found&&_userCanAccessPortal(found,pkey)){
         state.currentUser=found;
         document.getElementById('portal-screen').style.display='none';
-        applyPortal();
         applyUser(found);
+        applyPortal();
         initApp();
         return;
       }
@@ -251,8 +251,8 @@ function doLogin(){
   if(currentPortal==='sistem'){
     showSistemScreen(user);
   } else {
-    applyPortal();
     applyUser(user);
+    applyPortal();
     initApp();
   }
 }

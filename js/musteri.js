@@ -98,24 +98,6 @@ function getAksesuarStr(s){
 }
 
 
-// ════ KULLANICI ════
-function renderUserTable(){
-  var lbl=document.getElementById('kul-portal-label');
-  if(lbl)lbl.textContent=(currentPortal==='servis'?'Teknik Servis Portalı':'Satış Pazarlama Portalı')+' kullanıcıları';
-  document.getElementById('user-table-body').innerHTML=state.users.map(u=>`<tr><td style="font-weight:500">${u.ad}</td><td class="td-mono">${u.username}</td><td><span class="badge badge-${u.rol}">${{admin:'Admin',teknisyen:'Teknisyen',izleyici:'İzleyici'}[u.rol]||u.rol}</span></td><td style="color:var(--text2)">${u.email||'—'}</td><td class="td-mono" style="color:var(--text3)">${u.sonGiris?new Date(u.sonGiris).toLocaleDateString('tr-TR'):'—'}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goKullaniciForm('${u.id}')">✎</button>${u.id!==state.currentUser?.id?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('kullanici','${u.id}')">⊗</button>`:''}</div></td></tr>`).join('');
-}
-function saveUser(){
-  const ad=document.getElementById('kf-ad').value.trim(),username=document.getElementById('kf-username').value.trim(),sifre=document.getElementById('kf-sifre').value,email=document.getElementById('kf-email').value.trim(),rol=document.getElementById('kf-rol').value;
-  const editId=document.getElementById('kf-edit-id').value;
-  if(!ad||!username)return toast('Ad ve kullanıcı adı zorunlu.','error');
-  if(!editId&&!sifre)return toast('Şifre zorunlu.','error');
-  if(sifre&&sifre.length<4)return toast('Şifre en az 4 karakter.','error');
-  if(state.users.find(u=>u.username===username&&u.id!==editId))return toast('Bu kullanıcı adı mevcut.','error');
-  if(editId){const idx=state.users.findIndex(x=>x.id===editId);if(idx>=0)state.users[idx]={...state.users[idx],ad,username,email,rol,...(sifre?{sifre}:{})};toast('Güncellendi.','success');}
-  else{state.users.push({id:'u'+Date.now(),ad,username,sifre,email,rol,sonGiris:null});toast('Kullanıcı oluşturuldu.','success');}
-  saveAll();showPage('kullanici');
-}
-
 // ════ ÜRÜN KATEGORİLERİ ════
 function renderUrunKategorileri(){
   const el=document.getElementById('urun-kategori-list');if(!el)return;
@@ -219,9 +201,8 @@ function confirmDelete(type,id){
     else if(type==='urun')state.urunler=state.urunler.filter(x=>x.id!==id);
     else if(type==='siparis'){state.siparisler=(state.siparisler||[]).filter(function(x){return x.id!==id;});}
     else if(type==='fatura'){state.faturalar=(state.faturalar||[]).filter(function(x){return x.id!==id;});}
-    else if(type==='kullanici')state.users=state.users.filter(x=>x.id!==id);
     saveAll();closeModal('modal-confirm');
-    const refreshMap={servis:()=>{renderTable();renderDashboard()},teklif:renderTeklifler,siparis:renderSiparisler,fatura:renderFaturalar,musteri:renderMusteriler,urun:renderUrunler,kullanici:renderUserTable};
+    const refreshMap={servis:()=>{renderTable();renderDashboard()},teklif:renderTeklifler,siparis:renderSiparisler,fatura:renderFaturalar,musteri:renderMusteriler,urun:renderUrunler};
     if(refreshMap[type])refreshMap[type]();
     toast('Silindi.','info');
   };

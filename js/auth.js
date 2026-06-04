@@ -1,22 +1,90 @@
-﻿function selectPortal(pkey){
+// ─── GLOBAL KULLANICI YAPISI ──────────────────────────────────────────────────
+
+var PORTAL_SAYFALAR = {
+  servis: [
+    {id:'dashboard',      label:'Dashboard'},
+    {id:'servisler',      label:'Servisler'},
+    {id:'teklifler',      label:'Teklifler'},
+    {id:'tutanaklar',     label:'Tutanaklar'},
+    {id:'musteriler',     label:'Müşteriler'},
+    {id:'urunler',        label:'Ürünler'},
+    {id:'ayarlar',        label:'Ayarlar'}
+  ],
+  satis: [
+    {id:'dashboard',      label:'Dashboard'},
+    {id:'teklifler',      label:'Teklifler'},
+    {id:'siparisler',     label:'Siparişler'},
+    {id:'faturalar',      label:'Faturalar'},
+    {id:'musteriler',     label:'Müşteriler'},
+    {id:'urunler',        label:'Ürünler'},
+    {id:'ayarlar',        label:'Ayarlar'}
+  ],
+  stok: [
+    {id:'stok-dashboard', label:'Dashboard'},
+    {id:'ham-stok',       label:'Sheet & Strip Stok Listesi'},
+    {id:'ham-girisler',   label:'Sheet & Strip Girişler'},
+    {id:'ham-cikislar',   label:'Sheet & Strip Çıkışlar'},
+    {id:'stok-parametreler', label:'Parametre Listesi'},
+    {id:'bitmis-stok',    label:'Hazır Ürün Stok Listesi'},
+    {id:'bitmis-girisler',label:'Hazır Ürün Girişler'},
+    {id:'bitmis-cikislar',label:'Hazır Ürün Çıkışlar'},
+    {id:'stok-ayarlar',   label:'Ayarlar'}
+  ]
+};
+
+function _allSayfalar(portal){
+  return (PORTAL_SAYFALAR[portal]||[]).map(function(p){return p.id;});
+}
+
+var DEFAULT_GLOBAL_USERS = [
+  {
+    id:'gu1', ad:'Admin', username:'admin', sifre:'admin', rol:'yönetici', email:'', sonGiris:null,
+    izinler:{
+      servis:{erisim:true, sayfalar:_allSayfalar('servis')},
+      satis: {erisim:true, sayfalar:_allSayfalar('satis')},
+      stok:  {erisim:true, sayfalar:_allSayfalar('stok')}
+    }
+  }
+];
+
+function loadGlobalUsers(){
+  return DB.load('ege_global_users', DEFAULT_GLOBAL_USERS);
+}
+function saveGlobalUsers(){
+  DB.save('ege_global_users', state.users);
+}
+
+function _userCanAccessPortal(user, portal){
+  if(user.rol==='yönetici'||user.rol==='admin') return true;
+  return !!(user.izinler&&user.izinler[portal]&&user.izinler[portal].erisim);
+}
+
+function _normalizeUser(u){
+  // Ensure izinler structure exists for legacy users
+  if(!u.izinler) u.izinler={
+    servis:{erisim:true, sayfalar:_allSayfalar('servis')},
+    satis: {erisim:true, sayfalar:_allSayfalar('satis')},
+    stok:  {erisim:true, sayfalar:_allSayfalar('stok')}
+  };
+  ['servis','satis','stok'].forEach(function(p){
+    if(!u.izinler[p]) u.izinler[p]={erisim:false,sayfalar:[]};
+    if(!u.izinler[p].sayfalar) u.izinler[p].sayfalar=[];
+  });
+  // Normalize old roles
+  if(u.rol==='admin') u.rol='yönetici';
+  if(u.rol==='teknisyen') u.rol='kullanıcı';
+  return u;
+}
+
+// ─── PORTAL SEÇİM ────────────────────────────────────────────────────────────
+
+function selectPortal(pkey){
   currentPortal=pkey;
   document.documentElement.setAttribute('data-portal',pkey);
-  var defaultServisUsers=[
-    {id:'u1',ad:'Admin',username:'admin',sifre:'admin',rol:'admin',email:'',sonGiris:null},
-    {id:'u2',ad:'Teknisyen',username:'teknisyen',sifre:'1234',rol:'teknisyen',email:'',sonGiris:null},
-    {id:'u3',ad:'İzleyici',username:'izleyici',sifre:'1234',rol:'izleyici',email:'',sonGiris:null}
-  ];
-  var defaultSatisUsers=[
-    {id:'s1',ad:'Satış Admin',username:'satis',sifre:'satis',rol:'admin',email:'',sonGiris:null},
-    {id:'s2',ad:'Satış Uzmanı',username:'uzman',sifre:'1234',rol:'teknisyen',email:'',sonGiris:null}
-  ];
-  var defaultStokUsers=[
-    {id:'st1',ad:'Stok Admin',username:'stok',sifre:'stok',rol:'admin',email:'',sonGiris:null},
-    {id:'st2',ad:'Depo Sorumlusu',username:'depo',sifre:'1234',rol:'teknisyen',email:'',sonGiris:null}
-  ];
+  state.users=loadGlobalUsers().map(_normalizeUser);
+
   if(pkey==='stok'){
-    state.users=DB.pload('users',defaultStokUsers);
-    state.settings={};  // footer varsayılan değerleri kullansın
+    state.settings={};
     state.hamStokGirisler=DB.pload('hamStokGirisler',[]);
     state.hamStokLotlar=DB.pload('hamStokLotlar',[]);
     state.hamStokCikislar=DB.pload('hamStokCikislar',[]);
@@ -26,7 +94,6 @@
     state.stokSettings=DB.pload('stokSettings',null);
     savedTutanaklar=[];
   } else {
-    state.users=DB.pload('users', pkey==='servis'?defaultServisUsers:defaultSatisUsers);
     state.servisler=pkey==='servis'?DB.pload('servisler',genSample()):[];
     state.teklifler=DB.pload('teklifler',[]);
     state.musteriler=DB.pload('musteriler',[]);
@@ -37,28 +104,55 @@
     if(!state.settings.parametreler)state.settings.parametreler=[];
     savedTutanaklar=[];
   }
-  // Check existing session
+
   var saved=sessionStorage.getItem('ege_ses_'+pkey);
   if(saved){
     try{
       var sd=JSON.parse(saved);
       var found=state.users.find(function(x){return x.id===sd.id&&x.username===sd.username;});
-      if(found){
+      if(found&&_userCanAccessPortal(found,pkey)){
         state.currentUser=found;
         document.getElementById('portal-screen').style.display='none';
-        applyUser(found);
         applyPortal();
+        applyUser(found);
         initApp();
         return;
       }
     }catch(e){}
   }
-  // Show login
+
   document.getElementById('portal-screen').style.display='none';
   var nameEl=document.getElementById('login-portal-name');
   if(nameEl)nameEl.textContent=pkey==='servis'?'Teknik Servis Portalı':pkey==='satis'?'Satış Pazarlama Portalı':'Stok Yönetim Portalı';
   document.getElementById('login-screen').style.display='flex';
 }
+
+function selectSistemYonetimi(){
+  currentPortal='sistem';
+  document.documentElement.setAttribute('data-portal','sistem');
+  state.users=loadGlobalUsers().map(_normalizeUser);
+
+  var saved=sessionStorage.getItem('ege_ses_sistem');
+  if(saved){
+    try{
+      var sd=JSON.parse(saved);
+      var found=state.users.find(function(x){return x.id===sd.id&&x.username===sd.username;});
+      if(found&&(found.rol==='yönetici'||found.rol==='admin')){
+        state.currentUser=found;
+        document.getElementById('portal-screen').style.display='none';
+        showSistemScreen(found);
+        return;
+      }
+    }catch(e){}
+  }
+
+  document.getElementById('portal-screen').style.display='none';
+  var nameEl=document.getElementById('login-portal-name');
+  if(nameEl)nameEl.textContent='Sistem Yönetimi';
+  document.getElementById('login-screen').style.display='flex';
+}
+
+// ─── LOGIN / LOGOUT ──────────────────────────────────────────────────────────
 
 function backToPortal(){
   document.documentElement.removeAttribute('data-portal');
@@ -66,7 +160,9 @@ function backToPortal(){
   document.getElementById('portal-screen').style.display='flex';
   document.getElementById('login-user').value='';
   document.getElementById('login-pass').value='';
-  document.getElementById('login-error').style.display='none';
+  var errEl=document.getElementById('login-error');
+  if(errEl){errEl.style.display='none';errEl.textContent='Kullanıcı adı veya şifre hatalı.';}
+  currentPortal='';
 }
 
 function applyPortal(){
@@ -90,6 +186,29 @@ function applyPortal(){
   showPage(defaultPage);
 }
 
+function applyUser(u){
+  var avatarEl=document.getElementById('sb-avatar');
+  var unameEl=document.getElementById('sb-username');
+  var roleEl=document.getElementById('sb-role-text');
+  if(avatarEl)avatarEl.textContent=u.ad[0].toUpperCase();
+  if(unameEl)unameEl.textContent=u.ad;
+  var rolLabel={yönetici:'Yönetici','kullanıcı':'Kullanıcı',izleyici:'İzleyici',admin:'Yönetici',teknisyen:'Kullanıcı'}[u.rol]||u.rol;
+  if(roleEl)roleEl.textContent=rolLabel;
+  var isAdmin=u.rol==='yönetici'||u.rol==='admin';
+  document.querySelectorAll('.admin-only').forEach(function(el){el.style.display=isAdmin?'':'none';});
+  document.querySelectorAll('.can-write').forEach(function(el){el.style.display=u.rol==='izleyici'?'none':'';});
+
+  // Sayfa izinleri — yönetici her şeyi görür
+  if(!isAdmin&&u.izinler&&currentPortal&&u.izinler[currentPortal]){
+    var allowedPages=u.izinler[currentPortal].sayfalar||[];
+    document.querySelectorAll('.sb-item[data-page]').forEach(function(el){
+      if(el.style.display!=='none'&&!allowedPages.includes(el.dataset.page)){
+        el.style.display='none';
+      }
+    });
+  }
+}
+
 function switchPortal(){
   if(!confirm('Portala geri dönmek istiyor musunuz? Mevcut oturum kapatılacak.'))return;
   document.documentElement.removeAttribute('data-portal');
@@ -97,30 +216,63 @@ function switchPortal(){
   state.currentUser=null;
   currentPortal='';
   document.getElementById('portal-screen').style.display='flex';
-  document.getElementById('main').querySelector('#page-dashboard').classList.add('active');
+  var pg=document.getElementById('page-dashboard');
+  if(pg)pg.classList.add('active');
 }
 
 function doLogin(){
-  const u=document.getElementById('login-user').value.trim();
-  const p=document.getElementById('login-pass').value;
-  const user=state.users.find(x=>x.username===u&&x.sifre===p);
-  if(!user){document.getElementById('login-error').style.display='block';return}
-  document.getElementById('login-error').style.display='none';
-  user.sonGiris=new Date().toISOString();state.currentUser=user;saveAll();
+  var u=document.getElementById('login-user').value.trim();
+  var p=document.getElementById('login-pass').value;
+  var errEl=document.getElementById('login-error');
+  var user=state.users.find(function(x){return x.username===u&&x.sifre===p;});
+  if(!user){
+    errEl.textContent='Kullanıcı adı veya şifre hatalı.';
+    errEl.style.display='block';
+    return;
+  }
+  if(currentPortal==='sistem'){
+    if(user.rol!=='yönetici'&&user.rol!=='admin'){
+      errEl.textContent='Sistem Yönetimi için yönetici yetkisi gerekli.';
+      errEl.style.display='block';
+      return;
+    }
+  } else if(!_userCanAccessPortal(user,currentPortal)){
+    errEl.textContent='Bu portala erişim yetkiniz bulunmuyor.';
+    errEl.style.display='block';
+    return;
+  }
+  errEl.style.display='none';
+  errEl.textContent='Kullanıcı adı veya şifre hatalı.';
+  user.sonGiris=new Date().toISOString();
+  state.currentUser=user;
+  saveGlobalUsers();
   sessionStorage.setItem('ege_ses_'+currentPortal,JSON.stringify({id:user.id,username:user.username}));
-  applyUser(user);document.getElementById('login-screen').style.display='none';
-  applyPortal();
-  initApp();
+  document.getElementById('login-screen').style.display='none';
+  if(currentPortal==='sistem'){
+    showSistemScreen(user);
+  } else {
+    applyPortal();
+    applyUser(user);
+    initApp();
+  }
 }
-function applyUser(u){
-  document.getElementById('sb-avatar').textContent=u.ad[0].toUpperCase();
-  document.getElementById('sb-username').textContent=u.ad;
-  document.getElementById('sb-role-text').textContent={admin:'Yönetici',teknisyen:'Teknisyen',izleyici:'İzleyici'}[u.rol]||u.rol;
-  document.querySelectorAll('.admin-only').forEach(el=>el.style.display=u.rol==='admin'?'':'none');
-  document.querySelectorAll('.can-write').forEach(el=>el.style.display=u.rol==='izleyici'?'none':'');
+
+function doLogout(){
+  if(!confirm('Çıkış yapılsın mı?'))return;
+  var wasSistem=currentPortal==='sistem';
+  document.documentElement.removeAttribute('data-portal');
+  sessionStorage.removeItem('ege_ses_'+currentPortal);
+  state.currentUser=null;
+  currentPortal='';
+  if(wasSistem){
+    var ss=document.getElementById('sistem-screen');
+    if(ss)ss.style.display='none';
+  }
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('portal-screen').style.display='flex';
 }
-function doLogout(){if(!confirm('Çıkış yapılsın mı?'))return;document.documentElement.removeAttribute('data-portal');sessionStorage.removeItem('ege_ses_'+currentPortal);state.currentUser=null;document.getElementById('login-screen').style.display='none';document.getElementById('portal-screen').style.display='flex';}
-document.getElementById('login-pass').addEventListener('keydown',e=>e.key==='Enter'&&doLogin());
-document.getElementById('login-user').addEventListener('keydown',e=>e.key==='Enter'&&document.getElementById('login-pass').focus());
+
+document.getElementById('login-pass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+document.getElementById('login-user').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('login-pass').focus();});
 
 // ════ NAV ════

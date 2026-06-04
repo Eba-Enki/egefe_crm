@@ -46,11 +46,13 @@ let sfAksesuarlar=[];
 let teklifItems=[];
 
 function saveAll(){
+  // Kullanıcılar her zaman global key ile kaydedilir (portal-bağımsız)
+  if(state.users!==undefined) DB.save('ege_global_users',state.users);
   if(currentPortal==='stok'){
-    ['users','hamStokGirisler','hamStokLotlar','hamStokCikislar','bitmisStokGirisler','bitmisStokLotlar','bitmisCikislar','stokSettings'].forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});
+    ['hamStokGirisler','hamStokLotlar','hamStokCikislar','bitmisStokGirisler','bitmisStokLotlar','bitmisCikislar','stokSettings'].forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});
     return;
   }
-  var keys=['users','musteriler','urunler','urunKategoriler','teklifler','settings','siparisler','faturalar'];
+  var keys=['musteriler','urunler','urunKategoriler','teklifler','settings','siparisler','faturalar'];
   if(currentPortal==='servis') keys=keys.concat(['servisler']);
   keys.forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});
 }

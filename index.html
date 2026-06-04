@@ -20,7 +20,7 @@
     <div style="font-size:30px;font-weight:700;color:var(--text);letter-spacing:-.5px">Egefe Bilişim Sağlık A.Ş.</div>
     <div style="font-size:14px;color:var(--text3);margin-top:8px">Lütfen kullanmak istediğiniz portalı seçin</div>
   </div>
-  <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center">
+  <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:28px">
     <div class="portal-card" style="--card-accent:#3aa8c1;--card-glow:rgba(58,168,193,.18)" onclick="selectPortal('servis')">
       <div class="portal-card-icon">
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
@@ -50,6 +50,66 @@
       <div class="portal-title">Stok Yönetim Portalı</div>
       <div class="portal-sub">Yarı mamul ve hazır ürün stok yönetimi</div>
       <div class="portal-card-cta">Portala Giriş <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+    </div>
+  </div>
+  <div style="text-align:center">
+    <button onclick="selectSistemYonetimi()" style="background:none;border:1px solid var(--border);color:var(--text3);padding:8px 20px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:var(--font-body);transition:color .15s,border-color .15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border2)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border)'">⚙ Sistem Yönetimi</button>
+  </div>
+</div>
+
+<!-- ─── SİSTEM YÖNETİMİ ─── -->
+<div id="sistem-screen" style="display:none;position:fixed;inset:0;z-index:350;background:var(--bg);flex-direction:column">
+  <div class="sistem-topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <img id="sistem-logo-img" src="brand_assets/logo_if_bg_white.svg" alt="Egefe" style="max-width:90px;height:auto">
+      <span style="font-size:15px;font-weight:600;color:var(--text)">Sistem Yönetimi</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:12px;color:var(--text3)" id="sistem-user-name"></span>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Çıkış Yap</button>
+    </div>
+  </div>
+  <div class="sistem-content">
+    <!-- Liste paneli -->
+    <div id="sistem-users-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <div style="font-size:18px;font-weight:700;color:var(--text)">Kullanıcılar</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">Tüm portallara erişim ve sayfa izinleri</div>
+        </div>
+        <button class="btn btn-primary" onclick="goSistemUserForm(null)">+ Yeni Kullanıcı</button>
+      </div>
+      <div id="sistem-users-wrap"></div>
+    </div>
+    <!-- Form paneli -->
+    <div id="sistem-form-panel" style="display:none;flex-direction:column;max-width:680px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <button class="btn btn-back" onclick="cancelSistemForm()">←</button>
+        <div style="font-size:18px;font-weight:700;color:var(--text)" id="sistem-form-title">Yeni Kullanıcı</div>
+      </div>
+      <div class="form-card" style="display:flex;flex-direction:column;gap:14px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="field"><label>Ad Soyad <span class="req">*</span></label><input type="text" id="sf-ad"></div>
+          <div class="field"><label>Kullanıcı Adı <span class="req">*</span></label><input type="text" id="sf-username"></div>
+          <div class="field"><label>Şifre <span style="color:var(--text3);font-size:11px">(değiştirmek için girin)</span></label><input type="password" id="sf-sifre"></div>
+          <div class="field"><label>E-posta</label><input type="email" id="sf-email"></div>
+        </div>
+        <div class="field"><label>Rol</label>
+          <select id="sf-rol" onchange="sfRolChange()">
+            <option value="yönetici">Yönetici — Tam Yetki + Sistem Yönetimi</option>
+            <option value="kullanıcı" selected>Kullanıcı — Ekle / Düzenle</option>
+            <option value="izleyici">İzleyici — Sadece Görüntüle</option>
+          </select>
+        </div>
+      </div>
+      <div id="sf-izin-hint" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--text3);margin-bottom:12px">
+        Yönetici rolü tüm portallara ve tüm sayfalara tam erişime sahiptir.
+      </div>
+      <div id="sf-izin-matrix"></div>
+      <div class="form-actions" style="margin-top:20px">
+        <button class="btn btn-ghost" onclick="cancelSistemForm()">İptal</button>
+        <button class="btn btn-primary" onclick="saveSistemUser()">Kaydet</button>
+      </div>
     </div>
   </div>
 </div>
@@ -91,7 +151,6 @@
     <div class="sb-item crm-only" data-page="musteriler" onclick="showPage('musteriler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>Müşteriler</span></div>
     <div class="sb-item crm-only" data-page="urunler" onclick="showPage('urunler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><span>Ürünler</span></div>
     <div class="sb-section crm-only admin-only">Yönetim</div>
-    <div class="sb-item crm-only admin-only" data-page="kullanici" onclick="showPage('kullanici')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span><span>Kullanıcılar</span></div>
     <div class="sb-item crm-only admin-only" data-page="ayarlar" onclick="showPage('ayarlar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Ayarlar</span></div>
 
     <!-- ─── Stok Yönetim Portalı ─── -->
@@ -107,7 +166,6 @@
     <div class="sb-item stok-only" data-page="bitmis-girisler" style="display:none" onclick="showPage('bitmis-girisler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Hazır Ürün Stok Girişler</span></div>
     <div class="sb-item stok-only" data-page="bitmis-cikislar" style="display:none" onclick="showPage('bitmis-cikislar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Hazır Ürün Stok Çıkışlar</span></div>
     <div class="sb-section stok-only admin-only" style="display:none">Yönetim</div>
-    <div class="sb-item stok-only admin-only" data-page="kullanici" style="display:none" onclick="showPage('kullanici')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span><span>Kullanıcılar</span></div>
     <div class="sb-item stok-only admin-only" data-page="stok-ayarlar" style="display:none" onclick="showPage('stok-ayarlar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Ayarlar</span></div>
   </nav>
   <div class="sb-bottom">
@@ -592,41 +650,6 @@
         <div class="form-actions">
           <button class="btn btn-ghost" onclick="showPage('teklifler')">İptal</button>
           <button class="btn btn-primary" onclick="saveSiparisForm()">Siparişi Kaydet</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ KULLANICI ═══ -->
-    <div id="page-kullanici" class="page">
-      <div style="margin-bottom:16px">
-        <div style="font-size:12px;color:var(--text3);margin-top:3px" id="kul-portal-label"></div>
-      </div>
-      <div class="card"><div class="table-wrap"><table>
-        <thead><tr><th>Ad</th><th>Kullanıcı Adı</th><th>Rol</th><th>E-posta</th><th>Son Giriş</th><th style="text-align:right;width:80px">İşlem</th></tr></thead>
-        <tbody id="user-table-body"></tbody>
-      </table></div></div>
-    </div>
-
-    <!-- ═══ KULLANICI FORMU (inline) ═══ -->
-    <div id="page-kullanici-form" class="page">
-      <div class="form-page" style="max-width:480px">
-        <div class="form-page-header">
-          <button class="btn btn-back" onclick="showPage('kullanici')">← Kullanıcılar</button>
-          <div class="form-page-title" id="kf-title">Yeni Kullanıcı</div>
-        </div>
-        <input type="hidden" id="kf-edit-id">
-        <div class="form-card">
-          <div style="display:flex;flex-direction:column;gap:13px">
-            <div class="field"><label>Ad Soyad <span class="req">*</span></label><input type="text" id="kf-ad"></div>
-            <div class="field"><label>Kullanıcı Adı <span class="req">*</span></label><input type="text" id="kf-username"></div>
-            <div class="field"><label>Şifre</label><input type="password" id="kf-sifre" placeholder="(değiştirmek için girin)"></div>
-            <div class="field"><label>E-posta</label><input type="email" id="kf-email"></div>
-            <div class="field"><label>Rol</label><select id="kf-rol"><option value="admin">Admin — Tam Yetki</option><option value="teknisyen" id="kf-rol-tekn">Teknisyen — Ekle/Düzenle</option><option value="izleyici">İzleyici — Sadece Görüntüle</option></select></div>
-          </div>
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-ghost" onclick="showPage('kullanici')">İptal</button>
-          <button class="btn btn-primary" onclick="saveUser()">Kaydet</button>
         </div>
       </div>
     </div>
@@ -1315,6 +1338,7 @@
 
 <script src="js/state.js?v=5"></script>
 <script src="js/auth.js?v=5"></script>
+<script src="js/sistem.js?v=1"></script>
 <script src="js/ui.js?v=5"></script>
 <script src="js/dashboard.js?v=5"></script>
 <script src="js/servis.js?v=5"></script>

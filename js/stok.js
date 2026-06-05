@@ -158,7 +158,7 @@ function renderStokDashboard(){
     {label:'Kritik Stok',    val:kritikler.length,  sub:'Uyarı eşiğinde parametre',          col:'var(--red)'},
     {label:'Toplam Strip',   val:stokFmtN(bugToplam), sub:'Tüm LOT\'larda mevcut',           col:'var(--accent)'},
     {label:'Bu Ay Giriş',    val:buAyGiris,          sub:buAy+' tarihli sheet girişleri',     col:'var(--teal)'},
-    {label:'Bitmiş Mevcut',  val:stokFmtN(bitMevcut),sub:'Hazır kit toplamı',                col:'var(--green)'}
+    {label:'Mevcut Hazır Ürün',  val:stokFmtN(bitMevcut),sub:'Hazır ürün toplamı',                col:'var(--green)'}
   ].map(function(k){
     return '<div style="background:var(--bg2);border:1px solid var(--border);border-top:3px solid '+k.col+';border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow-sm)">'
       +'<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:11px">'+k.label+'</div>'

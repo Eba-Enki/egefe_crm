@@ -210,4 +210,113 @@ function confirmDelete(type,id){
 }
 
 
-// ════ EXCEL EXPORT ════
+// ════ EXCEL IMPORT — MÜŞTERİLER ════
+function downloadMusteriSablon(){
+  if(!window.XLSX){toast('Excel kütüphanesi yüklenemedi.','error');return;}
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.aoa_to_sheet([['Kurum Adı*','İlgili Kişi','Telefon','E-posta','Şehir','Adres','Notlar']]);
+  ws['!cols']=[{wch:30},{wch:20},{wch:15},{wch:25},{wch:15},{wch:35},{wch:30}];
+  XLSX.utils.book_append_sheet(wb,ws,'Müşteriler');
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='musteri-sablon.xlsx';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function importMusterilerExcel(e){
+  var file=e.target.files[0];e.target.value='';if(!file)return;
+  if(!window.XLSX){toast('Excel kütüphanesi yüklenemedi.','error');return;}
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var wb=XLSX.read(ev.target.result,{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      var eklenen=0,atlanan=0;
+      rows.forEach(function(row){
+        var kurum=(row['Kurum Adı*']||row['Kurum Adı']||'').toString().trim();
+        if(!kurum){atlanan++;return;}
+        var mevcutMu=state.musteriler.some(function(m){return m.kurum.toLowerCase()===kurum.toLowerCase();});
+        if(mevcutMu){atlanan++;return;}
+        var mKN='MK'+String(state.musteriler.length+1).padStart(5,'0');
+        state.musteriler.push({
+          id:'m'+Date.now()+Math.random().toString(36).slice(2,6),
+          kayitNo:mKN,
+          kurum:toTitleCase(kurum),
+          kisi:toTitleCase((row['İlgili Kişi']||'').toString().trim()),
+          tel:(row['Telefon']||'').toString().trim(),
+          email:(row['E-posta']||'').toString().trim(),
+          sehir:toTitleCase((row['Şehir']||'').toString().trim()),
+          adres:toTitleCase((row['Adres']||'').toString().trim()),
+          not:(row['Notlar']||'').toString().trim()
+        });
+        eklenen++;
+      });
+      saveAll();renderMusteriler();
+      if(eklenen&&atlanan)toast(eklenen+' müşteri eklendi, '+atlanan+' satır atlandı (zaten mevcut veya boş).','success');
+      else if(eklenen)toast(eklenen+' müşteri eklendi.','success');
+      else toast('Eklenecek yeni kayıt bulunamadı.','info');
+    }catch(err){toast('Dosya okunamadı: '+err.message,'error');}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ════ EXCEL IMPORT — ÜRÜNLER ════
+function downloadUrunSablon(){
+  if(!window.XLSX){toast('Excel kütüphanesi yüklenemedi.','error');return;}
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.aoa_to_sheet([['Ürün / İşlem Adı*','Ürün Kodu','Marka','Model','Liste Fiyatı','Para Birimi (TRY/USD/EUR/GBP)','Kategori','Açıklama']]);
+  ws['!cols']=[{wch:30},{wch:15},{wch:15},{wch:20},{wch:12},{wch:28},{wch:20},{wch:35}];
+  XLSX.utils.book_append_sheet(wb,ws,'Ürünler');
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='urun-sablon.xlsx';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function importUrunlerExcel(e){
+  var file=e.target.files[0];e.target.value='';if(!file)return;
+  if(!window.XLSX){toast('Excel kütüphanesi yüklenemedi.','error');return;}
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var wb=XLSX.read(ev.target.result,{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      var eklenen=0,atlanan=0;
+      rows.forEach(function(row){
+        var urunAdi=(row['Ürün / İşlem Adı*']||row['Ürün / İşlem Adı']||'').toString().trim();
+        if(!urunAdi){atlanan++;return;}
+        var urunKodu=(row['Ürün Kodu']||'').toString().trim();
+        var mevcutMu=state.urunler.some(function(u){
+          if(urunKodu&&u.urunKodu)return u.urunKodu.toLowerCase()===urunKodu.toLowerCase();
+          return u.urunAdi.toLowerCase()===urunAdi.toLowerCase();
+        });
+        if(mevcutMu){atlanan++;return;}
+        var fiyatRaw=(row['Liste Fiyatı']||'').toString().replace(',','.');
+        var fiyat=parseFloat(fiyatRaw)||0;
+        var pb=(row['Para Birimi (TRY/USD/EUR/GBP)']||'TRY').toString().trim().toUpperCase();
+        if(!['TRY','USD','EUR','GBP'].includes(pb))pb='TRY';
+        state.urunler.push({
+          id:'p'+Date.now()+Math.random().toString(36).slice(2,6),
+          urunAdi:urunAdi,
+          urunKodu:urunKodu,
+          marka:(row['Marka']||'').toString().trim(),
+          model:(row['Model']||'').toString().trim(),
+          fiyat:fiyat,
+          paraBirimi:pb,
+          kategori:(row['Kategori']||'').toString().trim(),
+          aciklama:(row['Açıklama']||'').toString().trim()
+        });
+        eklenen++;
+      });
+      saveAll();renderUrunler();
+      if(eklenen&&atlanan)toast(eklenen+' ürün eklendi, '+atlanan+' satır atlandı (zaten mevcut veya boş).','success');
+      else if(eklenen)toast(eklenen+' ürün eklendi.','success');
+      else toast('Eklenecek yeni kayıt bulunamadı.','info');
+    }catch(err){toast('Dosya okunamadı: '+err.message,'error');}
+  };
+  reader.readAsArrayBuffer(file);
+}

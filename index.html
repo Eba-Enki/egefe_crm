@@ -460,7 +460,7 @@
 
     <!-- ═══ MÜŞTERİLER ═══ -->
     <div id="page-musteriler" class="page">
-      <div class="filter-bar"><input type="text" id="fm-ara" placeholder="Ara..." oninput="renderMusteriler()" style="width:220px"><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="musteri-count"></span></div>
+      <div class="filter-bar"><input type="text" id="fm-ara" placeholder="Ara..." oninput="renderMusteriler()" style="width:220px"><label class="btn btn-ghost btn-sm can-write" style="cursor:pointer">⬆ Excel'den Ekle<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importMusterilerExcel(event)"></label><button class="btn btn-ghost btn-sm can-write" onclick="downloadMusteriSablon()" style="font-size:11px;color:var(--text3)">Şablonu İndir</button><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="musteri-count"></span></div>
       <div class="card"><div class="table-wrap"><table><thead><tr><th>Kayıt No</th><th>Kurum</th><th>İlgili Kişi</th><th>Telefon</th><th>E-posta</th><th>Şehir</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead><tbody id="musteri-table-body"></tbody></table><div id="musteri-empty" class="empty-state" style="display:none"><div class="icon">⊙</div><h3 style="color:var(--text2)">Müşteri yok</h3></div></div><div id="musteri-pagination"></div></div>
     </div>
 
@@ -492,7 +492,7 @@
 
         <!-- ═══ ÜRÜNLER ═══ -->
     <div id="page-urunler" class="page">
-      <div class="filter-bar"><input type="text" id="fu-ara" placeholder="Ara..." oninput="renderUrunler()" style="width:220px"><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="urun-count"></span></div>
+      <div class="filter-bar"><input type="text" id="fu-ara" placeholder="Ara..." oninput="renderUrunler()" style="width:220px"><label class="btn btn-ghost btn-sm can-write" style="cursor:pointer">⬆ Excel'den Ekle<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importUrunlerExcel(event)"></label><button class="btn btn-ghost btn-sm can-write" onclick="downloadUrunSablon()" style="font-size:11px;color:var(--text3)">Şablonu İndir</button><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="urun-count"></span></div>
       <div class="card"><div class="table-wrap"><table>
         <thead><tr><th>Ürün Kodu</th><th>Ürün / İşlem Adı</th><th>Marka</th><th class="tf-satis-field" style="display:none">Kategori</th><th><span class="servis-only">Model</span><span class="satis-only">Parametre</span></th><th>Liste Fiyatı</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead>
         <tbody id="urun-table-body"></tbody>

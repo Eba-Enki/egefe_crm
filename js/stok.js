@@ -618,7 +618,7 @@ function saveHamGiris(){
   });
   saveAll();
   if(document.getElementById('hg-edit-id')) document.getElementById('hg-edit-id').value='';
-  showPage('ham-girisler');
+  _formDirty=false;showPage('ham-girisler');
 }
 
 // ─── HAM STOK ÇIKIŞLAR LİSTESİ ───────────────────────────────────────────────
@@ -697,9 +697,16 @@ function goHamCikisYeni(){
 }
 
 function stokSilHamCikis(id){
-  if(!confirm('Bu çıkış kaydı silinecek. Stok geri yüklenmeyecek. Emin misiniz?')) return;
+  if(!confirm('Bu çıkış kaydı silinecek ve stok miktarları geri yüklenecek. Emin misiniz?')) return;
+  var cikis=(state.hamStokCikislar||[]).find(function(c){return c.id===id;});
+  if(cikis){
+    (cikis.satirlar||[]).forEach(function(sf){
+      var idx=(state.hamStokLotlar||[]).findIndex(function(l){return l.id===sf.lotId;});
+      if(idx>=0) state.hamStokLotlar[idx].mevcutStrip+=sf.stripCikis;
+    });
+  }
   state.hamStokCikislar=(state.hamStokCikislar||[]).filter(function(c){return c.id!==id;});
-  saveAll(); renderHamCikislar(); toast('Çıkış silindi.','info');
+  saveAll(); renderHamCikislar(); toast('Çıkış silindi, stok geri yüklendi.','success');
 }
 
 // ─── HAM STOK ÇIKIŞ FORMU ────────────────────────────────────────────────────
@@ -850,7 +857,7 @@ function saveHamCikis(){
 
   saveAll();
   toast(stokFmtN(kitMiktar)+' Kit çıkışı yapıldı ('+evrakNo+').','success');
-  showPage('ham-cikislar');
+  _formDirty=false;showPage('ham-cikislar');
 }
 
 // ─── BİTMİŞ STOK GÖRÜNÜMÜ ────────────────────────────────────────────────────
@@ -1139,7 +1146,7 @@ function saveBitmisGiris(){
   });
   saveAll();
   if(document.getElementById('bg-edit-id')) document.getElementById('bg-edit-id').value='';
-  showPage('bitmis-girisler');
+  _formDirty=false;showPage('bitmis-girisler');
 }
 
 // ─── TİCARİ STOK ÇIKIŞLAR LİSTESİ ───────────────────────────────────────────
@@ -1215,9 +1222,16 @@ function gobitmisCikisYeni(){
 }
 
 function stokSilBitmisCikis(id){
-  if(!confirm('Bu çıkış kaydı silinecek. Stok geri yüklenmeyecek. Emin misiniz?')) return;
+  if(!confirm('Bu çıkış kaydı silinecek ve stok miktarları geri yüklenecek. Emin misiniz?')) return;
+  var cikis=(state.bitmisCikislar||[]).find(function(c){return c.id===id;});
+  if(cikis){
+    (cikis.satirlar||[]).forEach(function(sf){
+      var idx=(state.bitmisStokLotlar||[]).findIndex(function(l){return l.id===sf.lotId;});
+      if(idx>=0) state.bitmisStokLotlar[idx].mevcutMiktar+=sf.miktar;
+    });
+  }
   state.bitmisCikislar=(state.bitmisCikislar||[]).filter(function(c){return c.id!==id;});
-  saveAll(); renderBitmisCikislar(); toast('Çıkış silindi.','info');
+  saveAll(); renderBitmisCikislar(); toast('Çıkış silindi, stok geri yüklendi.','success');
 }
 
 // ─── TİCARİ STOK ÇIKIŞ FORMU ─────────────────────────────────────────────────
@@ -1306,7 +1320,7 @@ function saveBitmisCikis(){
 
   saveAll();
   toast('Hazır ürün çıkışı kaydedildi ('+evrakNo+').','success');
-  showPage('bitmis-cikislar');
+  _formDirty=false;showPage('bitmis-cikislar');
 }
 
 // ─── HAREKET GEÇMİŞİ ─────────────────────────────────────────────────────────

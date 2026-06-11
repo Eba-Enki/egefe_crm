@@ -182,7 +182,7 @@ function saveServis(){
   const editId2=document.getElementById('sf-edit-id').value;const payload={kurumAdi:toTitleCase(document.getElementById('sf-kurumAdi').value.trim()),ilgiliKisi:toTitleCase(document.getElementById('sf-ilgiliKisi').value.trim()),telefon:document.getElementById('sf-telefon').value.trim(),email:document.getElementById('sf-email').value.trim(),urunAdi:'',seriNo:getSeriNolar().join(', '),garantiDurumu:document.getElementById('sf-garantiDurumu').value,aksesuarlar:[...sfAksesuarlar],aksesyarDiger:document.getElementById('sf-aksesuar-diger').value.trim(),gelisTarihi:document.getElementById('sf-gelisTarihi').value,durum:document.getElementById('sf-durum').value||'Yeni Gelen',kargoTarihi:document.getElementById('sf-kargoTarihi').value,kargoFirmasi:document.getElementById('sf-kargoFirmasi').value,teslimAlan:document.getElementById('sf-teslimAlan').value,notlar:document.getElementById('sf-notlar').value};
   if(editId){const idx=state.servisler.findIndex(x=>x.id===editId);if(idx>=0){state.servisler[idx]={...state.servisler[idx],...payload};toast('Kayıt güncellendi.','success');}}
   else{state.servisler.push({id:'s'+Date.now(),kayitNo:nextKN(),...payload,olusturanKullanici:state.currentUser?.username,olusturmaTarihi:new Date().toISOString()});toast('Servis kaydedildi.','success');}
-  saveAll();showPage(state.prevPage||'servisler');
+  saveAll();_formDirty=false;showPage(state.prevPage||'servisler');
 }
 
 // ════ TEKLIF ITEMS ════

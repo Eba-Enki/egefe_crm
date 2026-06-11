@@ -1,4 +1,9 @@
 var PAGE_SIZE=25;
+var _formDirty=false;
+var _currentPageId='';
+var GUARDED_FORM_PAGES=new Set(['servis-form','teklif-form','musteri-form','urun-form','ham-giris','ham-cikis','bitmis-giris','bitmis-cikis']);
+document.addEventListener('input',function(){if(GUARDED_FORM_PAGES.has(_currentPageId))_formDirty=true;});
+document.addEventListener('change',function(){if(GUARDED_FORM_PAGES.has(_currentPageId))_formDirty=true;});
 function renderPagination(containerId,currentPage,totalItems,fnName){
   var el=document.getElementById(containerId);if(!el)return;
   var totalPages=Math.ceil(totalItems/PAGE_SIZE);
@@ -36,6 +41,11 @@ const PAGE_TITLES={dashboard:'Dashboard',servisler:'Servis Kayıtları','servis-
 'bitmis-cikis':'Hazır Ürün Çıkışı',
 'stok-ayarlar':'<strong>STOK - AYARLAR</strong>'};
 function showPage(id,skipRender){
+  if(_formDirty&&GUARDED_FORM_PAGES.has(_currentPageId)&&id!==_currentPageId){
+    if(!confirm('Kaydedilmemiş değişiklikler var.\nSayfadan çıkmak istediğinize emin misiniz?'))return;
+  }
+  _formDirty=false;
+  _currentPageId=id;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
   document.querySelectorAll('.sb-item[data-page]').forEach(i=>i.classList.toggle('active',i.dataset.page===id));

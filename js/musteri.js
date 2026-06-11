@@ -27,7 +27,7 @@ function saveMusteri(){
   var ret=state._musterAddReturn;
   if(ret){
     state._musterAddReturn=null;
-    showPage(ret.returnPage,true);
+    _formDirty=false;showPage(ret.returnPage,true);
     var inp=document.getElementById(ret.inputId);if(inp)inp.value=payload.kurum;
     lockMusteriField(ret.inputId,savedMId);
     if(ret.inputId==='tf-kurum'){
@@ -39,7 +39,7 @@ function saveMusteri(){
       var tel2=document.getElementById('sf-telefon');if(tel2)tel2.value=payload.tel||'';
       var eml2=document.getElementById('sf-email');if(eml2)eml2.value=payload.email||'';
     }
-  } else {showPage('musteriler');}
+  } else {_formDirty=false;showPage('musteriler');}
 }
 
 // ════ ÜRÜNLER ════
@@ -68,7 +68,7 @@ function saveUrun(){
   const payload={urunAdi,urunKodu,marka:document.getElementById('uf-marka').value.trim(),model:document.getElementById('uf-model').value.trim(),kategori:katEl?katEl.value:'',fiyat,paraBirimi,aciklama:document.getElementById('uf-aciklama').value.trim()};
   if(editId){const idx=state.urunler.findIndex(x=>x.id===editId);if(idx>=0){state.urunler[idx]={...state.urunler[idx],...payload};toast('Güncellendi.','success');}}
   else{state.urunler.push({id:'p'+Date.now(),...payload});toast('Ürün eklendi.','success');}
-  saveAll();showPage('urunler');
+  saveAll();_formDirty=false;showPage('urunler');
 }
 
 

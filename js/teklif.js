@@ -70,7 +70,7 @@ function saveTeklif(andPrint=false){
     const si=state.servisler.findIndex(x=>x.id===payload.servisId);
     if(si>=0&&!['Onaylandı','Tamamlandı','Kargoya Verildi'].includes(state.servisler[si].durum))state.servisler[si].durum='Onay Bekleniyor';
   }
-  saveAll();showPage('teklifler');
+  saveAll();_formDirty=false;showPage('teklifler');
   if(andPrint&&savedId)setTimeout(()=>printTeklifById(savedId),300);
 }
 function saveTeklifAndPrint(){saveTeklif(true)}

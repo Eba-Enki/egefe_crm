@@ -236,7 +236,7 @@
     <!-- ═══ DASHBOARD ═══ -->
     <div id="page-dashboard" class="page">
       <div id="db-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:12px"></div>
-      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
         <div class="card">
           <div class="card-header"><span class="card-title" id="db-chart-title">Durum Dağılımı</span></div>
           <div class="card-body" id="db-chart-body"></div>
@@ -245,8 +245,8 @@
           <div class="card-header"><span class="card-title" id="db-list-title">Son Aktivite</span><span id="db-list-badge" style="font-size:10px;color:var(--text3);font-family:var(--font-mono)"></span></div>
           <div style="flex:1;overflow:hidden" id="db-list-body"></div>
         </div>
+        <div id="db-secondary" style="display:contents"></div>
       </div>
-      <div id="db-secondary" style="margin-top:12px"></div>
     </div>
 
     <!-- ═══ SERVİSLER ═══ -->

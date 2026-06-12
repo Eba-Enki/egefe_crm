@@ -151,7 +151,7 @@ function _dbServis(s, tl, mus, now, thisMonth, thisYear){
 
   var secEl = document.getElementById('db-secondary');
   if(secEl) secEl.innerHTML =
-    '<div class="card">'
+    '<div class="card" style="grid-column:span 2">'
       +'<div class="card-header">'
         +'<span class="card-title">Teklif Özeti</span>'
         +'<span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+tl.length+' teklif toplam</span>'
@@ -263,20 +263,18 @@ function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
 
   var secEl = document.getElementById('db-secondary');
   if(secEl) secEl.innerHTML =
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
-      +'<div class="card">'
-        +'<div class="card-header">'
-          +'<span class="card-title">Sipariş Durumu</span>'
-          +'<span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+sps.length+' toplam</span>'
-        +'</div>'
-        +'<div class="card-body">'+(spBars||'<div style="color:var(--text3);font-size:13px">Sipariş bulunamadı.</div>')+'</div>'
+    '<div class="card">'
+      +'<div class="card-header">'
+        +'<span class="card-title">Sipariş Durumu</span>'
+        +'<span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+sps.length+' toplam</span>'
       +'</div>'
-      +'<div class="card">'
-        +'<div class="card-header">'
-          +'<span class="card-title">Fatura Durumu</span>'
-          +'<span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+fts.length+' toplam</span>'
-        +'</div>'
-        +'<div class="card-body">'+(ftBars||'<div style="color:var(--text3);font-size:13px">Fatura bulunamadı.</div>')+'</div>'
+      +'<div class="card-body">'+(spBars||'<div style="color:var(--text3);font-size:13px">Sipariş bulunamadı.</div>')+'</div>'
+    +'</div>'
+    +'<div class="card">'
+      +'<div class="card-header">'
+        +'<span class="card-title">Fatura Durumu</span>'
+        +'<span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+fts.length+' toplam</span>'
       +'</div>'
+      +'<div class="card-body">'+(ftBars||'<div style="color:var(--text3);font-size:13px">Fatura bulunamadı.</div>')+'</div>'
     +'</div>';
 }

@@ -129,6 +129,8 @@ function renderTeklifler(){
   var showTemsilci=currentPortal==='satis';
   var thS=document.getElementById('th-sorumlu');
   if(thS)thS.style.display=showTemsilci?'':'none';
+  var sfSeriEl=document.getElementById('tf-f-seri');
+  if(sfSeriEl)sfSeriEl.style.display=currentPortal==='servis'?'':'none';
   var sortedTl=[...filtTl2].sort((a,b)=>new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi));
   var pagedTl=sortedTl.slice((tekliflerPage-1)*PAGE_SIZE,tekliflerPage*PAGE_SIZE);
   renderPagination('teklif-pagination',tekliflerPage,filtTl2.length,'setTekliflerPage');

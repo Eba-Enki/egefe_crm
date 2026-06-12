@@ -68,16 +68,24 @@ function quickSiparisDurumChange(sid,yeni){
   toast('Sipariş durumu: '+yeni,'success');
 }
 
+var SP_GECIS={
+  'Yeni Sipariş':['Hazırlanıyor','İptal'],
+  'Hazırlanıyor':['Kısmi Sevkiyat','Tamamlandı','İptal'],
+  'Kısmi Sevkiyat':['Tamamlandı','İptal'],
+  'Tamamlandı':['İptal']
+};
 function showSiparisDurumMenu(sid,btnEl){
   document.querySelectorAll('.durum-quick-menu').forEach(function(m){m.remove();});
   var s=(state.siparisler||[]).find(function(x){return x.id===sid;});
   if(!s)return;
+  var izinliDurumlar=SP_GECIS[s.durum];
+  if(!izinliDurumlar||!izinliDurumlar.length)return;
   var menu=document.createElement('div');
   menu.className='durum-quick-menu';
   menu.style.cssText='position:fixed;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;z-index:600;min-width:170px;box-shadow:0 8px 24px rgba(0,0,0,.5);overflow:hidden;';
-  menu.innerHTML=SP_DURUM_LIST.map(function(d){
-    var active=d===s.durum;
-    return '<div onmousedown="event.stopPropagation();quickSiparisDurumChange(\''+sid+'\',\''+d+'\');document.querySelectorAll(\'.durum-quick-menu\').forEach(function(m){m.remove();});" style="padding:9px 14px;font-size:13px;cursor:pointer;'+(active?'background:var(--accent-soft);color:var(--accent);font-weight:600':'color:var(--text2)')+'">'+(active?'✓ ':'')+d+'</div>';
+  menu.innerHTML=izinliDurumlar.map(function(d){
+    var isIptal=d==='İptal';
+    return '<div onmousedown="event.stopPropagation();quickSiparisDurumChange(\''+sid+'\',\''+d+'\');document.querySelectorAll(\'.durum-quick-menu\').forEach(function(m){m.remove();});" style="padding:9px 14px;font-size:13px;cursor:pointer;color:'+(isIptal?'var(--red)':'var(--text2)')+'">'+d+'</div>';
   }).join('');
   document.body.appendChild(menu);
   var r=btnEl.getBoundingClientRect();
@@ -169,7 +177,7 @@ function renderSiparisler(){
           :'<button class="btn-icon" title="Önce sipariş formu yazdırın" style="color:var(--text3);cursor:not-allowed" disabled>📦</button>')
         :'')
       +(canEdit&&['Kısmi Sevkiyat','Tamamlandı'].indexOf(s.durum)>=0?'<button class="btn-icon" title="Faturaya Aktar" style="color:var(--amber)" onclick="openFaturaModal(\''+s.id+'\')">🧾</button>':'')
-      +(canEdit?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)">⇅</button>':'')
+      +(canEdit&&SP_GECIS[s.durum]&&SP_GECIS[s.durum].length?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)">⇅</button>':'')
       +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'siparis\',\''+s.id+'\')">⊗</button>':'')
       +'</div></td>'
       +'</tr>';

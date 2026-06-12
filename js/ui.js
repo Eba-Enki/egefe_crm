@@ -221,8 +221,9 @@ function goTeklifForm(editId,servisId){
     var _ftsl=document.getElementById('tf-teslimat');if(_ftsl)_ftsl.value=t.teslimat||'';
     onOdemeSekliChange();
     teklifItems=t.satirlar?JSON.parse(JSON.stringify(t.satirlar)):[{aciklama:'',miktar:1,birim:'Adet',birimFiyat:0}];
-    var foundTM=state.musteriler.find(function(x){return x.kurum===(t.kurum||'');});
+    var foundTM=state.musteriler.find(function(x){return (t.musteriId&&x.id===t.musteriId)||x.kurum===(t.kurum||'');});
     if(foundTM)lockMusteriField('tf-kurum',foundTM.id);
+    else if(t.kurum){var _hidTF=document.getElementById('tf-musteri-id');if(_hidTF)_hidTF.value='__edit_existing__';}
     else unlockMusteriField('tf-kurum');
   } else {
     document.getElementById('tf-teklifNo').value=nextTN();

@@ -3,8 +3,8 @@ var siparislerPage=1;var _siparisFilterHash='';
 function setSiparislerPage(n){siparislerPage=n;renderSiparisler();}
 var faturalarPage=1;var _faturaFilterHash='';
 function setFaturalarPage(n){faturalarPage=n;renderFaturalar();}
-const SP_DURUM_LIST=['Hazırlanıyor','Kısmi Sevkiyat','Tamamlandı','İptal'];
-const SP_DURUM_CSS={'Hazırlanıyor':'badge-yeni','Kısmi Sevkiyat':'badge-sf','Tamamlandı':'badge-teslim','İptal':'badge-reddedildi','Fatura Edildi':'badge-onaylandi'};
+const SP_DURUM_LIST=['Yeni Sipariş','Hazırlanıyor','Kısmi Sevkiyat','Tamamlandı','İptal'];
+const SP_DURUM_CSS={'Yeni Sipariş':'badge-onay-bekl','Hazırlanıyor':'badge-yeni','Kısmi Sevkiyat':'badge-sf','Tamamlandı':'badge-teslim','İptal':'badge-reddedildi','Fatura Edildi':'badge-onaylandi'};
 const ARSIV_SIPARISLER=['Fatura Edildi','İptal'];
 const ARSIV_FATURALAR=['Ödendi'];
 let siparisTab='aktif';
@@ -47,7 +47,7 @@ function tekliftenSipariseAktar(teklifId){
     sorumlu:t.sorumlu||'',satisTemsilcisi:t.sorumlu||'',satirlar:satirlar,
     paraBirimi:t.paraBirimi||'TRY',odemeKosulu:t.odemeKosulu||'',vade:t.vade||'',teslimat:t.teslimat||'',
     teklifTarihi:t.teklifTarihi||'',siparisTarihi:today(),notlar:t.notlar||'',
-    durum:'Hazırlanıyor',olusturmaTarihi:new Date().toISOString()};
+    durum:'Yeni Sipariş',olusturmaTarihi:new Date().toISOString()};
   state.siparisler.push(siparis);
   var ti=state.teklifler.findIndex(function(x){return x.id===teklifId;});
   if(ti>=0)state.teklifler[ti].durum='Siparişe Aktarıldı';
@@ -90,7 +90,7 @@ function showTeklifDurumMenu(tid,btnEl){
   document.querySelectorAll('.durum-quick-menu').forEach(function(m){m.remove();});
   var t=state.teklifler.find(function(x){return x.id===tid;});
   if(!t)return;
-  var SATIS_DUR=['Taslak','Açık Teklif','Kabul Edildi','İptal Edildi','Reddedildi'];
+  var SATIS_DUR=['Kabul Edildi','Reddedildi','İptal Edildi'];
   var SERVIS_DUR=['Onay Bekleniyor','Onaylandı','Reddedildi','Tamamlandı'];
   var durList=currentPortal==='satis'?SATIS_DUR:SERVIS_DUR;
   var menu=document.createElement('div');
@@ -436,7 +436,7 @@ function saveSiparisForm(){
     teklifTarihi:t.teklifTarihi||'',siparisTarihi:tarih,
     tahminTeslimat:document.getElementById('sf2-teslimat').value||'',
     notlar:document.getElementById('sf2-notlar').value||'',
-    durum:'Hazırlanıyor',olusturmaTarihi:new Date().toISOString()
+    durum:'Yeni Sipariş',olusturmaTarihi:new Date().toISOString()
   };
   state.siparisler.push(siparis);
   var ti=state.teklifler.findIndex(function(x){return x.id===teklifId;});
@@ -742,9 +742,13 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.text(st.firma||'Egefe Bilişim Sağlık San. ve Tic. A.Ş.',pageW-mm(15.446),pageH-mm(10),{align:'right'});
 
   doc.save('siparis-formu-'+(s.siparisNo||'siparis')+'.pdf');
-  // Formu yazdırıldı olarak işaretle → sevkiyat butonu aktifleşir
+  // Formu yazdırıldı: Yeni Sipariş → Hazırlanıyor, sevkiyat butonu aktifleşir
   const _spIdx=(state.siparisler||[]).findIndex(x=>x.id===s.id);
-  if(_spIdx>=0){state.siparisler[_spIdx].formYazdirildi=true;saveAll();renderSiparisler();}
+  if(_spIdx>=0){
+    state.siparisler[_spIdx].formYazdirildi=true;
+    if(state.siparisler[_spIdx].durum==='Yeni Sipariş')state.siparisler[_spIdx].durum='Hazırlanıyor';
+    saveAll();renderSiparisler();
+  }
 }
 
 // ════ RED / İPTAL NEDENİ ════

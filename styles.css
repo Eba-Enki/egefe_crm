@@ -230,6 +230,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
 .badge-kargo{background:var(--pink-soft);color:var(--pink)}.badge-kargo::before{background:var(--pink)}
 .badge-teslim{background:var(--green-soft);color:var(--green)}.badge-teslim::before{background:var(--green)}
 .badge-reddedildi{background:var(--red-soft);color:var(--red)}.badge-reddedildi::before{background:var(--red)}
+.badge-iade{background:rgba(249,115,22,.12);color:#f97316}.badge-iade::before{background:#f97316}
 .badge-garanti-evet{background:var(--teal-soft);color:var(--teal);font-size:10px;padding:2px 7px}
 .badge-garanti-hayir{background:var(--bg3);color:var(--text3);font-size:10px;padding:2px 7px}
 .badge-admin{background:var(--amber-soft);color:var(--amber)}.badge-admin::before{background:var(--amber)}

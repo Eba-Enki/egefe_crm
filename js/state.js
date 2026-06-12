@@ -27,9 +27,9 @@ const DB={
 };
 let currentPortal=''; // 'servis' | 'satis' | 'stok'
 const AKSESUAR_LIST=['Yazıcı','Yazıcı Batarya','Batarya','A. Şarj Aleti','Yazıcı Şarj Aleti','Bağlantı Kablo'];
-const DURUM_LIST=['Yeni Gelen','S.F. Bekleniyor','Onay Bekleniyor','Onaylandı','Kargoya Verildi','Tamamlandı','Reddedildi'];
-const DURUM_COLORS=['#2dd4bf','#f59e0b','#a78bfa','#3d9bc4','#f472b6','#4ade80','#f87171'];
-const DURUM_CLASS={'Yeni Gelen':'badge-yeni','S.F. Bekleniyor':'badge-sf','Onay Bekleniyor':'badge-onay-bekl','Onaylandı':'badge-onaylandi','Kargoya Verildi':'badge-kargo','Tamamlandı':'badge-teslim','Reddedildi':'badge-reddedildi'};
+const DURUM_LIST=['Yeni Gelen','S.F. Bekleniyor','Onay Bekleniyor','Onaylandı','Kargoya Verildi','Tamamlandı','Reddedildi','İade Edildi'];
+const DURUM_COLORS=['#2dd4bf','#f59e0b','#a78bfa','#3d9bc4','#f472b6','#4ade80','#f87171','#f97316'];
+const DURUM_CLASS={'Yeni Gelen':'badge-yeni','S.F. Bekleniyor':'badge-sf','Onay Bekleniyor':'badge-onay-bekl','Onaylandı':'badge-onaylandi','Kargoya Verildi':'badge-kargo','Tamamlandı':'badge-teslim','Reddedildi':'badge-reddedildi','İade Edildi':'badge-iade'};
 
 let state={
   currentUser:null,prevPage:'servisler',activeTeklifId:null,

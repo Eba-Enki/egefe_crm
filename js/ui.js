@@ -146,14 +146,19 @@ function stokSayfaExcel(){
 }
 
 // Form page navigators
-function goServisForm(editId){
-  if(state.currentUser?.rol==='izleyici'){toast('Yetki yok.','error');return}
+function goServisForm(editId,viewOnly){
+  if(!viewOnly&&state.currentUser?.rol==='izleyici'){toast('Yetki yok.','error');return}
+  // Önceki view-only durumunu sıfırla
+  document.querySelectorAll('#page-servis-form input:not([type=hidden]),#page-servis-form select,#page-servis-form textarea').forEach(function(el){el.disabled=false;});
+  var _sfSave=document.getElementById('sf-save-btn');if(_sfSave)_sfSave.style.display='';
+  var _sfCancel=document.querySelector('#page-servis-form .form-actions .btn-ghost');if(_sfCancel)_sfCancel.textContent='İptal';
+  document.querySelectorAll('#page-servis-form .seri-no-row .btn-icon,#page-servis-form button[onclick*="addSeriNoRow"]').forEach(function(el){el.style.display='';});
   state.prevPage=document.querySelector('.page.active')?.id?.replace('page-','')||'servisler';
   document.getElementById('sf-edit-id').value=editId||'';
   if(editId){
     const s=state.servisler.find(x=>x.id===editId);
     if(!s)return;
-    document.getElementById('sf-title').textContent='Servis Düzenle';
+    document.getElementById('sf-title').textContent=viewOnly?'Kayıt Görüntüle':'Servis Düzenle';
     document.getElementById('sf-sub').textContent=s.kayitNo+' · '+s.kurumAdi;
     document.getElementById('sf-kurumAdi').value=s.kurumAdi||'';
     document.getElementById('sf-ilgiliKisi').value=s.ilgiliKisi||'';
@@ -184,6 +189,13 @@ function goServisForm(editId){
     unlockMusteriField('sf-kurumAdi');
   }
   renderSfChips();
+  if(viewOnly){
+    // Tüm form alanlarını salt okunur yap
+    document.querySelectorAll('#page-servis-form input:not([type=hidden]),#page-servis-form select,#page-servis-form textarea').forEach(function(el){el.disabled=true;});
+    if(_sfSave)_sfSave.style.display='none';
+    if(_sfCancel)_sfCancel.textContent='Kapat';
+    document.querySelectorAll('#page-servis-form .seri-no-row .btn-icon,#page-servis-form button[onclick*="addSeriNoRow"]').forEach(function(el){el.style.display='none';});
+  }
   showPage('servis-form',true);
 }
 function goTeklifForm(editId,servisId){

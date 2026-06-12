@@ -35,14 +35,15 @@ function showDurumMenu(sid, btnEl){
   var existing=document.getElementById('durum-menu-'+sid);
   if(existing){existing.remove();return;}
   document.querySelectorAll('.durum-quick-menu').forEach(function(m){m.remove();});
-  const DURUMLAR=['Yeni Gelen','S.F. Bekleniyor','Onay Bekleniyor','Onaylandı','Reddedildi','Gönderildi'];
+  // Onay Bekleniyor ve üzeri durumlar yalnızca Teklifler menüsünden değiştirilir
+  const MANUEL_DURUMLAR=['Yeni Gelen','S.F. Bekleniyor','İade Edildi'];
   const s=state.servisler.find(x=>x.id===sid);
   if(!s)return;
   const menu=document.createElement('div');
   menu.id='durum-menu-'+sid;
   menu.className='durum-quick-menu';
   menu.style.cssText='position:fixed;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;z-index:600;min-width:190px;box-shadow:0 8px 24px rgba(0,0,0,.5);overflow:hidden;';
-  menu.innerHTML=DURUMLAR.map(function(d){
+  menu.innerHTML=MANUEL_DURUMLAR.map(function(d){
     var active=d===s.durum;
     return '<div onmousedown="event.stopPropagation();quickDurumChange(\''+sid+'\',\''+d+'\');document.getElementById(\'durum-menu-'+sid+'\')?.remove();" style="padding:9px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;'+(active?'background:var(--accent-soft);color:var(--accent);font-weight:600;':'color:var(--text2);')+'transition:background .1s;" onmouseover="this.style.background=\'var(--bg4)\'" onmouseout="this.style.background=\''+(active?'var(--accent-soft)':'')+'\'"><span style="width:7px;height:7px;border-radius:50%;background:'+durumColor(d)+';flex-shrink:0;display:inline-block"></span>'+d+(active?' ✓':'')+'</div>';
   }).join('');
@@ -64,11 +65,13 @@ function showDurumMenu(sid, btnEl){
 }
 
 function durumColor(d){
-  const map={'Yeni Gelen':'#2dd4bf','S.F. Bekleniyor':'#f59e0b','Onay Bekleniyor':'#a78bfa','Onaylandı':'#3d9bc4','Reddedildi':'#f87171','Gönderildi':'#4ade80'};
+  const map={'Yeni Gelen':'#2dd4bf','S.F. Bekleniyor':'#f59e0b','Onay Bekleniyor':'#a78bfa','Onaylandı':'#3d9bc4','Reddedildi':'#f87171','Gönderildi':'#4ade80','İade Edildi':'#f97316'};
   return map[d]||'#888';
 }
 
 function quickDurumChange(sid,yeni){
+  var MANUEL_DURUMLAR=['Yeni Gelen','S.F. Bekleniyor','İade Edildi'];
+  if(!MANUEL_DURUMLAR.includes(yeni)){toast('Bu durum yalnızca Teklifler menüsünden değiştirilebilir.','info');return;}
   var idx=state.servisler.findIndex(function(x){return x.id===sid;});
   if(idx<0)return;
   state.servisler[idx].durum=yeni;
@@ -76,7 +79,7 @@ function quickDurumChange(sid,yeni){
   toast('Durum "'+yeni+'" olarak güncellendi.','success');
 }
 
-const ARSIV_DURUMLAR = ['Gönderildi', 'Reddedildi'];
+const ARSIV_DURUMLAR = ['Gönderildi', 'Reddedildi', 'İade Edildi'];
 let servisTab = 'aktif';
 
 function switchServisTab(tab) {
@@ -145,6 +148,22 @@ function renderTable(){
   renderPagination('servis-pagination',servisPage,data.length,'setServisPage');
   tbody.innerHTML=pagedServis.map(s=>{
     const hasTeklif=state.teklifler.some(t=>t.servisId===s.id);
+    const isManuelDurum=s.durum==='Yeni Gelen'||s.durum==='S.F. Bekleniyor'||s.durum==='İade Edildi';
+    const isSFBekleniyor=s.durum==='S.F. Bekleniyor';
+    // Düzenle: sadece manuel durumlarda canEdit için; diğerleri view-only
+    const editBtn=canEdit&&isManuelDurum
+      ?`<button class="btn-icon" title="Düzenle" onclick="goServisForm('${s.id}')">✎</button>`
+      :`<button class="btn-icon" title="Kayıt Görüntüle" style="color:var(--text2)" onclick="goServisForm('${s.id}',true)">&#128065;</button>`;
+    // Durum değiştir: sadece manuel durumlarda ve arşiv değilse
+    const durumBtn=canEdit&&!isArsiv&&isManuelDurum
+      ?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showDurumMenu('${s.id}',this)">⇅</button>`
+      :'';
+    // Teklif butonu: S.F. Bekleniyor + teklif yok → Tekliflendir; teklif varsa → Teklife Git
+    let teklifBtn='';
+    if(!isArsiv){
+      if(canEdit&&isSFBekleniyor&&!hasTeklif)teklifBtn=`<button class="btn-icon" title="Tekliflendir" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')">＋◎</button>`;
+      else if(hasTeklif)teklifBtn=`<button class="btn-icon" title="Teklife Git" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')">◎</button>`;
+    }
     return`<tr${isArsiv?' style="opacity:0.8"':''}>
       <td><span class="kn-badge">${s.kayitNo}</span></td>
       <td style="font-weight:500;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.kurumAdi||'—'}</td>
@@ -154,9 +173,9 @@ function renderTable(){
       <td><span class="badge ${s.garantiDurumu==='Evet'?'badge-garanti-evet':'badge-garanti-hayir'}">${s.garantiDurumu}</span></td>
       <td style="color:var(--text2);font-size:12px">${s.ilgiliKisi||'—'}</td>
       <td><div class="action-row" style="justify-content:flex-end">
-        <button class="btn-icon" title="${canEdit?'Düzenle':'Görüntüle'}" onclick="goServisForm('${s.id}')">✎</button>
-        ${canEdit?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showDurumMenu('${s.id}',this)">⇅</button>`:''}
-        ${canEdit?`<button class="btn-icon" title="${hasTeklif?'Teklif Görüntüle':'Tekliflendir'}" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')">${hasTeklif?'◎':'＋◎'}</button>`:''}
+        ${editBtn}
+        ${durumBtn}
+        ${teklifBtn}
         ${isArsiv&&state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" title="Aktife Al" style="color:var(--teal);border-color:rgba(45,212,191,.3)" onclick="arsivdenGeriAl('${s.id}')">↩</button>`:''}
         ${state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('servis','${s.id}')">⊗</button>`:''}
       </div></td>
@@ -166,7 +185,7 @@ function renderTable(){
 function sortTable(col){if(state.sortCol===col)state.sortDir=state.sortDir==='asc'?'desc':'asc';else{state.sortCol=col;state.sortDir='asc';}document.querySelectorAll('[id^=sort-]').forEach(el=>el.textContent='');const el=document.getElementById('sort-'+col);if(el)el.textContent=state.sortDir==='asc'?'▲':'▼';renderTable()}
 function filterTable(){renderTable()}
 function clearTeklifFilters(){
-  ['tf-f-kurum','tf-f-teklif','tf-f-durum','tf-f-ts','tf-f-te'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  ['tf-f-kurum','tf-f-teklif','tf-f-seri','tf-f-durum','tf-f-ts','tf-f-te'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
   renderTeklifler();
 }
 function clearFilters(doRender){if(doRender===false){['f-kurum','f-seri'].forEach(function(id){document.getElementById(id).value='';});['f-durum','f-garanti'].forEach(function(id){document.getElementById(id).value='';});['f-ts','f-te'].forEach(function(id){document.getElementById(id).value='';});return;}['f-kurum','f-seri'].forEach(function(id){document.getElementById(id).value='';});['f-durum','f-garanti'].forEach(function(id){document.getElementById(id).value='';});['f-ts','f-te'].forEach(function(id){document.getElementById(id).value='';});renderTable();}

@@ -113,17 +113,19 @@ function renderTeklifler(){
   const canEdit=state.currentUser?.rol!=='izleyici';
   var fK2=(document.getElementById('tf-f-kurum')||{}).value||'';
   var fTN=(document.getElementById('tf-f-teklif')||{}).value||'';
+  var fSeri=(document.getElementById('tf-f-seri')||{}).value||'';
   var fD2=(document.getElementById('tf-f-durum')||{}).value||'';
   var fTS2=(document.getElementById('tf-f-ts')||{}).value||'';
   var fTE2=(document.getElementById('tf-f-te')||{}).value||'';
   var filtTl2=tabTl.filter(function(t){
     return(!fK2||(t.kurum||'').toLowerCase().includes(fK2.toLowerCase()))
       &&(!fTN||(t.teklifNo||'').toLowerCase().includes(fTN.toLowerCase()))
+      &&(!fSeri||(t.seriNo||'').toLowerCase().includes(fSeri.toLowerCase()))
       &&(!fD2||t.durum===fD2)&&(!fTS2||t.teklifTarihi>=fTS2)&&(!fTE2||t.teklifTarihi<=fTE2);
   });
   var fcEl=document.getElementById('teklif-filter-count');
   if(fcEl)fcEl.textContent=filtTl2.length!==tabTl.length?filtTl2.length+'/'+tabTl.length+' teklif':tabTl.length+' teklif';
-  var newTH=JSON.stringify([fK2,fTN,fD2,fTS2,fTE2,teklifTab]);if(newTH!==_teklifFilterHash){tekliflerPage=1;_teklifFilterHash=newTH;}
+  var newTH=JSON.stringify([fK2,fTN,fSeri,fD2,fTS2,fTE2,teklifTab]);if(newTH!==_teklifFilterHash){tekliflerPage=1;_teklifFilterHash=newTH;}
   var showTemsilci=currentPortal==='satis';
   var thS=document.getElementById('th-sorumlu');
   if(thS)thS.style.display=showTemsilci?'':'none';

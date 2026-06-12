@@ -1449,7 +1449,7 @@ function stokNedenRender(){
 
 function stokNedenEkle(){
   var el=document.getElementById('neden-yeni'); if(!el) return;
-  var val=el.value.trim(); if(!val) return toast('Çıkış nedeni boş olamaz.','error');
+  var val=toTitleCase(el.value.trim()); if(!val) return toast('Çıkış nedeni boş olamaz.','error');
   stokInit();
   if(state.stokSettings.cikisNedenleri.includes(val)) return toast('Bu çıkış nedeni zaten var.','info');
   state.stokSettings.cikisNedenleri.push(val);
@@ -1550,7 +1550,7 @@ function stokRenderTicariKatAyar(){
 
 function stokKatEkle(){
   stokInit();
-  var ad=((document.getElementById('kat-yeni-ad')||{}).value||'').trim();
+  var ad=toTitleCase(((document.getElementById('kat-yeni-ad')||{}).value||'').trim());
   var sb=parseInt((document.getElementById('kat-yeni-sb')||{}).value)||300;
   var kb=parseInt((document.getElementById('kat-yeni-kb')||{}).value)||3;
   var fp=parseFloat((document.getElementById('kat-yeni-fp')||{}).value)||0;
@@ -1571,7 +1571,7 @@ function stokKatSil(i){
 
 function stokTicariKatEkle(){
   stokInit();
-  var ad=((document.getElementById('tkat-yeni-ad')||{}).value||'').trim();
+  var ad=toTitleCase(((document.getElementById('tkat-yeni-ad')||{}).value||'').trim());
   if(!ad) return toast('Kategori adı zorunludur.','error');
   state.stokSettings.ticariKategoriler.push({id:'tkat'+Date.now(),ad:ad});
   saveAll(); toast('Hazır ürün kategorisi eklendi.','success'); stokRenderTicariKatAyar();
@@ -1654,7 +1654,7 @@ function paramFormKapat(){
 
 function saveStokParam(){
   stokInit();
-  var ad=((document.getElementById('param-ad')||{}).value||'').trim();
+  var ad=toTitleCase(((document.getElementById('param-ad')||{}).value||'').trim());
   var kisaltma=((document.getElementById('param-kisaltma')||{}).value||'').trim().toUpperCase();
   var aktif=(document.getElementById('param-aktif')||{}).checked!==false;
   var idxStr=((document.getElementById('param-edit-idx')||{}).value||'');

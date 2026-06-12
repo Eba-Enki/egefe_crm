@@ -65,7 +65,7 @@ function saveUrun(){
   var urunKoduEl=document.getElementById('uf-urunKodu');var urunKodu=urunKoduEl?urunKoduEl.value.trim():'';
   const pbEl2=document.getElementById('uf-paraBirimi');const paraBirimi=pbEl2?pbEl2.value:'TRY';
   const katEl=document.getElementById('uf-kategori');
-  const payload={urunAdi,urunKodu,marka:document.getElementById('uf-marka').value.trim(),model:document.getElementById('uf-model').value.trim(),kategori:katEl?katEl.value:'',fiyat,paraBirimi,aciklama:document.getElementById('uf-aciklama').value.trim()};
+  const payload={urunAdi:toTitleCase(urunAdi),urunKodu,marka:toTitleCase(document.getElementById('uf-marka').value.trim()),model:toTitleCase(document.getElementById('uf-model').value.trim()),kategori:katEl?katEl.value:'',fiyat,paraBirimi,aciklama:document.getElementById('uf-aciklama').value.trim()};
   if(editId){const idx=state.urunler.findIndex(x=>x.id===editId);if(idx>=0){state.urunler[idx]={...state.urunler[idx],...payload};toast('Güncellendi.','success');}}
   else{state.urunler.push({id:'p'+Date.now(),...payload});toast('Ürün eklendi.','success');}
   saveAll();_formDirty=false;showPage('urunler');
@@ -299,10 +299,10 @@ function importUrunlerExcel(e){
         if(!['TRY','USD','EUR','GBP'].includes(pb))pb='TRY';
         state.urunler.push({
           id:'p'+Date.now()+Math.random().toString(36).slice(2,6),
-          urunAdi:urunAdi,
+          urunAdi:toTitleCase(urunAdi),
           urunKodu:urunKodu,
-          marka:(row['Marka']||'').toString().trim(),
-          model:(row['Model']||'').toString().trim(),
+          marka:toTitleCase((row['Marka']||'').toString().trim()),
+          model:toTitleCase((row['Model']||'').toString().trim()),
           fiyat:fiyat,
           paraBirimi:pb,
           kategori:(row['Kategori']||'').toString().trim(),

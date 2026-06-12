@@ -16,4 +16,5 @@ function initApp() {
   document.getElementById('portal-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'none';
   renderFooter();
+  _startAutoLogout();
 }

@@ -7,9 +7,22 @@ function showSistemScreen(user){
   if(!ss) return;
   var nameEl = document.getElementById('sistem-user-name');
   if(nameEl) nameEl.textContent = user.ad;
+  var autoInput = document.getElementById('autologout-input');
+  if(autoInput) autoInput.value = localStorage.getItem('ege_autologout_min')||'30';
   ss.style.display = 'flex';
   applyLogoForTheme();
   renderSistemKullanicilar();
+}
+
+function saveAutoLogoutSetting(){
+  var el = document.getElementById('autologout-input');
+  var val = parseInt((el||{}).value)||30;
+  if(val<5) val=5;
+  if(val>480) val=480;
+  if(el) el.value=val;
+  localStorage.setItem('ege_autologout_min', String(val));
+  if(typeof _startAutoLogout==='function') _startAutoLogout();
+  toast('Otomatik çıkış süresi kaydedildi.','success');
 }
 
 function renderSistemKullanicilar(){

@@ -185,6 +185,82 @@ function applyPortal(){
   document.querySelectorAll('.tf-satis-field').forEach(function(el){el.style.display=isSatis?'':'none';});
   var defaultPage=isStok?'stok-dashboard':'dashboard';
   showPage(defaultPage);
+  renderPortalSwitcher();
+}
+
+function renderPortalSwitcher(){
+  var wrap=document.getElementById('portal-switcher-wrap');
+  if(!wrap||!state.currentUser)return;
+  var authorized=['servis','satis','stok'].filter(function(p){return _userCanAccessPortal(state.currentUser,p);});
+  if(authorized.length<2){wrap.style.display='none';return;}
+  wrap.style.display='';
+  var label=document.getElementById('portal-switch-label');
+  var labels={servis:'Teknik Servis',satis:'Satış Pazarlama',stok:'Stok Yönetim'};
+  if(label)label.textContent=(labels[currentPortal]||currentPortal)+' ▾';
+}
+
+function togglePortalSwitcher(e){
+  e.stopPropagation();
+  var panel=document.getElementById('portal-switch-panel');
+  var btn=document.getElementById('portal-switch-btn');
+  if(!panel||!btn)return;
+  if(panel.style.display==='none'||!panel.style.display){
+    var authorized=['servis','satis','stok'].filter(function(p){return _userCanAccessPortal(state.currentUser,p);});
+    var labels={servis:'Teknik Servis Portalı',satis:'Satış Pazarlama Portalı',stok:'Stok Yönetim Portalı'};
+    panel.innerHTML='<div style="padding:4px">'+authorized.map(function(p){
+      var isActive=p===currentPortal;
+      return '<div '+(isActive?'':'onclick="switchToPortal(\''+p+'\')"')+' style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:4px;cursor:'+(isActive?'default':'pointer')+';background:'+(isActive?'var(--bg3)':'transparent')+'" '+(isActive?'':' onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'transparent\'"')+'>'
+        +'<span style="width:14px;text-align:center;color:var(--accent);font-size:11px">'+(isActive?'✓':'')+'</span>'
+        +'<span style="font-size:12px;font-weight:'+(isActive?'600':'400')+';color:'+(isActive?'var(--text)':'var(--text2)')+'">'+labels[p]+'</span>'
+      +'</div>';
+    }).join('')+'</div>';
+    var rect=btn.getBoundingClientRect();
+    panel.style.top=(rect.bottom+4)+'px';
+    panel.style.left=rect.left+'px';
+    panel.style.width=rect.width+'px';
+    panel.style.display='';
+  } else {
+    panel.style.display='none';
+  }
+}
+
+document.addEventListener('click',function(){
+  var panel=document.getElementById('portal-switch-panel');
+  if(panel&&panel.style.display!=='none')panel.style.display='none';
+});
+
+function switchToPortal(pkey){
+  var panel=document.getElementById('portal-switch-panel');
+  if(panel)panel.style.display='none';
+  if(!state.currentUser||!_userCanAccessPortal(state.currentUser,pkey)||pkey===currentPortal)return;
+  currentPortal=pkey;
+  document.documentElement.setAttribute('data-portal',pkey);
+  if(pkey==='stok'){
+    state.settings={};
+    state.hamStokGirisler=DB.pload('hamStokGirisler',[]);
+    state.hamStokLotlar=DB.pload('hamStokLotlar',[]);
+    state.hamStokCikislar=DB.pload('hamStokCikislar',[]);
+    state.bitmisStokGirisler=DB.pload('bitmisStokGirisler',[]);
+    state.bitmisStokLotlar=DB.pload('bitmisStokLotlar',[]);
+    state.bitmisCikislar=DB.pload('bitmisCikislar',[]);
+    state.stokSettings=DB.pload('stokSettings',null);
+    savedTutanaklar=[];
+  } else {
+    state.servisler=pkey==='servis'?DB.pload('servisler',genSample()):[];
+    state.teklifler=DB.pload('teklifler',[]);
+    state.musteriler=DB.pload('musteriler',[]);
+    state.urunler=DB.pload('urunler',[]);
+    state.siparisler=DB.pload('siparisler',[]);
+    state.faturalar=DB.pload('faturalar',[]);
+    state.settings=DB.pload('settings',{firma:'Egefe Teknik Servis',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[]});
+    if(!state.settings.parametreler)state.settings.parametreler=[];
+    savedTutanaklar=[];
+  }
+  sessionStorage.setItem('ege_ses_'+pkey,JSON.stringify({id:state.currentUser.id,username:state.currentUser.username}));
+  applyUser(state.currentUser);
+  applyPortal();
+  _applyPageRestrictions(state.currentUser);
+  initApp();
 }
 
 function applyUser(u){
@@ -266,7 +342,9 @@ function doLogout(){
   if(!confirm('Çıkış yapılsın mı?'))return;
   var wasSistem=currentPortal==='sistem';
   document.documentElement.removeAttribute('data-portal');
-  sessionStorage.removeItem('ege_ses_'+currentPortal);
+  ['servis','satis','stok','sistem'].forEach(function(p){sessionStorage.removeItem('ege_ses_'+p);});
+  if(typeof _autoLogoutTimer!=='undefined'&&_autoLogoutTimer){clearInterval(_autoLogoutTimer);_autoLogoutTimer=null;}
+  var sw=document.getElementById('portal-switcher-wrap');if(sw)sw.style.display='none';
   state.currentUser=null;
   currentPortal='';
   if(wasSistem){

@@ -1,4 +1,21 @@
 var PAGE_SIZE=25;
+var _autoLogoutTimer=null;
+var _lastActivity=Date.now();
+function _resetActivity(){_lastActivity=Date.now();}
+function _startAutoLogout(){
+  if(_autoLogoutTimer)clearInterval(_autoLogoutTimer);
+  _lastActivity=Date.now();
+  _autoLogoutTimer=setInterval(function(){
+    if(!state.currentUser)return;
+    var mins=parseInt(localStorage.getItem('ege_autologout_min')||'30')||30;
+    if(Date.now()-_lastActivity>mins*60000){
+      clearInterval(_autoLogoutTimer);_autoLogoutTimer=null;
+      alert('Uzun süreli hareketsizlik nedeniyle oturumunuz sonlandırıldı.');
+      doLogout();
+    }
+  },30000);
+}
+['mousemove','keydown','click','touchstart'].forEach(function(evt){document.addEventListener(evt,_resetActivity,{passive:true});});
 var _formDirty=false;
 var _currentPageId='';
 var GUARDED_FORM_PAGES=new Set(['servis-form','teklif-form','musteri-form','urun-form','ham-giris','ham-cikis','bitmis-giris','bitmis-cikis']);

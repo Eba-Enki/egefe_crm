@@ -290,14 +290,15 @@ function _applyPageRestrictions(u){
 }
 
 function switchPortal(){
-  if(!confirm('Portala geri dönmek istiyor musunuz? Mevcut oturum kapatılacak.'))return;
-  document.documentElement.removeAttribute('data-portal');
-  sessionStorage.removeItem('ege_ses_'+currentPortal);
-  state.currentUser=null;
-  currentPortal='';
-  document.getElementById('portal-screen').style.display='flex';
-  var pg=document.getElementById('page-dashboard');
-  if(pg)pg.classList.add('active');
+  showConfirm('Portala geri dönmek istiyor musunuz? Mevcut oturum kapatılacak.',function(){
+    document.documentElement.removeAttribute('data-portal');
+    sessionStorage.removeItem('ege_ses_'+currentPortal);
+    state.currentUser=null;
+    currentPortal='';
+    document.getElementById('portal-screen').style.display='flex';
+    var pg=document.getElementById('page-dashboard');
+    if(pg)pg.classList.add('active');
+  },{title:'Portal Değiştir',okText:'Evet',okClass:'btn-primary'});
 }
 
 function doLogin(){
@@ -339,20 +340,21 @@ function doLogin(){
 }
 
 function doLogout(){
-  if(!confirm('Çıkış yapılsın mı?'))return;
-  var wasSistem=currentPortal==='sistem';
-  document.documentElement.removeAttribute('data-portal');
-  ['servis','satis','stok','sistem'].forEach(function(p){sessionStorage.removeItem('ege_ses_'+p);});
-  if(typeof _autoLogoutTimer!=='undefined'&&_autoLogoutTimer){clearInterval(_autoLogoutTimer);_autoLogoutTimer=null;}
-  var sw=document.getElementById('portal-switcher-wrap');if(sw)sw.style.display='none';
-  state.currentUser=null;
-  currentPortal='';
-  if(wasSistem){
-    var ss=document.getElementById('sistem-screen');
-    if(ss)ss.style.display='none';
-  }
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('portal-screen').style.display='flex';
+  showConfirm('Çıkış yapılsın mı?',function(){
+    var wasSistem=currentPortal==='sistem';
+    document.documentElement.removeAttribute('data-portal');
+    ['servis','satis','stok','sistem'].forEach(function(p){sessionStorage.removeItem('ege_ses_'+p);});
+    if(typeof _autoLogoutTimer!=='undefined'&&_autoLogoutTimer){clearInterval(_autoLogoutTimer);_autoLogoutTimer=null;}
+    var sw=document.getElementById('portal-switcher-wrap');if(sw)sw.style.display='none';
+    state.currentUser=null;
+    currentPortal='';
+    if(wasSistem){
+      var ss=document.getElementById('sistem-screen');
+      if(ss)ss.style.display='none';
+    }
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('portal-screen').style.display='flex';
+  },{title:'Çıkış',okText:'Evet',okClass:'btn-primary'});
 }
 
 document.getElementById('login-pass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});

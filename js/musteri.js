@@ -193,20 +193,18 @@ function saveSettings(){
 // ════ CONFIRM DELETE ════
 function confirmDelete(type,id){
   const msgs={servis:'Bu servis kaydını silmek istiyor musunuz? İlişkili teklifler de silinecek.',teklif:'Bu teklifi silmek istiyor musunuz?',siparis:'Bu siparişi silmek istiyor musunuz?',fatura:'Bu faturayı silmek istiyor musunuz?',musteri:'Bu müşteriyi silmek istiyor musunuz?',urun:'Bu ürünü silmek istiyor musunuz?',kullanici:'Bu kullanıcıyı silmek istiyor musunuz?'};
-  document.getElementById('confirm-msg').textContent=msgs[type]||'Emin misiniz?';
-  document.getElementById('confirm-ok-btn').onclick=()=>{
+  showConfirm(msgs[type]||'Emin misiniz?',function(){
     if(type==='servis'){state.servisler=state.servisler.filter(x=>x.id!==id);state.teklifler=state.teklifler.filter(t=>t.servisId!==id)}
     else if(type==='teklif')state.teklifler=state.teklifler.filter(x=>x.id!==id);
     else if(type==='musteri')state.musteriler=state.musteriler.filter(x=>x.id!==id);
     else if(type==='urun')state.urunler=state.urunler.filter(x=>x.id!==id);
     else if(type==='siparis'){state.siparisler=(state.siparisler||[]).filter(function(x){return x.id!==id;});}
     else if(type==='fatura'){state.faturalar=(state.faturalar||[]).filter(function(x){return x.id!==id;});}
-    saveAll();closeModal('modal-confirm');
+    saveAll();
     const refreshMap={servis:()=>{renderTable();renderDashboard()},teklif:renderTeklifler,siparis:renderSiparisler,fatura:renderFaturalar,musteri:renderMusteriler,urun:renderUrunler};
     if(refreshMap[type])refreshMap[type]();
     toast('Silindi.','info');
-  };
-  openModal('modal-confirm');
+  });
 }
 
 

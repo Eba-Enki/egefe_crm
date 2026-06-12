@@ -148,20 +148,21 @@ function renderTeklifler(){
   </tr>`).join('');
 }
 function changeTeklifDurum(id,yeni){
-  if(!confirm(`Teklif "${yeni}" olarak güncellensin mi?`))return;
-  const ti=state.teklifler.findIndex(x=>x.id===id);if(ti<0)return;
-  state.teklifler[ti].durum=yeni;
-  if(yeni==='Onaylandı')state.teklifler[ti].onayTarihi=today();
-  const sid=state.teklifler[ti].servisId;
-  if(sid){
-    const si=state.servisler.findIndex(x=>x.id===sid);
-    if(si>=0){
-      var servisDurum=yeni==='Tamamlandı'?'Gönderildi':yeni;
-      state.servisler[si].durum=servisDurum;
-      if(yeni==='Onaylandı')state.servisler[si].onayTarihi=today();
+  showConfirm('Teklif "'+yeni+'" olarak güncellensin mi?',function(){
+    const ti=state.teklifler.findIndex(x=>x.id===id);if(ti<0)return;
+    state.teklifler[ti].durum=yeni;
+    if(yeni==='Onaylandı')state.teklifler[ti].onayTarihi=today();
+    const sid=state.teklifler[ti].servisId;
+    if(sid){
+      const si=state.servisler.findIndex(x=>x.id===sid);
+      if(si>=0){
+        var servisDurum=yeni==='Tamamlandı'?'Gönderildi':yeni;
+        state.servisler[si].durum=servisDurum;
+        if(yeni==='Onaylandı')state.servisler[si].onayTarihi=today();
+      }
     }
-  }
-  saveAll();renderTeklifler();renderDashboard();toast(`Teklif "${yeni}" olarak güncellendi.`,'success');
+    saveAll();renderTeklifler();renderDashboard();toast('Teklif "'+yeni+'" olarak güncellendi.','success');
+  },{title:'Durum Güncelle',okText:'Evet',okClass:'btn-primary'});
 }
 
 function openTeklifDetay(id){

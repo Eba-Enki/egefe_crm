@@ -430,12 +430,13 @@ function previewTutanak(no){
 }
 
 function deleteTutanak(no){
-  if(!confirm('Bu tutanak silinsin mi?')) return;
-  loadSavedTutanaklar();
-  savedTutanaklar = savedTutanaklar.filter(t=>t.no!==no);
-  DB.psave('tutanaklar', savedTutanaklar);
-  renderTutanaklar();
-  toast('Tutanak silindi.','info');
+  showConfirm('Bu tutanak silinsin mi?',function(){
+    loadSavedTutanaklar();
+    savedTutanaklar = savedTutanaklar.filter(t=>t.no!==no);
+    DB.psave('tutanaklar', savedTutanaklar);
+    renderTutanaklar();
+    toast('Tutanak silindi.','info');
+  });
 }
 
 function printTutanakById(no){

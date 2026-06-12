@@ -1331,9 +1331,9 @@
 <!-- ── MODAL: CONFIRM ── -->
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal modal-sm">
-    <div class="modal-header"><span class="modal-title">Onay</span><button class="close-btn" onclick="closeModal('modal-confirm')">✕</button></div>
+    <div class="modal-header"><span class="modal-title" id="confirm-title">Onay</span><button class="close-btn" onclick="closeModal('modal-confirm')">✕</button></div>
     <div class="modal-body"><p style="color:var(--text2);line-height:1.6;font-size:13px" id="confirm-msg">Emin misiniz?</p></div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-confirm')">İptal</button><button class="btn btn-danger" id="confirm-ok-btn">Evet, Sil</button></div>
+    <div class="modal-footer"><button class="btn btn-ghost" id="confirm-cancel-btn">Hayır</button><button class="btn btn-danger" id="confirm-ok-btn">Evet</button></div>
   </div>
 </div>
 

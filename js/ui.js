@@ -57,9 +57,25 @@ const PAGE_TITLES={dashboard:'Dashboard',servisler:'Servis Kayıtları','servis-
 'bitmis-cikislar':'<strong>HAZIR ÜRÜN STOK ÇIKIŞ LİSTESİ</strong>',
 'bitmis-cikis':'Hazır Ürün Çıkışı',
 'stok-ayarlar':'<strong>STOK - AYARLAR</strong>'};
+function showConfirm(msg, onOk, opts){
+  opts=opts||{};
+  document.getElementById('confirm-title').textContent=opts.title||'Onay';
+  document.getElementById('confirm-msg').textContent=msg;
+  var okBtn=document.getElementById('confirm-ok-btn');
+  var cancelBtn=document.getElementById('confirm-cancel-btn');
+  okBtn.textContent=opts.okText||'Evet';
+  okBtn.className='btn '+(opts.okClass||'btn-danger');
+  cancelBtn.textContent=opts.cancelText||'Hayır';
+  cancelBtn.onclick=function(){closeModal('modal-confirm');};
+  okBtn.onclick=function(){closeModal('modal-confirm');if(onOk)onOk();};
+  openModal('modal-confirm');
+}
 function showPage(id,skipRender){
   if(_formDirty&&GUARDED_FORM_PAGES.has(_currentPageId)&&id!==_currentPageId){
-    if(!confirm('Kaydedilmemiş değişiklikler var.\nSayfadan çıkmak istediğinize emin misiniz?'))return;
+    showConfirm('Kaydedilmemiş değişiklikler var. Sayfadan çıkmak istediğinize emin misiniz?',function(){
+      _formDirty=false;showPage(id,skipRender);
+    },{title:'Kaydedilmemiş Değişiklikler',okText:'Evet',okClass:'btn-primary',cancelText:'Hayır'});
+    return;
   }
   _formDirty=false;
   _currentPageId=id;

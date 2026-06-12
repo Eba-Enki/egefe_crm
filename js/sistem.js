@@ -189,11 +189,12 @@ function cancelSistemForm(){
 
 function silSistemUser(id){
   if(state.currentUser&&state.currentUser.id===id) return toast('Kendi hesabınızı silemezsiniz.','error');
-  if(!confirm('Bu kullanıcıyı silmek istiyor musunuz?')) return;
-  state.users = (state.users||[]).filter(function(u){return u.id!==id;});
-  saveGlobalUsers();
-  renderSistemKullanicilar();
-  toast('Kullanıcı silindi.','info');
+  showConfirm('Bu kullanıcıyı silmek istiyor musunuz?',function(){
+    state.users = (state.users||[]).filter(function(u){return u.id!==id;});
+    saveGlobalUsers();
+    renderSistemKullanicilar();
+    toast('Kullanıcı silindi.','info');
+  });
 }
 
 function _sEsc(s){

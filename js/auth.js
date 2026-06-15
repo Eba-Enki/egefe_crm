@@ -339,21 +339,24 @@ function doLogin(){
   }
 }
 
+function _performLogout(){
+  var wasSistem=currentPortal==='sistem';
+  document.documentElement.removeAttribute('data-portal');
+  ['servis','satis','stok','sistem'].forEach(function(p){sessionStorage.removeItem('ege_ses_'+p);});
+  if(typeof _autoLogoutTimer!=='undefined'&&_autoLogoutTimer){clearInterval(_autoLogoutTimer);_autoLogoutTimer=null;}
+  var sw=document.getElementById('portal-switcher-wrap');if(sw)sw.style.display='none';
+  state.currentUser=null;
+  currentPortal='';
+  if(wasSistem){
+    var ss=document.getElementById('sistem-screen');
+    if(ss)ss.style.display='none';
+  }
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('portal-screen').style.display='flex';
+}
 function doLogout(){
   showConfirm('Çıkış yapılsın mı?',function(){
-    var wasSistem=currentPortal==='sistem';
-    document.documentElement.removeAttribute('data-portal');
-    ['servis','satis','stok','sistem'].forEach(function(p){sessionStorage.removeItem('ege_ses_'+p);});
-    if(typeof _autoLogoutTimer!=='undefined'&&_autoLogoutTimer){clearInterval(_autoLogoutTimer);_autoLogoutTimer=null;}
-    var sw=document.getElementById('portal-switcher-wrap');if(sw)sw.style.display='none';
-    state.currentUser=null;
-    currentPortal='';
-    if(wasSistem){
-      var ss=document.getElementById('sistem-screen');
-      if(ss)ss.style.display='none';
-    }
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('portal-screen').style.display='flex';
+    _performLogout();
   },{title:'Çıkış',okText:'Evet',okClass:'btn-primary'});
 }
 

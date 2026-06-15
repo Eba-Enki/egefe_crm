@@ -10,8 +10,8 @@ function _startAutoLogout(){
     var mins=parseInt(localStorage.getItem('ege_autologout_min')||'30')||30;
     if(Date.now()-_lastActivity>mins*60000){
       clearInterval(_autoLogoutTimer);_autoLogoutTimer=null;
-      alert('Uzun süreli hareketsizlik nedeniyle oturumunuz sonlandırıldı.');
-      doLogout();
+      toast('Uzun süreli hareketsizlik nedeniyle oturumunuz sonlandırıldı.','error');
+      _performLogout();
     }
   },30000);
 }

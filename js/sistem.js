@@ -129,7 +129,7 @@ function sfRolChange(){
   if(hint) hint.style.display = rol==='yönetici' ? '' : 'none';
 }
 
-function saveSistemUser(){
+async function saveSistemUser(){
   var el = function(id){return document.getElementById(id);};
   var ad       = (el('sf-ad')||{}).value.trim();
   var username = (el('sf-username')||{}).value.trim();
@@ -168,11 +168,19 @@ function saveSistemUser(){
     var idx = (state.users||[]).findIndex(function(x){return x.id===_sistemEditId;});
     if(idx>=0){
       state.users[idx] = Object.assign({}, state.users[idx], {ad:ad,username:username,email:email,rol:rol,izinler:izinler});
-      if(sifre) state.users[idx].sifre = sifre;
+      if(sifre){
+        var salt2=generateSalt();
+        var hash2=await hashPassword(sifre,salt2);
+        state.users[idx].sifreHash=hash2;
+        state.users[idx].sifreSalt=salt2;
+        delete state.users[idx].sifre;
+      }
     }
     toast('Kullanıcı güncellendi.','success');
   } else {
-    state.users.push({id:'gu'+Date.now(),ad:ad,username:username,sifre:sifre,email:email,rol:rol,sonGiris:null,izinler:izinler});
+    var newSalt=generateSalt();
+    var newHash=await hashPassword(sifre,newSalt);
+    state.users.push({id:'gu'+Date.now(),ad:ad,username:username,sifreHash:newHash,sifreSalt:newSalt,email:email,rol:rol,sonGiris:null,izinler:izinler});
     toast('Kullanıcı oluşturuldu.','success');
   }
   saveGlobalUsers();

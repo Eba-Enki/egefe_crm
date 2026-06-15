@@ -301,11 +301,36 @@ function switchPortal(){
   },{title:'Portal Değiştir',okText:'Evet',okClass:'btn-primary'});
 }
 
-function doLogin(){
+async function doLogin(){
+  var loginBtn=document.querySelector('#login-screen .btn-primary');
+  if(loginBtn&&loginBtn.disabled)return;
+  if(loginBtn){loginBtn.disabled=true;loginBtn.textContent='Giriş yapılıyor…';}
+  try{await _doLoginAsync();}finally{
+    if(loginBtn){loginBtn.disabled=false;loginBtn.textContent='Giriş Yap →';}
+  }
+}
+async function _doLoginAsync(){
   var u=document.getElementById('login-user').value.trim();
   var p=document.getElementById('login-pass').value;
   var errEl=document.getElementById('login-error');
-  var user=state.users.find(function(x){return x.username===u&&x.sifre===p;});
+  var candidate=state.users.find(function(x){return x.username===u;});
+  var user=null;
+  if(candidate){
+    if(candidate.sifreHash&&candidate.sifreSalt){
+      // Hashed password — verify with crypto
+      var ok=await verifyPassword(p,candidate.sifreHash,candidate.sifreSalt);
+      if(ok) user=candidate;
+    } else if(candidate.sifre===p){
+      // Plain-text (legacy) — match ok, migrate to hash immediately
+      var salt=generateSalt();
+      var hash=await hashPassword(p,salt);
+      candidate.sifreHash=hash;
+      candidate.sifreSalt=salt;
+      delete candidate.sifre;
+      saveGlobalUsers();
+      user=candidate;
+    }
+  }
   if(!user){
     errEl.textContent='Kullanıcı adı veya şifre hatalı.';
     errEl.style.display='block';

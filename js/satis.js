@@ -280,6 +280,17 @@ async function saveKismiTeslim(){
   toast(tamam?'Tüm kalemler sevk edildi, sipariş tamamlandı.':'Kısmi sevkiyat kaydedildi.','success');
 }
 
+async function loadFaturalar(){
+  try{
+    var res=await apiGet('faturalar');
+    state.faturalar=res.faturalar||[];
+  }catch(e){
+    toast(e.message||'Faturalar yüklenemedi.','error');
+    state.faturalar=state.faturalar||[];
+  }
+  renderFaturalar();
+}
+
 function renderFaturalar(){
   var allData=state.faturalar||[];
   var aktifSayisi=allData.filter(function(f){return ARSIV_FATURALAR.indexOf(f.durum)<0;}).length;

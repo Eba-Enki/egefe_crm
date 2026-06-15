@@ -82,3 +82,15 @@ function requirePortalAccess(array $user, string $portal): void {
         exit;
     }
 }
+
+// Bazı modüller (örn. müşteriler, ürünler) birden fazla portalda paylaşılır;
+// kullanıcının bu portallardan en az birine erişimi olması yeterlidir.
+function requireAnyPortalAccess(array $user, array $portals): void {
+    if ($user['rol'] === 'yönetici') return;
+    foreach ($portals as $portal) {
+        if (!empty($user['izinler'][$portal]['erisim'])) return;
+    }
+    http_response_code(403);
+    echo json_encode(['error' => 'Bu modüle erişim yetkiniz yok']);
+    exit;
+}

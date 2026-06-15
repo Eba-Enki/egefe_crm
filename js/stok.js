@@ -99,7 +99,7 @@ function stokEsc(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt
 function stokKatSelect(elId, selectedId){
   var el=document.getElementById(elId); if(!el)return;
   el.innerHTML=stokKatList().map(function(k){
-    return '<option value="'+k.id+'"'+(k.id===selectedId?' selected':'')+'>'+k.ad+'</option>';
+    return '<option value="'+stokEsc(k.id)+'"'+(k.id===selectedId?' selected':'')+'>'+stokEsc(k.ad)+'</option>';
   }).join('');
 }
 
@@ -207,7 +207,7 @@ function renderStokDashboard(){
         return '<div style="padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">'
           +'<span style="width:6px;height:6px;border-radius:50%;background:'+TIP_COLORS[h.tip]+';flex-shrink:0;display:inline-block"></span>'
           +'<div style="flex:1;min-width:0">'
-            +'<div style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+h.aciklama+'</div>'
+            +'<div style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+stokEsc(h.aciklama)+'</div>'
             +'<div style="font-size:10px;color:var(--text3);margin-top:1px">'+stokEsc(TIP_LABELS[h.tip]||h.tip)+(h.lot?' · '+stokEsc(h.lot):'')+'</div>'
           +'</div>'
           +'<div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);white-space:nowrap">'+stokEsc(h.tarih||'')+'</div>'
@@ -254,7 +254,7 @@ function renderHamStok(){
   var fKritik=(document.getElementById('hs-f-kritik')||{}).checked||false;
 
   var katSel=document.getElementById('hs-f-kat');
-  if(katSel){var cv=katSel.value;katSel.innerHTML='<option value="">Tüm Kategoriler</option>'+stokKatList().map(function(k){return '<option value="'+k.id+'">'+k.ad+'</option>';}).join('');katSel.value=cv;}
+  if(katSel){var cv=katSel.value;katSel.innerHTML='<option value="">Tüm Kategoriler</option>'+stokKatList().map(function(k){return '<option value="'+stokEsc(k.id)+'">'+stokEsc(k.ad)+'</option>';}).join('');katSel.value=cv;}
   var paramSel=document.getElementById('hs-f-param');
   if(paramSel){var pv=paramSel.value;var pAdlar=[...new Set(stokParamList().map(function(p){return p.kisaltma||p.ad;}))].sort();paramSel.innerHTML='<option value="">Tüm Parametreler</option>'+pAdlar.map(function(a){return '<option value="'+stokEsc(a)+'">'+stokEsc(a)+'</option>';}).join('');paramSel.value=pv;}
 
@@ -870,7 +870,7 @@ function renderBitmisStok(){
   var fAra=((document.getElementById('bs-f-arama')||{}).value||'').toLowerCase();
 
   var katSel=document.getElementById('bs-f-kat');
-  if(katSel){var cv=katSel.value;katSel.innerHTML='<option value="">Tüm Kategoriler</option>'+stokTicariKatList().map(function(k){return '<option value="'+k.id+'">'+k.ad+'</option>';}).join('');katSel.value=cv;}
+  if(katSel){var cv=katSel.value;katSel.innerHTML='<option value="">Tüm Kategoriler</option>'+stokTicariKatList().map(function(k){return '<option value="'+stokEsc(k.id)+'">'+stokEsc(k.ad)+'</option>';}).join('');katSel.value=cv;}
 
   var allBL=(state.bitmisStokLotlar||[]).filter(function(l){
     if(fKat&&l.kategoriId!==fKat) return false;
@@ -1339,7 +1339,7 @@ function renderStokHareket(){
   var fLot=((document.getElementById('sh-lot')||{}).value||'').toLowerCase();
 
   var katSel=document.getElementById('sh-kat');
-  if(katSel){var cv=katSel.value;katSel.innerHTML='<option value="">Tüm Kategoriler</option>'+stokKatList().map(function(k){return '<option value="'+k.id+'">'+k.ad+'</option>';}).join('');katSel.value=cv;}
+  if(katSel){var cv=katSel.value;katSel.innerHTML='<option value="">Tüm Kategoriler</option>'+stokKatList().map(function(k){return '<option value="'+stokEsc(k.id)+'">'+stokEsc(k.ad)+'</option>';}).join('');katSel.value=cv;}
 
   var tümHareketler=stokTumHareketler();
   var filtered=tümHareketler.filter(function(h){

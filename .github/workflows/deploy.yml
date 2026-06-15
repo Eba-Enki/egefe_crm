@@ -33,6 +33,7 @@ jobs:
             node_modules/**
             temporary screenshots/**
             sql/**
+            config/db.local.php
             CLAUDE.md
             serve.mjs
             screenshot.mjs

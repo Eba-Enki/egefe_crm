@@ -2,7 +2,7 @@
 
 var _sistemEditId = null;
 
-function showSistemScreen(user){
+async function showSistemScreen(user){
   var ss = document.getElementById('sistem-screen');
   if(!ss) return;
   var nameEl = document.getElementById('sistem-user-name');
@@ -11,6 +11,17 @@ function showSistemScreen(user){
   if(autoInput) autoInput.value = localStorage.getItem('ege_autologout_min')||'30';
   ss.style.display = 'flex';
   applyLogoForTheme();
+  await _loadSistemKullanicilar();
+}
+
+async function _loadSistemKullanicilar(){
+  try{
+    var res = await apiGet('kullanicilar');
+    state.users = res.kullanicilar || [];
+  }catch(e){
+    toast(e.message||'Kullanıcılar yüklenemedi.','error');
+    state.users = state.users || [];
+  }
   renderSistemKullanicilar();
 }
 
@@ -140,8 +151,6 @@ async function saveSistemUser(){
   if(!ad||!username) return toast('Ad ve kullanıcı adı zorunlu.','error');
   if(!_sistemEditId&&!sifre) return toast('Yeni kullanıcı için şifre zorunlu.','error');
   if(sifre&&sifre.length<4) return toast('Şifre en az 4 karakter olmalı.','error');
-  if((state.users||[]).find(function(u){return u.username===username&&u.id!==_sistemEditId;}))
-    return toast('Bu kullanıcı adı zaten kullanılıyor.','error');
 
   var izinler = {servis:{erisim:false,sayfalar:[]},satis:{erisim:false,sayfalar:[]},stok:{erisim:false,sayfalar:[]}};
   if(rol!=='yönetici'){
@@ -164,26 +173,23 @@ async function saveSistemUser(){
     };
   }
 
-  if(_sistemEditId){
-    var idx = (state.users||[]).findIndex(function(x){return x.id===_sistemEditId;});
-    if(idx>=0){
-      state.users[idx] = Object.assign({}, state.users[idx], {ad:ad,username:username,email:email,rol:rol,izinler:izinler});
-      if(sifre){
-        var salt2=generateSalt();
-        var hash2=await hashPassword(sifre,salt2);
-        state.users[idx].sifreHash=hash2;
-        state.users[idx].sifreSalt=salt2;
-        delete state.users[idx].sifre;
-      }
+  var payload = {ad:ad, username:username, email:email, rol:rol, izinler:izinler};
+  if(sifre) payload.password = sifre;
+
+  try{
+    if(_sistemEditId){
+      payload.id = _sistemEditId;
+      await apiPut('kullanicilar', payload);
+      toast('Kullanıcı güncellendi.','success');
+    } else {
+      await apiPost('kullanicilar', payload);
+      toast('Kullanıcı oluşturuldu.','success');
     }
-    toast('Kullanıcı güncellendi.','success');
-  } else {
-    var newSalt=generateSalt();
-    var newHash=await hashPassword(sifre,newSalt);
-    state.users.push({id:'gu'+Date.now(),ad:ad,username:username,sifreHash:newHash,sifreSalt:newSalt,email:email,rol:rol,sonGiris:null,izinler:izinler});
-    toast('Kullanıcı oluşturuldu.','success');
+  }catch(e){
+    return toast(e.message||'Kullanıcı kaydedilemedi.','error');
   }
-  saveGlobalUsers();
+
+  await _loadSistemKullanicilar();
   cancelSistemForm();
 }
 
@@ -197,10 +203,13 @@ function cancelSistemForm(){
 
 function silSistemUser(id){
   if(state.currentUser&&state.currentUser.id===id) return toast('Kendi hesabınızı silemezsiniz.','error');
-  showConfirm('Bu kullanıcıyı silmek istiyor musunuz?',function(){
-    state.users = (state.users||[]).filter(function(u){return u.id!==id;});
-    saveGlobalUsers();
-    renderSistemKullanicilar();
+  showConfirm('Bu kullanıcıyı silmek istiyor musunuz?',async function(){
+    try{
+      await apiDelete('kullanicilar?id='+encodeURIComponent(id));
+    }catch(e){
+      return toast(e.message||'Kullanıcı silinemedi.','error');
+    }
+    await _loadSistemKullanicilar();
     toast('Kullanıcı silindi.','info');
   });
 }

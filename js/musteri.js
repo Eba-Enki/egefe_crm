@@ -3,6 +3,16 @@ function setMusterilerPage(n){musterilerPage=n;renderMusteriler();}
 var urunlerPage=1;var _urunFilterHash='';
 function setUrunlerPage(n){urunlerPage=n;renderUrunler();}
 
+async function loadMusteriler(){
+  try{
+    var res=await apiGet('musteriler');
+    state.musteriler=res.musteriler||[];
+  }catch(e){
+    toast(e.message||'Müşteriler yüklenemedi.','error');
+    state.musteriler=state.musteriler||[];
+  }
+  renderMusteriler();
+}
 function renderMusteriler(){
   let data=[...state.musteriler];
   const q=(document.getElementById('fm-ara').value||'').toLowerCase();
@@ -16,14 +26,27 @@ function renderMusteriler(){
   renderPagination('musteri-pagination',musterilerPage,data.length,'setMusterilerPage');
   tbody.innerHTML=pagedM.map(m=>{return`<tr><td><span class="kn-badge" style="color:var(--accent);font-size:10px">${esc(m.kayitNo||'—')}</span></td><td style="font-weight:500">${esc(m.kurum)}</td><td style="color:var(--text2)">${esc(m.kisi||'—')}</td><td class="td-mono">${esc(m.tel||'—')}</td><td style="color:var(--text2)">${esc(m.email||'—')}</td><td>${esc(m.sehir||'—')}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goMusteriForm('${esc(m.id)}')">✎</button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('musteri','${esc(m.id)}')">⊗</button></div></td></tr>`;}).join('');
 }
-function saveMusteri(){
+async function saveMusteri(){
   const kurum=toTitleCase(document.getElementById('mf-kurum').value.trim());if(!kurum)return toast('Kurum adı zorunlu.','error');
   const editId=document.getElementById('mf-edit-id').value;
   const payload={kurum,kisi:toTitleCase(document.getElementById('mf-kisi').value.trim()),tel:document.getElementById('mf-tel').value.trim(),email:document.getElementById('mf-email').value.trim(),sehir:toTitleCase(document.getElementById('mf-sehir').value.trim()),adres:toTitleCase(document.getElementById('mf-adres').value.trim()),not:document.getElementById('mf-not').value.trim()};
   var savedMId;
-  if(editId){const idx=state.musteriler.findIndex(x=>x.id===editId);if(idx>=0){state.musteriler[idx]={...state.musteriler[idx],...payload};savedMId=editId;toast('Güncellendi.','success');}}
-  else{savedMId='m'+Date.now();var mKN='MK'+String(state.musteriler.length+1).padStart(5,'0');state.musteriler.push({id:savedMId,kayitNo:mKN,...payload});toast('Müşteri eklendi.','success');}
-  saveAll();
+  try{
+    if(editId){
+      const res=await apiPut('musteriler',{...payload,id:editId});
+      const idx=state.musteriler.findIndex(x=>x.id===editId);
+      if(idx>=0)state.musteriler[idx]=res.musteri;
+      savedMId=editId;
+      toast('Güncellendi.','success');
+    } else {
+      const res=await apiPost('musteriler',payload);
+      state.musteriler.push(res.musteri);
+      savedMId=res.musteri.id;
+      toast('Müşteri eklendi.','success');
+    }
+  }catch(e){
+    return toast(e.message||'Müşteri kaydedilemedi.','error');
+  }
   var ret=state._musterAddReturn;
   if(ret){
     state._musterAddReturn=null;
@@ -193,14 +216,18 @@ function saveSettings(){
 // ════ CONFIRM DELETE ════
 function confirmDelete(type,id){
   const msgs={servis:'Bu servis kaydını silmek istiyor musunuz? İlişkili teklifler de silinecek.',teklif:'Bu teklifi silmek istiyor musunuz?',siparis:'Bu siparişi silmek istiyor musunuz?',fatura:'Bu faturayı silmek istiyor musunuz?',musteri:'Bu müşteriyi silmek istiyor musunuz?',urun:'Bu ürünü silmek istiyor musunuz?',kullanici:'Bu kullanıcıyı silmek istiyor musunuz?'};
-  showConfirm(msgs[type]||'Emin misiniz?',function(){
+  showConfirm(msgs[type]||'Emin misiniz?',async function(){
     if(type==='servis'){state.servisler=state.servisler.filter(x=>x.id!==id);state.teklifler=state.teklifler.filter(t=>t.servisId!==id)}
     else if(type==='teklif')state.teklifler=state.teklifler.filter(x=>x.id!==id);
-    else if(type==='musteri')state.musteriler=state.musteriler.filter(x=>x.id!==id);
+    else if(type==='musteri'){
+      try{await apiDelete('musteriler?id='+encodeURIComponent(id));}
+      catch(e){return toast(e.message||'Müşteri silinemedi.','error');}
+      state.musteriler=state.musteriler.filter(x=>x.id!==id);
+    }
     else if(type==='urun')state.urunler=state.urunler.filter(x=>x.id!==id);
     else if(type==='siparis'){state.siparisler=(state.siparisler||[]).filter(function(x){return x.id!==id;});}
     else if(type==='fatura'){state.faturalar=(state.faturalar||[]).filter(function(x){return x.id!==id;});}
-    saveAll();
+    if(type!=='musteri') saveAll();
     const refreshMap={servis:()=>{renderTable();renderDashboard()},teklif:renderTeklifler,siparis:renderSiparisler,fatura:renderFaturalar,musteri:renderMusteriler,urun:renderUrunler};
     if(refreshMap[type])refreshMap[type]();
     toast('Silindi.','info');
@@ -226,21 +253,18 @@ function importMusterilerExcel(e){
   var file=e.target.files[0];e.target.value='';if(!file)return;
   if(!window.XLSX){toast('Excel kütüphanesi yüklenemedi.','error');return;}
   var reader=new FileReader();
-  reader.onload=function(ev){
+  reader.onload=async function(ev){
     try{
       var wb=XLSX.read(ev.target.result,{type:'array'});
       var ws=wb.Sheets[wb.SheetNames[0]];
       var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
       var eklenen=0,atlanan=0;
-      rows.forEach(function(row){
+      for(const row of rows){
         var kurum=(row['Kurum Adı*']||row['Kurum Adı']||'').toString().trim();
-        if(!kurum){atlanan++;return;}
+        if(!kurum){atlanan++;continue;}
         var mevcutMu=state.musteriler.some(function(m){return m.kurum.toLowerCase()===kurum.toLowerCase();});
-        if(mevcutMu){atlanan++;return;}
-        var mKN='MK'+String(state.musteriler.length+1).padStart(5,'0');
-        state.musteriler.push({
-          id:'m'+Date.now()+Math.random().toString(36).slice(2,6),
-          kayitNo:mKN,
+        if(mevcutMu){atlanan++;continue;}
+        var payload={
           kurum:toTitleCase(kurum),
           kisi:toTitleCase((row['İlgili Kişi']||'').toString().trim()),
           tel:(row['Telefon']||'').toString().trim(),
@@ -248,10 +272,14 @@ function importMusterilerExcel(e){
           sehir:toTitleCase((row['Şehir']||'').toString().trim()),
           adres:toTitleCase((row['Adres']||'').toString().trim()),
           not:(row['Notlar']||'').toString().trim()
-        });
-        eklenen++;
-      });
-      saveAll();renderMusteriler();
+        };
+        try{
+          var res=await apiPost('musteriler',payload);
+          state.musteriler.push(res.musteri);
+          eklenen++;
+        }catch(err){atlanan++;}
+      }
+      renderMusteriler();
       if(eklenen&&atlanan)toast(eklenen+' müşteri eklendi, '+atlanan+' satır atlandı (zaten mevcut veya boş).','success');
       else if(eklenen)toast(eklenen+' müşteri eklendi.','success');
       else toast('Eklenecek yeni kayıt bulunamadı.','info');

@@ -36,52 +36,16 @@ function _allSayfalar(portal){
   return (PORTAL_SAYFALAR[portal]||[]).map(function(p){return p.id;});
 }
 
-var DEFAULT_GLOBAL_USERS = [
-  {
-    id:'gu1', ad:'Admin', username:'admin', sifre:'admin', rol:'yönetici', email:'', sonGiris:null,
-    izinler:{
-      servis:{erisim:true, sayfalar:_allSayfalar('servis')},
-      satis: {erisim:true, sayfalar:_allSayfalar('satis')},
-      stok:  {erisim:true, sayfalar:_allSayfalar('stok')}
-    }
-  }
-];
-
-function loadGlobalUsers(){
-  return DB.load('ege_global_users', DEFAULT_GLOBAL_USERS);
-}
-function saveGlobalUsers(){
-  DB.save('ege_global_users', state.users);
-}
-
 function _userCanAccessPortal(user, portal){
   if(user.rol==='yönetici'||user.rol==='admin') return true;
   return !!(user.izinler&&user.izinler[portal]&&user.izinler[portal].erisim);
 }
 
-function _normalizeUser(u){
-  // Ensure izinler structure exists for legacy users
-  if(!u.izinler) u.izinler={
-    servis:{erisim:true, sayfalar:_allSayfalar('servis')},
-    satis: {erisim:true, sayfalar:_allSayfalar('satis')},
-    stok:  {erisim:true, sayfalar:_allSayfalar('stok')}
-  };
-  ['servis','satis','stok'].forEach(function(p){
-    if(!u.izinler[p]) u.izinler[p]={erisim:false,sayfalar:[]};
-    if(!u.izinler[p].sayfalar) u.izinler[p].sayfalar=[];
-  });
-  // Normalize old roles
-  if(u.rol==='admin') u.rol='yönetici';
-  if(u.rol==='teknisyen') u.rol='kullanıcı';
-  return u;
-}
-
 // ─── PORTAL SEÇİM ────────────────────────────────────────────────────────────
 
-function selectPortal(pkey){
+async function selectPortal(pkey){
   currentPortal=pkey;
   document.documentElement.setAttribute('data-portal',pkey);
-  state.users=loadGlobalUsers().map(_normalizeUser);
 
   if(pkey==='stok'){
     state.settings={};
@@ -105,49 +69,46 @@ function selectPortal(pkey){
     savedTutanaklar=[];
   }
 
-  var saved=sessionStorage.getItem('ege_ses_'+pkey);
-  if(saved){
-    try{
-      var sd=JSON.parse(saved);
-      var found=state.users.find(function(x){return x.id===sd.id&&x.username===sd.username;});
-      if(found&&_userCanAccessPortal(found,pkey)){
-        state.currentUser=found;
-        document.getElementById('portal-screen').style.display='none';
-        applyUser(found);
-        applyPortal();
-        _applyPageRestrictions(found);
-        initApp();
-        return;
-      }
-    }catch(e){}
+  document.getElementById('portal-screen').style.display='none';
+
+  var found=null;
+  try{
+    var res=await apiGet('auth/me.php');
+    found=res.user;
+  }catch(e){}
+
+  if(found&&_userCanAccessPortal(found,pkey)){
+    state.currentUser=found;
+    applyUser(found);
+    applyPortal();
+    _applyPageRestrictions(found);
+    initApp();
+    return;
   }
 
-  document.getElementById('portal-screen').style.display='none';
   var nameEl=document.getElementById('login-portal-name');
   if(nameEl)nameEl.textContent=pkey==='servis'?'Teknik Servis Portalı':pkey==='satis'?'Satış Pazarlama Portalı':'Stok Yönetim Portalı';
   document.getElementById('login-screen').style.display='flex';
 }
 
-function selectSistemYonetimi(){
+async function selectSistemYonetimi(){
   currentPortal='sistem';
   document.documentElement.setAttribute('data-portal','sistem');
-  state.users=loadGlobalUsers().map(_normalizeUser);
-
-  var saved=sessionStorage.getItem('ege_ses_sistem');
-  if(saved){
-    try{
-      var sd=JSON.parse(saved);
-      var found=state.users.find(function(x){return x.id===sd.id&&x.username===sd.username;});
-      if(found&&(found.rol==='yönetici'||found.rol==='admin')){
-        state.currentUser=found;
-        document.getElementById('portal-screen').style.display='none';
-        showSistemScreen(found);
-        return;
-      }
-    }catch(e){}
-  }
 
   document.getElementById('portal-screen').style.display='none';
+
+  var found=null;
+  try{
+    var res=await apiGet('auth/me.php');
+    found=res.user;
+  }catch(e){}
+
+  if(found&&found.rol==='yönetici'){
+    state.currentUser=found;
+    showSistemScreen(found);
+    return;
+  }
+
   var nameEl=document.getElementById('login-portal-name');
   if(nameEl)nameEl.textContent='Sistem Yönetimi';
   document.getElementById('login-screen').style.display='flex';
@@ -256,7 +217,6 @@ function switchToPortal(pkey){
     if(!state.settings.parametreler)state.settings.parametreler=[];
     savedTutanaklar=[];
   }
-  sessionStorage.setItem('ege_ses_'+pkey,JSON.stringify({id:state.currentUser.id,username:state.currentUser.username}));
   applyUser(state.currentUser);
   applyPortal();
   _applyPageRestrictions(state.currentUser);
@@ -290,9 +250,9 @@ function _applyPageRestrictions(u){
 }
 
 function switchPortal(){
-  showConfirm('Portala geri dönmek istiyor musunuz? Mevcut oturum kapatılacak.',function(){
+  showConfirm('Portala geri dönmek istiyor musunuz? Mevcut oturum kapatılacak.',async function(){
+    try{await apiPost('auth/logout.php');}catch(e){}
     document.documentElement.removeAttribute('data-portal');
-    sessionStorage.removeItem('ege_ses_'+currentPortal);
     state.currentUser=null;
     currentPortal='';
     document.getElementById('portal-screen').style.display='flex';
@@ -313,31 +273,19 @@ async function _doLoginAsync(){
   var u=document.getElementById('login-user').value.trim();
   var p=document.getElementById('login-pass').value;
   var errEl=document.getElementById('login-error');
-  var candidate=state.users.find(function(x){return x.username===u;});
-  var user=null;
-  if(candidate){
-    if(candidate.sifreHash&&candidate.sifreSalt){
-      // Hashed password — verify with crypto
-      var ok=await verifyPassword(p,candidate.sifreHash,candidate.sifreSalt);
-      if(ok) user=candidate;
-    } else if(candidate.sifre===p){
-      // Plain-text (legacy) — match ok, migrate to hash immediately
-      var salt=generateSalt();
-      var hash=await hashPassword(p,salt);
-      candidate.sifreHash=hash;
-      candidate.sifreSalt=salt;
-      delete candidate.sifre;
-      saveGlobalUsers();
-      user=candidate;
-    }
-  }
-  if(!user){
-    errEl.textContent='Kullanıcı adı veya şifre hatalı.';
+
+  var user;
+  try{
+    var res=await apiPost('auth/login.php',{username:u,password:p});
+    user=res.user;
+  }catch(e){
+    errEl.textContent=e.status===401?'Kullanıcı adı veya şifre hatalı.':(e.message||'Giriş başarısız.');
     errEl.style.display='block';
     return;
   }
+
   if(currentPortal==='sistem'){
-    if(user.rol!=='yönetici'&&user.rol!=='admin'){
+    if(user.rol!=='yönetici'){
       errEl.textContent='Sistem Yönetimi için yönetici yetkisi gerekli.';
       errEl.style.display='block';
       return;
@@ -348,11 +296,7 @@ async function _doLoginAsync(){
     return;
   }
   errEl.style.display='none';
-  errEl.textContent='Kullanıcı adı veya şifre hatalı.';
-  user.sonGiris=new Date().toISOString();
   state.currentUser=user;
-  saveGlobalUsers();
-  sessionStorage.setItem('ege_ses_'+currentPortal,JSON.stringify({id:user.id,username:user.username}));
   document.getElementById('login-screen').style.display='none';
   if(currentPortal==='sistem'){
     showSistemScreen(user);
@@ -364,10 +308,10 @@ async function _doLoginAsync(){
   }
 }
 
-function _performLogout(){
+async function _performLogout(){
+  try{await apiPost('auth/logout.php');}catch(e){}
   var wasSistem=currentPortal==='sistem';
   document.documentElement.removeAttribute('data-portal');
-  ['servis','satis','stok','sistem'].forEach(function(p){sessionStorage.removeItem('ege_ses_'+p);});
   if(typeof _autoLogoutTimer!=='undefined'&&_autoLogoutTimer){clearInterval(_autoLogoutTimer);_autoLogoutTimer=null;}
   var sw=document.getElementById('portal-switcher-wrap');if(sw)sw.style.display='none';
   state.currentUser=null;

@@ -49,8 +49,6 @@ let sfAksesuarlar=[];
 let teklifItems=[];
 
 function saveAll(){
-  // Kullanıcılar her zaman global key ile kaydedilir (portal-bağımsız)
-  if(state.users!==undefined) DB.save('ege_global_users',state.users);
   if(currentPortal==='stok'){
     ['hamStokGirisler','hamStokLotlar','hamStokCikislar','bitmisStokGirisler','bitmisStokLotlar','bitmisCikislar','stokSettings'].forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});
     return;

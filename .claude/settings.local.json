@@ -4,7 +4,20 @@
       "Bash(Select-String -Path \"d:\\\\Eba Asus Yedek 09.02.2025\\\\Şirketler Web Siteleri\\\\egefe\\\\index.html\" -Pattern \"<script\")",
       "Bash(Select-Object -First 5)",
       "PowerShell(\\(Get-Command node -ErrorAction SilentlyContinue\\).Source)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(git fetch *)",
+      "Bash(git stash *)",
+      "Bash(mkdir -p sql)",
+      "Bash(gh auth *)",
+      "Bash(gh repo *)",
+      "PowerShell(gh auth status 2>&1)",
+      "Bash(mkdir -p /tmp/egefe_deploy_key)",
+      "Bash(ssh-keygen -t ed25519 -f /tmp/egefe_deploy_key/deploy_key -N \"\" -C \"egefe-crm-deploy\" -q)",
+      "Bash(ssh -i /tmp/egefe_deploy_key/deploy_key -p 22 -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new cromtest@mt-pegasus.guzelhosting.com \"echo OK && pwd && whoami\")",
+      "Bash(ssh -i /tmp/egefe_deploy_key/deploy_key -p 22 -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new cromtest@104.247.160.178 \"echo OK\")"
+    ],
+    "additionalDirectories": [
+      "x:\\Kullanıcılar\\Rovshen\\Masaüstü\\PROJELER\\2. Şirketler\\EGEFE\\egefe_crm"
     ]
   }
 }

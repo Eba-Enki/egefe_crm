@@ -162,12 +162,12 @@ function renderSiparisler(){
     var toplam=(s.satirlar||[]).reduce(function(a,i){return a+i.miktar*i.birimFiyat;},0);
     var cur=currency[s.paraBirimi||'TRY']||'₺';
     return '<tr>'
-      +'<td><span class="kn-badge">'+s.siparisNo+'</span></td>'
+      +'<td><span class="kn-badge">'+esc(s.siparisNo)+'</span></td>'
       +'<td class="td-mono" style="color:var(--text2)">'+fmtDate(s.siparisTarihi||s.teklifTarihi||s.olusturmaTarihi)+'</td>'
-      +'<td style="font-weight:500">'+(s.kurum||'—')+'</td>'
-      +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+cur+' '+fmtNum(toplam)+'</td>'
-      +'<td><span class="badge '+(SP_DURUM_CSS[s.durum]||'badge-sf')+'">'+s.durum+'</span></td>'
-      +'<td style="font-size:12px;color:var(--text3)">'+(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
+      +'<td style="font-weight:500">'+esc(s.kurum||'—')+'</td>'
+      +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+esc(cur)+' '+fmtNum(toplam)+'</td>'
+      +'<td><span class="badge '+(SP_DURUM_CSS[s.durum]||'badge-sf')+'">'+esc(s.durum)+'</span></td>'
+      +'<td style="font-size:12px;color:var(--text3)">'+esc(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
       +'<td style="text-align:right"><div class="action-row">'
       +'<button class="btn-icon" title="Detay" onclick="openSiparisDetay(\''+s.id+'\')">◎</button>'
       +(ARSIV_SIPARISLER.indexOf(s.durum)<0?'<button class="btn-icon" title="Sipariş Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')">📋</button>':'')

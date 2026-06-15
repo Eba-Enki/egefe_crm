@@ -165,13 +165,13 @@ function renderTable(){
       else if(hasTeklif)teklifBtn=`<button class="btn-icon" title="Teklife Git" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')">◎</button>`;
     }
     return`<tr${isArsiv?' style="opacity:0.8"':''}>
-      <td><span class="kn-badge">${s.kayitNo}</span></td>
-      <td style="font-weight:500;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.kurumAdi||'—'}</td>
-      <td class="td-mono">${s.seriNo||'—'}</td>
+      <td><span class="kn-badge">${esc(s.kayitNo)}</span></td>
+      <td style="font-weight:500;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.kurumAdi||'—')}</td>
+      <td class="td-mono">${esc(s.seriNo||'—')}</td>
       <td class="td-mono" style="color:var(--text2)">${fmtDate(s.gelisTarihi)}</td>
       <td>${durumBadge(s.durum)}</td>
-      <td><span class="badge ${s.garantiDurumu==='Evet'?'badge-garanti-evet':'badge-garanti-hayir'}">${s.garantiDurumu}</span></td>
-      <td style="color:var(--text2);font-size:12px">${s.ilgiliKisi||'—'}</td>
+      <td><span class="badge ${s.garantiDurumu==='Evet'?'badge-garanti-evet':'badge-garanti-hayir'}">${esc(s.garantiDurumu)}</span></td>
+      <td style="color:var(--text2);font-size:12px">${esc(s.ilgiliKisi||'—')}</td>
       <td><div class="action-row" style="justify-content:flex-end">
         ${editBtn}
         ${durumBtn}

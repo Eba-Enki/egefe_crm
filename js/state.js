@@ -18,6 +18,9 @@ document.querySelectorAll('#login-logo-img,#sb-logo-img,#portal-logo-img').forEa
   el.style.filter='none';
 });
 
+// ════ XSS KORUMA ════
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
 // ════ DATA ════
 const DB={
   load(k,d){try{return JSON.parse(localStorage.getItem(k)??'null')??d}catch{return d}},

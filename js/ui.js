@@ -70,7 +70,22 @@ function showConfirm(msg, onOk, opts){
   okBtn.onclick=function(){closeModal('modal-confirm');if(onOk)onOk();};
   openModal('modal-confirm');
 }
+function _canAccessPage(user,pageId){
+  if(!user)return true;
+  var isAdmin=user.rol==='yönetici'||user.rol==='admin';
+  if(isAdmin)return true;
+  var FORM_PAGES=new Set(['servis-form','teklif-form','musteri-form','urun-form','siparis-form','ham-giris','ham-cikis','bitmis-giris','bitmis-cikis','kullanici-form']);
+  if(FORM_PAGES.has(pageId))return true;
+  if(!currentPortal||currentPortal==='sistem')return true;
+  var iz=user.izinler&&user.izinler[currentPortal];
+  if(!iz||!iz.erisim)return false;
+  return (iz.sayfalar||[]).includes(pageId);
+}
+
 function showPage(id,skipRender){
+  if(state.currentUser&&!_canAccessPage(state.currentUser,id)){
+    id=currentPortal==='stok'?'stok-dashboard':'dashboard';
+  }
   if(_formDirty&&GUARDED_FORM_PAGES.has(_currentPageId)&&id!==_currentPageId){
     showConfirm('Kaydedilmemiş değişiklikler var. Sayfadan çıkmak istediğinize emin misiniz?',function(){
       _formDirty=false;showPage(id,skipRender);
@@ -413,7 +428,7 @@ function comboFilterServis(){
   var drop=document.getElementById('cb-tf-servis');
   if(!items.length){drop.classList.remove('open');return;}
   drop.innerHTML=items.map(function(s){
-    return '<div class="combo-item" onmousedown="event.preventDefault();selectServisForTeklif(\''+s.id+'\')">'+s.kayitNo+' — '+s.kurumAdi+'<div class="sub">Seri: '+(s.seriNo||'—')+' | '+s.durum+'</div></div>';
+    return '<div class="combo-item" onmousedown="event.preventDefault();selectServisForTeklif(\''+s.id+'\')">'+esc(s.kayitNo)+' — '+esc(s.kurumAdi)+'<div class="sub">Seri: '+esc(s.seriNo||'—')+' | '+esc(s.durum)+'</div></div>';
   }).join('');
   drop.classList.add('open');
 }
@@ -456,8 +471,8 @@ function openTiCombo(idx){
   const drop=_getTiDrop();
   if(!items.length){drop.style.display='none';return;}
   drop.innerHTML=items.map((u,i)=>`<div class="combo-item" data-combo-idx="${i}"
-    data-urun="${u.urunAdi.replace(/"/g,'&quot;')}" data-fiyat="${u.fiyat||0}" data-model="${u.model||''}"
-    onmousedown="event.preventDefault();selectTiUrun(${idx},${i})">${u.urunAdi}${u.marka?' <span style="color:var(--text3);font-size:11px">('+u.marka+')</span>':''}${u.model&&parseInt(u.model)?` <span style="color:var(--accent);font-size:11px;margin-left:6px">${u.model}P</span>`:''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`).join('');
+    data-urun="${esc(u.urunAdi)}" data-fiyat="${u.fiyat||0}" data-model="${esc(u.model||'')}"
+    onmousedown="event.preventDefault();selectTiUrun(${idx},${i})">${esc(u.urunAdi)}${u.marka?' <span style="color:var(--text3);font-size:11px">('+esc(u.marka)+')</span>':''}${u.model&&parseInt(u.model)?` <span style="color:var(--accent);font-size:11px;margin-left:6px">${esc(u.model)}P</span>`:''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`).join('');
   const rect=input.getBoundingClientRect();
   drop.style.top=(rect.bottom+2)+'px';
   drop.style.left=rect.left+'px';

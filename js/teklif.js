@@ -139,12 +139,12 @@ function renderTeklifler(){
   var pagedTl=sortedTl.slice((tekliflerPage-1)*PAGE_SIZE,tekliflerPage*PAGE_SIZE);
   renderPagination('teklif-pagination',tekliflerPage,filtTl2.length,'setTekliflerPage');
   tbody.innerHTML=pagedTl.map(t=>`<tr>
-    <td><span class="kn-badge">${t.teklifNo}</span></td>
+    <td><span class="kn-badge">${esc(t.teklifNo)}</span></td>
     <td class="td-mono" style="color:var(--text2)">${fmtDate(t.teklifTarihi)}</td>
-    <td style="font-weight:500">${t.kurum||'—'}</td>
+    <td style="font-weight:500">${esc(t.kurum||'—')}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--amber);font-size:12px">${fmtTL(calcTeklifToplam(t))}</td>
-    <td><span class="badge ${TSD[t.durum]||'badge-sf'}">${t.durum}</span>${t.redBilgi?'<span title="'+t.redBilgi.neden+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
-    ${showTemsilci?`<td style="font-size:12px;color:var(--text3)">${t.sorumlu||'—'}</td>`:''}
+    <td><span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>${t.redBilgi?'<span title="'+esc(t.redBilgi.neden)+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
+    ${showTemsilci?`<td style="font-size:12px;color:var(--text3)">${esc(t.sorumlu||'—')}</td>`:''}
     <td style="text-align:right"><div class="action-row">
       <button class="btn-icon" title="Detay" onclick="openTeklifDetay('${t.id}')">◎</button>
       ${canEdit&&currentPortal==='satis'&&t.durum==='Taslak'?`<button class="btn-icon" title="Müşteriye Gönder" style="color:var(--teal)" onclick="teklifGonder('${t.id}')">📤</button>`:''}

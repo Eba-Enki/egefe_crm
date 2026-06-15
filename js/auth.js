@@ -49,21 +49,21 @@ async function selectPortal(pkey){
 
   if(pkey==='stok'){
     state.settings={};
-    state.hamStokGirisler=DB.pload('hamStokGirisler',[]);
-    state.hamStokLotlar=DB.pload('hamStokLotlar',[]);
-    state.hamStokCikislar=DB.pload('hamStokCikislar',[]);
-    state.bitmisStokGirisler=DB.pload('bitmisStokGirisler',[]);
-    state.bitmisStokLotlar=DB.pload('bitmisStokLotlar',[]);
-    state.bitmisCikislar=DB.pload('bitmisCikislar',[]);
-    state.stokSettings=DB.pload('stokSettings',null);
+    state.hamStokGirisler=[];
+    state.hamStokLotlar=[];
+    state.hamStokCikislar=[];
+    state.bitmisStokGirisler=[];
+    state.bitmisStokLotlar=[];
+    state.bitmisCikislar=[];
+    state.stokSettings=null;
     savedTutanaklar=[];
   } else {
-    state.servisler=pkey==='servis'?DB.pload('servisler',genSample()):[];
-    state.teklifler=DB.pload('teklifler',[]);
-    state.musteriler=DB.pload('musteriler',[]);
-    state.urunler=DB.pload('urunler',[]);
-    state.siparisler=DB.pload('siparisler',[]);
-    state.faturalar=DB.pload('faturalar',[]);
+    state.servisler=[];
+    state.teklifler=[];
+    state.musteriler=[];
+    state.urunler=[];
+    state.siparisler=[];
+    state.faturalar=[];
     state.settings=DB.pload('settings',{firma:'Egefe Teknik Servis',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[]});
     if(!state.settings.parametreler)state.settings.parametreler=[];
     savedTutanaklar=[];
@@ -83,6 +83,7 @@ async function selectPortal(pkey){
     applyPortal();
     _applyPageRestrictions(found);
     initApp();
+    loadCoreData();
     return;
   }
 
@@ -198,21 +199,21 @@ function switchToPortal(pkey){
   document.documentElement.setAttribute('data-portal',pkey);
   if(pkey==='stok'){
     state.settings={};
-    state.hamStokGirisler=DB.pload('hamStokGirisler',[]);
-    state.hamStokLotlar=DB.pload('hamStokLotlar',[]);
-    state.hamStokCikislar=DB.pload('hamStokCikislar',[]);
-    state.bitmisStokGirisler=DB.pload('bitmisStokGirisler',[]);
-    state.bitmisStokLotlar=DB.pload('bitmisStokLotlar',[]);
-    state.bitmisCikislar=DB.pload('bitmisCikislar',[]);
-    state.stokSettings=DB.pload('stokSettings',null);
+    state.hamStokGirisler=[];
+    state.hamStokLotlar=[];
+    state.hamStokCikislar=[];
+    state.bitmisStokGirisler=[];
+    state.bitmisStokLotlar=[];
+    state.bitmisCikislar=[];
+    state.stokSettings=null;
     savedTutanaklar=[];
   } else {
-    state.servisler=pkey==='servis'?DB.pload('servisler',genSample()):[];
-    state.teklifler=DB.pload('teklifler',[]);
-    state.musteriler=DB.pload('musteriler',[]);
-    state.urunler=DB.pload('urunler',[]);
-    state.siparisler=DB.pload('siparisler',[]);
-    state.faturalar=DB.pload('faturalar',[]);
+    state.servisler=[];
+    state.teklifler=[];
+    state.musteriler=[];
+    state.urunler=[];
+    state.siparisler=[];
+    state.faturalar=[];
     state.settings=DB.pload('settings',{firma:'Egefe Teknik Servis',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[]});
     if(!state.settings.parametreler)state.settings.parametreler=[];
     savedTutanaklar=[];
@@ -221,6 +222,7 @@ function switchToPortal(pkey){
   applyPortal();
   _applyPageRestrictions(state.currentUser);
   initApp();
+  loadCoreData();
 }
 
 function applyUser(u){
@@ -305,6 +307,7 @@ async function _doLoginAsync(){
     applyPortal();
     _applyPageRestrictions(user);
     initApp();
+    loadCoreData();
   }
 }
 

@@ -29,42 +29,42 @@ function switchFaturaTab(tab){
   renderFaturalar();
 }
 
-function nextSiparisNo(){
-  var p=(state.settings&&state.settings.siparisPrefix)||'SIP';
-  var d=parseInt((state.settings&&state.settings.siparisDigits)||5);
-  var nums=(state.siparisler||[]).map(function(s){return parseInt((s.siparisNo||'').replace(/^[A-Za-z]+/,''))||0;});
-  return p+String((nums.length?Math.max.apply(null,nums):0)+1).padStart(d,'0');
-}
-
-function tekliftenSipariseAktar(teklifId){
-  var t=state.teklifler.find(function(x){return x.id===teklifId;});
-  if(!t)return;
-  if(t.durum==='Siparişe Aktarıldı'){toast('Bu teklif zaten siparişe dönüştürüldü.','error');return;}
-  if(!state.siparisler)state.siparisler=[];
-  var satirlar=(t.satirlar||[]).map(function(s){return Object.assign({},s,{gonderilen:0});});
-  var siparis={id:'sp'+Date.now(),siparisNo:nextSiparisNo(),teklifId:t.id,teklifNo:t.teklifNo,
-    kurum:t.kurum||'',ilgiliKisi:t.ilgiliKisi||'',telefon:t.telefon||'',email:t.email||'',
-    sorumlu:t.sorumlu||'',satisTemsilcisi:t.sorumlu||'',satirlar:satirlar,
-    paraBirimi:t.paraBirimi||'TRY',odemeKosulu:t.odemeKosulu||'',vade:t.vade||'',teslimat:t.teslimat||'',
-    teklifTarihi:t.teklifTarihi||'',siparisTarihi:today(),notlar:t.notlar||'',
-    durum:'Yeni Sipariş',olusturmaTarihi:new Date().toISOString()};
-  state.siparisler.push(siparis);
-  var ti=state.teklifler.findIndex(function(x){return x.id===teklifId;});
-  if(ti>=0)state.teklifler[ti].durum='Siparişe Aktarıldı';
-  saveAll();renderTeklifler();renderSiparisler();
-  toast('Sipariş oluşturuldu: '+siparis.siparisNo,'success');
-}
-
-function quickSiparisDurumChange(sid,yeni){
-  if(!state.siparisler)return;
-  var idx=state.siparisler.findIndex(function(x){return x.id===sid;});
-  if(idx<0)return;
-  state.siparisler[idx].durum=yeni;
-  if(yeni==='İptal'){
-    var tekId=state.siparisler[idx].teklifId;
-    if(tekId){var ti=state.teklifler.findIndex(function(x){return x.id===tekId;});if(ti>=0)state.teklifler[ti].durum='İptal Edildi';}
+// ════ SİPARİŞLER — API ════
+async function loadSiparisler(){
+  try{
+    var res=await apiGet('siparisler');
+    state.siparisler=res.siparisler||[];
+  }catch(e){
+    toast(e.message||'Siparişler yüklenemedi.','error');
+    state.siparisler=state.siparisler||[];
   }
-  saveAll();renderSiparisler();
+  renderSiparisler();
+}
+async function updateSiparisDurum(siparisId,changes){
+  var idx=state.siparisler.findIndex(function(x){return x.id===siparisId;});
+  if(idx<0)return null;
+  try{
+    var res=await apiPut('siparisler',Object.assign({},state.siparisler[idx],changes,{id:siparisId}));
+    state.siparisler[idx]=res.siparis;
+    return res.siparis;
+  }catch(e){
+    toast(e.message||'Sipariş güncellenemedi.','error');
+    return null;
+  }
+}
+
+async function quickSiparisDurumChange(sid,yeni){
+  var idx=(state.siparisler||[]).findIndex(function(x){return x.id===sid;});
+  if(idx<0)return;
+  var tekId=state.siparisler[idx].teklifId;
+  var oncekiDurum=state.siparisler[idx].durum;
+  var updated=await updateSiparisDurum(sid,{durum:yeni});
+  if(!updated)return;
+  if(yeni==='İptal'&&tekId&&oncekiDurum!=='İptal'){
+    var ti=state.teklifler.findIndex(function(x){return x.id===tekId;});
+    if(ti>=0)state.teklifler[ti].durum='İptal Edildi';
+  }
+  renderSiparisler();
   toast('Sipariş durumu: '+yeni,'success');
 }
 
@@ -120,8 +120,7 @@ function showTeklifDurumMenu(tid,btnEl){
 }
 
 function renderSiparisler(){
-  if(!state.siparisler)state.siparisler=DB.pload('siparisler',[]);
-  var allData=state.siparisler;
+  var allData=state.siparisler||[];
   var aktifSayisi=allData.filter(function(s){return ARSIV_SIPARISLER.indexOf(s.durum)<0;}).length;
   var arsivSayisi=allData.filter(function(s){return ARSIV_SIPARISLER.indexOf(s.durum)>=0;}).length;
   var aktifEl=document.getElementById('tab-siparis-aktif-count');
@@ -172,9 +171,7 @@ function renderSiparisler(){
       +'<button class="btn-icon" title="Detay" onclick="openSiparisDetay(\''+s.id+'\')">◎</button>'
       +(ARSIV_SIPARISLER.indexOf(s.durum)<0?'<button class="btn-icon" title="Sipariş Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')">📋</button>':'')
       +(canEdit&&['Hazırlanıyor','Kısmi Sevkiyat'].indexOf(s.durum)>=0
-        ?(s.formYazdirildi
-          ?'<button class="btn-icon" title="Sevkiyat" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')">📦</button>'
-          :'<button class="btn-icon" title="Önce sipariş formu yazdırın" style="color:var(--text3);cursor:not-allowed" disabled>📦</button>')
+        ?'<button class="btn-icon" title="Sevkiyat" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')">📦</button>'
         :'')
       +(canEdit&&['Kısmi Sevkiyat','Tamamlandı'].indexOf(s.durum)>=0?'<button class="btn-icon" title="Faturaya Aktar" style="color:var(--amber)" onclick="openFaturaModal(\''+s.id+'\')">🧾</button>':'')
       +(canEdit&&SP_GECIS[s.durum]&&SP_GECIS[s.durum].length?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)">⇅</button>':'')
@@ -188,11 +185,6 @@ function renderSiparisler(){
 // ════ FATURA & KISMİ TESLİM ════
 var _activeFaturaSpId='';
 var _activeKismiSpId='';
-
-function nextFaturaNo(){
-  var nums=(state.faturalar||[]).map(function(f){return parseInt((f.faturaNo||'').replace('FAT',''))||0;});
-  return 'FAT'+String((nums.length?Math.max.apply(null,nums):0)+1).padStart(5,'0');
-}
 
 function openFaturaModal(sipId){
   _activeFaturaSpId=sipId;
@@ -216,28 +208,28 @@ function openFaturaModal(sipId){
   openModal('modal-fatura');
 }
 
-function saveFatura(){
+async function saveFatura(){
   var fatNo=(document.getElementById('fm-faturaNo')||{}).value||'';
   var fatTar=(document.getElementById('fm-faturaTarihi')||{}).value||'';
   if(!fatNo||!fatTar){toast('Fatura No ve Tarih zorunludur.','error');return;}
   var sp=(state.siparisler||[]).find(function(x){return x.id===_activeFaturaSpId;});
   if(!sp)return;
+  var payload={
+    siparisId:sp.id,faturaNo:fatNo,faturaTarihi:fatTar,
+    vadeTarihi:(document.getElementById('fm-vadeTarihi')||{}).value||''
+  };
+  var res;
+  try{
+    res=await apiPost('faturalar',payload);
+  }catch(e){
+    toast(e.message||'Fatura oluşturulamadı.','error');
+    return;
+  }
   if(!state.faturalar)state.faturalar=[];
-  var toplam=(sp.satirlar||[]).reduce(function(a,i){return a+i.miktar*i.birimFiyat;},0);
-  state.faturalar.push({
-    id:'ft'+Date.now(),
-    faturaNo:fatNo,
-    siparisId:sp.id,siparisNo:sp.siparisNo,
-    kurum:sp.kurum||'',
-    tutar:toplam,paraBirimi:sp.paraBirimi||'TRY',
-    faturaTarihi:fatTar,
-    vadeTarihi:(document.getElementById('fm-vadeTarihi')||{}).value||'',
-    durum:'Ödenmedi',
-    olusturmaTarihi:new Date().toISOString()
-  });
+  state.faturalar.push(res.fatura);
   var si=(state.siparisler||[]).findIndex(function(x){return x.id===_activeFaturaSpId;});
   if(si>=0)state.siparisler[si].durum='Fatura Edildi';
-  saveAll();closeModal('modal-fatura');
+  closeModal('modal-fatura');
   renderSiparisler();renderFaturalar();
   toast('Fatura oluşturuldu: '+fatNo,'success');
 }
@@ -266,7 +258,7 @@ function openKismiTeslim(sipId){
   openModal('modal-kismiteslim');
 }
 
-function saveKismiTeslim(){
+async function saveKismiTeslim(){
   var sp=(state.siparisler||[]).find(function(x){return x.id===_activeKismiSpId;});
   if(!sp)return;
   var tamam=true;
@@ -281,16 +273,15 @@ function saveKismiTeslim(){
       tamam=false;
     }
   });
-  var si=(state.siparisler||[]).findIndex(function(x){return x.id===_activeKismiSpId;});
-  if(si>=0)state.siparisler[si].durum=tamam?'Tamamlandı':'Kısmi Sevkiyat';
-  saveAll();closeModal('modal-kismiteslim');
+  var updated=await updateSiparisDurum(_activeKismiSpId,{satirlar:sp.satirlar,durum:tamam?'Tamamlandı':'Kısmi Sevkiyat'});
+  if(!updated)return;
+  closeModal('modal-kismiteslim');
   renderSiparisler();
   toast(tamam?'Tüm kalemler sevk edildi, sipariş tamamlandı.':'Kısmi sevkiyat kaydedildi.','success');
 }
 
 function renderFaturalar(){
-  if(!state.faturalar)state.faturalar=[];
-  var allData=state.faturalar;
+  var allData=state.faturalar||[];
   var aktifSayisi=allData.filter(function(f){return ARSIV_FATURALAR.indexOf(f.durum)<0;}).length;
   var arsivSayisi=allData.filter(function(f){return ARSIV_FATURALAR.indexOf(f.durum)>=0;}).length;
   var aktifEl=document.getElementById('tab-fatura-aktif-count');
@@ -358,13 +349,29 @@ function clearFaturaFilters(){
   var e=document.getElementById('ft-f-durum');if(e)e.value='';
   renderFaturalar();
 }
-function markFaturaOdendi(fid){
-  var fi=(state.faturalar||[]).findIndex(function(x){return x.id===fid;});
-  if(fi>=0){state.faturalar[fi].durum='Ödendi';saveAll();renderFaturalar();toast('Fatura ödendi olarak işaretlendi.','success');}
+async function updateFaturaDurum(faturaId,changes){
+  var idx=state.faturalar.findIndex(function(x){return x.id===faturaId;});
+  if(idx<0)return null;
+  try{
+    var res=await apiPut('faturalar',Object.assign({},state.faturalar[idx],changes,{id:faturaId}));
+    state.faturalar[idx]=res.fatura;
+    return res.fatura;
+  }catch(e){
+    toast(e.message||'Fatura güncellenemedi.','error');
+    return null;
+  }
 }
-function markFaturaOdenmedi(fid){
-  var fi=(state.faturalar||[]).findIndex(function(x){return x.id===fid;});
-  if(fi>=0){state.faturalar[fi].durum='Ödenmedi';saveAll();renderFaturalar();toast('Fatura ödenmedi olarak geri alındı.','info');}
+async function markFaturaOdendi(fid){
+  var updated=await updateFaturaDurum(fid,{durum:'Ödendi'});
+  if(!updated)return;
+  renderFaturalar();
+  toast('Fatura ödendi olarak işaretlendi.','success');
+}
+async function markFaturaOdenmedi(fid){
+  var updated=await updateFaturaDurum(fid,{durum:'Ödenmedi'});
+  if(!updated)return;
+  renderFaturalar();
+  toast('Fatura ödenmedi olarak geri alındı.','info');
 }
 var _editFaturaId='';
 function openFaturaDuzenle(fatId){
@@ -377,16 +384,14 @@ function openFaturaDuzenle(fatId){
   var el_vt=document.getElementById('fe-vadeTarihi');if(el_vt)el_vt.value=f.vadeTarihi||'';
   openModal('modal-fatura-edit');
 }
-function saveFaturaDuzenle(){
+async function saveFaturaDuzenle(){
   var fatNo=(document.getElementById('fe-faturaNo')||{}).value||'';
   var fatTar=(document.getElementById('fe-faturaTarihi')||{}).value||'';
   if(!fatNo||!fatTar){toast('Fatura No ve Tarih zorunludur.','error');return;}
-  var fi=(state.faturalar||[]).findIndex(function(x){return x.id===_editFaturaId;});
-  if(fi<0)return;
-  state.faturalar[fi].faturaNo=fatNo;
-  state.faturalar[fi].faturaTarihi=fatTar;
-  state.faturalar[fi].vadeTarihi=(document.getElementById('fe-vadeTarihi')||{}).value||'';
-  saveAll();closeModal('modal-fatura-edit');
+  var vadeTar=(document.getElementById('fe-vadeTarihi')||{}).value||'';
+  var updated=await updateFaturaDurum(_editFaturaId,{faturaNo:fatNo,faturaTarihi:fatTar,vadeTarihi:vadeTar});
+  if(!updated)return;
+  closeModal('modal-fatura-edit');
   renderFaturalar();
   toast('Fatura güncellendi.','success');
 }
@@ -425,32 +430,35 @@ function goSiparisForm(teklifId){
   showPage('siparis-form',true);
 }
 
-function saveSiparisForm(){
+async function saveSiparisForm(){
   var teklifId=document.getElementById('sf2-teklif-id').value;
   var tarih=document.getElementById('sf2-tarih').value;
   if(!tarih){toast('Sipariş tarihi zorunludur.','error');return;}
   var t=state.teklifler.find(function(x){return x.id===teklifId;});
   if(!t)return;
-  if(!state.siparisler)state.siparisler=[];
-  var siparisNo=nextSiparisNo();
   var satirlar=(t.satirlar||[]).map(function(s){return Object.assign({},s,{gonderilen:0});});
-  var siparis={
-    id:'sp'+Date.now(),
-    siparisNo:siparisNo,teklifId:t.id,teklifNo:t.teklifNo,
+  var payload={
+    teklifId:t.id,teklifNo:t.teklifNo,
     kurum:t.kurum||'',ilgiliKisi:t.ilgiliKisi||'',telefon:t.telefon||'',email:t.email||'',
     sorumlu:t.sorumlu||state.currentUser?.ad||'',satisTemsilcisi:t.sorumlu||state.currentUser?.ad||'',
     satirlar:satirlar,paraBirimi:t.paraBirimi||'TRY',
     odemeKosulu:t.odemeKosulu||'',vade:t.vade||'',teslimat:t.teslimat||'',
     teklifTarihi:t.teklifTarihi||'',siparisTarihi:tarih,
     tahminTeslimat:document.getElementById('sf2-teslimat').value||'',
-    notlar:document.getElementById('sf2-notlar').value||'',
-    durum:'Yeni Sipariş',olusturmaTarihi:new Date().toISOString()
+    notlar:document.getElementById('sf2-notlar').value||''
   };
-  state.siparisler.push(siparis);
+  var res;
+  try{
+    res=await apiPost('siparisler',payload);
+  }catch(e){
+    toast(e.message||'Sipariş oluşturulamadı.','error');
+    return;
+  }
+  if(!state.siparisler)state.siparisler=[];
+  state.siparisler.push(res.siparis);
   var ti=state.teklifler.findIndex(function(x){return x.id===teklifId;});
   if(ti>=0)state.teklifler[ti].durum='Siparişe Aktarıldı';
-  saveAll();
-  toast('Sipariş oluşturuldu: '+siparisNo,'success');
+  toast('Sipariş oluşturuldu: '+res.siparis.siparisNo,'success');
   showPage('siparisler');
 }
 
@@ -750,12 +758,10 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.text(st.firma||'Egefe Bilişim Sağlık San. ve Tic. A.Ş.',pageW-mm(15.446),pageH-mm(10),{align:'right'});
 
   doc.save('siparis-formu-'+(s.siparisNo||'siparis')+'.pdf');
-  // Formu yazdırıldı: Yeni Sipariş → Hazırlanıyor, sevkiyat butonu aktifleşir
-  const _spIdx=(state.siparisler||[]).findIndex(x=>x.id===s.id);
-  if(_spIdx>=0){
-    state.siparisler[_spIdx].formYazdirildi=true;
-    if(state.siparisler[_spIdx].durum==='Yeni Sipariş')state.siparisler[_spIdx].durum='Hazırlanıyor';
-    saveAll();renderSiparisler();
+  // Formu yazdırıldı: Yeni Sipariş → Hazırlanıyor
+  if(s.durum==='Yeni Sipariş'){
+    var updated=await updateSiparisDurum(s.id,{durum:'Hazırlanıyor'});
+    if(updated)renderSiparisler();
   }
 }
 
@@ -781,22 +787,20 @@ function updateRedNedenOther() {
   document.getElementById('red-neden-other-wrap').style.display = val === 'Diğer' ? '' : 'none';
 }
 
-function saveRedNeden() {
+async function saveRedNeden() {
   var neden = document.getElementById('red-neden-select').value;
   if (!neden) { toast('Lütfen bir neden seçin.', 'error'); return; }
   var teklifId = document.getElementById('red-teklif-id').value;
   var yeniDurum = document.getElementById('red-yeni-durum').value;
-  var ti = state.teklifler.findIndex(function(x){return x.id===teklifId;});
-  if (ti < 0) return;
-  state.teklifler[ti].durum = yeniDurum;
-  state.teklifler[ti].redBilgi = {
+  var redBilgi = {
     neden: neden === 'Diğer' ? document.getElementById('red-neden-other').value : neden,
     rakip: document.getElementById('red-rakip').value,
     rakipFiyat: document.getElementById('red-rakip-fiyat').value,
     notlar: document.getElementById('red-notlar').value,
     tarih: today()
   };
-  DB.psave('teklifler', state.teklifler);
+  var updated = await updateTeklifDurum(teklifId, {durum: yeniDurum, redNedeni: JSON.stringify(redBilgi)});
+  if (!updated) return;
   closeModal('modal-red-neden');
   renderTeklifler();
   toast('Teklif ' + yeniDurum + ' olarak işaretlendi.', 'success');

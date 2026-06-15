@@ -118,6 +118,123 @@ switch ($method) {
         echo json_encode(['giris' => girisResponse($pdo, $stmt->fetch())]);
         break;
 
+    case 'PUT':
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+        $id = strOrNull($input['id'] ?? null);
+        $evrakNo = strOrNull($input['evrakNo'] ?? null);
+        $tarih = strOrNull($input['tarih'] ?? null);
+        $kalemler = $input['kalemler'] ?? [];
+        if (!$id || !$evrakNo || !$tarih) {
+            http_response_code(400);
+            echo json_encode(['error' => 'id, evrakNo ve tarih zorunludur']);
+            exit;
+        }
+        if (!is_array($kalemler) || count($kalemler) === 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'En az bir kalem ekleyin']);
+            exit;
+        }
+        foreach ($kalemler as $i => $k) {
+            if (strOrNull($k['kategoriId'] ?? null) === null || strOrNull($k['parametreAd'] ?? null) === null || strOrNull($k['lotNo'] ?? null) === null) {
+                http_response_code(400);
+                echo json_encode(['error' => (($i + 1)) . '. kalemde kategori, parametre ve LOT No zorunludur']);
+                exit;
+            }
+            if ((int)($k['sheetMiktar'] ?? 0) < 1) {
+                http_response_code(400);
+                echo json_encode(['error' => (($i + 1)) . '. kalemde sheet miktarı geçersiz']);
+                exit;
+            }
+        }
+
+        $check = $pdo->prepare('SELECT * FROM raw_stock_entries WHERE id = ?');
+        $check->execute([$id]);
+        if (!$check->fetch()) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Giriş belgesi bulunamadı']);
+            exit;
+        }
+
+        $existingStmt = $pdo->prepare('SELECT * FROM raw_stock_lots WHERE giris_id = ?');
+        $existingStmt->execute([$id]);
+        $existingLots = [];
+        foreach ($existingStmt->fetchAll() as $row) $existingLots[$row['id']] = $row;
+
+        $updates = [];
+        $inserts = [];
+        $keptIds = [];
+        foreach ($kalemler as $i => $k) {
+            $kategoriId = (string)$k['kategoriId'];
+            $sheetGiren = (int)$k['sheetMiktar'];
+            $sps = stokSPS($pdo, $kategoriId);
+            $stripGiren = $sheetGiren * $sps;
+            $lotId = strOrNull($k['lotId'] ?? null);
+            $kalemData = [
+                'lotNo' => (string)$k['lotNo'], 'parametreAd' => (string)$k['parametreAd'],
+                'cutoff' => strOrNull($k['cutoff'] ?? null), 'kategoriId' => $kategoriId,
+                'sheetGiren' => $sheetGiren, 'stripGiren' => $stripGiren,
+                'sktTarih' => strOrNull($k['sktTarih'] ?? null),
+            ];
+            if ($lotId !== null && isset($existingLots[$lotId])) {
+                $old = $existingLots[$lotId];
+                $newMevcut = (int)$old['mevcut_strip'] + ($stripGiren - (int)$old['strip_giren']);
+                if ($newMevcut < 0) {
+                    http_response_code(400);
+                    echo json_encode(['error' => $old['lot_no'] . ' LOT\'unda kullanılmış stok mevcut girişten fazla, sheet miktarını azaltamazsınız.']);
+                    exit;
+                }
+                $kalemData['mevcutStrip'] = $newMevcut;
+                $updates[$lotId] = $kalemData;
+                $keptIds[] = $lotId;
+            } else {
+                $inserts[] = $kalemData;
+            }
+        }
+        $removals = [];
+        foreach ($existingLots as $lotId => $old) {
+            if (in_array($lotId, $keptIds, true)) continue;
+            if ((int)$old['mevcut_strip'] !== (int)$old['strip_giren']) {
+                http_response_code(400);
+                echo json_encode(['error' => $old['lot_no'] . ' LOT\'undan stok kullanıldığı için kaldırılamaz.']);
+                exit;
+            }
+            $removals[] = $lotId;
+        }
+
+        $notlar = strOrNull($input['notlar'] ?? null);
+
+        $pdo->beginTransaction();
+        try {
+            $pdo->prepare('UPDATE raw_stock_entries SET evrak_no=?, tarih=?, notlar=? WHERE id=?')
+                ->execute([$evrakNo, $tarih, $notlar, $id]);
+
+            $updStmt = $pdo->prepare('UPDATE raw_stock_lots SET evrak_no=?, lot_no=?, tarih=?, parametre_ad=?, cutoff=?, kategori_id=?, sheet_giren=?, strip_giren=?, mevcut_strip=?, skt_tarih=? WHERE id=?');
+            foreach ($updates as $lotId => $u) {
+                $updStmt->execute([$evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['cutoff'], $u['kategoriId'], $u['sheetGiren'], $u['stripGiren'], $u['mevcutStrip'], $u['sktTarih'], $lotId]);
+            }
+
+            $insStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, kategori_id, sheet_giren, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            foreach ($inserts as $i => $u) {
+                $newLotId = 'hl' . (string)(int)round(microtime(true) * 1000) . $i;
+                $insStmt->execute([$newLotId, $id, $evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['cutoff'], $u['kategoriId'], $u['sheetGiren'], $u['stripGiren'], $u['stripGiren'], $u['sktTarih'], $user['id']]);
+            }
+
+            if ($removals) {
+                $placeholders = implode(',', array_fill(0, count($removals), '?'));
+                $pdo->prepare("DELETE FROM raw_stock_lots WHERE id IN ($placeholders)")->execute($removals);
+            }
+
+            $pdo->commit();
+        } catch (Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+
+        $stmt = $pdo->prepare('SELECT * FROM raw_stock_entries WHERE id = ?');
+        $stmt->execute([$id]);
+        echo json_encode(['giris' => girisResponse($pdo, $stmt->fetch())]);
+        break;
+
     case 'DELETE':
         $id = (string)($_GET['id'] ?? '');
         if ($id === '') {
@@ -125,7 +242,24 @@ switch ($method) {
             echo json_encode(['error' => 'id gerekli']);
             exit;
         }
-        $pdo->prepare('DELETE FROM raw_stock_entries WHERE id = ?')->execute([$id]);
+        $lotStmt = $pdo->prepare('SELECT * FROM raw_stock_lots WHERE giris_id = ?');
+        $lotStmt->execute([$id]);
+        foreach ($lotStmt->fetchAll() as $lot) {
+            if ((int)$lot['mevcut_strip'] !== (int)$lot['strip_giren']) {
+                http_response_code(400);
+                echo json_encode(['error' => $lot['lot_no'] . ' LOT\'undan stok kullanıldığı için bu giriş silinemez.']);
+                exit;
+            }
+        }
+        $pdo->beginTransaction();
+        try {
+            $pdo->prepare('DELETE FROM raw_stock_lots WHERE giris_id = ?')->execute([$id]);
+            $pdo->prepare('DELETE FROM raw_stock_entries WHERE id = ?')->execute([$id]);
+            $pdo->commit();
+        } catch (Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
         echo json_encode(['ok' => true]);
         break;
 

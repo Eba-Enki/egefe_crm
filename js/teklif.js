@@ -1,6 +1,34 @@
 ﻿var tekliflerPage=1;var _teklifFilterHash='';
 function setTekliflerPage(n){tekliflerPage=n;renderTeklifler();}
 
+// ════ TEKLIFLER — API ════
+async function loadTeklifler(){
+  try{
+    var res=await apiGet('teklifler?portal='+encodeURIComponent(currentPortal));
+    state.teklifler=res.teklifler||[];
+  }catch(e){
+    toast(e.message||'Teklifler yüklenemedi.','error');
+    state.teklifler=state.teklifler||[];
+  }
+  renderTeklifler();
+}
+async function updateTeklifDurum(teklifId,changes){
+  var idx=state.teklifler.findIndex(function(x){return x.id===teklifId;});
+  if(idx<0)return null;
+  try{
+    var res=await apiPut('teklifler',Object.assign({},state.teklifler[idx],changes,{id:teklifId}));
+    state.teklifler[idx]=res.teklif;
+    return res.teklif;
+  }catch(e){
+    toast(e.message||'Teklif güncellenemedi.','error');
+    return null;
+  }
+}
+function getRedBilgi(t){
+  if(!t.redNedeni)return null;
+  try{return JSON.parse(t.redNedeni);}catch(e){return{neden:t.redNedeni};}
+}
+
 function getCurSymbol(){const pb=(document.getElementById('tf-paraBirimi')||{}).value||'TRY';return{TRY:'₺',USD:'$',EUR:'€',GBP:'£'}[pb]||'₺';}
 function fmtCur(v){const pb=(document.getElementById('tf-paraBirimi')||{}).value||'TRY';return new Intl.NumberFormat('tr-TR',{style:'currency',currency:pb,minimumFractionDigits:2}).format(v||0);}
 function updateTeklifCurrency(){const sym=getCurSymbol();const h=document.getElementById('ti-cur-sym');if(h)h.textContent=sym;renderTeklifItems();}
@@ -52,7 +80,7 @@ function buildTeklifPayload(){
   var _musteriId=(_musteriIdRaw==='__edit_existing__')?'':_musteriIdRaw;
   return{teklifNo:document.getElementById('tf-teklifNo').value,musteriId:_musteriId,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:toTitleCase(document.getElementById('tf-kurum').value),ilgiliKisi:toTitleCase(document.getElementById('tf-ilgiliKisi').value),teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',paraBirimi:(document.getElementById('tf-paraBirimi')||{}).value||'TRY',odemeKosulu:(document.getElementById('tf-odemeKosulu')||{}).value||'',vade:(document.getElementById('tf-vade')||{}).value||'',teslimat:(document.getElementById('tf-teslimat')||{}).value||'',satirlar:JSON.parse(JSON.stringify(teklifItems))};
 }
-function saveTeklif(andPrint=false){
+async function saveTeklif(andPrint=false){
   const editId=document.getElementById('tf-edit-id').value;
   const kurumVal=(document.getElementById('tf-kurum')||{}).value||'';
   const musteriId=(document.getElementById('tf-musteri-id')||{}).value||'';
@@ -60,19 +88,28 @@ function saveTeklif(andPrint=false){
   if(!musteriId&&!editId)return toast('Lütfen müşteri listesinden seçin veya "+ Yeni Müşteri Ekle" ile ekleyin.','error');
   const payload=buildTeklifPayload();
   let savedId;
-  if(editId){
-    const idx=state.teklifler.findIndex(x=>x.id===editId);
-    if(idx>=0){state.teklifler[idx]={...state.teklifler[idx],...payload};savedId=editId;toast('Teklif güncellendi.','success');}
-  } else {
-    savedId='t'+Date.now();
-    state.teklifler.push({id:savedId,...payload,durum:'Taslak',olusturmaTarihi:new Date().toISOString(),olusturanKullanici:state.currentUser?.username,sorumlu:state.currentUser?.ad||''});
-    toast('Teklif oluşturuldu.','success');
+  try{
+    if(editId){
+      const idx=state.teklifler.findIndex(x=>x.id===editId);
+      if(idx<0)return;
+      const res=await apiPut('teklifler',{...state.teklifler[idx],...payload,id:editId});
+      state.teklifler[idx]=res.teklif;
+      savedId=editId;
+      toast('Teklif güncellendi.','success');
+    } else {
+      const res=await apiPost('teklifler',{...payload,portal:currentPortal});
+      state.teklifler.push(res.teklif);
+      savedId=res.teklif.id;
+      toast('Teklif oluşturuldu.','success');
+    }
+  }catch(e){
+    return toast(e.message||'Teklif kaydedilemedi.','error');
   }
   if(payload.servisId){
     const si=state.servisler.findIndex(x=>x.id===payload.servisId);
-    if(si>=0&&!['Onaylandı','Tamamlandı','Kargoya Verildi'].includes(state.servisler[si].durum))state.servisler[si].durum='Onay Bekleniyor';
+    if(si>=0&&!['Onaylandı','Tamamlandı','Kargoya Verildi'].includes(state.servisler[si].durum))updateServisDurum(payload.servisId,{durum:'Onay Bekleniyor'});
   }
-  saveAll();_formDirty=false;showPage('teklifler');
+  _formDirty=false;showPage('teklifler');
   if(andPrint&&savedId)setTimeout(()=>printTeklifById(savedId),300);
 }
 function saveTeklifAndPrint(){saveTeklif(true)}
@@ -143,7 +180,7 @@ function renderTeklifler(){
     <td class="td-mono" style="color:var(--text2)">${fmtDate(t.teklifTarihi)}</td>
     <td style="font-weight:500">${esc(t.kurum||'—')}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--amber);font-size:12px">${fmtTL(calcTeklifToplam(t))}</td>
-    <td><span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>${t.redBilgi?'<span title="'+esc(t.redBilgi.neden)+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
+    <td><span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>${getRedBilgi(t)?'<span title="'+esc(getRedBilgi(t).neden)+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
     ${showTemsilci?`<td style="font-size:12px;color:var(--text3)">${esc(t.sorumlu||'—')}</td>`:''}
     <td style="text-align:right"><div class="action-row">
       <button class="btn-icon" title="Detay" onclick="openTeklifDetay('${t.id}')">◎</button>
@@ -157,28 +194,23 @@ function renderTeklifler(){
   </tr>`).join('');
 }
 function teklifGonder(id){
-  showConfirm('Teklif müşteriye gönderildi olarak işaretlensin mi?',function(){
-    const ti=state.teklifler.findIndex(x=>x.id===id);if(ti<0)return;
-    state.teklifler[ti].durum='Gönderildi';
-    state.teklifler[ti].gonderimTarihi=today();
-    saveAll();renderTeklifler();renderDashboard();toast('Teklif "Gönderildi" olarak işaretlendi.','success');
+  showConfirm('Teklif müşteriye gönderildi olarak işaretlensin mi?',async function(){
+    const updated=await updateTeklifDurum(id,{durum:'Gönderildi'});
+    if(!updated)return;
+    renderTeklifler();renderDashboard();toast('Teklif "Gönderildi" olarak işaretlendi.','success');
   },{title:'Teklif Gönder',okText:'Gönderildi Olarak İşaretle',okClass:'btn-primary'});
 }
 function changeTeklifDurum(id,yeni){
-  showConfirm('Teklif "'+yeni+'" olarak güncellensin mi?',function(){
-    const ti=state.teklifler.findIndex(x=>x.id===id);if(ti<0)return;
-    state.teklifler[ti].durum=yeni;
-    if(yeni==='Onaylandı')state.teklifler[ti].onayTarihi=today();
-    const sid=state.teklifler[ti].servisId;
+  showConfirm('Teklif "'+yeni+'" olarak güncellensin mi?',async function(){
+    const t=state.teklifler.find(x=>x.id===id);if(!t)return;
+    const sid=t.servisId;
+    const updated=await updateTeklifDurum(id,{durum:yeni});
+    if(!updated)return;
     if(sid){
-      const si=state.servisler.findIndex(x=>x.id===sid);
-      if(si>=0){
-        var servisDurum=yeni==='Tamamlandı'?'Gönderildi':yeni;
-        state.servisler[si].durum=servisDurum;
-        if(yeni==='Onaylandı')state.servisler[si].onayTarihi=today();
-      }
+      var servisDurum=yeni==='Tamamlandı'?'Gönderildi':yeni;
+      updateServisDurum(sid,{durum:servisDurum});
     }
-    saveAll();renderTeklifler();renderDashboard();toast('Teklif "'+yeni+'" olarak güncellendi.','success');
+    renderTeklifler();renderDashboard();toast('Teklif "'+yeni+'" olarak güncellendi.','success');
   },{title:'Durum Güncelle',okText:'Evet',okClass:'btn-primary'});
 }
 
@@ -218,8 +250,8 @@ function openTeklifDetay(id){
   `;
 
   // Show red/iptal info if exists
-  if(t.redBilgi){
-    var rb=t.redBilgi;
+  var rb=getRedBilgi(t);
+  if(rb){
     var rbEl=document.createElement('div');
     rbEl.style.cssText='margin-top:12px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:12px;border-left:3px solid var(--red)';
     rbEl.innerHTML='<div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--red);margin-bottom:8px">'+(t.durum==='İptal Edildi'?'İPTAL':'RED')+' BİLGİSİ</div>'

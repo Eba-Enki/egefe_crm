@@ -66,6 +66,16 @@ async function saveMusteri(){
 }
 
 // ════ ÜRÜNLER ════
+async function loadUrunler(){
+  try{
+    var res=await apiGet('urunler?portal='+encodeURIComponent(currentPortal));
+    state.urunler=res.urunler||[];
+  }catch(e){
+    toast(e.message||'Ürünler yüklenemedi.','error');
+    state.urunler=state.urunler||[];
+  }
+  renderUrunler();
+}
 function renderUrunler(){
   let data=[...state.urunler];
   const q=(document.getElementById('fu-ara').value||'').toLowerCase();
@@ -81,23 +91,35 @@ function renderUrunler(){
   const _fmtFiyat=(v,pb)=>{if(!v)return'—';const sym={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'};return(sym[pb||'TRY']||'₺')+' '+new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v);};
   tbody.innerHTML=pagedU.map(u=>{return`<tr><td class="td-mono" style="color:var(--accent);font-size:11px">${esc(u.urunKodu||'—')}</td><td style="font-weight:500">${esc(u.urunAdi)}</td><td style="color:var(--text2)">${esc(u.marka||'—')}</td>${isSatis?`<td style="color:var(--text2);font-size:12px">${esc(u.kategori||'—')}</td>`:''}<td class="td-mono" style="color:var(--text2)">${esc(u.model||'—')}</td><td class="td-mono" style="color:var(--amber)">${_fmtFiyat(u.fiyat,u.paraBirimi)}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goUrunForm('${esc(u.id)}')">✎</button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('urun','${esc(u.id)}')">⊗</button></div></td></tr>`;}).join('');
 }
-function saveUrun(){
+async function saveUrun(){
   const urunAdi=document.getElementById('uf-urunAdi').value.trim();if(!urunAdi)return toast('Ürün adı zorunlu.','error');
   const editId=document.getElementById('uf-edit-id').value;
   const fiyatEl=document.getElementById('uf-fiyat');const fiyat=fiyatEl?parseFloat(fiyatEl.value)||0:0;
   var urunKoduEl=document.getElementById('uf-urunKodu');var urunKodu=urunKoduEl?urunKoduEl.value.trim():'';
   const pbEl2=document.getElementById('uf-paraBirimi');const paraBirimi=pbEl2?pbEl2.value:'TRY';
   const katEl=document.getElementById('uf-kategori');
-  const payload={urunAdi:toTitleCase(urunAdi),urunKodu,marka:toTitleCase(document.getElementById('uf-marka').value.trim()),model:toTitleCase(document.getElementById('uf-model').value.trim()),kategori:katEl?katEl.value:'',fiyat,paraBirimi,aciklama:document.getElementById('uf-aciklama').value.trim()};
-  if(editId){const idx=state.urunler.findIndex(x=>x.id===editId);if(idx>=0){state.urunler[idx]={...state.urunler[idx],...payload};toast('Güncellendi.','success');}}
-  else{state.urunler.push({id:'p'+Date.now(),...payload});toast('Ürün eklendi.','success');}
-  saveAll();_formDirty=false;showPage('urunler');
+  const payload={portal:currentPortal,urunAdi:toTitleCase(urunAdi),urunKodu,marka:toTitleCase(document.getElementById('uf-marka').value.trim()),model:toTitleCase(document.getElementById('uf-model').value.trim()),kategori:katEl?katEl.value:'',fiyat,paraBirimi,aciklama:document.getElementById('uf-aciklama').value.trim()};
+  try{
+    if(editId){
+      const idx=state.urunler.findIndex(x=>x.id===editId);
+      if(idx<0)return;
+      const res=await apiPut('urunler',{...payload,id:editId});
+      state.urunler[idx]=res.urun;
+      toast('Güncellendi.','success');
+    }else{
+      const res=await apiPost('urunler',payload);
+      state.urunler.push(res.urun);
+      toast('Ürün eklendi.','success');
+    }
+  }catch(e){
+    return toast(e.message||'Ürün kaydedilemedi.','error');
+  }
+  _formDirty=false;showPage('urunler');
 }
 
 
 // ════ TUTANAKLAR ════
 function renderTutanaklar(){
-  loadSavedTutanaklar();
   var tbody=document.getElementById('tutanak-table-body');
   var emptyEl=document.getElementById('tutanak-empty');
   if(!tbody)return;
@@ -217,16 +239,37 @@ function saveSettings(){
 function confirmDelete(type,id){
   const msgs={servis:'Bu servis kaydını silmek istiyor musunuz? İlişkili teklifler de silinecek.',teklif:'Bu teklifi silmek istiyor musunuz?',siparis:'Bu siparişi silmek istiyor musunuz?',fatura:'Bu faturayı silmek istiyor musunuz?',musteri:'Bu müşteriyi silmek istiyor musunuz?',urun:'Bu ürünü silmek istiyor musunuz?',kullanici:'Bu kullanıcıyı silmek istiyor musunuz?'};
   showConfirm(msgs[type]||'Emin misiniz?',async function(){
-    if(type==='servis'){state.servisler=state.servisler.filter(x=>x.id!==id);state.teklifler=state.teklifler.filter(t=>t.servisId!==id)}
-    else if(type==='teklif')state.teklifler=state.teklifler.filter(x=>x.id!==id);
+    if(type==='servis'){
+      try{await apiDelete('servisler?id='+encodeURIComponent(id));}
+      catch(e){return toast(e.message||'Servis kaydı silinemedi.','error');}
+      state.servisler=state.servisler.filter(x=>x.id!==id);
+      state.teklifler=state.teklifler.filter(t=>t.servisId!==id);
+    }
+    else if(type==='teklif'){
+      try{await apiDelete('teklifler?id='+encodeURIComponent(id));}
+      catch(e){return toast(e.message||'Teklif silinemedi.','error');}
+      state.teklifler=state.teklifler.filter(x=>x.id!==id);
+    }
     else if(type==='musteri'){
       try{await apiDelete('musteriler?id='+encodeURIComponent(id));}
       catch(e){return toast(e.message||'Müşteri silinemedi.','error');}
       state.musteriler=state.musteriler.filter(x=>x.id!==id);
     }
-    else if(type==='urun')state.urunler=state.urunler.filter(x=>x.id!==id);
-    else if(type==='siparis'){state.siparisler=(state.siparisler||[]).filter(function(x){return x.id!==id;});}
-    else if(type==='fatura'){state.faturalar=(state.faturalar||[]).filter(function(x){return x.id!==id;});}
+    else if(type==='urun'){
+      try{await apiDelete('urunler?id='+encodeURIComponent(id));}
+      catch(e){return toast(e.message||'Ürün silinemedi.','error');}
+      state.urunler=state.urunler.filter(x=>x.id!==id);
+    }
+    else if(type==='siparis'){
+      try{await apiDelete('siparisler?id='+encodeURIComponent(id));}
+      catch(e){return toast(e.message||'Sipariş silinemedi.','error');}
+      state.siparisler=(state.siparisler||[]).filter(function(x){return x.id!==id;});
+    }
+    else if(type==='fatura'){
+      try{await apiDelete('faturalar?id='+encodeURIComponent(id));}
+      catch(e){return toast(e.message||'Fatura silinemedi.','error');}
+      state.faturalar=(state.faturalar||[]).filter(function(x){return x.id!==id;});
+    }
     if(type!=='musteri') saveAll();
     const refreshMap={servis:()=>{renderTable();renderDashboard()},teklif:renderTeklifler,siparis:renderSiparisler,fatura:renderFaturalar,musteri:renderMusteriler,urun:renderUrunler};
     if(refreshMap[type])refreshMap[type]();
@@ -306,27 +349,27 @@ function importUrunlerExcel(e){
   var file=e.target.files[0];e.target.value='';if(!file)return;
   if(!window.XLSX){toast('Excel kütüphanesi yüklenemedi.','error');return;}
   var reader=new FileReader();
-  reader.onload=function(ev){
+  reader.onload=async function(ev){
     try{
       var wb=XLSX.read(ev.target.result,{type:'array'});
       var ws=wb.Sheets[wb.SheetNames[0]];
       var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
       var eklenen=0,atlanan=0;
-      rows.forEach(function(row){
+      for(const row of rows){
         var urunAdi=(row['Ürün / İşlem Adı*']||row['Ürün / İşlem Adı']||'').toString().trim();
-        if(!urunAdi){atlanan++;return;}
+        if(!urunAdi){atlanan++;continue;}
         var urunKodu=(row['Ürün Kodu']||'').toString().trim();
         var mevcutMu=state.urunler.some(function(u){
           if(urunKodu&&u.urunKodu)return u.urunKodu.toLowerCase()===urunKodu.toLowerCase();
           return u.urunAdi.toLowerCase()===urunAdi.toLowerCase();
         });
-        if(mevcutMu){atlanan++;return;}
+        if(mevcutMu){atlanan++;continue;}
         var fiyatRaw=(row['Liste Fiyatı']||'').toString().replace(',','.');
         var fiyat=parseFloat(fiyatRaw)||0;
         var pb=(row['Para Birimi (TRY/USD/EUR/GBP)']||'TRY').toString().trim().toUpperCase();
         if(!['TRY','USD','EUR','GBP'].includes(pb))pb='TRY';
-        state.urunler.push({
-          id:'p'+Date.now()+Math.random().toString(36).slice(2,6),
+        var payload={
+          portal:currentPortal,
           urunAdi:toTitleCase(urunAdi),
           urunKodu:urunKodu,
           marka:toTitleCase((row['Marka']||'').toString().trim()),
@@ -335,10 +378,14 @@ function importUrunlerExcel(e){
           paraBirimi:pb,
           kategori:(row['Kategori']||'').toString().trim(),
           aciklama:(row['Açıklama']||'').toString().trim()
-        });
-        eklenen++;
-      });
-      saveAll();renderUrunler();
+        };
+        try{
+          var res=await apiPost('urunler',payload);
+          state.urunler.push(res.urun);
+          eklenen++;
+        }catch(err){atlanan++;}
+      }
+      renderUrunler();
       if(eklenen&&atlanan)toast(eklenen+' ürün eklendi, '+atlanan+' satır atlandı (zaten mevcut veya boş).','success');
       else if(eklenen)toast(eklenen+' ürün eklendi.','success');
       else toast('Eklenecek yeni kayıt bulunamadı.','info');

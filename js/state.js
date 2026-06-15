@@ -37,10 +37,10 @@ const DURUM_CLASS={'Yeni Gelen':'badge-yeni','S.F. Bekleniyor':'badge-sf','Onay 
 let state={
   currentUser:null,prevPage:'servisler',activeTeklifId:null,
   users:[],
-  servisler:DB.pload('servisler',genSample()),
-  teklifler:DB.pload('teklifler',[]),
+  servisler:[],
+  teklifler:[],
   musteriler:DB.pload('musteriler',[]),
-  urunler:DB.pload('urunler',[]),
+  urunler:[],
   urunKategoriler:DB.pload('urunKategoriler',['Cihaz','Yazılım','Aksesuar','Sarf Malzeme','Diğer']),
   settings:DB.pload('settings',{firma:'Egefe Teknik Servis',tel:'',faks:'',adres:'',email:'',web:''}),
   sortCol:'kayitNo',sortDir:'desc'
@@ -49,19 +49,9 @@ let sfAksesuarlar=[];
 let teklifItems=[];
 
 function saveAll(){
-  if(currentPortal==='stok'){
-    ['hamStokGirisler','hamStokLotlar','hamStokCikislar','bitmisStokGirisler','bitmisStokLotlar','bitmisCikislar','stokSettings'].forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});
-    return;
-  }
-  var keys=['musteriler','urunler','urunKategoriler','teklifler','settings','siparisler','faturalar'];
-  if(currentPortal==='servis') keys=keys.concat(['servisler']);
+  if(currentPortal==='stok') return;
+  var keys=['musteriler','urunKategoriler','settings'];
   keys.forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});
-}
-
-function genSample(){
-  const kr=['Niğde Hayat Hastanesi','Silivri Devlet Hastanesi','Eskişehir Yunus Emre Hastanesi','Kaş Devlet Hastanesi','Çerkeş Devlet Hastanesi','Köyceğiz Devlet Hastanesi','Kırıkkale Yüksek İhtisas','Sakarya Eğitim Araştırma','Adana Numune Hastanesi','Erzurum Bölge Hastanesi'];
-  const dur=['Yeni Gelen','S.F. Bekleniyor','Onay Bekleniyor','Onaylandı','Kargoya Verildi','Tamamlandı','Reddedildi'];
-  return kr.map((k,i)=>{const d=new Date(2024,i%12,Math.floor(Math.random()*27)+1),du=dur[i%dur.length];return{id:'s'+i,kayitNo:'KN'+String(i+1).padStart(6,'0'),kurumAdi:k,urunAdi:['El Terminali','Barkod Yazıcı','Etiket Yazıcı'][i%3],seriNo:String(1000000+i*77777),aksesuarlar:[],aksesyarDiger:'',gelisTarihi:d.toISOString().slice(0,10),ilgiliKisi:['Ayşe Hanım','Mehmet Bey','Fatma Hanım','Ali Bey'][i%4],telefon:'',email:'',durum:du,garantiDurumu:i%2===0?'Evet':'Hayır',kargoTarihi:'',kargoFirmasi:'',teslimAlan:'',notlar:'',olusturanKullanici:'admin',olusturmaTarihi:new Date().toISOString()}});
 }
 
 // ════ UTILS ════
@@ -69,7 +59,6 @@ const today=()=>new Date().toISOString().slice(0,10);
 function fmtDate(d){if(!d)return'—';try{return new Date(d+'T12:00:00').toLocaleDateString('tr-TR')}catch{return d}}
 function fmtTL(v){if(v===''||v==null)return'—';return new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',minimumFractionDigits:2}).format(v)}
 function fmtNum(v){if(v===''||v==null)return'—';return new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v)}
-function nextKN(){const p=(state.settings&&state.settings.servisPrefix)||'KN';const d=parseInt((state.settings&&state.settings.servisDigits)||6);const n=state.servisler.map(s=>parseInt((s.kayitNo||'').replace(p,''))||0);return p+String((n.length?Math.max(...n):0)+1).padStart(d,'0')}
 function nextTN(){const p=(state.settings&&state.settings.teklifPrefix)||'TKL';const d=parseInt((state.settings&&state.settings.teklifDigits)||5);const n=state.teklifler.map(t=>parseInt((t.teklifNo||'').replace(p,''))||0);return p+String((n.length?Math.max(...n):0)+1).padStart(d,'0')}
 function durumBadge(d){return`<span class="badge ${DURUM_CLASS[d]||''}">${d||'—'}</span>`}
 function calcTeklifToplam(t){return(t.satirlar||[]).reduce(function(a,s){return a+(s.miktar*s.birimFiyat)},0)}

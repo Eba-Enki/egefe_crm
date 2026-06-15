@@ -225,14 +225,15 @@ async function _generateTutanakPDF(tutanak, logoPngDataUrl){
 // ════ TUTANAK ════
 
 let savedTutanaklar = [];
-function loadSavedTutanaklar(){
-  savedTutanaklar = DB.pload('tutanaklar', []);
-}
-
-function nextTutanakNo(){
-  loadSavedTutanaklar();
-  const nums = savedTutanaklar.map(t=>parseInt((t.no||'').replace('TT',''))||0);
-  return 'TT'+String((nums.length?Math.max(...nums):0)+1).padStart(5,'0');
+async function loadTutanaklar(){
+  try{
+    var res=await apiGet('tutanaklar');
+    savedTutanaklar=res.tutanaklar||[];
+  }catch(e){
+    toast(e.message||'Tutanaklar yüklenemedi.','error');
+    savedTutanaklar=savedTutanaklar||[];
+  }
+  renderTutanaklar();
 }
 
 function openYeniTutanak(){
@@ -276,46 +277,6 @@ function olusturTutanakSecimden(){
   if(!chks.length){toast('Lütfen en az 1 kayıt seçin.','error');return;}
   var secilenIds=Array.from(chks).map(function(c){return c.dataset.id;});
   var secilen=state.servisler.filter(function(s){return secilenIds.includes(s.id);});
-  var no=nextTutanakNo();
-  var tarih=today();
-  var kalemler=secilen.map(function(s){return{
-    kayitNo:s.kayitNo,
-    kurumAdi:s.kurumAdi||'—',
-    seriNo:s.seriNo||'—',
-    garantiDurumu:s.garantiDurumu||'Hayır',
-    aksesuarlar:buildAksesuarStr(s),
-    urunAdi:s.urunAdi||'—',
-    gelisTarihi:s.gelisTarihi||''
-  };});
-  closeModal('modal-tutanak-secim');
-  showTutanakPreview({no:no,tarih:tarih,kalemler:kalemler,olusturan:state.currentUser?.ad||'',servisIds:secilenIds},true);
-}
-
-function tutanakSelectAll(checked){
-  document.querySelectorAll('.ts-chk').forEach(function(c){c.checked=checked;});
-  tutanakUpdateCount();
-}
-
-function tutanakUpdateCount(){
-  var selected=document.querySelectorAll('.ts-chk:checked').length;
-  var countEl=document.getElementById('ts-secim-say');
-  if(countEl)countEl.textContent=selected+' kayıt seçildi';
-  var btn=document.getElementById('ts-onayla-btn');
-  if(btn)btn.disabled=(selected===0);
-  // Sync select-all checkbox
-  var all=document.querySelectorAll('.ts-chk').length;
-  var saEl=document.getElementById('ts-select-all');
-  if(saEl)saEl.indeterminate=(selected>0&&selected<all);
-  if(saEl&&selected===all&&all>0)saEl.checked=true;
-  if(saEl&&selected===0)saEl.checked=false;
-}
-
-function tutanakSecimOnayla(){
-  var selectedIds=[];
-  document.querySelectorAll('.ts-chk:checked').forEach(function(c){selectedIds.push(c.dataset.id);});
-  if(!selectedIds.length){toast('Lütfen en az bir kayıt seçin.','error');return;}
-  var secilen=state.servisler.filter(function(s){return selectedIds.includes(s.id);});
-  var no=nextTutanakNo();
   var tarih=today();
   var kalemler=secilen.map(function(s){return{
     servisId:s.id,
@@ -328,7 +289,7 @@ function tutanakSecimOnayla(){
     gelisTarihi:s.gelisTarihi||''
   };});
   closeModal('modal-tutanak-secim');
-  showTutanakPreview({no:no,tarih:tarih,kalemler:kalemler,olusturan:state.currentUser?.ad||''},true,selectedIds);
+  showTutanakPreview({tarih:tarih,kalemler:kalemler,olusturan:state.currentUser?.ad||'',servisIds:secilenIds},true,secilenIds);
 }
 
 function buildAksesuarStr(s){
@@ -337,7 +298,18 @@ function buildAksesuarStr(s){
   return chips.length ? chips.join(', ') : '—';
 }
 
-function showTutanakPreview(tutanak, isNew, selectedIds){
+async function showTutanakPreview(tutanak, isNew, selectedIds){
+  if(isNew){
+    var res;
+    try{
+      res=await apiPost('tutanaklar',{tarih:tutanak.tarih,kalemler:tutanak.kalemler});
+    }catch(e){
+      toast(e.message||'Tutanak kaydedilemedi.','error');
+      return;
+    }
+    tutanak=res.tutanak;
+  }
+
   const st = state.settings;
   const logoSrc = document.getElementById('sb-logo-img').src;
   const rows = tutanak.kalemler.map((k,i)=>`
@@ -402,21 +374,16 @@ function showTutanakPreview(tutanak, isNew, selectedIds){
   // PDF button
   document.getElementById('tutanak-pdf-btn').onclick = ()=>printTutanakData(tutanak);
 
-  // If new: save first
+  // If new: already saved via API above — sync local state
   if(isNew){
-    loadSavedTutanaklar();
-    savedTutanaklar.push({...tutanak});
-    DB.psave('tutanaklar', savedTutanaklar);
-    // Seçilen servislerin durumunu "S.F. Bekleniyor" yap
+    savedTutanaklar.push(tutanak);
+    // Seçilen servislerin durumunu "S.F. Bekleniyor" yap (backend zaten cascade etti)
     var ids=selectedIds||(tutanak.kalemler||[]).map(function(k){return k.servisId;}).filter(Boolean);
-    if(ids&&ids.length){
-      ids.forEach(function(sid){
-        var si=state.servisler.findIndex(function(x){return x.id===sid;});
-        if(si>=0&&state.servisler[si].durum==='Yeni Gelen')state.servisler[si].durum='S.F. Bekleniyor';
-      });
-      DB.psave('servisler',state.servisler);
-      renderTable();
-    }
+    ids.forEach(function(sid){
+      var s=state.servisler.find(function(x){return x.id===sid;});
+      if(s&&s.durum==='Yeni Gelen')s.durum='S.F. Bekleniyor';
+    });
+    if(typeof renderTable==='function'&&document.getElementById('table-body'))renderTable();
     toast('Tutanak kaydedildi. Seçilen kayıtlar S.F. Bekleniyor durumuna alındı.','success');
     renderTutanaklar();
   }
@@ -424,23 +391,25 @@ function showTutanakPreview(tutanak, isNew, selectedIds){
 }
 
 function previewTutanak(no){
-  loadSavedTutanaklar();
   const t = savedTutanaklar.find(x=>x.no===no);
   if(t) showTutanakPreview(t, false);
 }
 
 function deleteTutanak(no){
-  showConfirm('Bu tutanak silinsin mi?',function(){
-    loadSavedTutanaklar();
+  showConfirm('Bu tutanak silinsin mi?',async function(){
+    try{
+      await apiDelete('tutanaklar?id='+encodeURIComponent(no));
+    }catch(e){
+      toast(e.message||'Tutanak silinemedi.','error');
+      return;
+    }
     savedTutanaklar = savedTutanaklar.filter(t=>t.no!==no);
-    DB.psave('tutanaklar', savedTutanaklar);
     renderTutanaklar();
     toast('Tutanak silindi.','info');
   });
 }
 
 function printTutanakById(no){
-  loadSavedTutanaklar();
   const t = savedTutanaklar.find(x=>x.no===no);
   if(t) printTutanakData(t);
 }

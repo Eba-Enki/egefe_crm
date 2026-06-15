@@ -130,7 +130,7 @@ function renderTutanaklar(){
       +'<td><span class="kn-badge">'+t.no+'</span></td>'
       +'<td class="td-mono">'+fmtDate(t.tarih)+'</td>'
       +'<td style="text-align:right"><div class="action-row" style="justify-content:flex-end">'
-      +'<button class="btn-icon" title="Yazdır" onclick="previewTutanak(\''+t.no+'\')">🖨</button>'
+      +'<button class="btn-icon" title="Yazdır" onclick="previewTutanak(\''+t.no+'\')"><img src="icons/printer_icon.png" alt="Yazdır" style="width:14px;height:14px;display:block"></button>'
       +'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteTutanak(\''+t.no+'\')">⊗</button>'
       +'</div></td>'
       +'</tr>';

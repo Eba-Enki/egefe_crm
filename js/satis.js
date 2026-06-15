@@ -169,7 +169,7 @@ function renderSiparisler(){
       +'<td style="font-size:12px;color:var(--text3)">'+esc(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
       +'<td style="text-align:right"><div class="action-row">'
       +'<button class="btn-icon" title="Detay" onclick="openSiparisDetay(\''+s.id+'\')">◎</button>'
-      +(ARSIV_SIPARISLER.indexOf(s.durum)<0?'<button class="btn-icon" title="Sipariş Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')">📋</button>':'')
+      +(ARSIV_SIPARISLER.indexOf(s.durum)<0?'<button class="btn-icon" title="Sipariş Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')"><img src="icons/printer_icon.png" alt="Yazdır" style="width:14px;height:14px;display:block"></button>':'')
       +(canEdit&&['Hazırlanıyor','Kısmi Sevkiyat'].indexOf(s.durum)>=0
         ?'<button class="btn-icon" title="Sevkiyat" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')">📦</button>'
         :'')

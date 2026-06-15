@@ -431,7 +431,7 @@ function renderHamStok(){
             +'<td>'+durum+'</td>'
             +'<td><div class="action-row">'
               +(canWrite?'<button class="btn-icon" title="Düzenle" onclick="event.stopPropagation();goHamGirisEdit(\''+lot.girisId+'\')">✏</button>':'')
-              +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="event.stopPropagation();stokSilHamLot(\''+lot.id+'\')">⊗</button>':'')
+              +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="event.stopPropagation();stokSilHamLot(\''+lot.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
             +'</div></td>'
             +'</tr>';
         });
@@ -491,7 +491,7 @@ function renderHamGirisler(){
       +'<td style="font-size:11px;color:var(--text3);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+stokEsc(notlarFull)+'">'+stokEsc(notlarFull)+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" onclick="event.stopPropagation();goHamGirisEdit(\''+g.id+'\')">✏</button>':'')
-        +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilHamGiris(\''+g.id+'\')">⊗</button>':'')
+        +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilHamGiris(\''+g.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';
     // Accordion detay
@@ -626,7 +626,7 @@ function hgRenderKalemler(){
       +'<div class="field" style="margin:0"><label style="font-size:10px">Sheet *</label><input type="number" min="1" value="'+(k.sheetMiktar||'')+'" onchange="_hgKalemler['+i+'].sheetMiktar=parseInt(this.value)||0;hgRenderKalemler()"></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY)</label><input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" onchange="hgSktChange('+i+',this.value)" onkeydown="hgSktKeydown('+i+',event)"></div>'
       +'<div style="font-family:var(--font-mono);font-size:11px;color:var(--teal);padding-bottom:4px;white-space:nowrap">'+prevTxt+'</div>'
-      +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="hgRemoveKalem('+i+')">⊗</button>'
+      +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="hgRemoveKalem('+i+')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>'
       +'</div>';
   }).join('');
   el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="hgAddKalem()">＋ Kalem Ekle</button></div>';
@@ -711,7 +711,7 @@ function renderHamCikislar(){
       +'<td style="text-align:center;font-family:var(--font-mono)">'+stokFmtN(c.kitMiktari)+'</td>'
       +'<td style="font-size:12px;color:var(--text2)">'+ozetDisp+'</td>'
       +'<td><div class="action-row">'
-        +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilHamCikis(\''+c.id+'\')">⊗</button>':'')
+        +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilHamCikis(\''+c.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';
     if(expanded){
@@ -830,7 +830,7 @@ function hcRenderSatirlar(){
         +'<select id="hc-param-'+i+'" onchange="hcParamChange('+i+',this.value)"><option value="">Seçin...</option>'+paramOptions+'</select></div>'
       +'<div class="field" style="margin:0"><label style="font-size:11px">LOT <span style="color:var(--text3);font-weight:400">'+stokEsc(mevcutInfo)+'</span></label>'
         +'<select onchange="hcLotChange('+i+',this.value)" onkeydown="hcLotKeydown('+i+',event)"><option value="">LOT Seçin...</option>'+lotOptions+'</select></div>'
-      +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="hcRemoveSatir('+i+')">⊗</button>'
+      +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="hcRemoveSatir('+i+')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>'
       +'</div>';
   }).join('');
 
@@ -949,7 +949,7 @@ function renderBitmisStok(){
       +'<td style="font-family:var(--font-mono);font-size:12px;color:'+skt.renk+'">'+stokFmtSkt(l.sktTarih)+(skt.etiket?' ('+skt.etiket+')':'')+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" onclick="goBitmisGirisEdit(\''+l.girisId+'\')">✏</button>':'')
-        +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="stokSilBitmisLot(\''+l.id+'\')">⊗</button>':'')
+        +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="stokSilBitmisLot(\''+l.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';
   });
@@ -997,7 +997,7 @@ function renderBitmisGirisler(){
       +'<td style="font-size:11px;color:var(--text3)">'+stokEsc(g.notlar||'')+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" onclick="event.stopPropagation();goBitmisGirisEdit(\''+g.id+'\')">✏</button>':'')
-        +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilBitmisGiris(\''+g.id+'\')">⊗</button>':'')
+        +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilBitmisGiris(\''+g.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';
     if(expanded){
@@ -1142,7 +1142,7 @@ function bgRenderKalemler(){
         +'<div class="field" style="margin:0"><label style="font-size:10px">Miktar *</label><input type="number" min="1" value="'+(k.miktar||'')+'" onchange="_bgKalemler['+i+'].miktar=parseInt(this.value)||0"></div>'
         +'<div class="field" style="margin:0"><label style="font-size:10px">LOT No *</label><input type="text" value="'+stokEsc(k.lotNo||'')+'" placeholder="ör. KLOT-001" onchange="_bgKalemler['+i+'].lotNo=this.value.trim()"></div>'
         +'<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY)</label><input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" onchange="bgSktChange('+i+',this.value)" onkeydown="bgSktKeydown('+i+',event)"></div>'
-        +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="bgRemoveKalem('+i+')">⊗</button>'
+        +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="bgRemoveKalem('+i+')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>'
       +'</div>'
       +(paramAdlar.length
         ?'<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span style="font-size:10px;color:var(--text3);font-weight:500;margin-right:2px;flex-shrink:0">Parametreler:</span>'+chips+'</div>'
@@ -1237,7 +1237,7 @@ function renderBitmisCikislar(){
       +'<td style="font-size:12px;color:var(--text2)">'+stokEsc(urunStr)+'</td>'
       +'<td style="text-align:right;font-family:var(--font-mono)">'+stokFmtN(toplam)+'</td>'
       +'<td><div class="action-row">'
-        +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilBitmisCikis(\''+c.id+'\')">⊗</button>':'')
+        +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilBitmisCikis(\''+c.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';
     if(expanded){
@@ -1325,7 +1325,7 @@ function bcRenderSatirlar(){
     return '<div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:8px">'
       +'<div class="field" style="margin:0"><label style="font-size:11px">Ürün / LOT</label><select id="bc-lot-'+i+'" onchange="bcLotChange('+i+',this.value)"><option value="">Seçin...</option>'+lotOptions+'</select></div>'
       +'<div class="field" style="margin:0;width:90px"><label style="font-size:11px">Miktar</label><input type="number" min="1" value="'+s.miktar+'" onchange="bcMiktarChange('+i+',this.value)" onkeydown="bcMiktarKeydown('+i+',event)"></div>'
-      +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="bcRemoveSatir('+i+')">⊗</button>'
+      +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="bcRemoveSatir('+i+')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>'
       +'</div>';
   }).join('');
   el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bcAddSatir()">＋ Ürün / LOT Ekle</button></div>';
@@ -1476,7 +1476,7 @@ function stokNedenRender(){
   el.innerHTML='<div style="display:flex;flex-direction:column;gap:4px">'+nedenleri.map(function(n,i){
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border)">'
       +'<span style="font-size:13px;color:var(--text)">'+stokEsc(n)+'</span>'
-      +'<button class="btn-icon sa-action" style="color:var(--red);flex-shrink:0" onclick="stokNedenSil('+i+')">⊗</button>'
+      +'<button class="btn-icon sa-action" style="color:var(--red);flex-shrink:0" onclick="stokNedenSil('+i+')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>'
       +'</div>';
   }).join('')+'</div>';
 }
@@ -1558,7 +1558,7 @@ function stokRenderHamKatAyar(){
       +'<td style="text-align:center"><input type="number" id="kat-kb-'+i+'" value="'+k.kesimBoleni+'" min="1" style="width:64px;text-align:center"></td>'
       +'<td style="text-align:center"><input type="number" id="kat-fp-'+i+'" value="'+k.firePct+'" min="0" max="50" style="width:50px;text-align:center"></td>'
       +'<td style="text-align:center;font-family:var(--font-mono);font-size:13px;color:var(--teal);font-weight:600">'+stokSPS(k.id)+'</td>'
-      +'<td><button class="btn-icon sa-action" style="color:var(--red)" onclick="stokKatSil('+i+')" title="Sil">⊗</button></td>'
+      +'<td><button class="btn-icon sa-action" style="color:var(--red)" onclick="stokKatSil('+i+')" title="Sil"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></td>'
       +'</tr>';
   }).join('');
   var newRow='<tr class="sa-action">'
@@ -1589,7 +1589,7 @@ function stokRenderTicariKatAyar(){
     ? kats.map(function(k,i){
         return '<tr>'
           +'<td><input type="text" id="tkat-ad-'+i+'" value="'+stokEsc(k.ad)+'" style="width:100%"></td>'
-          +'<td><button class="btn-icon sa-action" style="color:var(--red)" onclick="stokTicariKatSil('+i+')" title="Sil">⊗</button></td>'
+          +'<td><button class="btn-icon sa-action" style="color:var(--red)" onclick="stokTicariKatSil('+i+')" title="Sil"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></td>'
           +'</tr>';
       }).join('')
     : '<tr><td colspan="2" style="color:var(--text3);font-size:12px;padding:12px 8px">Henüz kategori tanımlanmamış.</td></tr>';
@@ -1795,7 +1795,7 @@ function stokParamTabloRender(){
         :'<span class="badge" style="background:var(--bg4);color:var(--text3)">Pasif</span>')+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" title="Düzenle" onclick="stokParamFormAc('+globalIdx+')">✏</button>':'')
-        +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="stokParamSil('+globalIdx+')">⊗</button>':'')
+        +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="stokParamSil('+globalIdx+')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';
   });

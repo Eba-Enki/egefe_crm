@@ -64,7 +64,7 @@ function renderSistemKullanicilar(){
       + '</div>'
       + '<div class="action-row">'
         + '<button class="btn-icon" onclick="goSistemUserForm(\''+u.id+'\')">✏</button>'
-        + (!isSelf?'<button class="btn-icon" style="color:var(--red)" onclick="silSistemUser(\''+u.id+'\')">⊗</button>':'')
+        + (!isSelf?'<button class="btn-icon" style="color:var(--red)" onclick="silSistemUser(\''+u.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       + '</div>'
     + '</div>';
   });

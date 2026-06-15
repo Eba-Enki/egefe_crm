@@ -175,7 +175,7 @@ function renderSiparisler(){
         :'')
       +(canEdit&&['Kısmi Sevkiyat','Tamamlandı'].indexOf(s.durum)>=0?'<button class="btn-icon" title="Faturaya Aktar" style="color:var(--amber)" onclick="openFaturaModal(\''+s.id+'\')">🧾</button>':'')
       +(canEdit&&SP_GECIS[s.durum]&&SP_GECIS[s.durum].length?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)">⇅</button>':'')
-      +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'siparis\',\''+s.id+'\')">⊗</button>':'')
+      +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'siparis\',\''+s.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';
   }).join('');
@@ -344,7 +344,7 @@ function renderFaturalar(){
       +(canEdit?'<button class="btn-icon" title="Düzenle" onclick="openFaturaDuzenle(\''+f.id+'\')">✏</button>':'')
       +(canEdit&&f.durum!=='Ödendi'?'<button class="btn-icon" style="color:var(--green)" onclick="markFaturaOdendi(\''+f.id+'\')" title="Ödendi İşaretle">✓</button>':'')
       +(canEdit&&f.durum==='Ödendi'?'<button class="btn-icon" style="color:var(--text3)" onclick="markFaturaOdenmedi(\''+f.id+'\')" title="Ödenmedi olarak geri al">↩</button>':'')
-      +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'fatura\',\''+f.id+'\')">⊗</button>':'')
+      +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'fatura\',\''+f.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';
   }).join('');

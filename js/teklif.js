@@ -48,7 +48,7 @@ function renderTeklifItems(){
     <td class="ti-birim" style="vertical-align:top"><select onchange="teklifItems[${i}].birim=this.value"><option ${item.birim==='Adet'?'selected':''}>Adet</option><option ${item.birim==='Saat'?'selected':''}>Saat</option><option ${item.birim==='Gün'?'selected':''}>Gün</option><option ${item.birim==='Parça'?'selected':''}>Parça</option></select></td>
     <td class="ti-fiyat" style="vertical-align:top"><input type="number" id="ti-fiyat-${i}" value="${item.birimFiyat}" min="0" step="0.01" oninput="teklifItems[${i}].birimFiyat=parseFloat(this.value)||0;updateTeklifTotals()"></td>
     <td class="ti-total" style="vertical-align:top" id="ti-total-${i}">${fmtCur(item.miktar*(item.birimFiyat||0))}</td>
-    <td class="ti-del" style="vertical-align:top"><button class="btn-icon" style="color:var(--red)" onclick="removeTeklifItem(${i})">⊗</button></td>
+    <td class="ti-del" style="vertical-align:top"><button class="btn-icon" style="color:var(--red)" onclick="removeTeklifItem(${i})"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></td>
   </tr>`;}).join('');
   updateTeklifTotals();
 }
@@ -189,7 +189,7 @@ function renderTeklifler(){
       ${canEdit&&!TEKLIF_ARSIV_DURUMLAR.includes(t.durum)?`<button class="btn-icon" title="Düzenle" onclick="goTeklifForm('${t.id}')">✎</button>`:''}
       <button class="btn-icon" style="color:var(--accent)" title="PDF" onclick="printTeklifById('${t.id}')">⬇</button>
       ${canEdit&&currentPortal==='satis'&&t.durum==='Kabul Edildi'?`<button class="btn-icon" title="Sipariş Oluştur" style="color:var(--purple)" onclick="goSiparisForm('${t.id}')">📦</button>`:''}
-      ${canEdit?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('teklif','${t.id}')">⊗</button>`:''}
+      ${canEdit?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('teklif','${t.id}')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>`:''}
     </div></td>
   </tr>`).join('');
 }

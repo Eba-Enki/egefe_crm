@@ -201,7 +201,7 @@ function renderTable(){
         ${durumBtn}
         ${teklifBtn}
         ${isArsiv&&state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" title="Aktife Al" style="color:var(--teal);border-color:rgba(45,212,191,.3)" onclick="arsivdenGeriAl('${s.id}')">↩</button>`:''}
-        ${state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('servis','${s.id}')">⊗</button>`:''}
+        ${state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('servis','${s.id}')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>`:''}
       </div></td>
     </tr>`;
   }).join('');

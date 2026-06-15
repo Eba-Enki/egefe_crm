@@ -183,11 +183,11 @@ function renderTeklifler(){
     <td><span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>${getRedBilgi(t)?'<span title="'+esc(getRedBilgi(t).neden)+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
     ${showTemsilci?`<td style="font-size:12px;color:var(--text3)">${esc(t.sorumlu||'—')}</td>`:''}
     <td style="text-align:right"><div class="action-row">
-      <button class="btn-icon" title="Detay" onclick="openTeklifDetay('${t.id}')">◎</button>
+      <button class="btn-icon" title="Detay" onclick="openTeklifDetay('${t.id}')"><img src="icons/details_icon.png" alt="Detay" style="width:14px;height:14px;display:block"></button>
       ${canEdit&&currentPortal==='satis'&&t.durum==='Taslak'?`<button class="btn-icon" title="Müşteriye Gönder" style="color:var(--teal)" onclick="teklifGonder('${t.id}')">📤</button>`:''}
-      ${canEdit&&(currentPortal!=='satis'||t.durum==='Gönderildi')?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)">⇅</button>`:''}
-      ${canEdit&&!TEKLIF_ARSIV_DURUMLAR.includes(t.durum)?`<button class="btn-icon" title="Düzenle" onclick="goTeklifForm('${t.id}')">✎</button>`:''}
-      <button class="btn-icon" style="color:var(--accent)" title="PDF" onclick="printTeklifById('${t.id}')">⬇</button>
+      ${canEdit&&(currentPortal!=='satis'||t.durum==='Gönderildi')?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)"><img src="icons/status_icon.png" alt="Durum Değiştir" style="width:14px;height:14px;display:block"></button>`:''}
+      ${canEdit&&!TEKLIF_ARSIV_DURUMLAR.includes(t.durum)?`<button class="btn-icon" title="Düzenle" onclick="goTeklifForm('${t.id}')"><img src="icons/edit_icon.png" alt="Düzenle" style="width:14px;height:14px;display:block"></button>`:''}
+      <button class="btn-icon" style="color:var(--accent)" title="PDF" onclick="printTeklifById('${t.id}')"><img src="icons/download_icon.png" alt="İndir" style="width:14px;height:14px;display:block"></button>
       ${canEdit&&currentPortal==='satis'&&t.durum==='Kabul Edildi'?`<button class="btn-icon" title="Sipariş Oluştur" style="color:var(--purple)" onclick="goSiparisForm('${t.id}')">📦</button>`:''}
       ${canEdit?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('teklif','${t.id}')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>`:''}
     </div></td>

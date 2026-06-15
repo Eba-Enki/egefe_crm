@@ -168,13 +168,13 @@ function renderSiparisler(){
       +'<td><span class="badge '+(SP_DURUM_CSS[s.durum]||'badge-sf')+'">'+esc(s.durum)+'</span></td>'
       +'<td style="font-size:12px;color:var(--text3)">'+esc(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
       +'<td style="text-align:right"><div class="action-row">'
-      +'<button class="btn-icon" title="Detay" onclick="openSiparisDetay(\''+s.id+'\')">◎</button>'
+      +'<button class="btn-icon" title="Detay" onclick="openSiparisDetay(\''+s.id+'\')"><img src="icons/details_icon.png" alt="Detay" style="width:14px;height:14px;display:block"></button>'
       +(ARSIV_SIPARISLER.indexOf(s.durum)<0?'<button class="btn-icon" title="Sipariş Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')"><img src="icons/printer_icon.png" alt="Yazdır" style="width:14px;height:14px;display:block"></button>':'')
       +(canEdit&&['Hazırlanıyor','Kısmi Sevkiyat'].indexOf(s.durum)>=0
         ?'<button class="btn-icon" title="Sevkiyat" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')">📦</button>'
         :'')
       +(canEdit&&['Kısmi Sevkiyat','Tamamlandı'].indexOf(s.durum)>=0?'<button class="btn-icon" title="Faturaya Aktar" style="color:var(--amber)" onclick="openFaturaModal(\''+s.id+'\')">🧾</button>':'')
-      +(canEdit&&SP_GECIS[s.durum]&&SP_GECIS[s.durum].length?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)">⇅</button>':'')
+      +(canEdit&&SP_GECIS[s.durum]&&SP_GECIS[s.durum].length?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)"><img src="icons/status_icon.png" alt="Durum Değiştir" style="width:14px;height:14px;display:block"></button>':'')
       +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'siparis\',\''+s.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';

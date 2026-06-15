@@ -161,6 +161,7 @@ CREATE TABLE orders (
   teslimat            VARCHAR(150) NULL,
   teklif_tarihi       DATE NULL,
   siparis_tarihi      DATE NULL,
+  tahmini_teslimat    DATE NULL,
   notlar              TEXT NULL,
   durum               ENUM('Yeni Sipariş','Hazırlanıyor','Kısmi Sevkiyat','Tamamlandı','İptal','Fatura Edildi') NOT NULL DEFAULT 'Yeni Sipariş',
   olusturan_kullanici VARCHAR(40) NULL,
@@ -191,6 +192,7 @@ CREATE TABLE invoices (
   fatura_no       VARCHAR(50) NULL,
   siparis_id      VARCHAR(40) NULL,
   fatura_tarihi   DATE NULL,
+  vade_tarihi     DATE NULL,
   durum           ENUM('Ödendi','Ödenmedi') NOT NULL DEFAULT 'Ödenmedi',
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_invoices_order FOREIGN KEY (siparis_id) REFERENCES orders(id) ON DELETE CASCADE

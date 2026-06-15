@@ -44,7 +44,7 @@ function renderTeklifItems(){
         oninput="teklifItems[${i}].aciklama=this.value;openTiCombo(${i})" onfocus="openTiCombo(${i})" onkeydown="tiKeydown(event,${i})">
       ${paramsHtml}
     </td>
-    <td class="ti-miktar" style="vertical-align:top"><input type="number" value="${item.miktar}" min="0.01" step="0.01" oninput="teklifItems[${i}].miktar=parseFloat(this.value)||0;updateTeklifTotals()"></td>
+    <td class="ti-miktar" style="vertical-align:top"><input type="number" value="${item.miktar}" min="0.01" step="1" oninput="teklifItems[${i}].miktar=parseFloat(this.value)||0;updateTeklifTotals()"></td>
     <td class="ti-birim" style="vertical-align:top"><select onchange="teklifItems[${i}].birim=this.value"><option ${item.birim==='Adet'?'selected':''}>Adet</option><option ${item.birim==='Saat'?'selected':''}>Saat</option><option ${item.birim==='Gün'?'selected':''}>Gün</option><option ${item.birim==='Parça'?'selected':''}>Parça</option></select></td>
     <td class="ti-fiyat" style="vertical-align:top"><input type="number" id="ti-fiyat-${i}" value="${item.birimFiyat}" min="0" step="0.01" oninput="teklifItems[${i}].birimFiyat=parseFloat(this.value)||0;updateTeklifTotals()"></td>
     <td class="ti-total" style="vertical-align:top" id="ti-total-${i}">${fmtCur(item.miktar*(item.birimFiyat||0))}</td>

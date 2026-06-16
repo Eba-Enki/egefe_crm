@@ -198,7 +198,12 @@ function deleteParametre(i){
   renderParametreler();
   toast('Parametre silindi.','info');
 }
-function loadSettings(){
+async function loadSettings(){
+  try {
+    var res=await apiGet(currentPortal+'/ayarlar');
+    state.settings=Object.assign({},state.settings,res.ayarlar||{});
+    if(!state.settings.parametreler)state.settings.parametreler=[];
+  } catch(e){}
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''});
   var spEl=document.getElementById('set-servis-prefix');if(spEl)spEl.value=state.settings.servisPrefix||'KN';
   var sdEl=document.getElementById('set-servis-digits');if(sdEl)sdEl.value=state.settings.servisDigits||6;
@@ -206,7 +211,6 @@ function loadSettings(){
   var tdEl=document.getElementById('set-teklif-digits');if(tdEl)tdEl.value=state.settings.teklifDigits||5;
   var sipPEl=document.getElementById('set-siparis-prefix');if(sipPEl)sipPEl.value=state.settings.siparisPrefix||'SIP';
   var sipDEl=document.getElementById('set-siparis-digits');if(sipDEl)sipDEl.value=state.settings.siparisDigits||5;
-  // Portal'a göre kayıt numarası bölümünü göster/gizle
   var servisDiv=document.getElementById('settings-servis-kayit');
   var siparisDiv=document.getElementById('settings-siparis-no');
   var isSatis=typeof currentPortal!=='undefined'&&currentPortal==='satis';

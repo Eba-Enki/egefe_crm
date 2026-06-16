@@ -430,7 +430,7 @@ function renderHamStok(){
             +'<td style="font-size:11px;color:var(--text3)">'+stokEsc(lot.tarih||'')+'</td>'
             +'<td>'+durum+'</td>'
             +'<td><div class="action-row">'
-              +(canWrite?'<button class="btn-icon" title="Düzenle" onclick="event.stopPropagation();goHamGirisEdit(\''+lot.girisId+'\')">✏</button>':'')
+              +(canWrite?'<button class="btn-icon" title="Düzenle" onclick="event.stopPropagation();goHamGirisEdit(\''+lot.girisId+'\')"><img src="icons/edit_icon.png" alt="Düzenle" style="width:14px;height:14px;display:block"></button>':'')
               +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="event.stopPropagation();stokSilHamLot(\''+lot.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
             +'</div></td>'
             +'</tr>';
@@ -490,7 +490,7 @@ function renderHamGirisler(){
       +'<td style="font-size:12px;color:var(--text2)">'+stokEsc(ozetStr)+'</td>'
       +'<td style="font-size:11px;color:var(--text3);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+stokEsc(notlarFull)+'">'+stokEsc(notlarFull)+'</td>'
       +'<td><div class="action-row">'
-        +(canWrite?'<button class="btn-icon" onclick="event.stopPropagation();goHamGirisEdit(\''+g.id+'\')">✏</button>':'')
+        +(canWrite?'<button class="btn-icon" onclick="event.stopPropagation();goHamGirisEdit(\''+g.id+'\')"><img src="icons/edit_icon.png" alt="Düzenle" style="width:14px;height:14px;display:block"></button>':'')
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilHamGiris(\''+g.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';
@@ -948,7 +948,7 @@ function renderBitmisStok(){
       +'<td style="font-size:12px;color:var(--text3)">'+stokEsc(l.tarih||'')+'</td>'
       +'<td style="font-family:var(--font-mono);font-size:12px;color:'+skt.renk+'">'+stokFmtSkt(l.sktTarih)+(skt.etiket?' ('+skt.etiket+')':'')+'</td>'
       +'<td><div class="action-row">'
-        +(canWrite?'<button class="btn-icon" onclick="goBitmisGirisEdit(\''+l.girisId+'\')">✏</button>':'')
+        +(canWrite?'<button class="btn-icon" onclick="goBitmisGirisEdit(\''+l.girisId+'\')"><img src="icons/edit_icon.png" alt="Düzenle" style="width:14px;height:14px;display:block"></button>':'')
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="stokSilBitmisLot(\''+l.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';
@@ -996,7 +996,7 @@ function renderBitmisGirisler(){
       +'<td style="font-size:12px;color:var(--text2)">'+stokEsc(urunStr)+'</td>'
       +'<td style="font-size:11px;color:var(--text3)">'+stokEsc(g.notlar||'')+'</td>'
       +'<td><div class="action-row">'
-        +(canWrite?'<button class="btn-icon" onclick="event.stopPropagation();goBitmisGirisEdit(\''+g.id+'\')">✏</button>':'')
+        +(canWrite?'<button class="btn-icon" onclick="event.stopPropagation();goBitmisGirisEdit(\''+g.id+'\')"><img src="icons/edit_icon.png" alt="Düzenle" style="width:14px;height:14px;display:block"></button>':'')
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilBitmisGiris(\''+g.id+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';
@@ -1794,7 +1794,7 @@ function stokParamTabloRender(){
         ?'<span class="badge badge-teslim">Aktif</span>'
         :'<span class="badge" style="background:var(--bg4);color:var(--text3)">Pasif</span>')+'</td>'
       +'<td><div class="action-row">'
-        +(canWrite?'<button class="btn-icon" title="Düzenle" onclick="stokParamFormAc('+globalIdx+')">✏</button>':'')
+        +(canWrite?'<button class="btn-icon" title="Düzenle" onclick="stokParamFormAc('+globalIdx+')"><img src="icons/edit_icon.png" alt="Düzenle" style="width:14px;height:14px;display:block"></button>':'')
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="stokParamSil('+globalIdx+')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>':'')
       +'</div></td>'
       +'</tr>';

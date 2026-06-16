@@ -1548,38 +1548,65 @@ function stokRenderKatAyar(){
   stokRenderTicariKatAyar();
 }
 
+var _hamKatEditIdx=null;
+
 function stokRenderHamKatAyar(){
-  var el=document.getElementById('stok-kat-body'); if(!el) return;
+  var el=document.getElementById('stok-kat-list'); if(!el) return;
   var kats=stokKatList();
-  var rows=kats.map(function(k,i){
-    return '<tr>'
-      +'<td><input type="text" id="kat-ad-'+i+'" value="'+stokEsc(k.ad)+'" style="width:100%;min-width:80px" onblur="stokKatGuncelleSatir('+i+')"></td>'
-      +'<td style="text-align:center"><input type="number" id="kat-sb-'+i+'" value="'+k.sheetBoyu+'" min="1" style="width:64px;text-align:center" onblur="stokKatGuncelleSatir('+i+')"></td>'
-      +'<td style="text-align:center"><input type="number" id="kat-kb-'+i+'" value="'+k.kesimBoleni+'" min="1" style="width:64px;text-align:center" onblur="stokKatGuncelleSatir('+i+')"></td>'
-      +'<td style="text-align:center"><input type="number" id="kat-fp-'+i+'" value="'+k.firePct+'" min="0" max="50" style="width:50px;text-align:center" onblur="stokKatGuncelleSatir('+i+')"></td>'
-      +'<td style="text-align:center;font-family:var(--font-mono);font-size:13px;color:var(--teal);font-weight:600">'+stokSPS(k.id)+'</td>'
-      +'<td><button class="btn-icon sa-action" style="color:var(--red)" onclick="stokKatSil('+i+')" title="Sil"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></td>'
-      +'</tr>';
+  if(!kats.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">Henüz kategori eklenmedi.</div>';
+    return;
+  }
+  el.innerHTML=kats.map(function(k,i){
+    var sps=stokSPS(k.id);
+    if(_hamKatEditIdx===i){
+      return '<div style="background:var(--bg3);border:1px solid var(--accent);border-radius:6px;padding:12px;margin-bottom:6px">'
+        +'<div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:10px">Düzenleniyor: '+stokEsc(k.ad)+'</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 90px 90px 70px;gap:8px;align-items:end;margin-bottom:10px">'
+          +'<div class="field" style="margin:0"><label style="font-size:10px">Kategori Adı *</label><input type="text" id="kat-edit-ad" value="'+stokEsc(k.ad)+'"></div>'
+          +'<div class="field" style="margin:0"><label style="font-size:10px">Sheet Boyu (mm)</label><input type="number" id="kat-edit-sb" value="'+k.sheetBoyu+'" min="1" style="text-align:center"></div>'
+          +'<div class="field" style="margin:0"><label style="font-size:10px">Kesim Böleni</label><input type="number" id="kat-edit-kb" value="'+k.kesimBoleni+'" min="1" style="text-align:center"></div>'
+          +'<div class="field" style="margin:0"><label style="font-size:10px">Fire (%)</label><input type="number" id="kat-edit-fp" value="'+k.firePct+'" min="0" max="50" style="text-align:center"></div>'
+        +'</div>'
+        +'<div style="display:flex;justify-content:flex-end;gap:8px">'
+          +'<button class="btn btn-ghost" onclick="stokHamKatIptal()">Vazgeç</button>'
+          +'<button class="btn btn-primary" onclick="stokHamKatKaydet('+i+')">Kaydet</button>'
+        +'</div>'
+        +'</div>';
+    }
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px">'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:13px;font-weight:500;color:var(--text)">'+stokEsc(k.ad)+'</div>'
+        +'<div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--font-mono)">'+k.sheetBoyu+'mm · ÷'+k.kesimBoleni+' · %'+k.firePct+' → <span style="color:var(--teal);font-weight:600">'+sps+' strip/sheet</span></div>'
+      +'</div>'
+      +'<div class="action-row">'
+        +'<button class="btn-icon" title="Düzenle" onclick="stokHamKatDuzenle('+i+')"><img src="icons/edit_icon.png" alt="Düzenle" style="width:14px;height:14px;display:block"></button>'
+        +'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="stokKatSil('+i+')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>'
+      +'</div>'
+      +'</div>';
   }).join('');
-  var newRow='<tr class="sa-action">'
-    +'<td><input type="text" id="kat-yeni-ad" placeholder="Kategori adı" style="width:100%"></td>'
-    +'<td><input type="number" id="kat-yeni-sb" placeholder="300" min="1" style="width:64px;text-align:center"></td>'
-    +'<td><input type="number" id="kat-yeni-kb" placeholder="3" min="1" style="width:64px;text-align:center"></td>'
-    +'<td><input type="number" id="kat-yeni-fp" placeholder="0" min="0" max="50" style="width:50px;text-align:center"></td>'
-    +'<td style="text-align:center;font-size:11px;color:var(--text3)">—</td>'
-    +'<td><button class="btn btn-primary" onclick="stokKatEkle()">Ekle</button></td>'
-    +'</tr>';
-  el.innerHTML='<div class="table-wrap"><table class="compact-table">'
-    +'<thead><tr>'
-    +'<th>Kategori Adı</th>'
-    +'<th style="text-align:center">Sheet Boyu<br><span style="font-size:10px;font-weight:400">(mm)</span></th>'
-    +'<th style="text-align:center">Kesim Böleni<br><span style="font-size:10px;font-weight:400">(mm)</span></th>'
-    +'<th style="text-align:center">Fire<br><span style="font-size:10px;font-weight:400">(%)</span></th>'
-    +'<th style="text-align:center;color:var(--teal)">Sheet/<br>Strip</th>'
-    +'<th></th>'
-    +'</tr></thead>'
-    +'<tbody>'+rows+newRow+'</tbody>'
-    +'</table></div>';
+}
+
+function stokHamKatDuzenle(i){_hamKatEditIdx=i;stokRenderHamKatAyar();}
+function stokHamKatIptal(){_hamKatEditIdx=null;stokRenderHamKatAyar();}
+
+async function stokHamKatKaydet(i){
+  var kat=stokKatList()[i]; if(!kat) return;
+  var ad=toTitleCase(((document.getElementById('kat-edit-ad')||{}).value||'').trim());
+  var sb=parseInt((document.getElementById('kat-edit-sb')||{}).value)||kat.sheetBoyu;
+  var kb=parseInt((document.getElementById('kat-edit-kb')||{}).value)||kat.kesimBoleni;
+  var fp=parseFloat((document.getElementById('kat-edit-fp')||{}).value)||0;
+  if(!ad) return toast('Kategori adı zorunludur.','error');
+  try{
+    var res=await apiPut('stok/kategoriler',{id:kat.id,ad:ad,sheetBoyu:sb,kesimBoleni:kb,firePct:fp});
+    state.stokSettings.kategoriler[i]=res.kategori;
+  }catch(e){
+    toast(e.message||'Kaydedilemedi.','error');
+    return;
+  }
+  _hamKatEditIdx=null;
+  toast('Kategori güncellendi.','success');
+  stokRenderHamKatAyar();
 }
 
 function stokRenderTicariKatAyar(){
@@ -1611,7 +1638,12 @@ async function stokKatEkle(){
     toast(e.message||'Eklenemedi.','error');
     return;
   }
-  toast('Yarı mamul kategorisi eklendi.','success'); stokRenderHamKatAyar();
+  var yadEl=document.getElementById('kat-yeni-ad'); if(yadEl) yadEl.value='';
+  var ysbEl=document.getElementById('kat-yeni-sb'); if(ysbEl) ysbEl.value='';
+  var ykbEl=document.getElementById('kat-yeni-kb'); if(ykbEl) ykbEl.value='';
+  var yfpEl=document.getElementById('kat-yeni-fp'); if(yfpEl) yfpEl.value='';
+  toast('Yarı mamul kategorisi eklendi.','success');
+  stokRenderHamKatAyar();
 }
 
 function stokKatSil(i){

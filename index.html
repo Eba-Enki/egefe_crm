@@ -1164,7 +1164,17 @@
               </div>
             </div>
             <div class="settings-section">
-              <div id="stok-kat-body"></div>
+              <div id="stok-kat-list" style="margin-bottom:16px"></div>
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px">
+                <div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Yeni Kategori Ekle</div>
+                <div style="display:grid;grid-template-columns:1fr 90px 90px 70px;gap:8px;align-items:end;margin-bottom:10px">
+                  <div class="field" style="margin:0"><label style="font-size:10px">Kategori Adı *</label><input type="text" id="kat-yeni-ad" placeholder="ör. İdrar"></div>
+                  <div class="field" style="margin:0"><label style="font-size:10px">Sheet Boyu (mm)</label><input type="number" id="kat-yeni-sb" placeholder="300" min="1" style="text-align:center"></div>
+                  <div class="field" style="margin:0"><label style="font-size:10px">Kesim Böleni</label><input type="number" id="kat-yeni-kb" placeholder="3" min="1" style="text-align:center"></div>
+                  <div class="field" style="margin:0"><label style="font-size:10px">Fire (%)</label><input type="number" id="kat-yeni-fp" placeholder="0" min="0" max="50" style="text-align:center"></div>
+                </div>
+                <button class="btn btn-primary" onclick="stokKatEkle()">Ekle</button>
+              </div>
             </div>
           </div>
 

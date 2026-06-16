@@ -1582,7 +1582,7 @@ function stokRenderHamKatAyar(){
             +'<div style="text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Sheet Boyu (mm)</div><div style="font-size:13px;font-family:var(--font-mono);color:var(--text)">'+k.sheetBoyu+'</div></div>'
             +'<div style="text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Kesim Böleni (mm)</div><div style="font-size:13px;font-family:var(--font-mono);color:var(--text)">'+k.kesimBoleni+'</div></div>'
             +'<div style="text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Fire<br>(%)</div><div style="font-size:13px;font-family:var(--font-mono);color:var(--text)">'+k.firePct+'</div></div>'
-            +'<div style="text-align:center"><div style="font-size:10px;color:var(--teal);font-weight:600;margin-bottom:3px">Strip / Sheet</div><div style="font-size:13px;font-family:var(--font-mono);color:var(--teal);font-weight:600">'+sps+'</div></div>'
+            +'<div style="text-align:center"><div style="font-size:10px;color:var(--teal);font-weight:600;margin-bottom:3px">Strip /<br>Sheet</div><div style="font-size:13px;font-family:var(--font-mono);color:var(--teal);font-weight:600">'+sps+'</div></div>'
           +'</div>'
         +'</div>'
         +'<div class="action-row" style="flex-shrink:0">'

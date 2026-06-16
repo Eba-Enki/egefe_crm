@@ -10,6 +10,26 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('main').style.display = 'none';
 });
 
+var _lastVisibilityFetch = 0;
+var _VISIBILITY_STALE_MS = 30000; // 30 saniye
+
+// Form sayfaları — sekme geri dönüşünde yenilenmez (veri kaybı riski)
+var _FORM_PAGES = new Set([
+  'servis-form','teklif-form','musteri-form','urun-form',
+  'siparis-form','ham-giris','ham-cikis','bitmis-giris',
+  'bitmis-cikis','kullanici-form'
+]);
+
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) return;
+  if (!state.currentUser) return;
+  if (typeof _formDirty !== 'undefined' && _formDirty) return;
+  if (Date.now() - _lastVisibilityFetch < _VISIBILITY_STALE_MS) return;
+  if (!_currentPageId || _FORM_PAGES.has(_currentPageId)) return;
+  _lastVisibilityFetch = Date.now();
+  showPage(_currentPageId);
+});
+
 function initApp() {
   document.getElementById('sidebar').style.display = '';
   document.getElementById('main').style.display = '';
@@ -17,6 +37,7 @@ function initApp() {
   document.getElementById('login-screen').style.display = 'none';
   renderFooter();
   _startAutoLogout();
+  _lastVisibilityFetch = Date.now();
 }
 
 // Portal seçildiğinde/giriş yapıldığında, formlardaki müşteri/servis

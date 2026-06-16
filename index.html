@@ -175,9 +175,11 @@
   <div class="sb-bottom">
     <div class="sb-user">
       <div class="sb-avatar" id="sb-avatar">?</div>
-      <div><div class="sb-username" id="sb-username">-</div><div class="sb-role" id="sb-role-text">-</div></div>
+      <div style="min-width:0"><div class="sb-username" id="sb-username">-</div><div class="sb-role" id="sb-role-text">-</div></div>
     </div>
-    <button class="btn btn-ghost btn-sm" style="width:100%;font-size:11px;margin-top:8px" onclick="doLogout()">Çıkış Yap</button>
+    <button class="btn btn-ghost sb-logout-btn" onclick="doLogout()" title="Çıkış Yap">
+      <img src="icons/log_out_icon.png" alt="Çıkış" width="16" height="16">
+    </button>
   </div>
 </div>
 <div id="sidebar-overlay" onclick="closeSidebar()"></div>

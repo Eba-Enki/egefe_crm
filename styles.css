@@ -95,13 +95,16 @@ body{
 .sb-item.active .icon{opacity:1}
 .sb-item .badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-family:var(--font-mono);padding:2px 6px;border-radius:10px;font-weight:500}
 .sb-item>span:not(.icon):not(.badge){flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sb-bottom{padding:12px 18px;border-top:1px solid var(--border)}
-.sb-user{display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;border-radius:var(--radius-sm);transition:background .15s}
+.sb-bottom{padding:10px 12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.sb-user{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:var(--radius-sm);transition:background .15s;flex:1;min-width:0}
 .sb-user:hover{background:var(--bg3)}
 .sb-user:active{background:var(--bg4)}
-.sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0}
-.sb-username{font-size:12px;font-weight:500;line-height:1.3}
-.sb-role{font-size:10px;color:var(--text3)}
+.sb-avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0}
+.sb-username{font-size:12px;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-role{font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-logout-btn{width:34px;height:34px;padding:0;justify-content:center;flex-shrink:0}
+.sb-logout-btn img{opacity:.6;transition:opacity .15s}
+.sb-logout-btn:hover img{opacity:1}
 
 /* ── HAMBURGER ── */
 .hamburger{

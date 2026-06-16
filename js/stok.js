@@ -1553,10 +1553,10 @@ function stokRenderHamKatAyar(){
   var kats=stokKatList();
   var rows=kats.map(function(k,i){
     return '<tr>'
-      +'<td><input type="text" id="kat-ad-'+i+'" value="'+stokEsc(k.ad)+'" style="width:100%;min-width:80px"></td>'
-      +'<td style="text-align:center"><input type="number" id="kat-sb-'+i+'" value="'+k.sheetBoyu+'" min="1" style="width:64px;text-align:center"></td>'
-      +'<td style="text-align:center"><input type="number" id="kat-kb-'+i+'" value="'+k.kesimBoleni+'" min="1" style="width:64px;text-align:center"></td>'
-      +'<td style="text-align:center"><input type="number" id="kat-fp-'+i+'" value="'+k.firePct+'" min="0" max="50" style="width:50px;text-align:center"></td>'
+      +'<td><input type="text" id="kat-ad-'+i+'" value="'+stokEsc(k.ad)+'" style="width:100%;min-width:80px" onblur="stokKatGuncelleSatir('+i+')"></td>'
+      +'<td style="text-align:center"><input type="number" id="kat-sb-'+i+'" value="'+k.sheetBoyu+'" min="1" style="width:64px;text-align:center" onblur="stokKatGuncelleSatir('+i+')"></td>'
+      +'<td style="text-align:center"><input type="number" id="kat-kb-'+i+'" value="'+k.kesimBoleni+'" min="1" style="width:64px;text-align:center" onblur="stokKatGuncelleSatir('+i+')"></td>'
+      +'<td style="text-align:center"><input type="number" id="kat-fp-'+i+'" value="'+k.firePct+'" min="0" max="50" style="width:50px;text-align:center" onblur="stokKatGuncelleSatir('+i+')"></td>'
       +'<td style="text-align:center;font-family:var(--font-mono);font-size:13px;color:var(--teal);font-weight:600">'+stokSPS(k.id)+'</td>'
       +'<td><button class="btn-icon sa-action" style="color:var(--red)" onclick="stokKatSil('+i+')" title="Sil"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></td>'
       +'</tr>';
@@ -1588,7 +1588,7 @@ function stokRenderTicariKatAyar(){
   var rows=kats.length
     ? kats.map(function(k,i){
         return '<tr>'
-          +'<td><input type="text" id="tkat-ad-'+i+'" value="'+stokEsc(k.ad)+'" style="width:100%"></td>'
+          +'<td><input type="text" id="tkat-ad-'+i+'" value="'+stokEsc(k.ad)+'" style="width:100%" onblur="stokTicariKatGuncelleSatir('+i+')"></td>'
           +'<td><button class="btn-icon sa-action" style="color:var(--red)" onclick="stokTicariKatSil('+i+')" title="Sil"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></td>'
           +'</tr>';
       }).join('')
@@ -1701,6 +1701,41 @@ async function saveTicariKatAyarlar(){
   }
   toast('Hazır ürün kategorileri kaydedildi.','success');
   stokRenderTicariKatAyar();
+}
+
+async function stokKatGuncelleSatir(i){
+  var kat=stokKatList()[i]; if(!kat) return;
+  var adEl=document.getElementById('kat-ad-'+i);
+  var sbEl=document.getElementById('kat-sb-'+i);
+  var kbEl=document.getElementById('kat-kb-'+i);
+  var fpEl=document.getElementById('kat-fp-'+i);
+  var ad=(adEl?adEl.value:'').trim()||kat.ad;
+  var sb=parseInt(sbEl?sbEl.value:'')||kat.sheetBoyu;
+  var kb=parseInt(kbEl?kbEl.value:'')||kat.kesimBoleni;
+  var fp=parseFloat(fpEl?fpEl.value:'')||0;
+  if(ad===kat.ad&&sb===kat.sheetBoyu&&kb===kat.kesimBoleni&&fp===kat.firePct) return;
+  if(!ad) return toast('Kategori adı boş olamaz.','error');
+  try{
+    var res=await apiPut('stok/kategoriler',{id:kat.id,ad:ad,sheetBoyu:sb,kesimBoleni:kb,firePct:fp});
+    state.stokSettings.kategoriler[i]=res.kategori;
+  }catch(e){
+    toast(e.message||'Kaydedilemedi.','error');
+  }
+}
+
+async function stokTicariKatGuncelleSatir(i){
+  var kat=stokTicariKatList()[i]; if(!kat) return;
+  var adEl=document.getElementById('tkat-ad-'+i);
+  var ad=(adEl?adEl.value:'').trim();
+  if(!ad){toast('Kategori adı boş olamaz.','error');if(adEl)adEl.value=kat.ad;return;}
+  if(ad===kat.ad) return;
+  try{
+    var res=await apiPut('stok/kategoriler',{id:kat.id,ad:ad});
+    state.stokSettings.ticariKategoriler[i]=res.kategori;
+  }catch(e){
+    toast(e.message||'Kaydedilemedi.','error');
+    if(adEl) adEl.value=kat.ad;
+  }
 }
 
 // ─── PARAMETRELER SAYFASI ─────────────────────────────────────────────────────

@@ -48,6 +48,7 @@ async function selectPortal(pkey){
   document.documentElement.setAttribute('data-portal',pkey);
 
   if(pkey==='stok'){
+    _stokDataLoaded=false;
     state.settings={};
     state.hamStokGirisler=[];
     state.hamStokLotlar=[];
@@ -198,6 +199,7 @@ function switchToPortal(pkey){
   currentPortal=pkey;
   document.documentElement.setAttribute('data-portal',pkey);
   if(pkey==='stok'){
+    _stokDataLoaded=false;
     state.settings={};
     state.hamStokGirisler=[];
     state.hamStokLotlar=[];

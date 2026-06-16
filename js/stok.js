@@ -1585,7 +1585,10 @@ function stokRenderHamKatAyar(){
             +'<div style="text-align:center"><div style="font-size:10px;color:var(--teal);font-weight:600;margin-bottom:3px">Strip/sh</div><div style="font-size:13px;font-family:var(--font-mono);color:var(--teal);font-weight:600">'+sps+'</div></div>'
           +'</div>'
         +'</div>'
-        +'<button class="btn-icon" style="color:var(--red);flex-shrink:0" title="Sil" onclick="stokKatSil('+i+')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>'
+        +'<div class="action-row" style="flex-shrink:0">'
+          +'<button class="btn-icon" title="Düzenle" onclick="stokHamKatDuzenle('+i+')"><img src="icons/edit_icon.png" alt="Düzenle" style="width:14px;height:14px;display:block"></button>'
+          +'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="stokKatSil('+i+')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>'
+        +'</div>'
       +'</div>'
       +'</div>';
   }).join('');

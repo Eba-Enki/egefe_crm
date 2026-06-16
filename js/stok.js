@@ -1567,7 +1567,7 @@ function stokRenderHamKatAyar(){
     +'<td><input type="number" id="kat-yeni-kb" placeholder="3" min="1" style="width:64px;text-align:center"></td>'
     +'<td><input type="number" id="kat-yeni-fp" placeholder="0" min="0" max="50" style="width:50px;text-align:center"></td>'
     +'<td style="text-align:center;font-size:11px;color:var(--text3)">—</td>'
-    +'<td><button class="btn-icon sa-action" style="color:var(--teal)" onclick="stokKatEkle()" title="Ekle">＋</button></td>'
+    +'<td><button class="btn btn-primary" onclick="stokKatEkle()">Ekle</button></td>'
     +'</tr>';
   el.innerHTML='<div class="table-wrap"><table class="compact-table">'
     +'<thead><tr>'
@@ -1595,7 +1595,7 @@ function stokRenderTicariKatAyar(){
     : '<tr><td colspan="2" style="color:var(--text3);font-size:12px;padding:12px 8px">Henüz kategori tanımlanmamış.</td></tr>';
   var newRow='<tr class="sa-action">'
     +'<td><input type="text" id="tkat-yeni-ad" placeholder="ör. İlaç, Cihaz, Sarf Malzeme" style="width:100%"></td>'
-    +'<td><button class="btn-icon sa-action" style="color:var(--teal)" onclick="stokTicariKatEkle()" title="Ekle">＋</button></td>'
+    +'<td><button class="btn btn-primary" onclick="stokTicariKatEkle()">Ekle</button></td>'
     +'</tr>';
   el.innerHTML='<div class="table-wrap"><table class="compact-table">'
     +'<thead><tr><th>Kategori Adı</th><th></th></tr></thead>'

@@ -52,42 +52,58 @@ function initApp() {
 async function loadCoreData() {
   if (currentPortal === 'stok') return;
 
-  var portal = currentPortal;
+  try {
+    var resAy = await apiGet(currentPortal + '/ayarlar');
+    var apiSettings = resAy.ayarlar || {};
+    state.settings = Object.assign({}, state.settings, apiSettings);
+    if (!state.settings.parametreler) state.settings.parametreler = [];
+    if (!state.settings.urunKategoriler) state.settings.urunKategoriler = [];
+  } catch (e) {}
 
-  // Tüm portallerde ortak istekler
-  var requests = [
-    apiGet(portal + '/ayarlar').catch(function() { return {}; }),
-    apiGet('musteriler').catch(function() { return {}; }),
-    apiGet('urunler?portal=' + portal).catch(function() { return {}; }),
-    apiGet('teklifler?portal=' + portal).catch(function() { return {}; })
-  ];
-
-  // Portale özgü ek istekler
-  if (portal === 'servis') {
-    requests.push(apiGet('servisler').catch(function() { return {}; }));
-  }
-  if (portal === 'satis') {
-    requests.push(apiGet('siparisler').catch(function() { return {}; }));
-    requests.push(apiGet('faturalar').catch(function() { return {}; }));
+  try {
+    var res = await apiGet('musteriler');
+    state.musteriler = res.musteriler || [];
+  } catch (e) {
+    state.musteriler = state.musteriler || [];
   }
 
-  var sonuc = await Promise.all(requests);
-
-  var apiSettings = (sonuc[0].ayarlar) || {};
-  state.settings = Object.assign({}, state.settings, apiSettings);
-  if (!state.settings.parametreler) state.settings.parametreler = [];
-  if (!state.settings.urunKategoriler) state.settings.urunKategoriler = [];
-
-  state.musteriler = sonuc[1].musteriler || [];
-  state.urunler    = sonuc[2].urunler    || [];
-  state.teklifler  = sonuc[3].teklifler  || [];
-
-  if (portal === 'servis') {
-    state.servisler = (sonuc[4] && sonuc[4].servisler) || [];
+  if (currentPortal === 'servis') {
+    try {
+      var res2 = await apiGet('servisler');
+      state.servisler = res2.servisler || [];
+    } catch (e) {
+      state.servisler = state.servisler || [];
+    }
   }
-  if (portal === 'satis') {
-    state.siparisler = (sonuc[4] && sonuc[4].siparisler) || [];
-    state.faturalar  = (sonuc[5] && sonuc[5].faturalar)  || [];
+
+  try {
+    var res3 = await apiGet('urunler?portal=' + currentPortal);
+    state.urunler = res3.urunler || [];
+  } catch (e) {
+    state.urunler = state.urunler || [];
+  }
+
+  try {
+    var res4 = await apiGet('teklifler?portal=' + currentPortal);
+    state.teklifler = res4.teklifler || [];
+  } catch (e) {
+    state.teklifler = state.teklifler || [];
+  }
+
+  if (currentPortal === 'satis') {
+    try {
+      var res5 = await apiGet('siparisler');
+      state.siparisler = res5.siparisler || [];
+    } catch (e) {
+      state.siparisler = state.siparisler || [];
+    }
+
+    try {
+      var res6 = await apiGet('faturalar');
+      state.faturalar = res6.faturalar || [];
+    } catch (e) {
+      state.faturalar = state.faturalar || [];
+    }
   }
 
   if (_currentPageId === 'dashboard') renderDashboard();

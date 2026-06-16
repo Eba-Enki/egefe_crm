@@ -25,6 +25,15 @@ async function loadCoreData() {
   if (currentPortal === 'stok') return;
 
   try {
+    var resAy = await apiGet(currentPortal + '/ayarlar');
+    var apiSettings = resAy.ayarlar || {};
+    state.settings = Object.assign({}, state.settings, apiSettings);
+    if (!state.settings.parametreler) state.settings.parametreler = [];
+  } catch (e) {
+    // localStorage fallback kalır
+  }
+
+  try {
     var res = await apiGet('musteriler');
     state.musteriler = res.musteriler || [];
   } catch (e) {

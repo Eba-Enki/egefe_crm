@@ -187,11 +187,15 @@ function addParametre(){
   if(!val)return toast('Parametre adı girin.','error');
   if(!state.settings.parametreler)state.settings.parametreler=[];
   if(state.settings.parametreler.includes(val))return toast('Bu parametre zaten mevcut.','error');
-  state.settings.parametreler.push(val);saveAll();inp.value='';renderParametreler();
+  state.settings.parametreler.push(val);saveAll();
+  apiPut(currentPortal+'/ayarlar',state.settings).catch(function(){});
+  inp.value='';renderParametreler();
   toast('Parametre eklendi.','success');
 }
 function deleteParametre(i){
-  state.settings.parametreler.splice(i,1);saveAll();renderParametreler();
+  state.settings.parametreler.splice(i,1);saveAll();
+  apiPut(currentPortal+'/ayarlar',state.settings).catch(function(){});
+  renderParametreler();
   toast('Parametre silindi.','info');
 }
 function loadSettings(){
@@ -232,7 +236,9 @@ function saveSettings(){
   var tdEl=document.getElementById('set-teklif-digits');if(tdEl&&tdEl.value)state.settings.teklifDigits=Math.min(9,Math.max(3,parseInt(tdEl.value)||5));
   var sipPEl=document.getElementById('set-siparis-prefix');if(sipPEl&&sipPEl.value.trim())state.settings.siparisPrefix=sipPEl.value.trim().toUpperCase();
   var sipDEl=document.getElementById('set-siparis-digits');if(sipDEl&&sipDEl.value)state.settings.siparisDigits=Math.min(9,Math.max(3,parseInt(sipDEl.value)||5));
-  saveAll();renderFooter();toast('Ayarlar kaydedildi.','success');
+  saveAll();
+  apiPut(currentPortal+'/ayarlar',state.settings).catch(function(){});
+  renderFooter();toast('Ayarlar kaydedildi.','success');
 }
 
 // ════ CONFIRM DELETE ════

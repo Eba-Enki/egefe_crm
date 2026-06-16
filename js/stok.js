@@ -25,8 +25,11 @@ function stokInit(){
 
 // ─── API'den Veri Yükleme ────────────────────────────────────────────────────
 
-async function loadStokData(){
+var _stokDataLoaded = false;
+
+async function loadStokData(force){
   stokInit();
+  if(!force && _stokDataLoaded) return;
   try{
     var sonuc=await Promise.all([
       apiGet('stok/kategoriler?tip=ham'),
@@ -54,6 +57,7 @@ async function loadStokData(){
     state.bitmisStokGirisler=sonuc[7].girisler||[];
     state.bitmisStokLotlar=sonuc[8].lotlar||[];
     state.bitmisCikislar=sonuc[9].cikislar||[];
+    _stokDataLoaded=true;
   }catch(e){
     toast(e.message||'Stok verileri yüklenemedi.','error');
   }

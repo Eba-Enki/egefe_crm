@@ -20,12 +20,19 @@ var _FORM_PAGES = new Set([
   'bitmis-cikis','kullanici-form'
 ]);
 
+var _STOK_PAGES = new Set([
+  'stok-dashboard','ham-stok','ham-girisler','ham-cikislar',
+  'bitmis-stok','bitmis-girisler','bitmis-cikislar',
+  'stok-ayarlar','stok-parametreler'
+]);
+
 document.addEventListener('visibilitychange', function() {
   if (document.hidden) return;
   if (!state.currentUser) return;
   if (typeof _formDirty !== 'undefined' && _formDirty) return;
   if (Date.now() - _lastVisibilityFetch < _VISIBILITY_STALE_MS) return;
   if (!_currentPageId || _FORM_PAGES.has(_currentPageId)) return;
+  if (_STOK_PAGES.has(_currentPageId)) return;
   _lastVisibilityFetch = Date.now();
   showPage(_currentPageId);
 });

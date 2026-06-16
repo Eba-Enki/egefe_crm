@@ -43,7 +43,7 @@ let state={
   musteriler:DB.pload('musteriler',[]),
   urunler:[],
   urunKategoriler:DB.pload('urunKategoriler',['Cihaz','Yazılım','Aksesuar','Sarf Malzeme','Diğer']),
-  settings:DB.pload('settings',{firma:'Egefe Teknik Servis',tel:'',faks:'',adres:'',email:'',web:''}),
+  settings:{firma:'',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[]},
   sortCol:'kayitNo',sortDir:'desc'
 };
 let sfAksesuarlar=[];
@@ -51,7 +51,7 @@ let teklifItems=[];
 
 function saveAll(){
   if(currentPortal==='stok') return;
-  var keys=['musteriler','urunKategoriler','settings'];
+  var keys=['musteriler','urunKategoriler'];
   keys.forEach(function(k){if(state[k]!==undefined)DB.psave(k,state[k]);});
 }
 

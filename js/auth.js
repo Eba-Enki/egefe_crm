@@ -64,8 +64,8 @@ async function selectPortal(pkey){
     state.urunler=[];
     state.siparisler=[];
     state.faturalar=[];
-    state.settings=DB.pload('settings',{firma:'Egefe Teknik Servis',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[]});
-    if(!state.settings.parametreler)state.settings.parametreler=[];
+    state.settings={firma:'',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[]};
+
     savedTutanaklar=[];
   }
 
@@ -214,8 +214,8 @@ function switchToPortal(pkey){
     state.urunler=[];
     state.siparisler=[];
     state.faturalar=[];
-    state.settings=DB.pload('settings',{firma:'Egefe Teknik Servis',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[]});
-    if(!state.settings.parametreler)state.settings.parametreler=[];
+    state.settings={firma:'',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[]};
+
     savedTutanaklar=[];
   }
   applyUser(state.currentUser);

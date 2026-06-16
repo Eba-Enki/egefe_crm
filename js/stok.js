@@ -1583,24 +1583,18 @@ function stokRenderHamKatAyar(){
 }
 
 function stokRenderTicariKatAyar(){
-  var el=document.getElementById('stok-ticarikat-body'); if(!el) return;
+  var el=document.getElementById('stok-ticarikat-list'); if(!el) return;
   var kats=stokTicariKatList();
-  var rows=kats.length
-    ? kats.map(function(k,i){
-        return '<tr>'
-          +'<td><input type="text" id="tkat-ad-'+i+'" value="'+stokEsc(k.ad)+'" style="width:100%" onblur="stokTicariKatGuncelleSatir('+i+')"></td>'
-          +'<td><button class="btn-icon sa-action" style="color:var(--red)" onclick="stokTicariKatSil('+i+')" title="Sil"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></td>'
-          +'</tr>';
-      }).join('')
-    : '<tr><td colspan="2" style="color:var(--text3);font-size:12px;padding:12px 8px">Henüz kategori tanımlanmamış.</td></tr>';
-  var newRow='<tr class="sa-action">'
-    +'<td><input type="text" id="tkat-yeni-ad" placeholder="ör. İlaç, Cihaz, Sarf Malzeme" style="width:100%"></td>'
-    +'<td><button class="btn btn-primary" onclick="stokTicariKatEkle()">Ekle</button></td>'
-    +'</tr>';
-  el.innerHTML='<div class="table-wrap"><table class="compact-table">'
-    +'<thead><tr><th>Kategori Adı</th><th></th></tr></thead>'
-    +'<tbody>'+rows+newRow+'</tbody>'
-    +'</table></div>';
+  if(!kats.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">Henüz kategori eklenmedi.</div>';
+    return;
+  }
+  el.innerHTML=kats.map(function(k,i){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px">'
+      +'<span style="font-size:13px;color:var(--text)">'+stokEsc(k.ad)+'</span>'
+      +'<button class="btn-icon" style="color:var(--red);flex-shrink:0" onclick="stokTicariKatSil('+i+')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>'
+      +'</div>';
+  }).join('');
 }
 
 async function stokKatEkle(){
@@ -1638,7 +1632,8 @@ function stokKatSil(i){
 
 async function stokTicariKatEkle(){
   stokInit();
-  var ad=toTitleCase(((document.getElementById('tkat-yeni-ad')||{}).value||'').trim());
+  var inp=document.getElementById('tkat-yeni-ad');
+  var ad=toTitleCase(((inp||{}).value||'').trim());
   if(!ad) return toast('Kategori adı zorunludur.','error');
   try{
     var res=await apiPost('stok/kategoriler',{tip:'ticari',ad:ad});
@@ -1647,6 +1642,7 @@ async function stokTicariKatEkle(){
     toast(e.message||'Eklenemedi.','error');
     return;
   }
+  if(inp) inp.value='';
   toast('Hazır ürün kategorisi eklendi.','success'); stokRenderTicariKatAyar();
 }
 

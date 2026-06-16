@@ -146,20 +146,24 @@ function getAksesuarStr(s){
 // ════ ÜRÜN KATEGORİLERİ ════
 function renderUrunKategorileri(){
   const el=document.getElementById('urun-kategori-list');if(!el)return;
-  const cats=state.urunKategoriler||[];
+  const cats=state.settings.urunKategoriler||[];
   if(!cats.length){el.innerHTML='<div style="font-size:12px;color:var(--text3)">Henüz kategori yok.</div>';return;}
-  el.innerHTML=cats.map((k,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">${k}</span><button class="btn-icon" style="color:var(--red)" onclick="deleteUrunKategori(${i})"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></div>`).join('');
+  el.innerHTML=cats.map((k,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px"><span style="font-size:13px;color:var(--text)">${k}</span><button class="btn-icon" style="color:var(--red);flex-shrink:0" onclick="deleteUrunKategori(${i})"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></div>`).join('');
 }
 function addUrunKategori(){
   const inp=document.getElementById('yeni-kategori-input');if(!inp)return;
   const val=inp.value.trim();if(!val)return toast('Kategori adı girin.','error');
-  if((state.urunKategoriler||[]).includes(val))return toast('Bu kategori zaten mevcut.','error');
-  state.urunKategoriler=(state.urunKategoriler||[]).concat(val);
-  saveAll();inp.value='';renderUrunKategorileri();toast('Kategori eklendi.','success');
+  if(!state.settings.urunKategoriler)state.settings.urunKategoriler=[];
+  if(state.settings.urunKategoriler.includes(val))return toast('Bu kategori zaten mevcut.','error');
+  state.settings.urunKategoriler=state.settings.urunKategoriler.concat(val);
+  apiPut(currentPortal+'/ayarlar',state.settings).catch(function(){});
+  inp.value='';renderUrunKategorileri();toast('Kategori eklendi.','success');
 }
 function deleteUrunKategori(i){
-  state.urunKategoriler=(state.urunKategoriler||[]).filter((_,idx)=>idx!==i);
-  saveAll();renderUrunKategorileri();toast('Kategori silindi.','info');
+  if(!state.settings.urunKategoriler)return;
+  state.settings.urunKategoriler=state.settings.urunKategoriler.filter((_,idx)=>idx!==i);
+  apiPut(currentPortal+'/ayarlar',state.settings).catch(function(){});
+  renderUrunKategorileri();toast('Kategori silindi.','info');
 }
 
 // ════ AYARLAR ════
@@ -203,6 +207,7 @@ async function loadSettings(){
     var res=await apiGet(currentPortal+'/ayarlar');
     state.settings=Object.assign({},state.settings,res.ayarlar||{});
     if(!state.settings.parametreler)state.settings.parametreler=[];
+    if(!state.settings.urunKategoriler)state.settings.urunKategoriler=[];
   } catch(e){}
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''});
   var spEl=document.getElementById('set-servis-prefix');if(spEl)spEl.value=state.settings.servisPrefix||'KN';

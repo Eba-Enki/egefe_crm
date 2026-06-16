@@ -6,21 +6,22 @@ $user = requireAuth($pdo);
 requirePortalAccess($user, 'satis');
 
 $VARSAYILAN = [
-    'firma'        => '',
-    'tel'          => '',
-    'faks'         => '',
-    'adres'        => '',
-    'email'        => '',
-    'web'          => '',
-    'vergiDairesi' => '',
-    'vergiNo'      => '',
-    'parametreler' => [],
-    'servisPrefix' => 'KN',
-    'servisDigits' => 6,
-    'teklifPrefix' => 'TKL',
-    'teklifDigits' => 5,
-    'siparisPrefix'=> 'SIP',
-    'siparisDigits'=> 5,
+    'firma'           => '',
+    'tel'             => '',
+    'faks'            => '',
+    'adres'           => '',
+    'email'           => '',
+    'web'             => '',
+    'vergiDairesi'    => '',
+    'vergiNo'         => '',
+    'parametreler'    => [],
+    'urunKategoriler' => [],
+    'servisPrefix'    => 'KN',
+    'servisDigits'    => 6,
+    'teklifPrefix'    => 'TKL',
+    'teklifDigits'    => 5,
+    'siparisPrefix'   => 'SIP',
+    'siparisDigits'   => 5,
 ];
 
 function ayarlarOku(PDO $pdo, array $varsayilan): array {
@@ -55,6 +56,12 @@ switch ($method) {
         if (array_key_exists('parametreler', $input) && is_array($input['parametreler'])) {
             $ayarlar['parametreler'] = array_values(array_filter(
                 array_map(fn($v) => trim((string)$v), $input['parametreler']),
+                fn($v) => $v !== ''
+            ));
+        }
+        if (array_key_exists('urunKategoriler', $input) && is_array($input['urunKategoriler'])) {
+            $ayarlar['urunKategoriler'] = array_values(array_filter(
+                array_map(fn($v) => trim((string)$v), $input['urunKategoriler']),
                 fn($v) => $v !== ''
             ));
         }

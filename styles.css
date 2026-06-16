@@ -10,7 +10,7 @@
   --green:#4ade80;--green-soft:rgba(74,222,128,.12);
   --purple:#a78bfa;--purple-soft:rgba(167,139,250,.12);
   --pink:#f472b6;--pink-soft:rgba(244,114,182,.12);
-  --sidebar-w:230px;--radius:10px;--radius-sm:6px;
+  --sidebar-w:250px;--radius:10px;--radius-sm:6px;
   --font-display:'Nunito Sans',sans-serif;
   --font-body:'DM Sans',sans-serif;
   --font-mono:'DM Mono',monospace;
@@ -94,6 +94,7 @@ body{
 .sb-item:hover .icon{opacity:1}
 .sb-item.active .icon{opacity:1}
 .sb-item .badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-family:var(--font-mono);padding:2px 6px;border-radius:10px;font-weight:500}
+.sb-item>span:not(.icon):not(.badge){flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sb-bottom{padding:12px 18px;border-top:1px solid var(--border)}
 .sb-user{display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;border-radius:var(--radius-sm);transition:background .15s}
 .sb-user:hover{background:var(--bg3)}

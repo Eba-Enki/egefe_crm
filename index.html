@@ -91,7 +91,7 @@
           <div class="field"><label>Ad Soyad <span class="req">*</span></label><input type="text" id="sf-ad"></div>
           <div class="field"><label>Kullanıcı Adı <span class="req">*</span></label><input type="text" id="sf-username"></div>
           <div class="field"><label>Şifre <span style="color:var(--text3);font-size:11px">(değiştirmek için girin)</span></label><input type="password" id="sf-sifre"></div>
-          <div class="field"><label>E-posta</label><input type="email" id="sf-email"></div>
+          <div class="field"><label>E-posta</label><input type="email" id="sys-email"></div>
         </div>
         <div class="field"><label>Rol</label>
           <select id="sf-rol" onchange="sfRolChange()">
@@ -192,23 +192,23 @@
         <span></span><span></span><span></span>
       </button>
       <div class="topbar-breadcrumb" id="breadcrumb"><span class="current" id="topbar-title">Dashboard</span><span class="portal-badge" id="portal-badge"></span></div>
-      <div id="topbar-tabs-teklifler" class="topbar-tab-group" style="display:none">
+      <div id="topbar-tabs-teklifler" class="topbar-tab-group hidden">
         <button id="tab-teklif-aktif" class="servis-tab active" onclick="switchTeklifTab('aktif')">Açık Teklifler <span id="tab-teklif-aktif-count" class="tab-count"></span></button>
         <button id="tab-teklif-arsiv" class="servis-tab" onclick="switchTeklifTab('arsiv')">Arşiv <span id="tab-teklif-arsiv-count" class="tab-count"></span></button>
       </div>
-      <div id="topbar-tabs-siparisler" class="topbar-tab-group" style="display:none">
+      <div id="topbar-tabs-siparisler" class="topbar-tab-group hidden">
         <button id="tab-siparis-aktif" class="servis-tab active" onclick="switchSiparisTab('aktif')">Aktif <span id="tab-siparis-aktif-count" class="tab-count"></span></button>
         <button id="tab-siparis-arsiv" class="servis-tab" onclick="switchSiparisTab('arsiv')">Arşiv <span id="tab-siparis-arsiv-count" class="tab-count"></span></button>
       </div>
-      <div id="topbar-tabs-faturalar" class="topbar-tab-group" style="display:none">
+      <div id="topbar-tabs-faturalar" class="topbar-tab-group hidden">
         <button id="tab-fatura-aktif" class="servis-tab active" onclick="switchFaturaTab('aktif')">Açık Faturalar <span id="tab-fatura-aktif-count" class="tab-count"></span></button>
         <button id="tab-fatura-arsiv" class="servis-tab" onclick="switchFaturaTab('arsiv')">Ödendi <span id="tab-fatura-arsiv-count" class="tab-count"></span></button>
       </div>
-      <div id="topbar-tabs-hamstok" class="topbar-tab-group" style="display:none">
+      <div id="topbar-tabs-hamstok" class="topbar-tab-group hidden">
         <button id="tab-hamstok-aktif" class="servis-tab active" onclick="switchHamStokTab('aktif')">Aktif <span id="tab-hamstok-aktif-count" class="tab-count"></span></button>
         <button id="tab-hamstok-arsiv" class="servis-tab" onclick="switchHamStokTab('arsiv')">Arşiv — Tükenmiş <span id="tab-hamstok-arsiv-count" class="tab-count"></span></button>
       </div>
-      <div id="topbar-tabs-bitmis-stok" class="topbar-tab-group" style="display:none">
+      <div id="topbar-tabs-bitmis-stok" class="topbar-tab-group hidden">
         <button id="tab-bitmis-aktif" class="servis-tab active" onclick="switchBitmisStokTab('aktif')">Aktif <span id="tab-bitmis-aktif-count" class="tab-count"></span></button>
         <button id="tab-bitmis-arsiv" class="servis-tab" onclick="switchBitmisStokTab('arsiv')">Arşiv — Tükenmiş <span id="tab-bitmis-arsiv-count" class="tab-count"></span></button>
       </div>
@@ -925,7 +925,7 @@
     </div>
 
     <!-- ═══ STOK DASHBOARD ═══ -->
-    <div id="page-stok-dashboard" class="page stok-only" style="display:none">
+    <div id="page-stok-dashboard" class="page stok-only">
       <div id="stok-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div class="card"><div class="card-header"><span class="card-title">Kritik Stok Uyarıları</span><span id="stok-kritik-say" style="font-size:10px;color:var(--red);font-family:var(--font-mono)"></span></div><div id="stok-kritik-list" style="padding:0"></div></div>
@@ -934,7 +934,7 @@
     </div>
 
     <!-- ═══ HAM STOK GÖRÜNÜMÜ ═══ -->
-    <div id="page-ham-stok" class="page stok-only" style="display:none">
+    <div id="page-ham-stok" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
         <select id="hs-f-kat" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
         <select id="hs-f-param" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Parametreler</option></select>
@@ -945,7 +945,7 @@
     </div>
 
     <!-- ═══ HAM STOK GİRİŞLER LİSTESİ ═══ -->
-    <div id="page-ham-girisler" class="page stok-only" style="display:none">
+    <div id="page-ham-girisler" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
         <input type="text" id="hgl-arama" placeholder="Evrak No / LOT / Parametre..." oninput="renderHamGirisler()" style="min-width:220px">
         <input type="date" id="hgl-ts" oninput="renderHamGirisler()" title="Başlangıç">
@@ -956,7 +956,7 @@
     </div>
 
     <!-- ═══ HAM STOK GİRİŞ FORMU (çok kalemli) ═══ -->
-    <div id="page-ham-giris" class="page stok-only" style="display:none">
+    <div id="page-ham-giris" class="page stok-only">
       <div class="form-wrap"><div class="form-card">
         <div class="form-section-title" id="hg-form-title">Yeni Stok Girişi</div>
         <input type="hidden" id="hg-edit-id">
@@ -975,7 +975,7 @@
     </div>
 
     <!-- ═══ HAM STOK ÇIKIŞLAR LİSTESİ ═══ -->
-    <div id="page-ham-cikislar" class="page stok-only" style="display:none">
+    <div id="page-ham-cikislar" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
         <input type="text" id="hcl-arama" placeholder="Evrak No / Çıkış Nedeni..." oninput="renderHamCikislar()" style="min-width:220px">
         <input type="date" id="hcl-ts" oninput="renderHamCikislar()" title="Başlangıç">
@@ -986,7 +986,7 @@
     </div>
 
     <!-- ═══ HAM STOK ÇIKIŞ FORMU ═══ -->
-    <div id="page-ham-cikis" class="page stok-only" style="display:none">
+    <div id="page-ham-cikis" class="page stok-only">
       <div class="form-wrap"><div class="form-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
           <div class="form-section-title" style="margin:0">Stok Çıkışı / Kit Üretimi</div>
@@ -1011,7 +1011,7 @@
     </div>
 
     <!-- ═══ TİCARİ STOK GÖRÜNÜMÜ ═══ -->
-    <div id="page-bitmis-stok" class="page stok-only" style="display:none">
+    <div id="page-bitmis-stok" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
         <select id="bs-f-kat" onchange="renderBitmisStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
         <input type="text" id="bs-f-arama" placeholder="Ürün adı / LOT..." oninput="renderBitmisStok()">
@@ -1021,7 +1021,7 @@
     </div>
 
     <!-- ═══ TİCARİ STOK GİRİŞLER LİSTESİ ═══ -->
-    <div id="page-bitmis-girisler" class="page stok-only" style="display:none">
+    <div id="page-bitmis-girisler" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
         <input type="text" id="bgl-arama" placeholder="Evrak No / Ürün / LOT..." oninput="renderBitmisGirisler()" style="min-width:220px">
         <input type="date" id="bgl-ts" oninput="renderBitmisGirisler()" title="Başlangıç">
@@ -1032,7 +1032,7 @@
     </div>
 
     <!-- ═══ TİCARİ STOK GİRİŞ FORMU (çok kalemli) ═══ -->
-    <div id="page-bitmis-giris" class="page stok-only" style="display:none">
+    <div id="page-bitmis-giris" class="page stok-only">
       <div class="form-wrap"><div class="form-card">
         <div class="form-section-title" id="bg-form-title">Yeni Hazır Ürün Girişi</div>
         <input type="hidden" id="bg-edit-id">
@@ -1051,7 +1051,7 @@
     </div>
 
     <!-- ═══ TİCARİ STOK ÇIKIŞLAR LİSTESİ ═══ -->
-    <div id="page-bitmis-cikislar" class="page stok-only" style="display:none">
+    <div id="page-bitmis-cikislar" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
         <input type="text" id="bcl-arama" placeholder="Evrak No / Çıkış Nedeni / Ürün..." oninput="renderBitmisCikislar()" style="min-width:220px">
         <input type="date" id="bcl-ts" oninput="renderBitmisCikislar()" title="Başlangıç">
@@ -1062,7 +1062,7 @@
     </div>
 
     <!-- ═══ TİCARİ STOK ÇIKIŞ FORMU ═══ -->
-    <div id="page-bitmis-cikis" class="page stok-only" style="display:none">
+    <div id="page-bitmis-cikis" class="page stok-only">
       <div class="form-wrap"><div class="form-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
           <div class="form-section-title" style="margin:0">Hazır Ürün Çıkışı</div>
@@ -1084,7 +1084,7 @@
     </div>
 
     <!-- ═══ STOK PARAMETRELER ═══ -->
-    <div id="page-stok-parametreler" class="page stok-only" style="display:none">
+    <div id="page-stok-parametreler" class="page stok-only">
       <div class="card" id="param-form-card" style="display:none;margin-bottom:16px">
         <div class="card-header"><span class="card-title" id="param-form-title">Yeni Parametre</span></div>
         <div class="card-body">
@@ -1110,7 +1110,7 @@
     </div>
 
     <!-- ═══ STOK AYARLAR ═══ -->
-    <div id="page-stok-ayarlar" class="page stok-only" style="display:none">
+    <div id="page-stok-ayarlar" class="page stok-only">
       <div class="settings-wrap">
 
         <!-- Sol Navigasyon -->

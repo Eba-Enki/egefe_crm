@@ -129,7 +129,7 @@ body{
 .topbar-tab-group{display:flex;gap:4px;align-items:center;margin-left:8px}
 .topbar-tab-group .servis-tab{padding:5px 13px;font-size:12px}
 .content{padding:24px;padding-bottom:24px;flex:1}
-.td-sorumlu{display:none}
+.hidden{display:none}
 
 /* ── BASE INPUT ── */
 input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=color]):not([type=date]),

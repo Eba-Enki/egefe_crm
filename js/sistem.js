@@ -83,7 +83,7 @@ function goSistemUserForm(editId){
   if(el('sf-ad'))       el('sf-ad').value      = u ? u.ad : '';
   if(el('sf-username')) el('sf-username').value = u ? u.username : '';
   if(el('sf-sifre'))    el('sf-sifre').value    = '';
-  if(el('sf-email'))    el('sf-email').value     = u ? (u.email||'') : '';
+  if(el('sys-email'))    el('sys-email').value     = u ? (u.email||'') : '';
   if(el('sf-rol'))      el('sf-rol').value       = u ? u.rol : 'kullanıcı';
 
   _renderIzinMatrix(u);
@@ -145,7 +145,7 @@ async function saveSistemUser(){
   var ad       = (el('sf-ad')||{}).value.trim();
   var username = (el('sf-username')||{}).value.trim();
   var sifre    = (el('sf-sifre')||{}).value;
-  var email    = (el('sf-email')||{}).value.trim();
+  var email    = (el('sys-email')||{}).value.trim();
   var rol      = (el('sf-rol')||{}).value;
 
   if(!ad||!username) return toast('Ad ve kullanıcı adı zorunlu.','error');

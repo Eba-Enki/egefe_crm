@@ -32,7 +32,7 @@ switch ($method) {
         $ayarlar = ayarlarOku($pdo);
 
         if (array_key_exists('globalEsik', $input)) {
-            $ayarlar['globalEsik'] = (float)$input['globalEsik'];
+            $ayarlar['globalEsik'] = max(0.0, (float)$input['globalEsik']);
         }
         if (array_key_exists('hamCikisPrefix', $input)) {
             $ayarlar['hamCikisPrefix'] = trim((string)$input['hamCikisPrefix']) ?: 'HC';

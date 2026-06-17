@@ -63,7 +63,7 @@ switch ($method) {
             strOrNull($input['marka'] ?? null),
             strOrNull($input['model'] ?? null),
             strOrNull($input['kategori'] ?? null),
-            (float)($input['fiyat'] ?? 0),
+            max(0.0, (float)($input['fiyat'] ?? 0)),
             in_array($input['paraBirimi'] ?? '', ['TRY','USD','EUR','GBP'], true) ? $input['paraBirimi'] : 'TRY',
             strOrNull($input['aciklama'] ?? null),
         ]);
@@ -101,7 +101,7 @@ switch ($method) {
             strOrNull($input['marka'] ?? null),
             strOrNull($input['model'] ?? null),
             strOrNull($input['kategori'] ?? null),
-            (float)($input['fiyat'] ?? 0),
+            max(0.0, (float)($input['fiyat'] ?? 0)),
             in_array($input['paraBirimi'] ?? '', ['TRY','USD','EUR','GBP'], true) ? $input['paraBirimi'] : 'TRY',
             strOrNull($input['aciklama'] ?? null),
             $id,

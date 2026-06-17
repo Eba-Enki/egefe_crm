@@ -195,6 +195,7 @@ CREATE TABLE invoices (
   vade_tarihi     DATE NULL,
   durum           ENUM('Ödendi','Ödenmedi') NOT NULL DEFAULT 'Ödenmedi',
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_fatura_no (fatura_no),
   CONSTRAINT fk_invoices_order FOREIGN KEY (siparis_id) REFERENCES orders(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci;
 

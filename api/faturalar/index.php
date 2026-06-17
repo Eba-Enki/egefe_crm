@@ -59,6 +59,14 @@ switch ($method) {
             exit;
         }
 
+        $dupe = $pdo->prepare('SELECT id FROM invoices WHERE fatura_no = ?');
+        $dupe->execute([$faturaNo]);
+        if ($dupe->fetch()) {
+            http_response_code(409);
+            echo json_encode(['error' => 'Bu fatura numarası zaten kullanılıyor']);
+            exit;
+        }
+
         $id = 'ft' . (string)(int)round(microtime(true) * 1000);
 
         $pdo->beginTransaction();
@@ -100,9 +108,20 @@ switch ($method) {
             exit;
         }
 
+        $faturaNo = strOrNull($input['faturaNo'] ?? $existing['fatura_no']);
+        if ($faturaNo !== $existing['fatura_no']) {
+            $dupe = $pdo->prepare('SELECT id FROM invoices WHERE fatura_no = ? AND id != ?');
+            $dupe->execute([$faturaNo, $id]);
+            if ($dupe->fetch()) {
+                http_response_code(409);
+                echo json_encode(['error' => 'Bu fatura numarası zaten kullanılıyor']);
+                exit;
+            }
+        }
+
         $stmt = $pdo->prepare('UPDATE invoices SET fatura_no=?, fatura_tarihi=?, vade_tarihi=?, durum=? WHERE id=?');
         $stmt->execute([
-            strOrNull($input['faturaNo'] ?? $existing['fatura_no']),
+            $faturaNo,
             strOrNull($input['faturaTarihi'] ?? $existing['fatura_tarihi']),
             strOrNull($input['vadeTarihi'] ?? $existing['vade_tarihi']),
             enumOrDefault($input['durum'] ?? $existing['durum'], DURUM_DEGERLERI, $existing['durum']),

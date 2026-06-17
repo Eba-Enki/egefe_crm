@@ -1,9 +1,8 @@
 ﻿// ════ EXCEL EXPORT ════
-function _exXml(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function _xlsBlob(rows,headers){
   var cols=headers.map(function(){return '<Column ss:AutoFitWidth="1"/>';}).join('');
-  var hdr='<Row>'+headers.map(function(h){return '<Cell><Data ss:Type="String">'+_exXml(h)+'</Data></Cell>';}).join('')+'</Row>';
-  var body=rows.map(function(r){return '<Row>'+r.map(function(c){var t=typeof c==='number'?'Number':'String';return '<Cell><Data ss:Type="'+t+'">'+_exXml(c)+'</Data></Cell>';}).join('')+'</Row>';}).join('');
+  var hdr='<Row>'+headers.map(function(h){return '<Cell><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';
+  var body=rows.map(function(r){return '<Row>'+r.map(function(c){var t=typeof c==='number'?'Number':'String';return '<Cell><Data ss:Type="'+t+'">'+esc(c)+'</Data></Cell>';}).join('')+'</Row>';}).join('');
   var xml='<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Sayfa1"><Table>'+cols+hdr+body+'</Table></Worksheet></Workbook>';
   return new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'});
 }

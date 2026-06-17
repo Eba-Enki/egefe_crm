@@ -55,7 +55,7 @@ function renderSistemKullanicilar(){
       + '<div class="sistem-user-info">'
         + '<div class="sistem-user-avatar">'+u.ad[0].toUpperCase()+'</div>'
         + '<div>'
-          + '<div class="sistem-user-name">'+_sEsc(u.ad)+'<span class="sistem-user-username">@'+_sEsc(u.username)+'</span></div>'
+          + '<div class="sistem-user-name">'+esc(u.ad)+'<span class="sistem-user-username">@'+esc(u.username)+'</span></div>'
           + '<div class="sistem-user-meta">'
             + '<span class="badge '+rolClass+'">'+rolLabel+'</span>'
             + (portalBadges?'<span style="margin-left:8px">'+portalBadges+'</span>':'')
@@ -212,8 +212,4 @@ function silSistemUser(id){
     await _loadSistemKullanicilar();
     toast('Kullanıcı silindi.','info');
   });
-}
-
-function _sEsc(s){
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }

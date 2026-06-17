@@ -116,7 +116,13 @@ switch ($method) {
             echo json_encode(['error' => 'id gerekli']);
             exit;
         }
-        $pdo->prepare('DELETE FROM delivery_protocols WHERE id = ? OR protokol_no = ?')->execute([$id, $id]);
+        $stmt = $pdo->prepare('DELETE FROM delivery_protocols WHERE protokol_no = ?');
+        $stmt->execute([$id]);
+        if ($stmt->rowCount() === 0) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Tutanak bulunamadı']);
+            exit;
+        }
         echo json_encode(['ok' => true]);
         break;
 

@@ -315,10 +315,10 @@ async function showTutanakPreview(tutanak, isNew, selectedIds){
   const rows = tutanak.kalemler.map((k,i)=>`
     <tr style="page-break-inside:avoid">
       <td style="padding:7px 10px;font-size:12px;border:1px solid var(--border);text-align:center;color:var(--text3)">${i+1}</td>
-      <td style="padding:7px 10px;font-size:12px;border:1px solid var(--border);font-weight:500">${k.kurumAdi}</td>
-      <td style="padding:7px 10px;font-size:12px;border:1px solid var(--border);font-family:'DM Mono',monospace">${k.seriNo}</td>
-      <td style="padding:7px 10px;font-size:12px;border:1px solid var(--border);text-align:center">${k.garantiDurumu}</td>
-      <td style="padding:7px 10px;font-size:12px;border:1px solid var(--border)">${k.aksesuarlar}</td>
+      <td style="padding:7px 10px;font-size:12px;border:1px solid var(--border);font-weight:500">${esc(k.kurumAdi)}</td>
+      <td style="padding:7px 10px;font-size:12px;border:1px solid var(--border);font-family:'DM Mono',monospace">${esc(k.seriNo)}</td>
+      <td style="padding:7px 10px;font-size:12px;border:1px solid var(--border);text-align:center">${esc(k.garantiDurumu)}</td>
+      <td style="padding:7px 10px;font-size:12px;border:1px solid var(--border)">${esc(k.aksesuarlar)}</td>
     </tr>`).join('');
 
   document.getElementById('tutanak-modal-title').textContent = 'Teslim Tutanağı — '+tutanak.no;

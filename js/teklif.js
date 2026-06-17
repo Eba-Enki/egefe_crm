@@ -37,7 +37,7 @@ function removeTeklifItem(i){if(teklifItems.length>1)teklifItems.splice(i,1);ren
 function renderTeklifItems(){
   document.getElementById('ti-body').innerHTML=teklifItems.map((item,i)=>{
     const params=item.seciliParametreler||[];
-    const paramsHtml=params.length?`<div style="font-size:11px;color:rgb(143,164,176);margin-top:3px;padding-left:2px;line-height:1.4">(${params.map(p=>typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad)).join(', ')})</div>`:'';
+    const paramsHtml=params.length?`<div style="font-size:11px;color:rgb(143,164,176);margin-top:3px;padding-left:2px;line-height:1.4">(${params.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})</div>`:'';
     return `<tr>
     <td class="ti-aciklama">
       <input type="text" id="ti-aciklama-${i}" value="${(item.aciklama||'').replace(/"/g,'&quot;')}" placeholder="Yazın veya listeden seçin..." autocomplete="off"
@@ -219,7 +219,7 @@ function openTeklifDetay(id){
   state.activeTeklifId=id;
   const toplam=calcTeklifToplam(t);
   let ara=0;
-  const sarHtml=(t.satirlar||[]).map(s=>{const a=s.miktar*s.birimFiyat;ara+=a;const sp=s.seciliParametreler||[];const baseAciklama=(sp.length?(s._baseAciklama||(s.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim()):s.aciklama)||'—';const pHtml=sp.length?`<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">(${sp.map(p=>typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad)).join(', ')})</div>`:'';return`<tr style="border-bottom:1px solid rgba(36,48,69,.4)"><td style="padding:7px 9px;font-size:13px">${baseAciklama}${pHtml}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2)">${s.miktar} ${s.birim}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2);text-align:right">${fmtTL(s.birimFiyat)}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--amber);text-align:right">${fmtTL(a)}</td></tr>`;}).join('');
+  const sarHtml=(t.satirlar||[]).map(s=>{const a=s.miktar*s.birimFiyat;ara+=a;const sp=s.seciliParametreler||[];const baseAciklama=(sp.length?(s._baseAciklama||(s.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim()):s.aciklama)||'—';const pHtml=sp.length?`<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">(${sp.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})</div>`:'';return`<tr style="border-bottom:1px solid rgba(36,48,69,.4)"><td style="padding:7px 9px;font-size:13px">${esc(baseAciklama)}${pHtml}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2)">${s.miktar} ${esc(s.birim)}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2);text-align:right">${fmtTL(s.birimFiyat)}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--amber);text-align:right">${fmtTL(a)}</td></tr>`;}).join('');
   const canEdit=state.currentUser?.rol!=='izleyici';
   document.getElementById('td-title').textContent=`${t.teklifNo} — Detay`;
   var _eb=document.getElementById('td-edit-btn');if(_eb)_eb.style.display=canEdit?'':'none';
@@ -229,11 +229,11 @@ function openTeklifDetay(id){
     ${canEdit&&t.durum==='Onay Bekleniyor'?`<div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="changeTeklifDurum('${t.id}','Onaylandı');closeModal('modal-teklif-detay')">✓ Onayla</button><button class="btn btn-danger btn-sm" onclick="changeTeklifDurum('${t.id}','Reddedildi');closeModal('modal-teklif-detay')">✕ Reddet</button></div>`:''}
     <div class="separator"></div>
     <div class="info-grid" style="margin-bottom:14px">
-      <div class="info-item"><div class="info-item-label">Teklif No</div><div class="info-item-val text-mono" style="color:var(--accent)">${t.teklifNo}</div></div>
-      ${currentPortal==='servis'?`<div class="info-item"><div class="info-item-label">Kayıt No</div><div class="info-item-val text-mono">${t.kayitNo||'—'}</div></div>`:''}
-      <div class="info-item"><div class="info-item-label">Kurum</div><div class="info-item-val">${t.kurum||'—'}</div></div>
-      ${currentPortal==='servis'?`<div class="info-item"><div class="info-item-label">Seri No</div><div class="info-item-val text-mono">${t.seriNo||'—'}</div></div>`:''}
-      ${(t.telefon||t.email)?`<div class="info-item"><div class="info-item-label">Telefon</div><div class="info-item-val">${t.telefon||'—'}</div></div><div class="info-item"><div class="info-item-label">E-posta</div><div class="info-item-val">${t.email||'—'}</div></div>`:''}
+      <div class="info-item"><div class="info-item-label">Teklif No</div><div class="info-item-val text-mono" style="color:var(--accent)">${esc(t.teklifNo)}</div></div>
+      ${currentPortal==='servis'?`<div class="info-item"><div class="info-item-label">Kayıt No</div><div class="info-item-val text-mono">${esc(t.kayitNo||'—')}</div></div>`:''}
+      <div class="info-item"><div class="info-item-label">Kurum</div><div class="info-item-val">${esc(t.kurum||'—')}</div></div>
+      ${currentPortal==='servis'?`<div class="info-item"><div class="info-item-label">Seri No</div><div class="info-item-val text-mono">${esc(t.seriNo||'—')}</div></div>`:''}
+      ${(t.telefon||t.email)?`<div class="info-item"><div class="info-item-label">Telefon</div><div class="info-item-val">${esc(t.telefon||'—')}</div></div><div class="info-item"><div class="info-item-label">E-posta</div><div class="info-item-val">${esc(t.email||'—')}</div></div>`:''}
       <div class="info-item"><div class="info-item-label">Teklif Tarihi</div><div class="info-item-val text-mono">${fmtDate(t.teklifTarihi)}</div></div>
       <div class="info-item"><div class="info-item-label">Geçerlilik</div><div class="info-item-val text-mono">${fmtDate(t.gecerlilikTarihi)}</div></div>
     </div>
@@ -246,7 +246,7 @@ function openTeklifDetay(id){
       
       <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);padding-top:8px"><span>Toplam</span><span class="text-mono" style="color:var(--amber)">${fmtTL(toplam)}</span></div>
     </div></div>
-    ${t.notlar?`<div style="margin-top:12px;background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">${t.notlar}</div>`:''}
+    ${t.notlar?`<div style="margin-top:12px;background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">${esc(t.notlar)}</div>`:''}
   `;
 
   // Show red/iptal info if exists
@@ -256,11 +256,11 @@ function openTeklifDetay(id){
     rbEl.style.cssText='margin-top:12px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:12px;border-left:3px solid var(--red)';
     rbEl.innerHTML='<div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--red);margin-bottom:8px">'+(t.durum==='İptal Edildi'?'İPTAL':'RED')+' BİLGİSİ</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">'
-      +'<div><span style="color:var(--text3)">Neden: </span><b>'+(rb.neden||'—')+'</b></div>'
-      +'<div><span style="color:var(--text3)">Rakip: </span><b>'+(rb.rakip||'—')+'</b></div>'
-      +'<div><span style="color:var(--text3)">Rakip Fiyatı: </span><b>'+(rb.rakipFiyat||'—')+'</b></div>'
+      +'<div><span style="color:var(--text3)">Neden: </span><b>'+esc(rb.neden||'—')+'</b></div>'
+      +'<div><span style="color:var(--text3)">Rakip: </span><b>'+esc(rb.rakip||'—')+'</b></div>'
+      +'<div><span style="color:var(--text3)">Rakip Fiyatı: </span><b>'+esc(rb.rakipFiyat||'—')+'</b></div>'
       +'<div><span style="color:var(--text3)">Tarih: </span><b>'+fmtDate(rb.tarih)+'</b></div>'
-      +(rb.notlar?'<div style="grid-column:1/-1"><span style="color:var(--text3)">Not: </span><b>'+rb.notlar+'</b></div>':'')
+      +(rb.notlar?'<div style="grid-column:1/-1"><span style="color:var(--text3)">Not: </span><b>'+esc(rb.notlar)+'</b></div>':'')
       +'</div>';
     document.getElementById('td-body').appendChild(rbEl);
   }

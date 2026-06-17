@@ -143,19 +143,31 @@ function renderUrunKategorileri(){
   if(!cats.length){el.innerHTML='<div style="font-size:12px;color:var(--text3)">Henüz kategori yok.</div>';return;}
   el.innerHTML=cats.map((k,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px"><span style="font-size:13px;color:var(--text)">${k}</span><button class="btn-icon" style="color:var(--red);flex-shrink:0" onclick="deleteUrunKategori(${i})"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></div>`).join('');
 }
-function addUrunKategori(){
+async function addUrunKategori(){
   const inp=document.getElementById('yeni-kategori-input');if(!inp)return;
   const val=inp.value.trim();if(!val)return toast('Kategori adı girin.','error');
   if(!state.settings.urunKategoriler)state.settings.urunKategoriler=[];
   if(state.settings.urunKategoriler.includes(val))return toast('Bu kategori zaten mevcut.','error');
-  state.settings.urunKategoriler=state.settings.urunKategoriler.concat(val);
-  apiPut(currentPortal+'/ayarlar',state.settings).catch(function(){});
+  var prev=state.settings.urunKategoriler;
+  state.settings.urunKategoriler=prev.concat(val);
+  try{
+    await apiPut(currentPortal+'/ayarlar',state.settings);
+  }catch(e){
+    state.settings.urunKategoriler=prev;
+    return toast(e.message||'Kategori eklenemedi.','error');
+  }
   inp.value='';renderUrunKategorileri();toast('Kategori eklendi.','success');
 }
-function deleteUrunKategori(i){
+async function deleteUrunKategori(i){
   if(!state.settings.urunKategoriler)return;
-  state.settings.urunKategoriler=state.settings.urunKategoriler.filter((_,idx)=>idx!==i);
-  apiPut(currentPortal+'/ayarlar',state.settings).catch(function(){});
+  var prev=state.settings.urunKategoriler;
+  state.settings.urunKategoriler=prev.filter((_,idx)=>idx!==i);
+  try{
+    await apiPut(currentPortal+'/ayarlar',state.settings);
+  }catch(e){
+    state.settings.urunKategoriler=prev;
+    return toast(e.message||'Kategori silinemedi.','error');
+  }
   renderUrunKategorileri();toast('Kategori silindi.','info');
 }
 
@@ -179,19 +191,33 @@ function renderParametreler(){
   if(!list.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">Henüz parametre eklenmedi.</div>';return;}
   el.innerHTML=list.map((p,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px"><span style="font-size:13px;color:var(--text)">${p}</span><button class="btn-icon" style="color:var(--red);flex-shrink:0" onclick="deleteParametre(${i})"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></div>`).join('');
 }
-function addParametre(){
+async function addParametre(){
   const inp=document.getElementById('yeni-parametre-input');const val=(inp.value||'').trim();
   if(!val)return toast('Parametre adı girin.','error');
   if(!state.settings.parametreler)state.settings.parametreler=[];
   if(state.settings.parametreler.includes(val))return toast('Bu parametre zaten mevcut.','error');
-  state.settings.parametreler.push(val);saveAll();
-  apiPut(currentPortal+'/ayarlar',state.settings).catch(function(){});
+  var prev=state.settings.parametreler;
+  state.settings.parametreler=prev.concat(val);
+  try{
+    await apiPut(currentPortal+'/ayarlar',state.settings);
+  }catch(e){
+    state.settings.parametreler=prev;
+    return toast(e.message||'Parametre eklenemedi.','error');
+  }
+  saveAll();
   inp.value='';renderParametreler();
   toast('Parametre eklendi.','success');
 }
-function deleteParametre(i){
-  state.settings.parametreler.splice(i,1);saveAll();
-  apiPut(currentPortal+'/ayarlar',state.settings).catch(function(){});
+async function deleteParametre(i){
+  var prev=state.settings.parametreler;
+  state.settings.parametreler=prev.filter((_,idx)=>idx!==i);
+  try{
+    await apiPut(currentPortal+'/ayarlar',state.settings);
+  }catch(e){
+    state.settings.parametreler=prev;
+    return toast(e.message||'Parametre silinemedi.','error');
+  }
+  saveAll();
   renderParametreler();
   toast('Parametre silindi.','info');
 }
@@ -230,7 +256,8 @@ function renderFooter(){
   var el=document.getElementById('footer-contact-text');
   if(el)el.innerHTML=parts.join(' &nbsp;|&nbsp; ');
 }
-function saveSettings(){
+async function saveSettings(){
+  var prev=Object.assign({},state.settings);
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)state.settings[k]=el.value});
   var spEl=document.getElementById('set-servis-prefix');if(spEl&&spEl.value.trim())state.settings.servisPrefix=spEl.value.trim().toUpperCase();
   var sdEl=document.getElementById('set-servis-digits');if(sdEl&&sdEl.value)state.settings.servisDigits=Math.min(9,Math.max(3,parseInt(sdEl.value)||6));
@@ -238,8 +265,13 @@ function saveSettings(){
   var tdEl=document.getElementById('set-teklif-digits');if(tdEl&&tdEl.value)state.settings.teklifDigits=Math.min(9,Math.max(3,parseInt(tdEl.value)||5));
   var sipPEl=document.getElementById('set-siparis-prefix');if(sipPEl&&sipPEl.value.trim())state.settings.siparisPrefix=sipPEl.value.trim().toUpperCase();
   var sipDEl=document.getElementById('set-siparis-digits');if(sipDEl&&sipDEl.value)state.settings.siparisDigits=Math.min(9,Math.max(3,parseInt(sipDEl.value)||5));
+  try{
+    await apiPut(currentPortal+'/ayarlar',state.settings);
+  }catch(e){
+    state.settings=prev;
+    return toast(e.message||'Ayarlar kaydedilemedi.','error');
+  }
   saveAll();
-  apiPut(currentPortal+'/ayarlar',state.settings).catch(function(){});
   renderFooter();toast('Ayarlar kaydedildi.','success');
 }
 

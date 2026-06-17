@@ -100,7 +100,13 @@ switch ($method) {
             echo json_encode(['error' => 'id gerekli']);
             exit;
         }
-        $pdo->prepare('DELETE FROM stock_categories WHERE id = ?')->execute([$id]);
+        $stmt = $pdo->prepare('DELETE FROM stock_categories WHERE id = ?');
+        $stmt->execute([$id]);
+        if ($stmt->rowCount() === 0) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Kategori bulunamadı']);
+            exit;
+        }
         echo json_encode(['ok' => true]);
         break;
 

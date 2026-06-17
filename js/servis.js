@@ -240,6 +240,3 @@ async function saveServis(){
   }
   _formDirty=false;showPage(state.prevPage||'servisler');
 }
-
-// ════ TEKLIF ITEMS ════
-function addTeklifItem(){teklifItems.push({aciklama:'',miktar:1,birim:'Adet',birimFiyat:0});renderTeklifItems()}

@@ -129,8 +129,8 @@ function _dbServis(s, tl, mus, now, thisMonth, thisYear){
           +'onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'" '
           +'onclick="goServisForm(\''+r.id+'\')">'
           +'<div style="flex:1;min-width:0">'
-            +'<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">'+escXml(r.kurumAdi||'—')+'</div>'
-            +'<div style="font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--font-mono)">'+escXml(r.kayitNo||'')+'</div>'
+            +'<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">'+esc(r.kurumAdi||'—')+'</div>'
+            +'<div style="font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--font-mono)">'+esc(r.kayitNo||'')+'</div>'
           +'</div>'
           +durumBadge(r.durum)
           +'</div>';
@@ -227,10 +227,10 @@ function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
           +'onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'" '
           +'onclick="openTeklifDetay(\''+t.id+'\')">'
           +'<div style="flex:1;min-width:0">'
-            +'<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">'+escXml(t.kurum||'—')+'</div>'
-            +'<div style="font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--font-mono)">'+escXml(t.teklifNo||'')+'</div>'
+            +'<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">'+esc(t.kurum||'—')+'</div>'
+            +'<div style="font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--font-mono)">'+esc(t.teklifNo||'')+'</div>'
           +'</div>'
-          +'<span class="badge '+(TBG[t.durum]||'badge-teknik')+'" style="font-size:10px;white-space:nowrap">'+escXml(t.durum||'—')+'</span>'
+          +'<span class="badge '+(TBG[t.durum]||'badge-teknik')+'" style="font-size:10px;white-space:nowrap">'+esc(t.durum||'—')+'</span>'
           +'</div>';
       }).join('');
     }

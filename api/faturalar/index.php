@@ -22,7 +22,7 @@ function faturaResponse(PDO $pdo, array $row): array {
         'siparisId'       => $row['siparis_id'],
         'siparisNo'       => $row['siparis_no'],
         'kurum'           => $row['kurum'],
-        'tutar'           => faturaTutar($pdo, $row['siparis_id']),
+        'tutar'           => isset($row['tutar']) ? (float)$row['tutar'] : faturaTutar($pdo, $row['siparis_id']),
         'paraBirimi'      => $row['para_birimi'],
         'faturaTarihi'    => $row['fatura_tarihi'],
         'vadeTarihi'      => $row['vade_tarihi'],
@@ -35,7 +35,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $stmt = $pdo->query('SELECT i.*, o.siparis_no, o.kurum, o.para_birimi FROM invoices i JOIN orders o ON o.id = i.siparis_id ORDER BY i.created_at DESC');
+        $stmt = $pdo->query('SELECT i.*, o.siparis_no, o.kurum, o.para_birimi, COALESCE(SUM(oli.miktar * oli.birim_fiyat), 0) AS tutar FROM invoices i JOIN orders o ON o.id = i.siparis_id LEFT JOIN order_line_items oli ON oli.order_id = i.siparis_id GROUP BY i.id ORDER BY i.created_at DESC');
         $rows = $stmt->fetchAll();
         echo json_encode(['faturalar' => array_map(fn(array $r) => faturaResponse($pdo, $r), $rows)]);
         break;
@@ -121,7 +121,13 @@ switch ($method) {
             echo json_encode(['error' => 'id gerekli']);
             exit;
         }
-        $pdo->prepare('DELETE FROM invoices WHERE id = ?')->execute([$id]);
+        $stmt = $pdo->prepare('DELETE FROM invoices WHERE id = ?');
+        $stmt->execute([$id]);
+        if ($stmt->rowCount() === 0) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Fatura bulunamadı']);
+            exit;
+        }
         echo json_encode(['ok' => true]);
         break;
 

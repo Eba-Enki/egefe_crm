@@ -27,19 +27,21 @@ function satirlarFromInput(array $input): array {
     return $out;
 }
 
+function mapSatirRow(array $row): array {
+    return [
+        'aciklama'           => $row['aciklama'],
+        'miktar'             => (float)$row['miktar'],
+        'gonderilen'         => (float)$row['gonderilen'],
+        'birim'              => $row['birim'],
+        'birimFiyat'         => (float)$row['birim_fiyat'],
+        'seciliParametreler' => $row['secili_parametreler'] ? json_decode($row['secili_parametreler'], true) : [],
+    ];
+}
+
 function fetchSatirlar(PDO $pdo, string $orderId): array {
     $stmt = $pdo->prepare('SELECT * FROM order_line_items WHERE order_id = ? ORDER BY sira ASC, id ASC');
     $stmt->execute([$orderId]);
-    return array_map(function (array $row): array {
-        return [
-            'aciklama'           => $row['aciklama'],
-            'miktar'             => (float)$row['miktar'],
-            'gonderilen'         => (float)$row['gonderilen'],
-            'birim'              => $row['birim'],
-            'birimFiyat'         => (float)$row['birim_fiyat'],
-            'seciliParametreler' => $row['secili_parametreler'] ? json_decode($row['secili_parametreler'], true) : [],
-        ];
-    }, $stmt->fetchAll());
+    return array_map('mapSatirRow', $stmt->fetchAll());
 }
 
 function replaceSatirlar(PDO $pdo, string $orderId, array $satirlar): void {
@@ -53,7 +55,7 @@ function replaceSatirlar(PDO $pdo, string $orderId, array $satirlar): void {
     }
 }
 
-function siparisResponse(PDO $pdo, array $row): array {
+function siparisResponse(PDO $pdo, array $row, ?array $satirlar = null): array {
     return [
         'id'                 => $row['id'],
         'siparisNo'          => $row['siparis_no'],
@@ -74,7 +76,7 @@ function siparisResponse(PDO $pdo, array $row): array {
         'siparisTarihi'      => $row['siparis_tarihi'],
         'notlar'             => $row['notlar'],
         'durum'              => $row['durum'],
-        'satirlar'           => fetchSatirlar($pdo, $row['id']),
+        'satirlar'           => $satirlar ?? fetchSatirlar($pdo, $row['id']),
         'olusturanKullanici' => $row['olusturan_kullanici'],
         'olusturmaTarihi'    => $row['created_at'],
     ];
@@ -106,7 +108,22 @@ switch ($method) {
     case 'GET':
         $stmt = $pdo->query('SELECT * FROM orders ORDER BY created_at DESC');
         $rows = $stmt->fetchAll();
-        echo json_encode(['siparisler' => array_map(fn(array $r) => siparisResponse($pdo, $r), $rows)]);
+
+        $satirlarMap = [];
+        if ($rows) {
+            $ids = array_column($rows, 'id');
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $satirStmt = $pdo->prepare("SELECT * FROM order_line_items WHERE order_id IN ($placeholders) ORDER BY sira ASC, id ASC");
+            $satirStmt->execute($ids);
+            foreach ($satirStmt->fetchAll() as $s) {
+                $satirlarMap[$s['order_id']][] = mapSatirRow($s);
+            }
+        }
+
+        echo json_encode(['siparisler' => array_map(
+            fn(array $r) => siparisResponse($pdo, $r, $satirlarMap[$r['id']] ?? []),
+            $rows
+        )]);
         break;
 
     case 'POST':
@@ -234,7 +251,13 @@ switch ($method) {
             echo json_encode(['error' => 'id gerekli']);
             exit;
         }
-        $pdo->prepare('DELETE FROM orders WHERE id = ?')->execute([$id]);
+        $stmt = $pdo->prepare('DELETE FROM orders WHERE id = ?');
+        $stmt->execute([$id]);
+        if ($stmt->rowCount() === 0) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Sipariş bulunamadı']);
+            exit;
+        }
         echo json_encode(['ok' => true]);
         break;
 

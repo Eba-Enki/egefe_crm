@@ -7,14 +7,7 @@ requirePortalAccess($user, 'satis');
 
 const DURUM_DEGERLERI = ['Ödendi','Ödenmedi'];
 
-function strOrNull($value): ?string {
-    $value = trim((string)($value ?? ''));
-    return $value === '' ? null : $value;
-}
 
-function enumOrDefault($value, array $allowed, string $default): string {
-    return in_array($value, $allowed, true) ? $value : $default;
-}
 
 function faturaTutar(PDO $pdo, string $siparisId): float {
     $stmt = $pdo->prepare('SELECT COALESCE(SUM(miktar * birim_fiyat), 0) AS tutar FROM order_line_items WHERE order_id = ?');

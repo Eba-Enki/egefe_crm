@@ -19,10 +19,6 @@ function urunResponse(array $row): array {
     ];
 }
 
-function strOrNull($value): ?string {
-    $value = trim((string)($value ?? ''));
-    return $value === '' ? null : $value;
-}
 
 function normalizePortal($value): ?string {
     $value = (string)($value ?? '');

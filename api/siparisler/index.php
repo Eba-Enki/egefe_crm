@@ -9,14 +9,7 @@ const DURUM_DEGERLERI = ['Yeni Sipariş','Hazırlanıyor','Kısmi Sevkiyat','Tam
 const BIRIM_DEGERLERI = ['Adet','Saat','Gün','Parça'];
 const PARA_BIRIMLERI = ['TRY','USD','EUR','GBP'];
 
-function strOrNull($value): ?string {
-    $value = trim((string)($value ?? ''));
-    return $value === '' ? null : $value;
-}
 
-function enumOrDefault($value, array $allowed, string $default): string {
-    return in_array($value, $allowed, true) ? $value : $default;
-}
 
 function satirlarFromInput(array $input): array {
     $out = [];

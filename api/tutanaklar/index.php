@@ -7,10 +7,6 @@ requirePortalAccess($user, 'servis');
 
 const GARANTI_DEGERLERI = ['Evet','Hayır'];
 
-function strOrNull($value): ?string {
-    $value = trim((string)($value ?? ''));
-    return $value === '' ? null : $value;
-}
 
 function fetchKalemler(PDO $pdo, int $protocolId): array {
     $stmt = $pdo->prepare('SELECT * FROM delivery_protocol_items WHERE protocol_id = ? ORDER BY id ASC');

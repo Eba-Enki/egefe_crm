@@ -5,10 +5,6 @@ require __DIR__ . '/../../_bootstrap.php';
 $user = requireAuth($pdo);
 requirePortalAccess($user, 'stok');
 
-function strOrNull($value): ?string {
-    $value = trim((string)($value ?? ''));
-    return $value === '' ? null : $value;
-}
 
 function kalemResponse(array $row): array {
     return [

@@ -8,14 +8,7 @@ const DURUM_DEGERLERI = ['Taslak','Açık Teklif','Onay Bekleniyor','Onaylandı'
 const BIRIM_DEGERLERI = ['Adet','Saat','Gün','Parça'];
 const PARA_BIRIMLERI = ['TRY','USD','EUR','GBP'];
 
-function strOrNull($value): ?string {
-    $value = trim((string)($value ?? ''));
-    return $value === '' ? null : $value;
-}
 
-function enumOrDefault($value, array $allowed, string $default): string {
-    return in_array($value, $allowed, true) ? $value : $default;
-}
 
 function normalizePortal($value): ?string {
     $value = (string)($value ?? '');

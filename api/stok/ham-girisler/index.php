@@ -5,10 +5,6 @@ require __DIR__ . '/../../_bootstrap.php';
 $user = requireAuth($pdo);
 requirePortalAccess($user, 'stok');
 
-function strOrNull($value): ?string {
-    $value = trim((string)($value ?? ''));
-    return $value === '' ? null : $value;
-}
 
 function stokSPS(PDO $pdo, string $kategoriId): int {
     $stmt = $pdo->prepare('SELECT sheet_boyu, kesim_boleni, fire_pct FROM stock_categories WHERE id = ?');

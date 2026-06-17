@@ -5,10 +5,6 @@ require __DIR__ . '/../../_bootstrap.php';
 $user = requireAuth($pdo);
 requirePortalAccess($user, 'stok');
 
-function strOrNull($value): ?string {
-    $value = trim((string)($value ?? ''));
-    return $value === '' ? null : $value;
-}
 
 function fetchSatirlar(PDO $pdo, string $exitId): array {
     $stmt = $pdo->prepare('SELECT i.*, l.lot_no, l.cutoff, l.kategori_id AS lot_kategori_id FROM raw_stock_exit_items i LEFT JOIN raw_stock_lots l ON l.id = i.lot_id WHERE i.exit_id = ? ORDER BY i.id ASC');

@@ -19,10 +19,6 @@ function musteriResponse(array $row): array {
     ];
 }
 
-function strOrNull($value): ?string {
-    $value = trim((string)($value ?? ''));
-    return $value === '' ? null : $value;
-}
 
 $method = $_SERVER['REQUEST_METHOD'];
 

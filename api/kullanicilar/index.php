@@ -11,10 +11,6 @@ if ($user['rol'] !== 'yönetici') {
 
 const PORTAL_DEGERLERI = ['servis', 'satis', 'stok'];
 
-function strOrNull($value): ?string {
-    $value = trim((string)($value ?? ''));
-    return $value === '' ? null : $value;
-}
 
 function izinlerFromInput(array $input): array {
     $izinler = [];

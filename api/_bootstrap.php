@@ -14,6 +14,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../includes/Auth.php';
+require __DIR__ . '/../includes/helpers.php';
 
 set_exception_handler(function (Throwable $e) {
     error_log('Unhandled exception: ' . $e->getMessage());

@@ -7,10 +7,6 @@ requirePortalAccess($user, 'stok');
 
 const TIP_DEGERLERI = ['ham','ticari'];
 
-function strOrNull($value): ?string {
-    $value = trim((string)($value ?? ''));
-    return $value === '' ? null : $value;
-}
 
 function kategoriResponse(array $row): array {
     return [

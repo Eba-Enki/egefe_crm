@@ -138,9 +138,7 @@ switch ($method) {
             $pdo->commit();
         } catch (Throwable $e) {
             $pdo->rollBack();
-            http_response_code(500);
-            echo json_encode(['error' => 'Kayıt sırasında bir hata oluştu: ' . $e->getMessage()]);
-            exit;
+            throw $e;
         }
 
         $stmt = $pdo->prepare('SELECT * FROM raw_stock_exits WHERE id = ?');

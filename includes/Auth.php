@@ -43,7 +43,7 @@ function userPermissions(PDO $pdo, string $userId): array {
     return $izinler;
 }
 
-function userResponse(PDO $pdo, array $user): array {
+function userResponse(PDO $pdo, array $user, ?array $izinler = null): array {
     return [
         'id'       => $user['id'],
         'ad'       => $user['ad'],
@@ -51,7 +51,7 @@ function userResponse(PDO $pdo, array $user): array {
         'email'    => $user['email'],
         'rol'      => ROL_DB_TO_APP[$user['rol']] ?? $user['rol'],
         'sonGiris' => $user['son_giris'],
-        'izinler'  => userPermissions($pdo, $user['id']),
+        'izinler'  => $izinler ?? userPermissions($pdo, $user['id']),
     ];
 }
 

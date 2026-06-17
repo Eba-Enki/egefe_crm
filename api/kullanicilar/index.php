@@ -44,7 +44,32 @@ switch ($method) {
     case 'GET':
         $stmt = $pdo->query('SELECT * FROM users ORDER BY created_at ASC');
         $rows = $stmt->fetchAll();
-        echo json_encode(['kullanicilar' => array_map(fn(array $r) => userResponse($pdo, $r), $rows)]);
+
+        $izinlerMap = [];
+        if ($rows) {
+            $ids = array_column($rows, 'id');
+            foreach ($ids as $uid) {
+                $izinlerMap[$uid] = [
+                    'servis' => ['erisim' => false, 'sayfalar' => []],
+                    'satis'  => ['erisim' => false, 'sayfalar' => []],
+                    'stok'   => ['erisim' => false, 'sayfalar' => []],
+                ];
+            }
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $permStmt = $pdo->prepare("SELECT * FROM user_permissions WHERE user_id IN ($placeholders)");
+            $permStmt->execute($ids);
+            foreach ($permStmt->fetchAll() as $p) {
+                $izinlerMap[$p['user_id']][$p['portal']] = [
+                    'erisim'   => (bool)$p['erisim'],
+                    'sayfalar' => $p['sayfalar'] ? json_decode($p['sayfalar'], true) : [],
+                ];
+            }
+        }
+
+        echo json_encode(['kullanicilar' => array_map(
+            fn(array $r) => userResponse($pdo, $r, $izinlerMap[$r['id']] ?? null),
+            $rows
+        )]);
         break;
 
     case 'POST':

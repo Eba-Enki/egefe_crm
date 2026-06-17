@@ -27,15 +27,18 @@ function kalemResponse(array $row): array {
     ];
 }
 
-function girisResponse(PDO $pdo, array $row): array {
-    $stmt = $pdo->prepare('SELECT * FROM raw_stock_lots WHERE giris_id = ? ORDER BY id ASC');
-    $stmt->execute([$row['id']]);
+function girisResponse(PDO $pdo, array $row, ?array $kalemler = null): array {
+    if ($kalemler === null) {
+        $stmt = $pdo->prepare('SELECT * FROM raw_stock_lots WHERE giris_id = ? ORDER BY id ASC');
+        $stmt->execute([$row['id']]);
+        $kalemler = array_map('kalemResponse', $stmt->fetchAll());
+    }
     return [
         'id'                 => $row['id'],
         'evrakNo'            => $row['evrak_no'],
         'tarih'              => $row['tarih'],
         'notlar'             => $row['notlar'],
-        'kalemler'           => array_map('kalemResponse', $stmt->fetchAll()),
+        'kalemler'           => $kalemler,
         'olusturanKullanici' => $row['olusturan_kullanici'],
         'olusturmaTarihi'    => $row['created_at'],
     ];
@@ -47,7 +50,22 @@ switch ($method) {
     case 'GET':
         $stmt = $pdo->query('SELECT * FROM raw_stock_entries ORDER BY created_at DESC');
         $rows = $stmt->fetchAll();
-        echo json_encode(['girisler' => array_map(fn(array $r) => girisResponse($pdo, $r), $rows)]);
+
+        $kalemlerMap = [];
+        if ($rows) {
+            $ids = array_column($rows, 'id');
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $kalemStmt = $pdo->prepare("SELECT * FROM raw_stock_lots WHERE giris_id IN ($placeholders) ORDER BY id ASC");
+            $kalemStmt->execute($ids);
+            foreach ($kalemStmt->fetchAll() as $k) {
+                $kalemlerMap[$k['giris_id']][] = kalemResponse($k);
+            }
+        }
+
+        echo json_encode(['girisler' => array_map(
+            fn(array $r) => girisResponse($pdo, $r, $kalemlerMap[$r['id']] ?? []),
+            $rows
+        )]);
         break;
 
     case 'POST':

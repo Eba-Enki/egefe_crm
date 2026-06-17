@@ -6,22 +6,24 @@ $user = requireAuth($pdo);
 requirePortalAccess($user, 'stok');
 
 
+function mapSatirRow(array $row): array {
+    return [
+        'lotId'       => $row['lot_id'],
+        'lotNo'       => $row['lot_no'],
+        'parametreAd' => $row['parametre_ad'],
+        'cutoff'      => $row['cutoff'],
+        'kategoriId'  => $row['lot_kategori_id'],
+        'stripCikis'  => (int)$row['strip_cikis'],
+    ];
+}
+
 function fetchSatirlar(PDO $pdo, string $exitId): array {
     $stmt = $pdo->prepare('SELECT i.*, l.lot_no, l.cutoff, l.kategori_id AS lot_kategori_id FROM raw_stock_exit_items i LEFT JOIN raw_stock_lots l ON l.id = i.lot_id WHERE i.exit_id = ? ORDER BY i.id ASC');
     $stmt->execute([$exitId]);
-    return array_map(function (array $row): array {
-        return [
-            'lotId'       => $row['lot_id'],
-            'lotNo'       => $row['lot_no'],
-            'parametreAd' => $row['parametre_ad'],
-            'cutoff'      => $row['cutoff'],
-            'kategoriId'  => $row['lot_kategori_id'],
-            'stripCikis'  => (int)$row['strip_cikis'],
-        ];
-    }, $stmt->fetchAll());
+    return array_map('mapSatirRow', $stmt->fetchAll());
 }
 
-function cikisResponse(PDO $pdo, array $row): array {
+function cikisResponse(PDO $pdo, array $row, ?array $satirlar = null): array {
     return [
         'id'                 => $row['id'],
         'evrakNo'            => $row['evrak_no'],
@@ -30,7 +32,7 @@ function cikisResponse(PDO $pdo, array $row): array {
         'kitMiktari'         => $row['kit_miktari'] !== null ? (int)$row['kit_miktari'] : null,
         'aciklama'           => $row['aciklama'],
         'notlar'             => $row['notlar'],
-        'satirlar'           => fetchSatirlar($pdo, $row['id']),
+        'satirlar'           => $satirlar ?? fetchSatirlar($pdo, $row['id']),
         'olusturanKullanici' => $row['olusturan_kullanici'],
         'olusturmaTarihi'    => $row['created_at'],
     ];
@@ -59,7 +61,22 @@ switch ($method) {
     case 'GET':
         $stmt = $pdo->query('SELECT * FROM raw_stock_exits ORDER BY created_at DESC');
         $rows = $stmt->fetchAll();
-        echo json_encode(['cikislar' => array_map(fn(array $r) => cikisResponse($pdo, $r), $rows)]);
+
+        $satirlarMap = [];
+        if ($rows) {
+            $ids = array_column($rows, 'id');
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $satirStmt = $pdo->prepare("SELECT i.*, l.lot_no, l.cutoff, l.kategori_id AS lot_kategori_id FROM raw_stock_exit_items i LEFT JOIN raw_stock_lots l ON l.id = i.lot_id WHERE i.exit_id IN ($placeholders) ORDER BY i.exit_id, i.id ASC");
+            $satirStmt->execute($ids);
+            foreach ($satirStmt->fetchAll() as $s) {
+                $satirlarMap[$s['exit_id']][] = mapSatirRow($s);
+            }
+        }
+
+        echo json_encode(['cikislar' => array_map(
+            fn(array $r) => cikisResponse($pdo, $r, $satirlarMap[$r['id']] ?? []),
+            $rows
+        )]);
         break;
 
     case 'POST':

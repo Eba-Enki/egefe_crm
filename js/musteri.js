@@ -138,7 +138,7 @@ function renderTutanaklar(){
 }
 function getAksesuarStr(s){
   const chips=Array.isArray(s.aksesuarlar)&&s.aksesuarlar.length?[...s.aksesuarlar]:[];
-  if(s.aksesyarDiger)chips.push(s.aksesyarDiger);
+  if(s.aksesuarDiger)chips.push(s.aksesuarDiger);
   return chips.join(', ');
 }
 

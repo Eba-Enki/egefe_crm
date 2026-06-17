@@ -181,7 +181,7 @@ function goServisForm(editId,viewOnly){
     document.getElementById('sf-email').value=s.email||'';
     setSeriNolar(s.seriNo?s.seriNo.split(',').map(function(x){return x.trim();}).filter(Boolean):['']);
     document.getElementById('sf-garantiDurumu').value=s.garantiDurumu||'Hayır';
-    document.getElementById('sf-aksesuar-diger').value=s.aksesyarDiger||'';
+    document.getElementById('sf-aksesuar-diger').value=s.aksesuarDiger||'';
     document.getElementById('sf-gelisTarihi').value=s.gelisTarihi||'';
     document.getElementById('sf-durum').value=s.durum||'Yeni Gelen';
     document.getElementById('sf-kargoTarihi').value=s.kargoTarihi||'';

@@ -154,7 +154,13 @@ switch ($method) {
             echo json_encode(['error' => 'id gerekli']);
             exit;
         }
-        $pdo->prepare('DELETE FROM service_records WHERE id = ?')->execute([$id]);
+        $stmt = $pdo->prepare('DELETE FROM service_records WHERE id = ?');
+        $stmt->execute([$id]);
+        if ($stmt->rowCount() === 0) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Kayıt bulunamadı']);
+            exit;
+        }
         echo json_encode(['ok' => true]);
         break;
 

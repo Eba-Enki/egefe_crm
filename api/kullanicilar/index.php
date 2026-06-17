@@ -166,7 +166,13 @@ switch ($method) {
             echo json_encode(['error' => 'Kendi hesabınızı silemezsiniz']);
             exit;
         }
-        $pdo->prepare('DELETE FROM users WHERE id = ?')->execute([$id]);
+        $stmt = $pdo->prepare('DELETE FROM users WHERE id = ?');
+        $stmt->execute([$id]);
+        if ($stmt->rowCount() === 0) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Kullanıcı bulunamadı']);
+            exit;
+        }
         echo json_encode(['ok' => true]);
         break;
 

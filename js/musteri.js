@@ -136,13 +136,6 @@ function renderTutanaklar(){
       +'</tr>';
   }).join('');
 }
-function getAksesuarStr(s){
-  const chips=Array.isArray(s.aksesuarlar)&&s.aksesuarlar.length?[...s.aksesuarlar]:[];
-  if(s.aksesuarDiger)chips.push(s.aksesuarDiger);
-  return chips.join(', ');
-}
-
-
 // ════ ÜRÜN KATEGORİLERİ ════
 function renderUrunKategorileri(){
   const el=document.getElementById('urun-kategori-list');if(!el)return;

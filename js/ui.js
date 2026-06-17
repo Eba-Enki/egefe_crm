@@ -285,18 +285,6 @@ function goUrunForm(editId){
   if(katEl){katEl.innerHTML='<option value="">— Seçin —</option>'+(state.urunKategoriler||[]).map(k=>`<option value="${k}">${k}</option>`).join('');katEl.value=u?.kategori||'';}
   showPage('urun-form',true);
 }
-function goKullaniciForm(editId){
-  const u=editId?state.users.find(x=>x.id===editId):null;
-  document.getElementById('kf-edit-id').value=editId||'';
-  document.getElementById('kf-title').textContent=u?'Kullanıcı Düzenle':'Yeni Kullanıcı';
-  document.getElementById('kf-ad').value=u?.ad||'';document.getElementById('kf-username').value=u?.username||'';
-  document.getElementById('kf-sifre').value='';document.getElementById('kf-email').value=u?.email||'';
-  document.getElementById('kf-rol').value=u?.rol||'teknisyen';
-  var teknEl=document.getElementById('kf-rol-tekn');
-  if(teknEl)teknEl.textContent=currentPortal==='satis'?'Satış Uzmanı — Ekle/Düzenle':'Teknisyen — Ekle/Düzenle';
-  showPage('kullanici-form',true);
-}
-
 // ════ TITLE CASE (Türkçe destekli) ════
 function toTitleCase(str){
   if(!str)return str;
@@ -357,7 +345,6 @@ function clearMusteriSelection(inputId){
 }
 
 function getMusteriAds(){return state.musteriler.map(m=>({label:m.kurum,sub:m.kisi||''}))}
-function getUrunAds(){return state.urunler.map(u=>({label:u.urunAdi+(u.marka?' ('+u.marka+')':''),sub:u.model||''}))}
 
 function comboFilter(inputId,dropId,srcFn){
   var inp=document.getElementById(inputId);
@@ -422,16 +409,6 @@ function cancelMusteriAdd(){
   else showPage('musteriler');
 }
 
-function comboFilterServis(){
-  var q=document.getElementById('tf-servis-ara').value.toLowerCase();
-  var items=state.servisler.filter(function(s){return (s.kayitNo+s.kurumAdi+s.seriNo).toLowerCase().includes(q||'');}).slice(0,10);
-  var drop=document.getElementById('cb-tf-servis');
-  if(!items.length){drop.classList.remove('open');return;}
-  drop.innerHTML=items.map(function(s){
-    return '<div class="combo-item" onmousedown="event.preventDefault();selectServisForTeklif(\''+s.id+'\')">'+esc(s.kayitNo)+' — '+esc(s.kurumAdi)+'<div class="sub">Seri: '+esc(s.seriNo||'—')+' | '+esc(s.durum)+'</div></div>';
-  }).join('');
-  drop.classList.add('open');
-}
 function selectServisForTeklif(id){
   const s=state.servisler.find(x=>x.id===id);if(!s)return;
   document.getElementById('tf-servis-ara').value=s.kayitNo+' — '+s.kurumAdi;
@@ -444,7 +421,6 @@ function selectServisForTeklif(id){
   var foundM=state.musteriler.find(function(x){return x.kurum===(s.kurumAdi||'');});
   if(foundM)lockMusteriField('tf-kurum',foundM.id);
 }
-function comboSelect(inputId,dropId,val){var inp=document.getElementById(inputId);if(inp)inp.value=val;comboClose(dropId);}
 function comboClose(id){const el=document.getElementById(id);if(el)el.classList.remove('open');}
 
 // Teklif item row combo — keyboard + click + price autofill

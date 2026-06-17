@@ -408,8 +408,3 @@ function deleteTutanak(no){
     toast('Tutanak silindi.','info');
   });
 }
-
-function printTutanakById(no){
-  const t = savedTutanaklar.find(x=>x.no===no);
-  if(t) printTutanakData(t);
-}

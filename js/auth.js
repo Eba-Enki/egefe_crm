@@ -253,18 +253,6 @@ function _applyPageRestrictions(u){
   });
 }
 
-function switchPortal(){
-  showConfirm('Portala geri dönmek istiyor musunuz? Mevcut oturum kapatılacak.',async function(){
-    try{await apiPost('auth/logout.php');}catch(e){}
-    document.documentElement.removeAttribute('data-portal');
-    state.currentUser=null;
-    currentPortal='';
-    document.getElementById('portal-screen').style.display='flex';
-    var pg=document.getElementById('page-dashboard');
-    if(pg)pg.classList.add('active');
-  },{title:'Portal Değiştir',okText:'Evet',okClass:'btn-primary'});
-}
-
 async function doLogin(){
   var loginBtn=document.querySelector('#login-screen .btn-primary');
   if(loginBtn&&loginBtn.disabled)return;

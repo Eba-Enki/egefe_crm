@@ -217,7 +217,6 @@
       <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="topbar-theme-btn" title="Tema Değiştir" style="padding:7px 10px;font-size:15px">🌙</button>
       <!-- CRM portalleri -->
       <button class="btn btn-ghost btn-sm crm-only" onclick="exportData()">⬇ Dışa Aktar</button>
-      <label class="btn btn-ghost btn-sm crm-only" style="cursor:pointer">⬆ İçe Aktar<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
       <button class="btn btn-primary btn-sm can-write crm-only" id="topbar-new-musteri-btn" style="display:none" onclick="goMusteriForm()">＋ Yeni Müşteri</button>
       <button class="btn btn-primary btn-sm can-write crm-only" id="topbar-new-urun-btn" style="display:none" onclick="goUrunForm()">＋ Yeni Ürün</button>
       <button class="btn btn-primary btn-sm can-write crm-only" id="topbar-new-tutanak-btn" style="display:none" onclick="openYeniTutanak()">＋ Yeni Tutanak</button>
@@ -882,7 +881,7 @@
               </div>
               <div>
                 <div class="settings-panel-title">Veri Yönetimi</div>
-                <div class="settings-panel-sub">Yedekleme, geri yükleme ve sistem sıfırlama işlemleri</div>
+                <div class="settings-panel-sub">Tüm kayıtların JSON olarak yedeklenmesi</div>
               </div>
             </div>
             <div class="settings-section">
@@ -895,27 +894,6 @@
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   JSON İndir
                 </button>
-              </div>
-              <div class="settings-action-card">
-                <div class="settings-action-info">
-                  <div class="settings-action-label">Yedek Yükle</div>
-                  <div class="settings-action-sub">Mevcut verilerle birleştirilir; aynı ID'ye sahip kayıtlar tekrar eklenmez</div>
-                </div>
-                <label class="btn btn-ghost" style="cursor:pointer">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  JSON Seç
-                  <input type="file" accept=".json" style="display:none" onchange="importData(event)">
-                </label>
-              </div>
-            </div>
-            <div class="settings-section settings-danger-section">
-              <div class="settings-subsection-title" style="color:var(--red)">Tehlikeli Bölge</div>
-              <div class="settings-action-card" style="border-bottom:none">
-                <div class="settings-action-info">
-                  <div class="settings-action-label" style="color:var(--red)">Tüm Veriyi Sil</div>
-                  <div class="settings-action-sub">Bu işlem geri alınamaz. Tüm kayıtlar kalıcı olarak silinir.</div>
-                </div>
-                <button class="btn btn-danger" onclick="clearAllData()">Veriyi Sil</button>
               </div>
             </div>
           </div>
@@ -1263,7 +1241,7 @@
               </div>
               <div>
                 <div class="settings-panel-title">Veri Yönetimi</div>
-                <div class="settings-panel-sub">Yedekleme, geri yükleme ve sistem sıfırlama işlemleri</div>
+                <div class="settings-panel-sub">Tüm kayıtların JSON olarak yedeklenmesi</div>
               </div>
             </div>
             <div class="settings-section">
@@ -1276,27 +1254,6 @@
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   İndir
                 </button>
-              </div>
-              <div class="settings-action-card">
-                <div class="settings-action-info">
-                  <div class="settings-action-label">Yedek Yükle</div>
-                  <div class="settings-action-sub">Mevcut verilerle birleştirilir; aynı ID'ye sahip kayıtlar tekrar eklenmez</div>
-                </div>
-                <label class="btn btn-ghost" style="cursor:pointer">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  Yükle
-                  <input type="file" accept=".json" style="display:none" onchange="importData(event)">
-                </label>
-              </div>
-            </div>
-            <div class="settings-section settings-danger-section">
-              <div class="settings-subsection-title" style="color:var(--red)">Tehlikeli Bölge</div>
-              <div class="settings-action-card" style="border-bottom:none">
-                <div class="settings-action-info">
-                  <div class="settings-action-label" style="color:var(--red)">Tüm Veriyi Sil</div>
-                  <div class="settings-action-sub">Bu işlem geri alınamaz. Tüm kayıtlar kalıcı olarak silinir.</div>
-                </div>
-                <button class="btn btn-danger" onclick="clearAllData()">Veriyi Sil</button>
               </div>
             </div>
           </div>

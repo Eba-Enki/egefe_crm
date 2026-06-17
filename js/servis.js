@@ -176,7 +176,7 @@ function renderTable(){
     const isSFBekleniyor=s.durum==='S.F. Bekleniyor';
     // Düzenle: sadece manuel durumlarda canEdit için; diğerleri view-only
     const editBtn=canEdit&&isManuelDurum
-      ?`<button class="btn-icon" title="Düzenle" onclick="goServisForm('${s.id}')"><img src="icons/edit_icon.png" alt="Düzenle" style="width:14px;height:14px;display:block"></button>`
+      ?`<button class="btn-icon" title="Düzenle" onclick="goServisForm('${s.id}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>`
       :`<button class="btn-icon" title="Kayıt Görüntüle" style="color:var(--text2)" onclick="goServisForm('${s.id}',true)">&#128065;</button>`;
     // Durum değiştir: sadece manuel durumlarda ve arşiv değilse
     const durumBtn=canEdit&&!isArsiv&&isManuelDurum

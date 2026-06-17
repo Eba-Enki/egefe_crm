@@ -30,18 +30,20 @@ function satirlarFromInput(array $input): array {
     return $out;
 }
 
+function mapSatirRow(array $row): array {
+    return [
+        'aciklama'           => $row['aciklama'],
+        'miktar'             => (float)$row['miktar'],
+        'birim'              => $row['birim'],
+        'birimFiyat'         => (float)$row['birim_fiyat'],
+        'seciliParametreler' => $row['secili_parametreler'] ? json_decode($row['secili_parametreler'], true) : [],
+    ];
+}
+
 function fetchSatirlar(PDO $pdo, string $quoteId): array {
     $stmt = $pdo->prepare('SELECT * FROM quote_line_items WHERE quote_id = ? ORDER BY sira ASC, id ASC');
     $stmt->execute([$quoteId]);
-    return array_map(function (array $row): array {
-        return [
-            'aciklama'           => $row['aciklama'],
-            'miktar'             => (float)$row['miktar'],
-            'birim'              => $row['birim'],
-            'birimFiyat'         => (float)$row['birim_fiyat'],
-            'seciliParametreler' => $row['secili_parametreler'] ? json_decode($row['secili_parametreler'], true) : [],
-        ];
-    }, $stmt->fetchAll());
+    return array_map('mapSatirRow', $stmt->fetchAll());
 }
 
 function replaceSatirlar(PDO $pdo, string $quoteId, array $satirlar): void {
@@ -55,7 +57,7 @@ function replaceSatirlar(PDO $pdo, string $quoteId, array $satirlar): void {
     }
 }
 
-function teklifResponse(PDO $pdo, array $row): array {
+function teklifResponse(PDO $pdo, array $row, ?array $satirlar = null): array {
     return [
         'id'                 => $row['id'],
         'portal'             => $row['portal'],
@@ -78,7 +80,7 @@ function teklifResponse(PDO $pdo, array $row): array {
         'sorumlu'            => $row['sorumlu'],
         'durum'              => $row['durum'],
         'redNedeni'          => $row['red_nedeni'],
-        'satirlar'           => fetchSatirlar($pdo, $row['id']),
+        'satirlar'           => $satirlar ?? fetchSatirlar($pdo, $row['id']),
         'olusturanKullanici' => $row['olusturan_kullanici'],
         'olusturmaTarihi'    => $row['created_at'],
     ];
@@ -119,7 +121,22 @@ switch ($method) {
         $stmt = $pdo->prepare('SELECT * FROM quotes WHERE portal = ? ORDER BY created_at DESC');
         $stmt->execute([$portal]);
         $rows = $stmt->fetchAll();
-        echo json_encode(['teklifler' => array_map(fn(array $r) => teklifResponse($pdo, $r), $rows)]);
+
+        $satirlarMap = [];
+        if ($rows) {
+            $ids = array_column($rows, 'id');
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $satirStmt = $pdo->prepare("SELECT * FROM quote_line_items WHERE quote_id IN ($placeholders) ORDER BY sira ASC, id ASC");
+            $satirStmt->execute($ids);
+            foreach ($satirStmt->fetchAll() as $s) {
+                $satirlarMap[$s['quote_id']][] = mapSatirRow($s);
+            }
+        }
+
+        echo json_encode(['teklifler' => array_map(
+            fn(array $r) => teklifResponse($pdo, $r, $satirlarMap[$r['id']] ?? []),
+            $rows
+        )]);
         break;
 
     case 'POST':

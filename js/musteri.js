@@ -24,7 +24,7 @@ function renderMusteriler(){
   document.getElementById('musteri-empty').style.display='none';
   var pagedM=data.slice((musterilerPage-1)*PAGE_SIZE,musterilerPage*PAGE_SIZE);
   renderPagination('musteri-pagination',musterilerPage,data.length,'setMusterilerPage');
-  tbody.innerHTML=pagedM.map(m=>{return`<tr><td><span class="kn-badge" style="color:var(--accent);font-size:10px">${esc(m.kayitNo||'—')}</span></td><td style="font-weight:500">${esc(m.kurum)}</td><td style="color:var(--text2)">${esc(m.kisi||'—')}</td><td class="td-mono">${esc(m.tel||'—')}</td><td style="color:var(--text2)">${esc(m.email||'—')}</td><td>${esc(m.sehir||'—')}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goMusteriForm('${esc(m.id)}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('musteri','${esc(m.id)}')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></div></td></tr>`;}).join('');
+  tbody.innerHTML=pagedM.map(m=>{return`<tr><td><span class="kn-badge" style="color:var(--accent);font-size:10px">${esc(m.kayitNo||'—')}</span></td><td style="font-weight:500">${esc(m.kurum)}</td><td style="color:var(--text2)">${esc(m.kisi||'—')}</td><td class="td-mono">${esc(m.tel||'—')}</td><td style="color:var(--text2)">${esc(m.email||'—')}</td><td>${esc(m.sehir||'—')}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goMusteriForm('${esc(m.id)}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('musteri','${esc(m.id)}')"><i class="ti ti-trash"></i></button></div></td></tr>`;}).join('');
 }
 async function saveMusteri(){
   const kurum=toTitleCase(document.getElementById('mf-kurum').value.trim());if(!kurum)return toast('Kurum adı zorunlu.','error');
@@ -89,7 +89,7 @@ function renderUrunler(){
   var pagedU=data.slice((urunlerPage-1)*PAGE_SIZE,urunlerPage*PAGE_SIZE);
   renderPagination('urun-pagination',urunlerPage,data.length,'setUrunlerPage');
   const _fmtFiyat=(v,pb)=>{if(!v)return'—';const sym={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'};return(sym[pb||'TRY']||'₺')+' '+new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v);};
-  tbody.innerHTML=pagedU.map(u=>{return`<tr><td class="td-mono" style="color:var(--accent);font-size:11px">${esc(u.urunKodu||'—')}</td><td style="font-weight:500">${esc(u.urunAdi)}</td><td style="color:var(--text2)">${esc(u.marka||'—')}</td>${isSatis?`<td style="color:var(--text2);font-size:12px">${esc(u.kategori||'—')}</td>`:''}<td class="td-mono" style="color:var(--text2)">${esc(u.model||'—')}</td><td class="td-mono" style="color:var(--amber)">${_fmtFiyat(u.fiyat,u.paraBirimi)}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goUrunForm('${esc(u.id)}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('urun','${esc(u.id)}')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></div></td></tr>`;}).join('');
+  tbody.innerHTML=pagedU.map(u=>{return`<tr><td class="td-mono" style="color:var(--accent);font-size:11px">${esc(u.urunKodu||'—')}</td><td style="font-weight:500">${esc(u.urunAdi)}</td><td style="color:var(--text2)">${esc(u.marka||'—')}</td>${isSatis?`<td style="color:var(--text2);font-size:12px">${esc(u.kategori||'—')}</td>`:''}<td class="td-mono" style="color:var(--text2)">${esc(u.model||'—')}</td><td class="td-mono" style="color:var(--amber)">${_fmtFiyat(u.fiyat,u.paraBirimi)}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goUrunForm('${esc(u.id)}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('urun','${esc(u.id)}')"><i class="ti ti-trash"></i></button></div></td></tr>`;}).join('');
 }
 async function saveUrun(){
   const urunAdi=document.getElementById('uf-urunAdi').value.trim();if(!urunAdi)return toast('Ürün adı zorunlu.','error');
@@ -130,8 +130,8 @@ function renderTutanaklar(){
       +'<td><span class="kn-badge">'+t.no+'</span></td>'
       +'<td class="td-mono">'+fmtDate(t.tarih)+'</td>'
       +'<td style="text-align:right"><div class="action-row" style="justify-content:flex-end">'
-      +'<button class="btn-icon" title="Yazdır" onclick="previewTutanak(\''+t.no+'\')"><img src="icons/printer_icon.png" alt="Yazdır" style="width:14px;height:14px;display:block"></button>'
-      +'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteTutanak(\''+t.no+'\')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>'
+      +'<button class="btn-icon" title="Yazdır" style="color:var(--accent)" onclick="previewTutanak(\''+t.no+'\')"><i class="ti ti-printer"></i></button>'
+      +'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteTutanak(\''+t.no+'\')"><i class="ti ti-trash"></i></button>'
       +'</div></td>'
       +'</tr>';
   }).join('');
@@ -141,7 +141,7 @@ function renderUrunKategorileri(){
   const el=document.getElementById('urun-kategori-list');if(!el)return;
   const cats=state.settings.urunKategoriler||[];
   if(!cats.length){el.innerHTML='<div style="font-size:12px;color:var(--text3)">Henüz kategori yok.</div>';return;}
-  el.innerHTML=cats.map((k,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px"><span style="font-size:13px;color:var(--text)">${k}</span><button class="btn-icon" style="color:var(--red);flex-shrink:0" onclick="deleteUrunKategori(${i})"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></div>`).join('');
+  el.innerHTML=cats.map((k,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px"><span style="font-size:13px;color:var(--text)">${k}</span><button class="btn-icon" style="color:var(--red);flex-shrink:0" onclick="deleteUrunKategori(${i})"><i class="ti ti-trash"></i></button></div>`).join('');
 }
 async function addUrunKategori(){
   const inp=document.getElementById('yeni-kategori-input');if(!inp)return;
@@ -189,7 +189,7 @@ function renderParametreler(){
   const list=state.settings.parametreler||[];
   const el=document.getElementById('parametre-list');if(!el)return;
   if(!list.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">Henüz parametre eklenmedi.</div>';return;}
-  el.innerHTML=list.map((p,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px"><span style="font-size:13px;color:var(--text)">${p}</span><button class="btn-icon" style="color:var(--red);flex-shrink:0" onclick="deleteParametre(${i})"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button></div>`).join('');
+  el.innerHTML=list.map((p,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px"><span style="font-size:13px;color:var(--text)">${p}</span><button class="btn-icon" style="color:var(--red);flex-shrink:0" onclick="deleteParametre(${i})"><i class="ti ti-trash"></i></button></div>`).join('');
 }
 async function addParametre(){
   const inp=document.getElementById('yeni-parametre-input');const val=(inp.value||'').trim();

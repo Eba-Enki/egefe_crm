@@ -180,13 +180,13 @@ function renderTable(){
       :`<button class="btn-icon" title="Kayıt Görüntüle" style="color:var(--text2)" onclick="goServisForm('${s.id}',true)">&#128065;</button>`;
     // Durum değiştir: sadece manuel durumlarda ve arşiv değilse
     const durumBtn=canEdit&&!isArsiv&&isManuelDurum
-      ?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showDurumMenu('${s.id}',this)"><img src="icons/status_icon.png" alt="Durum Değiştir" style="width:14px;height:14px;display:block"></button>`
+      ?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showDurumMenu('${s.id}',this)"><i class="ti ti-progress"></i></button>`
       :'';
     // Teklif butonu: S.F. Bekleniyor + teklif yok → Tekliflendir; teklif varsa → Teklife Git
     let teklifBtn='';
     if(!isArsiv){
-      if(canEdit&&isSFBekleniyor&&!hasTeklif)teklifBtn=`<button class="btn-icon" title="Tekliflendir" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')"><img src="icons/bill_icon.png" alt="Tekliflendir" style="width:14px;height:14px;display:block"></button>`;
-      else if(hasTeklif)teklifBtn=`<button class="btn-icon" title="Teklife Git" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')"><img src="icons/bill_icon.png" alt="Teklife Git" style="width:14px;height:14px;display:block"></button>`;
+      if(canEdit&&isSFBekleniyor&&!hasTeklif)teklifBtn=`<button class="btn-icon" title="Tekliflendir" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')"><i class="ti ti-file-invoice"></i></button>`;
+      else if(hasTeklif)teklifBtn=`<button class="btn-icon" title="Teklife Git" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')"><i class="ti ti-file-invoice"></i></button>`;
     }
     return`<tr${isArsiv?' style="opacity:0.8"':''}>
       <td><span class="kn-badge">${esc(s.kayitNo)}</span></td>
@@ -201,7 +201,7 @@ function renderTable(){
         ${durumBtn}
         ${teklifBtn}
         ${isArsiv&&state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" title="Aktife Al" style="color:var(--teal);border-color:rgba(45,212,191,.3)" onclick="arsivdenGeriAl('${s.id}')">↩</button>`:''}
-        ${state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('servis','${s.id}')"><img src="icons/delete.png" alt="Sil" style="width:14px;height:14px;display:block"></button>`:''}
+        ${state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('servis','${s.id}')"><i class="ti ti-trash"></i></button>`:''}
       </div></td>
     </tr>`;
   }).join('');

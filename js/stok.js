@@ -1265,7 +1265,7 @@ function renderBitmisCikislar(){
 }
 function setBitmisCikislarPage(p){_bitmisCikislarPage=p;renderBitmisCikislar();}
 
-function gobitmisCikisYeni(){
+function goBitmisCikisYeni(){
   var evrak=nextTicariCikisEvrak();
   if(document.getElementById('bc-evrak')) document.getElementById('bc-evrak').value=evrak;
   var dispEl=document.getElementById('bc-evrak-display');

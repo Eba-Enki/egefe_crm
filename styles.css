@@ -116,17 +116,9 @@ body{
   html.sidebar-collapsed .sb-logo{flex-direction:column;justify-content:center;gap:6px;padding:12px 8px}
   html.sidebar-collapsed #portal-switcher-wrap{display:none}
   html.sidebar-collapsed .sb-section{display:none}
-  html.sidebar-collapsed .sb-item{justify-content:center;padding:8px 0;position:relative}
+  html.sidebar-collapsed .sb-item{justify-content:center;padding:8px 0}
   html.sidebar-collapsed .sb-item>span:not(.icon){display:none}
   html.sidebar-collapsed .sb-item .badge{display:none}
-  html.sidebar-collapsed .sb-item:hover::after{
-    content:attr(data-tooltip);
-    position:absolute;left:100%;top:50%;transform:translateY(-50%);
-    margin-left:10px;white-space:nowrap;z-index:200;pointer-events:none;
-    background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--red);
-    border-radius:var(--radius-sm);padding:10px 15px;font-size:13px;font-family:var(--font-body);
-    color:var(--text);box-shadow:var(--shadow-md);
-  }
   html.sidebar-collapsed .sb-bottom{flex-direction:column;gap:6px}
   html.sidebar-collapsed .sb-user{justify-content:center;padding:6px;flex:0}
   html.sidebar-collapsed .sb-user:hover,

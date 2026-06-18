@@ -642,7 +642,7 @@ function loadSidebarCollapse(){
 loadSidebarCollapse();
 document.querySelectorAll('.sb-item').forEach(function(el){
   var label=el.querySelector('span:not(.icon):not(.badge)');
-  if(label)el.setAttribute('data-tooltip',label.textContent.trim());
+  if(label)el.title=label.textContent.trim();
 });
 
 // ════ TUTANAKLAR ════

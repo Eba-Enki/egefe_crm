@@ -183,7 +183,7 @@ function renderTeklifler(){
   var bulkBarEl=document.getElementById('teklif-bulk-bar');
   var selCount=canBulk?bulkCount('teklifArsiv'):0;
   if(bulkBarEl)bulkBarEl.innerHTML=selCount>0
-    ?'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin:0 16px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
+    ?'<div style="display:flex;align-items:center;gap:8px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
       +'<span style="font-size:12px;color:var(--text2)">'+selCount+' öğe seçildi</span>'
       +'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'teklif\',bulkSelectedIds(\'teklifArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
       +'</div>'

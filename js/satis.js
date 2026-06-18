@@ -161,7 +161,7 @@ function renderSiparisler(){
   var bulkBarEl=document.getElementById('siparis-bulk-bar');
   var selCount=canBulk?bulkCount('siparisArsiv'):0;
   if(bulkBarEl)bulkBarEl.innerHTML=selCount>0
-    ?'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin:0 16px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
+    ?'<div style="display:flex;align-items:center;gap:8px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
       +'<span style="font-size:12px;color:var(--text2)">'+selCount+' öğe seçildi</span>'
       +'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'siparis\',bulkSelectedIds(\'siparisArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
       +'</div>'
@@ -349,7 +349,7 @@ function renderFaturalar(){
   var bulkBarEl=document.getElementById('fatura-bulk-bar');
   var selCount=canBulk?bulkCount('faturaArsiv'):0;
   if(bulkBarEl)bulkBarEl.innerHTML=selCount>0
-    ?'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin:0 16px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
+    ?'<div style="display:flex;align-items:center;gap:8px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
       +'<span style="font-size:12px;color:var(--text2)">'+selCount+' öğe seçildi</span>'
       +'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'fatura\',bulkSelectedIds(\'faturaArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
       +'</div>'

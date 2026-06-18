@@ -382,9 +382,11 @@
       </div>
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Teklifler</span>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="card-title">Teklifler</span>
+            <div id="teklif-bulk-bar"></div>
+          </div>
         </div>
-        <div id="teklif-bulk-bar"></div>
         <div class="table-wrap">
           <table>
             <thead><tr><th id="th-teklif-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('teklifArsiv',this.checked,'renderTeklifler')"></th><th>Teklif No</th><th>Tarih</th><th>Kurum</th><th>Tutar</th><th>Durum</th><th id="th-sorumlu" style="display:none">Temsilci</th><th style="text-align:right;width:120px">İşlemler</th></tr></thead>
@@ -597,9 +599,11 @@
       </div>
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Siparişler</span>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="card-title">Siparişler</span>
+            <div id="siparis-bulk-bar"></div>
+          </div>
         </div>
-        <div id="siparis-bulk-bar"></div>
         <div class="table-wrap"><table>
           <thead><tr>
             <th id="th-siparis-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('siparisArsiv',this.checked,'renderSiparisler')"></th>
@@ -635,9 +639,11 @@
       </div>
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Faturalar</span>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="card-title">Faturalar</span>
+            <div id="fatura-bulk-bar"></div>
+          </div>
         </div>
-        <div id="fatura-bulk-bar"></div>
         <div class="table-wrap"><table>
           <thead><tr>
             <th id="th-fatura-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('faturaArsiv',this.checked,'renderFaturalar')"></th>
@@ -1391,11 +1397,11 @@
 <script src="js/ui.js?v=18"></script>
 <script src="js/dashboard.js?v=5"></script>
 <script src="js/servis.js?v=8"></script>
-<script src="js/teklif.js?v=8"></script>
+<script src="js/teklif.js?v=9"></script>
 <script src="js/tutanak.js?v=6"></script>
 <script src="js/musteri.js?v=12"></script>
 <script src="js/export.js?v=5"></script>
-<script src="js/satis.js?v=9"></script>
+<script src="js/satis.js?v=10"></script>
 <script src="js/stok.js?v=4"></script>
 <script src="js/init.js?v=8"></script>
 <!-- ─── FATURA MODAL ─── -->

@@ -6,7 +6,7 @@ $user = requireAuth($pdo);
 requirePortalAccess($user, 'servis');
 
 const GARANTI_DEGERLERI = ['Evet', 'Hayır'];
-const DURUM_DEGERLERI = ['Yeni Gelen', 'S.F. Bekleniyor', 'Onay Bekleniyor', 'Onaylandı', 'Kargoya Verildi', 'Tamamlandı', 'Reddedildi', 'İade Edildi'];
+const DURUM_DEGERLERI = ['Cihaz Kabul', 'Arıza Tespitinde', 'Yanıt Bekleniyor', 'Onarımda', 'Teslim Edildi', 'Reddedildi', 'İşlemsiz İade'];
 
 function servisResponse(array $row): array {
     return [

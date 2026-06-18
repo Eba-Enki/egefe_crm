@@ -237,7 +237,7 @@ async function loadTutanaklar(){
 }
 
 function openYeniTutanak(){
-  var yeniGelenler=state.servisler.filter(function(s){return s.durum==='Yeni Gelen';});
+  var yeniGelenler=state.servisler.filter(function(s){return s.durum==='Cihaz Kabul';});
   var listEl=document.getElementById('tutanak-secim-listesi');
   var bosEl=document.getElementById('tutanak-secim-bos');
   if(!yeniGelenler.length){
@@ -381,10 +381,10 @@ async function showTutanakPreview(tutanak, isNew, selectedIds){
     var ids=selectedIds||(tutanak.kalemler||[]).map(function(k){return k.servisId;}).filter(Boolean);
     ids.forEach(function(sid){
       var s=state.servisler.find(function(x){return x.id===sid;});
-      if(s&&s.durum==='Yeni Gelen')s.durum='S.F. Bekleniyor';
+      if(s&&s.durum==='Cihaz Kabul')s.durum='Arıza Tespitinde';
     });
     if(typeof renderTable==='function'&&document.getElementById('table-body'))renderTable();
-    toast('Tutanak kaydedildi. Seçilen kayıtlar S.F. Bekleniyor durumuna alındı.','success');
+    toast('Tutanak kaydedildi. Seçilen kayıtlar Arıza Tespitinde durumuna alındı.','success');
     renderTutanaklar();
   }
   openModal('modal-tutanak-onizleme');

@@ -267,7 +267,7 @@
           </div>
         </div>
         <div class="filter-extra">
-          <div class="filter-field"><label class="filter-field-label">Durum</label><div class="custom-select"><select id="f-durum" onchange="filterTable()" class="custom-select-native"><option value="">Tüm Durumlar</option><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Reddedildi</option><option>Gönderildi</option><option>İade Edildi</option></select><button type="button" class="custom-select-trigger" onclick="toggleCustomSelect(event,'f-durum')"><span class="custom-select-label">Tüm Durumlar</span><i class="ti ti-chevron-down"></i></button></div></div>
+          <div class="filter-field"><label class="filter-field-label">Durum</label><div class="custom-select"><select id="f-durum" onchange="filterTable()" class="custom-select-native"><option value="">Tüm Durumlar</option><option>Cihaz Kabul</option><option>Arıza Tespitinde</option><option>Yanıt Bekleniyor</option><option>Onarımda</option><option>Reddedildi</option><option>Teslim Edildi</option><option>İşlemsiz İade</option></select><button type="button" class="custom-select-trigger" onclick="toggleCustomSelect(event,'f-durum')"><span class="custom-select-label">Tüm Durumlar</span><i class="ti ti-chevron-down"></i></button></div></div>
           <div class="filter-field"><label class="filter-field-label">Garanti</label><div class="custom-select"><select id="f-garanti" onchange="filterTable()" class="custom-select-native"><option value="">Garanti Tümü</option><option value="Evet">Garantili</option><option value="Hayır">Garantisiz</option></select><button type="button" class="custom-select-trigger" onclick="toggleCustomSelect(event,'f-garanti')"><span class="custom-select-label">Garanti Tümü</span><i class="ti ti-chevron-down"></i></button></div></div>
           <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="f-ts" oninput="filterTable()"></div>
           <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="f-te" oninput="filterTable()"></div>
@@ -349,8 +349,7 @@
           <div class="form-section-title">Servis Bilgileri</div>
           <div class="form-grid">
             <div class="field"><label>Geliş Tarihi</label><input type="date" id="sf-gelisTarihi"></div>
-            <div class="field" id="sf-durum-field"><label>Durum</label><select id="sf-durum"><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Reddedildi</option><option>Gönderildi</option><option>İade Edildi</option></select></div>
-            <div class="field"><label>Kargo Tarihi</label><input type="date" id="sf-kargoTarihi"></div>
+<div class="field"><label>Kargo Tarihi</label><input type="date" id="sf-kargoTarihi"></div>
             <div class="field"><label>Kargo Firması</label><input type="text" id="sf-kargoFirmasi"></div>
             <div class="field"><label>Teslim Alan</label><input type="text" id="sf-teslimAlan"></div>
           </div>
@@ -1513,12 +1512,12 @@
     </div>
     <div class="modal-body" style="flex:1;overflow-y:auto">
       <div style="font-size:13px;color:var(--text3);margin-bottom:12px">
-        Tutanağa eklemek istediğiniz <strong style="color:var(--text)">"Yeni Gelen"</strong> kayıtları seçin:
+        Tutanağa eklemek istediğiniz <strong style="color:var(--text)">"Cihaz Kabul"</strong> kayıtları seçin:
       </div>
       <div id="tutanak-secim-listesi"></div>
       <div id="tutanak-secim-bos" style="display:none;text-align:center;padding:32px;color:var(--text3)">
         <div style="font-size:32px;margin-bottom:8px">📋</div>
-        <div>Yeni Gelen durumunda servis kaydı bulunamadı.</div>
+        <div>Cihaz Kabul durumunda servis kaydı bulunamadı.</div>
       </div>
     </div>
     <div class="modal-footer" style="justify-content:space-between">

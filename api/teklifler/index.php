@@ -4,7 +4,7 @@ require __DIR__ . '/../_bootstrap.php';
 
 $user = requireAuth($pdo);
 
-const DURUM_DEGERLERI = ['Taslak','Açık Teklif','Onay Bekleniyor','Onaylandı','Kabul Edildi','Siparişe Aktarıldı','Gönderildi','Reddedildi','İptal Edildi','Tamamlandı'];
+const DURUM_DEGERLERI = ['Taslak','Açık Teklif','İletildi','Kabul Edildi','Siparişe Aktarıldı','Gönderildi','Reddedildi','İptal Edildi','Kapandı'];
 const BIRIM_DEGERLERI = ['Adet','Saat','Gün','Parça'];
 const PARA_BIRIMLERI = ['TRY','USD','EUR','GBP'];
 

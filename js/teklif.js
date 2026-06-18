@@ -107,7 +107,7 @@ async function saveTeklif(andPrint=false){
   }
   if(payload.servisId){
     const si=state.servisler.findIndex(x=>x.id===payload.servisId);
-    if(si>=0&&!['Onaylandı','Tamamlandı','Kargoya Verildi'].includes(state.servisler[si].durum))updateServisDurum(payload.servisId,{durum:'Onay Bekleniyor'});
+    if(si>=0&&state.servisler[si].durum==='Arıza Tespitinde')updateServisDurum(payload.servisId,{durum:'Yanıt Bekleniyor'});
   }
   _formDirty=false;showPage('teklifler');
   if(andPrint&&savedId)setTimeout(()=>printTeklifById(savedId),300);
@@ -115,8 +115,8 @@ async function saveTeklif(andPrint=false){
 function saveTeklifAndPrint(){saveTeklif(true)}
 
 // ════ TEKLIF LIST ════
-const TSD={'Onay Bekleniyor':'badge-onay-bekl','Onaylandı':'badge-onaylandi','Taslak':'badge-sf','Gönderildi':'badge-onay-bekl','Açık Teklif':'badge-yeni','Kabul Edildi':'badge-onaylandi','Siparişe Aktarıldı':'badge-teslim','Reddedildi':'badge-reddedildi','İptal Edildi':'badge-reddedildi','Tamamlandı':'badge-teslim'};
-const TEKLIF_ARSIV_DURUMLAR=['Siparişe Aktarıldı','Reddedildi','İptal Edildi'];
+const TSD={'Taslak':'badge-sf','İletildi':'badge-onay-bekl','Kabul Edildi':'badge-onaylandi','Reddedildi':'badge-reddedildi','Kapandı':'badge-teslim','Açık Teklif':'badge-yeni','Siparişe Aktarıldı':'badge-teslim','Gönderildi':'badge-onay-bekl','İptal Edildi':'badge-reddedildi'};
+function getTeklifArsivDurumlari(){return currentPortal==='satis'?['Siparişe Aktarıldı','Reddedildi','İptal Edildi']:['Reddedildi','Kapandı'];}
 let teklifTab='aktif';
 function switchTeklifTab(tab){
   teklifTab=tab;
@@ -127,8 +127,9 @@ function switchTeklifTab(tab){
 }
 function renderTeklifler(){
   const tl=state.teklifler;
-  const aktif=tl.filter(t=>!TEKLIF_ARSIV_DURUMLAR.includes(t.durum));
-  const arsiv=tl.filter(t=>TEKLIF_ARSIV_DURUMLAR.includes(t.durum));
+  const arsivDurumlar=getTeklifArsivDurumlari();
+  const aktif=tl.filter(t=>!arsivDurumlar.includes(t.durum));
+  const arsiv=tl.filter(t=>arsivDurumlar.includes(t.durum));
   var aktifCntEl=document.getElementById('tab-teklif-aktif-count');
   var arsivCntEl=document.getElementById('tab-teklif-arsiv-count');
   if(aktifCntEl)aktifCntEl.textContent=aktif.length;
@@ -136,17 +137,17 @@ function renderTeklifler(){
   const isArsiv=teklifTab==='arsiv';
   const tabTl=isArsiv?arsiv:aktif;
   const isSatisPortal=currentPortal==='satis';
-  const ob=isSatisPortal?aktif.filter(t=>t.durum==='Taslak'):aktif.filter(t=>t.durum==='Onay Bekleniyor');
-  const on=isSatisPortal?aktif.filter(t=>t.durum==='Kabul Edildi'):aktif.filter(t=>t.durum==='Onaylandı');
+  const ob=isSatisPortal?aktif.filter(t=>t.durum==='Taslak'):aktif.filter(t=>t.durum==='İletildi');
+  const on=aktif.filter(t=>t.durum==='Kabul Edildi');
   const re=arsiv.filter(t=>t.durum==='Reddedildi');
   const ciro=on.reduce((a,t)=>a+calcTeklifToplam(t),0);
   var tsEl=document.getElementById('teklif-stats');
   if(tsEl)tsEl.innerHTML=`
     <div class="stat-card"><div class="stat-label">Toplam Teklif</div><div class="stat-value" style="color:var(--accent)">${aktif.length}</div></div>
-    <div class="stat-card"><div class="stat-label">${isSatisPortal?'Taslak':'Onay Bekleyen'}</div><div class="stat-value" style="color:var(--amber)">${ob.length}</div></div>
-    <div class="stat-card"><div class="stat-label">${isSatisPortal?'Kabul Edilen':'Onaylanan'}</div><div class="stat-value" style="color:var(--green)">${on.length}</div></div>
+    <div class="stat-card"><div class="stat-label">${isSatisPortal?'Taslak':'İletildi'}</div><div class="stat-value" style="color:var(--amber)">${ob.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Kabul Edilen</div><div class="stat-value" style="color:var(--green)">${on.length}</div></div>
     <div class="stat-card"><div class="stat-label">Reddedilen</div><div class="stat-value" style="color:var(--red)">${re.length}</div></div>
-    <div class="stat-card"><div class="stat-label">${isSatisPortal?'Kabul Cirosu':'Onaylı Ciro'}</div><div class="stat-value" style="color:var(--teal);font-size:17px">${fmtTL(ciro)}</div></div>
+    <div class="stat-card"><div class="stat-label">Kabul Cirosu</div><div class="stat-value" style="color:var(--teal);font-size:17px">${fmtTL(ciro)}</div></div>
   `;
   const tbody=document.getElementById('teklif-table-body');
   if(!tabTl.length){tbody.innerHTML='';document.getElementById('teklif-empty').style.display='';return}
@@ -202,7 +203,7 @@ function renderTeklifler(){
       <button class="btn-icon" title="Detay" style="color:var(--accent)" onclick="openTeklifDetay('${t.id}')"><i class="ti ti-info-circle"></i></button>
       ${canEdit&&currentPortal==='satis'&&t.durum==='Taslak'?`<button class="btn-icon" title="Müşteriye Gönder" style="color:var(--teal)" onclick="teklifGonder('${t.id}')"><i class="ti ti-send"></i></button>`:''}
       ${canEdit&&(currentPortal!=='satis'||t.durum==='Gönderildi')?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)"><i class="ti ti-progress"></i></button>`:''}
-      ${canEdit&&!TEKLIF_ARSIV_DURUMLAR.includes(t.durum)?`<button class="btn-icon" title="Düzenle" onclick="goTeklifForm('${t.id}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>`:''}
+      ${canEdit&&!getTeklifArsivDurumlari().includes(t.durum)?`<button class="btn-icon" title="Düzenle" onclick="goTeklifForm('${t.id}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>`:''}
       <button class="btn-icon" style="color:var(--accent)" title="PDF" onclick="printTeklifById('${t.id}')"><i class="ti ti-download"></i></button>
       ${canEdit&&currentPortal==='satis'&&t.durum==='Kabul Edildi'?`<button class="btn-icon" title="Sipariş Oluştur" style="color:var(--purple)" onclick="goSiparisForm('${t.id}')"><i class="ti ti-cube-send"></i></button>`:''}
       ${canEdit?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('teklif','${t.id}')"><i class="ti ti-trash"></i></button>`:''}
@@ -223,8 +224,9 @@ function changeTeklifDurum(id,yeni){
     const updated=await updateTeklifDurum(id,{durum:yeni});
     if(!updated)return;
     if(sid){
-      var servisDurum=yeni==='Tamamlandı'?'Gönderildi':yeni;
-      updateServisDurum(sid,{durum:servisDurum});
+      var TEKLIF_SERVIS_MAP={'Kabul Edildi':'Onarımda','Reddedildi':'Reddedildi','Kapandı':'Teslim Edildi'};
+      var servisDurum=TEKLIF_SERVIS_MAP[yeni];
+      if(servisDurum)updateServisDurum(sid,{durum:servisDurum});
     }
     renderTeklifler();renderDashboard();toast('Teklif "'+yeni+'" olarak güncellendi.','success');
   },{title:'Durum Güncelle',okText:'Evet',okClass:'btn-primary'});
@@ -239,10 +241,10 @@ function openTeklifDetay(id){
   const canEdit=state.currentUser?.rol!=='izleyici';
   document.getElementById('td-title').textContent=`${t.teklifNo} — Detay`;
   var _eb=document.getElementById('td-edit-btn');if(_eb)_eb.style.display=canEdit?'':'none';
-  const steps=[{l:'Servis',c:'done'},{l:'Teklif',c:'done'},{l:'Bekliyor',c:t.durum==='Onay Bekleniyor'?'active':'done'},{l:t.durum==='Reddedildi'?'Reddedildi':'Onaylandı',c:t.durum==='Onaylandı'?'done':t.durum==='Reddedildi'?'rejected':'pending'}];
+  const steps=[{l:'Servis',c:'done'},{l:'Teklif',c:'done'},{l:'Bekliyor',c:t.durum==='İletildi'?'active':'done'},{l:t.durum==='Reddedildi'?'Reddedildi':'Kabul Edildi',c:t.durum==='Kabul Edildi'?'done':t.durum==='Reddedildi'?'rejected':'pending'}];
   document.getElementById('td-body').innerHTML=`
     <div class="teklif-akis">${steps.map((st,i,a)=>`<div class="t-step"><div class="t-dot ${st.c}">${st.c==='done'?'✓':st.c==='active'?'⏳':st.c==='rejected'?'✕':'○'}</div><div class="t-step-lbl">${st.l}</div></div>${i<a.length-1?'<div class="t-arrow"><i class="ti ti-arrow-narrow-right"></i></div>':''}`).join('')}</div>
-    ${canEdit&&t.durum==='Onay Bekleniyor'?`<div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="changeTeklifDurum('${t.id}','Onaylandı');closeModal('modal-teklif-detay')">✓ Onayla</button><button class="btn btn-danger btn-sm" onclick="changeTeklifDurum('${t.id}','Reddedildi');closeModal('modal-teklif-detay')">✕ Reddet</button></div>`:''}
+    ${canEdit&&currentPortal==='servis'&&t.durum==='İletildi'?`<div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="changeTeklifDurum('${t.id}','Kabul Edildi');closeModal('modal-teklif-detay')">✓ Kabul Et</button><button class="btn btn-danger btn-sm" onclick="changeTeklifDurum('${t.id}','Reddedildi');closeModal('modal-teklif-detay')">✕ Reddet</button></div>`:''}
     <div class="separator"></div>
     <div class="info-grid" style="margin-bottom:14px">
       <div class="info-item"><div class="info-item-label">Teklif No</div><div class="info-item-val text-mono" style="color:var(--accent)">${esc(t.teklifNo)}</div></div>

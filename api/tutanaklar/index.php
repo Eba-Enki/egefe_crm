@@ -89,7 +89,7 @@ switch ($method) {
 
             if ($servisIds) {
                 $placeholders = implode(',', array_fill(0, count($servisIds), '?'));
-                $upd = $pdo->prepare("UPDATE service_records SET durum = 'S.F. Bekleniyor' WHERE durum = 'Yeni Gelen' AND id IN ($placeholders)");
+                $upd = $pdo->prepare("UPDATE service_records SET durum = 'Arıza Tespitinde' WHERE durum = 'Cihaz Kabul' AND id IN ($placeholders)");
                 $upd->execute($servisIds);
             }
 

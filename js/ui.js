@@ -274,7 +274,7 @@ function goServisForm(editId,viewOnly){
     document.getElementById('sf-garantiDurumu').value=s.garantiDurumu||'Hayır';
     document.getElementById('sf-aksesuar-diger').value=s.aksesuarDiger||'';
     document.getElementById('sf-gelisTarihi').value=s.gelisTarihi||'';
-    document.getElementById('sf-durum').value=s.durum||'Yeni Gelen';
+    var sfDurumElEdit=document.getElementById('sf-durum');if(sfDurumElEdit)sfDurumElEdit.value=s.durum||'Cihaz Kabul';
     document.getElementById('sf-kargoTarihi').value=s.kargoTarihi||'';
     document.getElementById('sf-kargoFirmasi').value=s.kargoFirmasi||'';
     document.getElementById('sf-teslimAlan').value=s.teslimAlan||'';
@@ -290,7 +290,7 @@ function goServisForm(editId,viewOnly){
     setSeriNolar(['']);
     document.getElementById('sf-garantiDurumu').value='Hayır';
     document.getElementById('sf-gelisTarihi').value=today();
-    var sfDurumEl=document.getElementById('sf-durum');if(sfDurumEl)sfDurumEl.value='Yeni Gelen';
+    var sfDurumEl=document.getElementById('sf-durum');if(sfDurumEl)sfDurumEl.value='Cihaz Kabul';
     sfAksesuarlar=[];
     unlockMusteriField('sf-kurumAdi');
   }

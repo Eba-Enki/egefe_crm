@@ -62,8 +62,7 @@ function showDurumMenu(sid, btnEl){
   var existing=document.getElementById('durum-menu-'+sid);
   if(existing){existing.remove();return;}
   document.querySelectorAll('.durum-quick-menu').forEach(function(m){m.remove();});
-  // Onay Bekleniyor ve üzeri durumlar yalnızca Teklifler menüsünden değiştirilir
-  const MANUEL_DURUMLAR=['Yeni Gelen','S.F. Bekleniyor','İade Edildi'];
+  const MANUEL_DURUMLAR=['İşlemsiz İade'];
   const s=state.servisler.find(x=>x.id===sid);
   if(!s)return;
   const menu=document.createElement('div');
@@ -92,12 +91,12 @@ function showDurumMenu(sid, btnEl){
 }
 
 function durumColor(d){
-  const map={'Yeni Gelen':'#2dd4bf','S.F. Bekleniyor':'#f59e0b','Onay Bekleniyor':'#a78bfa','Onaylandı':'#3d9bc4','Reddedildi':'#f87171','Gönderildi':'#4ade80','İade Edildi':'#f97316'};
+  const map={'Cihaz Kabul':'#2dd4bf','Arıza Tespitinde':'#f59e0b','Yanıt Bekleniyor':'#a78bfa','Onarımda':'#3d9bc4','Reddedildi':'#f87171','Teslim Edildi':'#4ade80','İşlemsiz İade':'#f97316'};
   return map[d]||'#888';
 }
 
 async function quickDurumChange(sid,yeni){
-  var MANUEL_DURUMLAR=['Yeni Gelen','S.F. Bekleniyor','İade Edildi'];
+  var MANUEL_DURUMLAR=['İşlemsiz İade'];
   if(!MANUEL_DURUMLAR.includes(yeni)){toast('Bu durum yalnızca Teklifler menüsünden değiştirilebilir.','info');return;}
   var updated=await updateServisDurum(sid,{durum:yeni});
   if(!updated)return;
@@ -105,7 +104,7 @@ async function quickDurumChange(sid,yeni){
   toast('Durum "'+yeni+'" olarak güncellendi.','success');
 }
 
-const ARSIV_DURUMLAR = ['Gönderildi', 'Reddedildi', 'İade Edildi'];
+const ARSIV_DURUMLAR = ['Teslim Edildi', 'Reddedildi', 'İşlemsiz İade'];
 let servisTab = 'aktif';
 
 function switchServisTab(tab) {
@@ -122,7 +121,7 @@ function switchServisTab(tab) {
 }
 
 async function arsivdenGeriAl(sid) {
-  var updated = await updateServisDurum(sid, {durum: 'Yeni Gelen'});
+  var updated = await updateServisDurum(sid, {durum: 'Cihaz Kabul'});
   if(!updated) return;
   renderTable();
   toast('Kayit aktife alindi.', 'success');
@@ -240,7 +239,7 @@ async function saveServis(){
   const musteriId=(document.getElementById('sf-musteri-id')||{}).value||'';
   if(!kurumVal)return toast('Kurum / müşteri zorunludur.','error');
   if(!musteriId)return toast('Lütfen müşteri listesinden seçin veya "+ Yeni Müşteri Ekle" ile ekleyin.','error');
-  const payload={musteriId,kurumAdi:toTitleCase(document.getElementById('sf-kurumAdi').value.trim()),ilgiliKisi:toTitleCase(document.getElementById('sf-ilgiliKisi').value.trim()),telefon:document.getElementById('sf-telefon').value.trim(),email:document.getElementById('sf-email').value.trim(),urunAdi:'',seriNo:getSeriNolar().join(', '),garantiDurumu:document.getElementById('sf-garantiDurumu').value,aksesuarlar:[...sfAksesuarlar],aksesuarDiger:document.getElementById('sf-aksesuar-diger').value.trim(),gelisTarihi:document.getElementById('sf-gelisTarihi').value,durum:document.getElementById('sf-durum').value||'Yeni Gelen',kargoTarihi:document.getElementById('sf-kargoTarihi').value,kargoFirmasi:toTitleCase(document.getElementById('sf-kargoFirmasi').value.trim()),teslimAlan:toTitleCase(document.getElementById('sf-teslimAlan').value.trim()),notlar:document.getElementById('sf-notlar').value};
+  const payload={musteriId,kurumAdi:toTitleCase(document.getElementById('sf-kurumAdi').value.trim()),ilgiliKisi:toTitleCase(document.getElementById('sf-ilgiliKisi').value.trim()),telefon:document.getElementById('sf-telefon').value.trim(),email:document.getElementById('sf-email').value.trim(),urunAdi:'',seriNo:getSeriNolar().join(', '),garantiDurumu:document.getElementById('sf-garantiDurumu').value,aksesuarlar:[...sfAksesuarlar],aksesuarDiger:document.getElementById('sf-aksesuar-diger').value.trim(),gelisTarihi:document.getElementById('sf-gelisTarihi').value,durum:editId?((state.servisler.find(function(x){return x.id===editId;})||{}).durum||'Cihaz Kabul'):'Cihaz Kabul',kargoTarihi:document.getElementById('sf-kargoTarihi').value,kargoFirmasi:toTitleCase(document.getElementById('sf-kargoFirmasi').value.trim()),teslimAlan:toTitleCase(document.getElementById('sf-teslimAlan').value.trim()),notlar:document.getElementById('sf-notlar').value};
   try{
     if(editId){
       const idx=state.servisler.findIndex(x=>x.id===editId);

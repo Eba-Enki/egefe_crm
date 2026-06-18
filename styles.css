@@ -11,6 +11,7 @@
   --purple:#a78bfa;--purple-soft:rgba(167,139,250,.12);
   --pink:#f472b6;--pink-soft:rgba(244,114,182,.12);
   --sidebar-w:250px;--sidebar-w-collapsed:64px;--radius:10px;--radius-sm:6px;
+  --sb-tooltip-delay:.4s;--sb-tooltip-font:13px var(--font-body);
   --font-display:'Nunito Sans',sans-serif;
   --font-body:'DM Sans',sans-serif;
   --font-mono:'DM Mono',monospace;
@@ -80,6 +81,7 @@ body{
 #sidebar-overlay.open{display:block}
 .sb-logo{border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;cursor:pointer}
 .sb-nav{flex:1;padding:6px 0;overflow-y:auto}
+.sb-settings-pin{padding:6px 0;border-top:1px solid var(--border)}
 .sb-section{padding:3px 18px 2px;font-size:10px;font-weight:500;color:var(--sb-section-color,var(--text3));text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
 .sb-item{
   display:flex;align-items:center;gap:10px;
@@ -116,9 +118,20 @@ body{
   html.sidebar-collapsed .sb-logo{flex-direction:column;justify-content:center;gap:6px;padding:12px 8px}
   html.sidebar-collapsed #portal-switcher-wrap{display:none}
   html.sidebar-collapsed .sb-section{display:none}
-  html.sidebar-collapsed .sb-item{justify-content:center;padding:8px 0}
+  html.sidebar-collapsed .sb-item{justify-content:center;padding:8px 0;border-left-width:0;position:relative}
   html.sidebar-collapsed .sb-item>span:not(.icon){display:none}
   html.sidebar-collapsed .sb-item .badge{display:none}
+  html.sidebar-collapsed .sb-item::after{
+    content:attr(data-tooltip);
+    position:absolute;left:100%;top:50%;transform:translateY(-50%);
+    margin-left:10px;white-space:nowrap;z-index:200;pointer-events:none;
+    background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:6px 10px;font:var(--sb-tooltip-font);color:var(--text);box-shadow:var(--shadow-md);
+    opacity:0;visibility:hidden;transition:opacity .12s,visibility .12s;
+  }
+  html.sidebar-collapsed .sb-item:hover::after{
+    opacity:1;visibility:visible;transition-delay:var(--sb-tooltip-delay);
+  }
   html.sidebar-collapsed .sb-bottom{flex-direction:column;gap:6px}
   html.sidebar-collapsed .sb-user{justify-content:center;padding:6px;flex:0}
   html.sidebar-collapsed .sb-user:hover,

@@ -596,9 +596,13 @@ function _updateSbLogoSrc(){
   var collapsed=document.documentElement.classList.contains('sidebar-collapsed');
   if(collapsed){
     img.src='brand_assets/logo_favicon_more_thicker.svg';
+    img.style.width='26px';
+    img.style.height='26px';
   } else {
     var isDark=(localStorage.getItem('ege_theme')||'dark')==='dark';
     img.src=isDark?'brand_assets/logo_if_bg_color.svg':'brand_assets/logo_if_bg_white.svg';
+    img.style.width='100%';
+    img.style.height='auto';
   }
   img.style.filter='none';
   img.style.mixBlendMode='normal';
@@ -638,7 +642,7 @@ function loadSidebarCollapse(){
 loadSidebarCollapse();
 document.querySelectorAll('.sb-item').forEach(function(el){
   var label=el.querySelector('span:not(.icon):not(.badge)');
-  if(label)el.title=label.textContent.trim();
+  if(label)el.setAttribute('data-tooltip',label.textContent.trim());
 });
 
 // ════ TUTANAKLAR ════

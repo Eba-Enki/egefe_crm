@@ -166,13 +166,14 @@ function renderTable(){
     thCheck.style.display=canBulk?'':'none';
     var thCb=thCheck.querySelector('input');if(thCb)thCb.checked=canBulk&&bulkAllChecked('servisArsiv');
   }
+  var bulkHeaderEl=document.getElementById('servis-bulk-header');
   var bulkBarEl=document.getElementById('servis-bulk-bar');
+  var bulkCountEl=document.getElementById('servis-bulk-count');
   var selCount=canBulk?bulkCount('servisArsiv'):0;
+  if(bulkHeaderEl)bulkHeaderEl.style.display=selCount>0?'':'none';
+  if(bulkCountEl)bulkCountEl.textContent=selCount>0?selCount+' öğe seçildi':'';
   if(bulkBarEl)bulkBarEl.innerHTML=selCount>0
-    ?'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin:0 16px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
-      +'<span style="font-size:12px;color:var(--text2)">'+selCount+' öğe seçildi</span>'
-      +'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'servis\',bulkSelectedIds(\'servisArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
-      +'</div>'
+    ?'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'servis\',bulkSelectedIds(\'servisArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
     :'';
   const tbody=document.getElementById('table-body');
   const emptyEl=document.getElementById('table-empty');

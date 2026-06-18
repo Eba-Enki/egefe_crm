@@ -194,6 +194,10 @@
         <span></span><span></span><span></span>
       </button>
       <div class="topbar-breadcrumb" id="breadcrumb"><span class="current" id="topbar-title">Dashboard</span><span class="portal-badge" id="portal-badge"></span></div>
+      <div id="topbar-tabs-servisler" class="topbar-tab-group hidden">
+        <button id="tab-aktif" class="servis-tab active" onclick="switchServisTab('aktif')">Aktif Servisler <span id="tab-aktif-count" class="tab-count"></span></button>
+        <button id="tab-arsiv" class="servis-tab" onclick="switchServisTab('arsiv')">Arşiv <span id="tab-arsiv-count" class="tab-count"></span></button>
+      </div>
       <div id="topbar-tabs-teklifler" class="topbar-tab-group hidden">
         <button id="tab-teklif-aktif" class="servis-tab active" onclick="switchTeklifTab('aktif')">Açık Teklifler <span id="tab-teklif-aktif-count" class="tab-count"></span></button>
         <button id="tab-teklif-arsiv" class="servis-tab" onclick="switchTeklifTab('arsiv')">Arşiv <span id="tab-teklif-arsiv-count" class="tab-count"></span></button>
@@ -253,10 +257,6 @@
 
     <!-- ═══ SERVİSLER ═══ -->
     <div id="page-servisler" class="page">
-      <div class="servis-tabs">
-        <button id="tab-aktif" class="servis-tab active" onclick="switchServisTab('aktif')">Aktif Servisler <span id="tab-aktif-count" class="tab-count"></span></button>
-        <button id="tab-arsiv" class="servis-tab" onclick="switchServisTab('arsiv')">Arşiv <span id="tab-arsiv-count" class="tab-count"></span></button>
-      </div>
       <div class="filter-bar">
         <input type="text" id="f-kurum" placeholder="Kurum / müşteri..." oninput="filterTable()">
         <input type="text" id="f-seri" placeholder="Seri no / kayıt no..." oninput="filterTable()">

@@ -157,7 +157,7 @@ function renderPortalSwitcher(){
   wrap.style.display='';
   var label=document.getElementById('portal-switch-label');
   var labels={servis:'Teknik Servis',satis:'Satış Pazarlama',stok:'Stok Yönetim'};
-  if(label)label.textContent=(labels[currentPortal]||currentPortal)+' ▾';
+  if(label)label.textContent=labels[currentPortal]||currentPortal;
 }
 
 function togglePortalSwitcher(e){

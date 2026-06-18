@@ -159,7 +159,7 @@ body{
 .topbar-actions{display:flex;align-items:center;gap:8px}
 .topbar-tab-group{display:flex;gap:4px;align-items:center;margin-left:8px}
 .topbar-tab-group .servis-tab{padding:5px 13px;font-size:12px}
-.content{padding:24px;padding-bottom:24px;flex:1}
+.content{padding:16px;flex:1}
 .hidden{display:none}
 
 /* ── BASE INPUT ── */
@@ -628,7 +628,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
   .sb-collapse-row{display:none}
 
   .topbar{padding:10px 16px}
-  .content{padding:14px}
+  .content{padding:9px}
 
   .form-grid,
   .form-grid-3,

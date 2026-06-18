@@ -24,8 +24,7 @@ function toggleCustomSelect(e,selectId){
   }
   panel.innerHTML=Array.prototype.map.call(sel.options,function(opt){
     var isActive=opt.value===sel.value;
-    return '<div onclick="selectCustomOption(event,\''+selectId+'\',\''+String(opt.value).replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:4px;cursor:pointer;background:'+(isActive?'var(--bg3)':'transparent')+'" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\''+(isActive?'var(--bg3)':'transparent')+'\'">'
-      +'<span style="width:14px;text-align:center;color:var(--accent);font-size:11px">'+(isActive?'✓':'')+'</span>'
+    return '<div onclick="selectCustomOption(event,\''+selectId+'\',\''+String(opt.value).replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;padding:9px 12px;border-radius:4px;cursor:pointer;background:'+(isActive?'var(--bg3)':'transparent')+'" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\''+(isActive?'var(--bg3)':'transparent')+'\'">'
       +'<span style="font-size:12px;font-weight:'+(isActive?'600':'400')+';color:'+(isActive?'var(--text)':'var(--text2)')+'">'+opt.textContent+'</span>'
     +'</div>';
   }).join('');

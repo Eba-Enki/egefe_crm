@@ -170,8 +170,7 @@ function togglePortalSwitcher(e){
     var labels={servis:'Teknik Servis Portalı',satis:'Satış Pazarlama Portalı',stok:'Stok Yönetim Portalı'};
     panel.innerHTML='<div style="padding:4px">'+authorized.map(function(p){
       var isActive=p===currentPortal;
-      return '<div '+(isActive?'':'onclick="switchToPortal(\''+p+'\')"')+' style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:4px;cursor:'+(isActive?'default':'pointer')+';background:'+(isActive?'var(--bg3)':'transparent')+'" '+(isActive?'':' onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'transparent\'"')+'>'
-        +'<span style="width:14px;text-align:center;color:var(--accent);font-size:11px">'+(isActive?'✓':'')+'</span>'
+      return '<div '+(isActive?'':'onclick="switchToPortal(\''+p+'\')"')+' style="display:flex;align-items:center;padding:9px 12px;border-radius:4px;cursor:'+(isActive?'default':'pointer')+';background:'+(isActive?'var(--bg3)':'transparent')+'" '+(isActive?'':' onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'transparent\'"')+'>'
         +'<span style="font-size:12px;font-weight:'+(isActive?'600':'400')+';color:'+(isActive?'var(--text)':'var(--text2)')+'">'+labels[p]+'</span>'
       +'</div>';
     }).join('')+'</div>';

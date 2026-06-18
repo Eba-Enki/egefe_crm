@@ -118,7 +118,7 @@ body{
   html.sidebar-collapsed .sb-logo{flex-direction:column;justify-content:center;gap:6px;padding:12px 8px}
   html.sidebar-collapsed #portal-switcher-wrap{display:none}
   html.sidebar-collapsed .sb-section{display:none}
-  html.sidebar-collapsed .sb-item{justify-content:center;padding:8px 0;border-left-width:0;position:relative}
+  html.sidebar-collapsed .sb-item{justify-content:center;padding:8px 0;position:relative}
   html.sidebar-collapsed .sb-item>span:not(.icon){display:none}
   html.sidebar-collapsed .sb-item .badge{display:none}
   html.sidebar-collapsed .sb-item::after{

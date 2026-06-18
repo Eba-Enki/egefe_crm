@@ -179,6 +179,8 @@ function showPage(id,skipRender){
     if(!btn)return;
     btn.style.display=(id===page&&canWrite)?'':'none';
   });
+  const exportBtn=document.getElementById('topbar-export-btn');
+  if(exportBtn)exportBtn.style.display=(id==='ayarlar')?'':'none';
   document.querySelectorAll('.topbar-tab-group').forEach(function(g){g.style.display='none';});
   var _tg={servisler:'topbar-tabs-servisler',teklifler:'topbar-tabs-teklifler',siparisler:'topbar-tabs-siparisler',faturalar:'topbar-tabs-faturalar','ham-stok':'topbar-tabs-hamstok','bitmis-stok':'topbar-tabs-bitmis-stok'}[id];
   if(_tg){var _tgEl=document.getElementById(_tg);if(_tgEl)_tgEl.style.display='flex';}

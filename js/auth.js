@@ -240,6 +240,50 @@ function applyUser(u){
   document.querySelectorAll('.can-write').forEach(function(el){el.style.display=u.rol==='izleyici'?'none':'';});
 }
 
+// ─── PROFİLİM (kendi bilgilerim / şifre değiştir) ─────────────────────────────
+
+function openProfileModal(){
+  var u=state.currentUser;
+  if(!u)return;
+  var rolLabel={yönetici:'Yönetici','kullanıcı':'Kullanıcı',izleyici:'İzleyici',admin:'Yönetici',teknisyen:'Kullanıcı'}[u.rol]||u.rol;
+  document.getElementById('pf-ad').textContent=u.ad;
+  document.getElementById('pf-username').textContent=u.username;
+  document.getElementById('pf-rol').textContent=rolLabel;
+  var songirisEl=document.getElementById('pf-songiris');
+  if(songirisEl){
+    songirisEl.textContent=u.sonGiris?new Date(u.sonGiris.replace(' ','T')).toLocaleString('tr-TR'):'—';
+  }
+  document.getElementById('pf-current-pass').value='';
+  document.getElementById('pf-new-pass').value='';
+  document.getElementById('pf-new-pass2').value='';
+  var errEl=document.getElementById('pf-pass-error');
+  errEl.style.display='none';
+  errEl.textContent='';
+  openModal('modal-profile');
+}
+
+async function saveOwnPassword(){
+  var current=document.getElementById('pf-current-pass').value;
+  var n1=document.getElementById('pf-new-pass').value;
+  var n2=document.getElementById('pf-new-pass2').value;
+  var errEl=document.getElementById('pf-pass-error');
+  var showErr=function(msg){errEl.textContent=msg;errEl.style.display='block';};
+  errEl.style.display='none';
+
+  if(!current||!n1||!n2) return showErr('Tüm şifre alanları zorunludur.');
+  if(n1.length<4) return showErr('Yeni şifre en az 4 karakter olmalıdır.');
+  if(n1!==n2) return showErr('Yeni şifreler birbiriyle eşleşmiyor.');
+  if(n1===current) return showErr('Yeni şifre, mevcut şifreyle aynı olamaz.');
+
+  try{
+    await apiPut('auth/profile.php',{currentPassword:current,newPassword:n1});
+  }catch(e){
+    return showErr(e.message||'Şifre güncellenemedi.');
+  }
+  closeModal('modal-profile');
+  toast('Şifreniz güncellendi.','success');
+}
+
 function _applyPageRestrictions(u){
   if(!u) return;
   var isAdmin=u.rol==='yönetici'||u.rol==='admin';

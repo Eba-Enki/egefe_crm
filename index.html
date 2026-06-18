@@ -174,7 +174,7 @@
     <div class="sb-item stok-only admin-only" data-page="stok-ayarlar" style="display:none" onclick="showPage('stok-ayarlar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Ayarlar</span></div>
   </nav>
   <div class="sb-bottom">
-    <div class="sb-user">
+    <div class="sb-user" onclick="openProfileModal()" title="Profilim">
       <div class="sb-avatar" id="sb-avatar">?</div>
       <div style="min-width:0"><div class="sb-username" id="sb-username">-</div><div class="sb-role" id="sb-role-text">-</div></div>
     </div>
@@ -1356,6 +1356,32 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-fatura-edit')">İptal</button>
       <button class="btn btn-primary" onclick="saveFaturaDuzenle()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PROFİLİM MODAL ─── -->
+<div class="modal-overlay" id="modal-profile">
+  <div class="modal-card" style="max-width:420px">
+    <div class="modal-header"><div class="modal-title">Profilim</div><button class="modal-close" onclick="closeModal('modal-profile')">✕</button></div>
+    <div class="modal-body">
+      <div class="info-grid" style="margin-bottom:18px">
+        <div class="info-item"><div class="info-item-label">Ad Soyad</div><div class="info-item-val" id="pf-ad">-</div></div>
+        <div class="info-item"><div class="info-item-label">Kullanıcı Adı</div><div class="info-item-val">@<span id="pf-username">-</span></div></div>
+        <div class="info-item"><div class="info-item-label">Rol</div><div class="info-item-val" id="pf-rol">-</div></div>
+        <div class="info-item"><div class="info-item-label">Son Giriş</div><div class="info-item-val td-mono" id="pf-songiris">-</div></div>
+      </div>
+      <div class="form-section-title">Şifre Değiştir</div>
+      <div class="form-grid">
+        <div class="field form-full"><label>Mevcut Şifre <span class="req">*</span></label><input type="password" id="pf-current-pass" autocomplete="current-password"></div>
+        <div class="field"><label>Yeni Şifre <span class="req">*</span></label><input type="password" id="pf-new-pass" autocomplete="new-password"></div>
+        <div class="field"><label>Yeni Şifre (Tekrar) <span class="req">*</span></label><input type="password" id="pf-new-pass2" autocomplete="new-password"></div>
+      </div>
+      <div id="pf-pass-error" style="display:none;color:var(--red);font-size:12px;margin-top:8px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-profile')">Kapat</button>
+      <button class="btn btn-primary" onclick="saveOwnPassword()">Şifreyi Güncelle</button>
     </div>
   </div>
 </div>

@@ -602,4 +602,23 @@ function loadTheme(){
 }
 loadTheme();
 
+// ════ SIDEBAR COLLAPSE ════
+function _updateSidebarCollapseUI(collapsed){
+  var btn=document.getElementById('sb-collapse-btn');
+  if(!btn)return;
+  btn.innerHTML=collapsed?'<i class="ti ti-layout-sidebar-left-expand"></i>':'<i class="ti ti-layout-sidebar-left-collapse"></i>';
+  btn.title=collapsed?'Kenar Çubuğunu Genişlet':'Kenar Çubuğunu Daralt';
+}
+function toggleSidebarCollapse(){
+  var collapsed=document.documentElement.classList.toggle('sidebar-collapsed');
+  localStorage.setItem('ege_sidebar_collapsed',collapsed?'1':'0');
+  _updateSidebarCollapseUI(collapsed);
+}
+function loadSidebarCollapse(){
+  var collapsed=localStorage.getItem('ege_sidebar_collapsed')==='1';
+  document.documentElement.classList.toggle('sidebar-collapsed',collapsed);
+  _updateSidebarCollapseUI(collapsed);
+}
+loadSidebarCollapse();
+
 // ════ TUTANAKLAR ════

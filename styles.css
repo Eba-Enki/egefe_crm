@@ -364,7 +364,7 @@ input.musteri-locked{background:var(--bg4)!important;cursor:default;padding-righ
 .filter-bar input:focus-visible,.filter-bar select:focus-visible{outline:none}
 .filter-bar input{width:150px}
 .filter-toggle-btn.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-.btn-icon.filter-toggle-btn{font-size:25px;line-height:1}
+.btn-icon.filter-toggle-btn{font-size:16px;line-height:1}
 .filter-search{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto}
 
 /* ── TEKLIF ITEMS ── */

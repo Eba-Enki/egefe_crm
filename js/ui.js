@@ -593,20 +593,12 @@ function setTheme(t){
   document.documentElement.setAttribute('data-theme',t);
   localStorage.setItem('ege_theme',t);
   document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.id==='btn-theme-'+t));
-  const btn=document.getElementById('topbar-theme-btn');
-  if(btn)btn.textContent=t==='dark'?'🌙':'☀';
-  applyLogoForTheme(t);
   applyLogoForTheme(t);
 }
 function loadTheme(){
   const t=localStorage.getItem('ege_theme')||'dark';
   document.documentElement.setAttribute('data-theme',t);
   document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.id==='btn-theme-'+t));
-  setTimeout(()=>{const btn=document.getElementById('topbar-theme-btn');if(btn)btn.textContent=t==='dark'?'🌙':'☀';},0);
-}
-function toggleTheme(){
-  const cur=document.documentElement.getAttribute('data-theme')||'dark';
-  setTheme(cur==='dark'?'light':'dark');
 }
 loadTheme();
 

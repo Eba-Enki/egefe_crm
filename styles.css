@@ -125,8 +125,7 @@ body{
   html.sidebar-collapsed .sb-user{justify-content:center;padding:6px;flex:0}
   html.sidebar-collapsed .sb-user:hover,
   html.sidebar-collapsed .sb-user:active{background:none}
-  html.sidebar-collapsed .sb-username,
-  html.sidebar-collapsed .sb-role{display:none}
+  html.sidebar-collapsed .sb-user-meta{display:none}
   html.sidebar-collapsed .sb-avatar{width:16px;height:16px;font-size:8px}
   html.sidebar-collapsed .sb-logout-btn i{font-size:16px}
 }

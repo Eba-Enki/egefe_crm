@@ -118,20 +118,9 @@ body{
   html.sidebar-collapsed .sb-logo{flex-direction:column;justify-content:center;gap:6px;padding:12px 8px}
   html.sidebar-collapsed #portal-switcher-wrap{display:none}
   html.sidebar-collapsed .sb-section{display:none}
-  html.sidebar-collapsed .sb-item{justify-content:center;padding:8px 0;position:relative}
+  html.sidebar-collapsed .sb-item{justify-content:center;padding:8px 0}
   html.sidebar-collapsed .sb-item>span:not(.icon){display:none}
   html.sidebar-collapsed .sb-item .badge{display:none}
-  html.sidebar-collapsed .sb-item::after{
-    content:attr(data-tooltip);
-    position:absolute;left:100%;top:50%;transform:translateY(-50%);
-    margin-left:10px;white-space:nowrap;z-index:200;pointer-events:none;
-    background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);
-    padding:6px 10px;font:var(--sb-tooltip-font);color:var(--text);box-shadow:var(--shadow-md);
-    opacity:0;visibility:hidden;transition:opacity .12s,visibility .12s;
-  }
-  html.sidebar-collapsed .sb-item:hover::after{
-    opacity:1;visibility:visible;transition-delay:var(--sb-tooltip-delay);
-  }
   html.sidebar-collapsed .sb-bottom{flex-direction:column;gap:6px}
   html.sidebar-collapsed .sb-user{justify-content:center;padding:6px;flex:0}
   html.sidebar-collapsed .sb-user:hover,
@@ -141,6 +130,13 @@ body{
   html.sidebar-collapsed .sb-avatar{width:16px;height:16px;font-size:8px}
   html.sidebar-collapsed .sb-logout-btn i{font-size:16px}
 }
+#sb-tooltip{
+  position:fixed;z-index:500;white-space:nowrap;pointer-events:none;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:6px 10px;font:var(--sb-tooltip-font);color:var(--text);box-shadow:var(--shadow-md);
+  opacity:0;visibility:hidden;transition:opacity .12s,visibility .12s;
+}
+#sb-tooltip.show{opacity:1;visibility:visible;transition-delay:var(--sb-tooltip-delay)}
 
 /* ── HAMBURGER ── */
 .hamburger{

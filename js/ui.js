@@ -643,6 +643,21 @@ loadSidebarCollapse();
 document.querySelectorAll('.sb-item').forEach(function(el){
   var label=el.querySelector('span:not(.icon):not(.badge)');
   if(label)el.setAttribute('data-tooltip',label.textContent.trim());
+  el.addEventListener('mouseenter',function(){
+    if(!document.documentElement.classList.contains('sidebar-collapsed'))return;
+    var text=el.getAttribute('data-tooltip');
+    if(!text)return;
+    var tip=document.getElementById('sb-tooltip');
+    var r=el.getBoundingClientRect();
+    tip.textContent=text;
+    tip.style.left=r.right+10+'px';
+    tip.style.top=(r.top+r.height/2)+'px';
+    tip.style.transform='translateY(-50%)';
+    tip.classList.add('show');
+  });
+  el.addEventListener('mouseleave',function(){
+    document.getElementById('sb-tooltip').classList.remove('show');
+  });
 });
 
 // ════ TUTANAKLAR ════

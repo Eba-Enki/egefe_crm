@@ -373,7 +373,7 @@ function goUrunForm(editId){
   var urunAdiEl=document.getElementById('uf-urunAdi');
   if(urunAdiEl)urunAdiEl.placeholder=currentPortal==='satis'?'Alkolmetre, Kamera, Yazıcı...':'Kalibrasyon, Tamir, Yazılım Güncelleme...';
   const katEl=document.getElementById('uf-kategori');
-  if(katEl){katEl.innerHTML='<option value="">— Seçin —</option>'+(state.urunKategoriler||[]).map(k=>`<option value="${k}">${k}</option>`).join('');katEl.value=u?.kategori||'';}
+  if(katEl){katEl.innerHTML='<option value="">— Seçin —</option>'+((state.settings&&state.settings.urunKategoriler)||[]).map(k=>`<option value="${k}">${k}</option>`).join('');katEl.value=u?.kategori||'';}
   showPage('urun-form',true);
 }
 // ════ TITLE CASE (Türkçe destekli) ════

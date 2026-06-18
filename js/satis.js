@@ -3,8 +3,8 @@ var siparislerPage=1;var _siparisFilterHash='';
 function setSiparislerPage(n){siparislerPage=n;renderSiparisler();}
 var faturalarPage=1;var _faturaFilterHash='';
 function setFaturalarPage(n){faturalarPage=n;renderFaturalar();}
-const SP_DURUM_LIST=['Yeni Sipariş','Hazırlanıyor','Kısmi Sevkiyat','Tamamlandı','İptal'];
-const SP_DURUM_CSS={'Yeni Sipariş':'badge-onay-bekl','Hazırlanıyor':'badge-yeni','Kısmi Sevkiyat':'badge-sf','Tamamlandı':'badge-teslim','İptal':'badge-reddedildi','Fatura Edildi':'badge-onaylandi'};
+const SP_DURUM_LIST=['Hazırlanıyor','Kısmi Teslimat','Teslim Edildi','İptal'];
+const SP_DURUM_CSS={'Hazırlanıyor':'badge-yeni','Kısmi Teslimat':'badge-sf','Teslim Edildi':'badge-teslim','İptal':'badge-reddedildi','Fatura Edildi':'badge-onaylandi'};
 const ARSIV_SIPARISLER=['Fatura Edildi','İptal'];
 const ARSIV_FATURALAR=['Ödendi'];
 let siparisTab='aktif';
@@ -62,17 +62,16 @@ async function quickSiparisDurumChange(sid,yeni){
   if(!updated)return;
   if(yeni==='İptal'&&tekId&&oncekiDurum!=='İptal'){
     var ti=state.teklifler.findIndex(function(x){return x.id===tekId;});
-    if(ti>=0)state.teklifler[ti].durum='İptal Edildi';
+    if(ti>=0)state.teklifler[ti].durum='Reddedildi';
   }
   renderSiparisler();
   toast('Sipariş durumu: '+yeni,'success');
 }
 
 var SP_GECIS={
-  'Yeni Sipariş':['Hazırlanıyor','İptal'],
-  'Hazırlanıyor':['Kısmi Sevkiyat','Tamamlandı','İptal'],
-  'Kısmi Sevkiyat':['Tamamlandı','İptal'],
-  'Tamamlandı':['İptal']
+  'Hazırlanıyor':['Kısmi Teslimat','Teslim Edildi','İptal'],
+  'Kısmi Teslimat':['Teslim Edildi','İptal'],
+  'Teslim Edildi':[]
 };
 function showSiparisDurumMenu(sid,btnEl){
   document.querySelectorAll('.durum-quick-menu').forEach(function(m){m.remove();});
@@ -98,7 +97,7 @@ function showTeklifDurumMenu(tid,btnEl){
   document.querySelectorAll('.durum-quick-menu').forEach(function(m){m.remove();});
   var t=state.teklifler.find(function(x){return x.id===tid;});
   if(!t)return;
-  var SATIS_DUR=['Kabul Edildi','Reddedildi','İptal Edildi'];
+  var SATIS_DUR=['Reddedildi'];
   var SERVIS_DUR=['İletildi','Kabul Edildi','Reddedildi','Kapandı'];
   var durList=currentPortal==='satis'?SATIS_DUR:SERVIS_DUR;
   var menu=document.createElement('div');
@@ -106,7 +105,7 @@ function showTeklifDurumMenu(tid,btnEl){
   menu.style.cssText='position:fixed;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;z-index:600;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5);overflow:hidden;';
   menu.innerHTML=durList.map(function(d){
     var active=d===t.durum;
-    var needsReason=(d==='Reddedildi'||d==='İptal Edildi')&&!active;
+    var needsReason=d==='Reddedildi'&&!active;
     var action=needsReason
       ?'document.querySelectorAll(\'.durum-quick-menu\').forEach(function(m){m.remove();});openRedNedenModal(\''+tid+'\',\''+d+'\');'
       :'changeTeklifDurum(\''+tid+'\',\''+d+'\');document.querySelectorAll(\'.durum-quick-menu\').forEach(function(m){m.remove();});';
@@ -186,10 +185,10 @@ function renderSiparisler(){
       +'<td style="text-align:right"><div class="action-row">'
       +'<button class="btn-icon" title="Detay" style="color:var(--accent)" onclick="openSiparisDetay(\''+s.id+'\')"><i class="ti ti-info-circle"></i></button>'
       +(ARSIV_SIPARISLER.indexOf(s.durum)<0?'<button class="btn-icon" title="Sipariş Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')"><i class="ti ti-printer"></i></button>':'')
-      +(canEdit&&['Hazırlanıyor','Kısmi Sevkiyat'].indexOf(s.durum)>=0
-        ?'<button class="btn-icon" title="Sevkiyat" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')"><i class="ti ti-truck-delivery"></i></button>'
+      +(canEdit&&['Hazırlanıyor','Kısmi Teslimat'].indexOf(s.durum)>=0
+        ?'<button class="btn-icon" title="Teslimat Gir" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')"><i class="ti ti-truck-delivery"></i></button>'
         :'')
-      +(canEdit&&['Kısmi Sevkiyat','Tamamlandı'].indexOf(s.durum)>=0?'<button class="btn-icon" title="Faturaya Aktar" style="color:var(--amber)" onclick="openFaturaModal(\''+s.id+'\')"><i class="ti ti-file-invoice"></i></button>':'')
+      +(canEdit&&ARSIV_SIPARISLER.indexOf(s.durum)<0?'<button class="btn-icon" title="Faturaya Aktar" style="color:var(--amber)" onclick="openFaturaModal(\''+s.id+'\')"><i class="ti ti-file-invoice"></i></button>':'')
       +(canEdit&&SP_GECIS[s.durum]&&SP_GECIS[s.durum].length?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)"><i class="ti ti-progress"></i></button>':'')
       +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'siparis\',\''+s.id+'\')"><i class="ti ti-trash"></i></button>':'')
       +'</div></td>'
@@ -211,17 +210,49 @@ function openFaturaModal(sipId){
   if(el_fn)el_fn.value='';
   if(el_ft)el_ft.value=today();
   if(el_vt)el_vt.value='';
-  if(sp){
-    var cur={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[sp.paraBirimi||'TRY']||'₺';
-    var toplam=(sp.satirlar||[]).reduce(function(a,i){return a+i.miktar*(i.birimFiyat||0);},0);
-    var ozetEl=document.getElementById('sp-fatura-ozet');
-    if(ozetEl)ozetEl.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">'
-      +'<div><div style="font-size:10px;color:var(--text3);letter-spacing:.05em">SİPARİŞ</div><div style="font-weight:600">'+esc(sp.siparisNo)+'</div></div>'
-      +'<div style="flex:1"><div style="font-size:10px;color:var(--text3);letter-spacing:.05em">MÜŞTERİ</div><div style="font-weight:500">'+esc(sp.kurum||'')+'</div></div>'
-      +'<div style="text-align:right"><div style="font-size:10px;color:var(--text3);letter-spacing:.05em">TUTAR</div><div style="font-weight:700;color:var(--amber)">'+cur+' '+fmtNum(toplam)+'</div></div>'
-      +'</div>';
-  }
+  if(!sp)return;
+  var cur={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[sp.paraBirimi||'TRY']||'₺';
+  var ozetEl=document.getElementById('sp-fatura-ozet');
+  if(ozetEl)ozetEl.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px">'
+    +'<div><div style="font-size:10px;color:var(--text3);letter-spacing:.05em">SİPARİŞ</div><div style="font-weight:600">'+esc(sp.siparisNo)+'</div></div>'
+    +'<div style="flex:1"><div style="font-size:10px;color:var(--text3);letter-spacing:.05em">MÜŞTERİ</div><div style="font-weight:500">'+esc(sp.kurum||'')+'</div></div>'
+    +'</div>'
+    +(sp.durum==='Hazırlanıyor'?'<div style="font-size:11px;color:var(--amber);margin-bottom:10px;padding:6px 10px;background:rgba(var(--amber-rgb,245,158,11),0.1);border-radius:6px">⚠ Ürün henüz gönderilmedi — ön fatura oluşturuluyor</div>':'')
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:4px">'
+    +'<thead><tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:4px 6px;color:var(--text3)">Kalem</th><th style="text-align:center;padding:4px 6px;color:var(--text3)">Sipariş</th><th style="text-align:center;padding:4px 6px;color:var(--text3)">Fatural.</th><th style="text-align:center;padding:4px 6px;color:var(--text3)">Kalan</th><th style="text-align:center;padding:4px 6px;color:var(--text3)">Bu Fatura</th></tr></thead>'
+    +'<tbody>'+(sp.satirlar||[]).map(function(k,i){
+      var faturalanan=k.faturalanan||0;
+      var kalan=k.miktar-faturalanan;
+      var sp2=k.seciliParametreler||[];
+      var base=sp2.length?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim()):k.aciklama||'';
+      return '<tr style="border-bottom:1px solid var(--border)">'
+        +'<td style="padding:5px 6px">'+esc(base)+'</td>'
+        +'<td style="text-align:center;padding:5px 6px">'+k.miktar+' '+esc(k.birim||'Adet')+'</td>'
+        +'<td style="text-align:center;padding:5px 6px;color:var(--text3)">'+faturalanan+'</td>'
+        +'<td style="text-align:center;padding:5px 6px;color:'+(kalan>0?'var(--amber)':'var(--text3)')+'">'+kalan+'</td>'
+        +'<td style="text-align:center;padding:5px 6px">'
+        +(kalan>0?'<input type="number" id="fm-fat-'+i+'" min="0" max="'+kalan+'" value="'+kalan+'" step="0.001" style="width:70px;padding:3px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px" oninput="updateFaturaModalToplam()">':'<span style="color:var(--green)">✓</span>')
+        +'</td>'
+        +'</tr>';
+    }).join('')+'</tbody></table>'
+    +'<div style="text-align:right;font-size:12px;color:var(--text3);margin-top:4px">Bu fatura toplamı: <b id="fm-fat-toplam" style="color:var(--amber)">'+cur+' 0</b></div>';
   openModal('modal-fatura');
+  // Başlangıç toplamını hesapla
+  updateFaturaModalToplam();
+}
+
+function updateFaturaModalToplam(){
+  var sp=(state.siparisler||[]).find(function(x){return x.id===_activeFaturaSpId;});
+  if(!sp)return;
+  var cur={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[sp.paraBirimi||'TRY']||'₺';
+  var toplam=0;
+  (sp.satirlar||[]).forEach(function(k,i){
+    var inp=document.getElementById('fm-fat-'+i);
+    if(!inp)return;
+    toplam+=(parseFloat(inp.value)||0)*(k.birimFiyat||0);
+  });
+  var el=document.getElementById('fm-fat-toplam');
+  if(el)el.textContent=cur+' '+fmtNum(toplam);
 }
 
 async function saveFatura(){
@@ -230,9 +261,15 @@ async function saveFatura(){
   if(!fatNo||!fatTar){toast('Fatura No ve Tarih zorunludur.','error');return;}
   var sp=(state.siparisler||[]).find(function(x){return x.id===_activeFaturaSpId;});
   if(!sp)return;
+  // Her kalem için faturalanacak miktarları topla
+  var satirFaturalananlar=(sp.satirlar||[]).map(function(k,i){
+    var inp=document.getElementById('fm-fat-'+i);
+    return inp?parseFloat(inp.value)||0:0;
+  });
   var payload={
     siparisId:sp.id,faturaNo:fatNo,faturaTarihi:fatTar,
-    vadeTarihi:(document.getElementById('fm-vadeTarihi')||{}).value||''
+    vadeTarihi:(document.getElementById('fm-vadeTarihi')||{}).value||'',
+    satirFaturalananlar:satirFaturalananlar
   };
   var res;
   try{
@@ -243,8 +280,9 @@ async function saveFatura(){
   }
   if(!state.faturalar)state.faturalar=[];
   state.faturalar.push(res.fatura);
-  var si=(state.siparisler||[]).findIndex(function(x){return x.id===_activeFaturaSpId;});
-  if(si>=0)state.siparisler[si].durum='Fatura Edildi';
+  // Siparişi yeniden yükle (faturalanan + durum güncellenmiş olabilir)
+  var siRes=await apiGet('siparisler');
+  if(siRes&&siRes.siparisler)state.siparisler=siRes.siparisler;
   closeModal('modal-fatura');
   renderSiparisler();renderFaturalar();
   toast('Fatura oluşturuldu: '+fatNo,'success');
@@ -289,11 +327,14 @@ async function saveKismiTeslim(){
       tamam=false;
     }
   });
-  var updated=await updateSiparisDurum(_activeKismiSpId,{satirlar:sp.satirlar,durum:tamam?'Tamamlandı':'Kısmi Sevkiyat'});
+  var updated=await updateSiparisDurum(_activeKismiSpId,{satirlar:sp.satirlar,durum:tamam?'Teslim Edildi':'Kısmi Teslimat'});
   if(!updated)return;
+  // Siparişi yeniden yükle — API otomatik Fatura Edildi'ye çekmiş olabilir
+  var siRes=await apiGet('siparisler');
+  if(siRes&&siRes.siparisler)state.siparisler=siRes.siparisler;
   closeModal('modal-kismiteslim');
   renderSiparisler();
-  toast(tamam?'Tüm kalemler sevk edildi, sipariş tamamlandı.':'Kısmi sevkiyat kaydedildi.','success');
+  toast(tamam?'Tüm kalemler teslim edildi.':'Kısmi teslimat kaydedildi.','success');
 }
 
 async function loadFaturalar(){
@@ -501,7 +542,7 @@ async function saveSiparisForm(){
   if(!state.siparisler)state.siparisler=[];
   state.siparisler.push(res.siparis);
   var ti=state.teklifler.findIndex(function(x){return x.id===teklifId;});
-  if(ti>=0)state.teklifler[ti].durum='Siparişe Aktarıldı';
+  if(ti>=0)state.teklifler[ti].durum='Siparişe Dönüştü';
   toast('Sipariş oluşturuldu: '+res.siparis.siparisNo,'success');
   showPage('siparisler');
 }
@@ -802,20 +843,14 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.text(st.firma||'Egefe Bilişim Sağlık San. ve Tic. A.Ş.',pageW-mm(15.446),pageH-mm(10),{align:'right'});
 
   doc.save('siparis-formu-'+(s.siparisNo||'siparis')+'.pdf');
-  // Formu yazdırıldı: Yeni Sipariş → Hazırlanıyor
-  if(s.durum==='Yeni Sipariş'){
-    var updated=await updateSiparisDurum(s.id,{durum:'Hazırlanıyor'});
-    if(updated)renderSiparisler();
-  }
 }
 
 // ════ RED / İPTAL NEDENİ ════
 function openRedNedenModal(teklifId, yeniDurum) {
   document.getElementById('red-teklif-id').value = teklifId;
   document.getElementById('red-yeni-durum').value = yeniDurum;
-  var isIptal = yeniDurum === 'İptal Edildi';
-  document.getElementById('red-modal-title').textContent = isIptal ? 'İptal Nedeni' : 'Red Nedeni';
-  document.getElementById('red-neden-label').textContent = (isIptal ? 'İptal Nedeni' : 'Red Nedeni') + ' *';
+  document.getElementById('red-modal-title').textContent = 'Red Nedeni';
+  document.getElementById('red-neden-label').textContent = 'Red Nedeni *';
   // Reset form
   document.getElementById('red-neden-select').value = '';
   document.getElementById('red-neden-other').value = '';

@@ -9,12 +9,6 @@ const DURUM_DEGERLERI = ['Ödendi','Ödenmedi'];
 
 
 
-function faturaTutar(PDO $pdo, string $siparisId): float {
-    $stmt = $pdo->prepare('SELECT COALESCE(SUM(miktar * birim_fiyat), 0) AS tutar FROM order_line_items WHERE order_id = ?');
-    $stmt->execute([$siparisId]);
-    return (float)($stmt->fetch()['tutar'] ?? 0);
-}
-
 function faturaResponse(PDO $pdo, array $row): array {
     return [
         'id'              => $row['id'],
@@ -22,7 +16,7 @@ function faturaResponse(PDO $pdo, array $row): array {
         'siparisId'       => $row['siparis_id'],
         'siparisNo'       => $row['siparis_no'],
         'kurum'           => $row['kurum'],
-        'tutar'           => isset($row['tutar']) ? (float)$row['tutar'] : faturaTutar($pdo, $row['siparis_id']),
+        'tutar'           => (float)$row['tutar'],
         'paraBirimi'      => $row['para_birimi'],
         'faturaTarihi'    => $row['fatura_tarihi'],
         'vadeTarihi'      => $row['vade_tarihi'],
@@ -31,19 +25,28 @@ function faturaResponse(PDO $pdo, array $row): array {
     ];
 }
 
+// Tüm kalemler hem teslim hem faturalananı tam ise siparişi Fatura Edildi'ye taşır
+function checkAutoFaturaEdildi(PDO $pdo, string $orderId): void {
+    $stmt = $pdo->prepare('SELECT COUNT(*) AS eksik FROM order_line_items WHERE order_id = ? AND (gonderilen < miktar OR faturalanan < miktar)');
+    $stmt->execute([$orderId]);
+    if ((int)$stmt->fetch()['eksik'] === 0) {
+        $pdo->prepare("UPDATE orders SET durum = 'Fatura Edildi' WHERE id = ? AND durum != 'Fatura Edildi'")->execute([$orderId]);
+    }
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $stmt = $pdo->query('SELECT i.*, o.siparis_no, o.kurum, o.para_birimi, COALESCE(SUM(oli.miktar * oli.birim_fiyat), 0) AS tutar FROM invoices i JOIN orders o ON o.id = i.siparis_id LEFT JOIN order_line_items oli ON oli.order_id = i.siparis_id GROUP BY i.id ORDER BY i.created_at DESC');
+        $stmt = $pdo->query('SELECT i.*, o.siparis_no, o.kurum, o.para_birimi FROM invoices i JOIN orders o ON o.id = i.siparis_id ORDER BY i.created_at DESC');
         $rows = $stmt->fetchAll();
         echo json_encode(['faturalar' => array_map(fn(array $r) => faturaResponse($pdo, $r), $rows)]);
         break;
 
     case 'POST':
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        $siparisId = strOrNull($input['siparisId'] ?? null);
-        $faturaNo = strOrNull($input['faturaNo'] ?? null);
+        $siparisId   = strOrNull($input['siparisId'] ?? null);
+        $faturaNo    = strOrNull($input['faturaNo'] ?? null);
         $faturaTarihi = strOrNull($input['faturaTarihi'] ?? null);
         if (!$siparisId || !$faturaNo || !$faturaTarihi) {
             http_response_code(400);
@@ -67,17 +70,51 @@ switch ($method) {
             exit;
         }
 
+        // Kalem bazlı faturalanan miktarlar: ['sira' => miktar] veya sıralı dizi
+        $satirFaturalananlar = $input['satirFaturalananlar'] ?? [];
+
+        // Mevcut kalem satırlarını al
+        $satirStmt = $pdo->prepare('SELECT * FROM order_line_items WHERE order_id = ? ORDER BY sira ASC, id ASC');
+        $satirStmt->execute([$siparisId]);
+        $kalemler = $satirStmt->fetchAll();
+
+        $tutar = 0.0;
+        $guncellemeler = [];
+        foreach ($kalemler as $idx => $k) {
+            $buSeferFaturalanan = (float)($satirFaturalananlar[$idx] ?? 0);
+            if ($buSeferFaturalanan < 0) $buSeferFaturalanan = 0;
+            $maxFaturalanabilir = (float)$k['miktar'] - (float)$k['faturalanan'];
+            if ($buSeferFaturalanan > $maxFaturalanabilir) $buSeferFaturalanan = $maxFaturalanabilir;
+            if ($buSeferFaturalanan > 0) {
+                $tutar += $buSeferFaturalanan * (float)$k['birim_fiyat'];
+                $guncellemeler[] = ['id' => $k['id'], 'artis' => $buSeferFaturalanan];
+            }
+        }
+
+        if ($tutar <= 0 && empty($guncellemeler)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Faturalanacak kalem bulunamadı']);
+            exit;
+        }
+
         $id = 'ft' . (string)(int)round(microtime(true) * 1000);
 
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO invoices (id, fatura_no, siparis_id, fatura_tarihi, vade_tarihi, durum) VALUES (?, ?, ?, ?, ?, ?)');
+            $stmt = $pdo->prepare('INSERT INTO invoices (id, fatura_no, siparis_id, tutar, fatura_tarihi, vade_tarihi, durum) VALUES (?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([
-                $id, $faturaNo, $siparisId, $faturaTarihi,
+                $id, $faturaNo, $siparisId, round($tutar, 2), $faturaTarihi,
                 strOrNull($input['vadeTarihi'] ?? null),
                 'Ödenmedi',
             ]);
-            $pdo->prepare("UPDATE orders SET durum = 'Fatura Edildi' WHERE id = ?")->execute([$siparisId]);
+
+            $updStmt = $pdo->prepare('UPDATE order_line_items SET faturalanan = faturalanan + ? WHERE id = ?');
+            foreach ($guncellemeler as $g) {
+                $updStmt->execute([$g['artis'], $g['id']]);
+            }
+
+            checkAutoFaturaEdildi($pdo, $siparisId);
+
             $pdo->commit();
         } catch (Throwable $e) {
             $pdo->rollBack();

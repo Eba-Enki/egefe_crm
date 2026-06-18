@@ -5,7 +5,7 @@ require __DIR__ . '/../_bootstrap.php';
 $user = requireAuth($pdo);
 requirePortalAccess($user, 'satis');
 
-const DURUM_DEGERLERI = ['Yeni Sipariş','Hazırlanıyor','Kısmi Sevkiyat','Tamamlandı','İptal','Fatura Edildi'];
+const DURUM_DEGERLERI = ['Hazırlanıyor','Kısmi Teslimat','Teslim Edildi','İptal','Fatura Edildi'];
 const BIRIM_DEGERLERI = ['Adet','Saat','Gün','Parça'];
 const PARA_BIRIMLERI = ['TRY','USD','EUR','GBP'];
 
@@ -19,6 +19,7 @@ function satirlarFromInput(array $input): array {
             'aciklama'           => strOrNull($s['aciklama'] ?? null),
             'miktar'             => (float)($s['miktar'] ?? 0),
             'gonderilen'         => (float)($s['gonderilen'] ?? 0),
+            'faturalanan'        => (float)($s['faturalanan'] ?? 0),
             'birim'              => enumOrDefault($s['birim'] ?? null, BIRIM_DEGERLERI, 'Adet'),
             'birimFiyat'         => (float)($s['birimFiyat'] ?? 0),
             'seciliParametreler' => $s['seciliParametreler'] ?? [],
@@ -32,6 +33,7 @@ function mapSatirRow(array $row): array {
         'aciklama'           => $row['aciklama'],
         'miktar'             => (float)$row['miktar'],
         'gonderilen'         => (float)$row['gonderilen'],
+        'faturalanan'        => (float)$row['faturalanan'],
         'birim'              => $row['birim'],
         'birimFiyat'         => (float)$row['birim_fiyat'],
         'seciliParametreler' => $row['secili_parametreler'] ? json_decode($row['secili_parametreler'], true) : [],
@@ -46,13 +48,24 @@ function fetchSatirlar(PDO $pdo, string $orderId): array {
 
 function replaceSatirlar(PDO $pdo, string $orderId, array $satirlar): void {
     $pdo->prepare('DELETE FROM order_line_items WHERE order_id = ?')->execute([$orderId]);
-    $stmt = $pdo->prepare('INSERT INTO order_line_items (order_id, sira, aciklama, miktar, gonderilen, birim, birim_fiyat, secili_parametreler) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt = $pdo->prepare('INSERT INTO order_line_items (order_id, sira, aciklama, miktar, gonderilen, faturalanan, birim, birim_fiyat, secili_parametreler) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
     foreach ($satirlar as $s) {
         $stmt->execute([
-            $orderId, $s['sira'], $s['aciklama'], $s['miktar'], $s['gonderilen'], $s['birim'], $s['birimFiyat'],
+            $orderId, $s['sira'], $s['aciklama'], $s['miktar'], $s['gonderilen'], $s['faturalanan'], $s['birim'], $s['birimFiyat'],
             json_encode($s['seciliParametreler'], JSON_UNESCAPED_UNICODE),
         ]);
     }
+}
+
+// Tüm kalemler hem teslim hem faturalananı tam ise siparişi Fatura Edildi'ye taşır
+function checkAutoFaturaEdildi(PDO $pdo, string $orderId): bool {
+    $stmt = $pdo->prepare('SELECT COUNT(*) AS eksik FROM order_line_items WHERE order_id = ? AND (gonderilen < miktar OR faturalanan < miktar)');
+    $stmt->execute([$orderId]);
+    if ((int)$stmt->fetch()['eksik'] === 0) {
+        $pdo->prepare("UPDATE orders SET durum = 'Fatura Edildi' WHERE id = ? AND durum != 'Fatura Edildi'")->execute([$orderId]);
+        return true;
+    }
+    return false;
 }
 
 function siparisResponse(PDO $pdo, array $row, ?array $satirlar = null): array {
@@ -160,13 +173,13 @@ switch ($method) {
                 strOrNull($input['teklifTarihi'] ?? null),
                 strOrNull($input['siparisTarihi'] ?? null),
                 strOrNull($input['notlar'] ?? null),
-                'Yeni Sipariş',
+                'Hazırlanıyor',
                 $user['id'],
             ]);
             replaceSatirlar($pdo, $id, $satirlar);
 
             if ($teklifId) {
-                $pdo->prepare("UPDATE quotes SET durum = 'Siparişe Aktarıldı' WHERE id = ?")->execute([$teklifId]);
+                $pdo->prepare("UPDATE quotes SET durum = 'Siparişe Dönüştü' WHERE id = ?")->execute([$teklifId]);
             }
 
             $pdo->commit();
@@ -230,7 +243,11 @@ switch ($method) {
 
             $teklifId = strOrNull($input['teklifId'] ?? $existing['teklif_id']);
             if ($teklifId && $durum === 'İptal' && $existing['durum'] !== 'İptal') {
-                $pdo->prepare("UPDATE quotes SET durum = 'İptal Edildi' WHERE id = ?")->execute([$teklifId]);
+                $pdo->prepare("UPDATE quotes SET durum = 'Reddedildi' WHERE id = ? AND portal = 'satis'")->execute([$teklifId]);
+            }
+            // Tüm kalemler teslim+faturalanan tamam ise otomatik Fatura Edildi'ye geç
+            if (!in_array($durum, ['İptal','Fatura Edildi'], true)) {
+                checkAutoFaturaEdildi($pdo, $id);
             }
 
             $pdo->commit();

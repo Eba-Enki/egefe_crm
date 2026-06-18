@@ -159,12 +159,11 @@ function renderSiparisler(){
     var thCb=thCheck.querySelector('input');if(thCb)thCb.checked=canBulk&&bulkAllChecked('siparisArsiv');
   }
   var bulkBarEl=document.getElementById('siparis-bulk-bar');
+  var bulkCountEl=document.getElementById('siparis-bulk-count');
   var selCount=canBulk?bulkCount('siparisArsiv'):0;
+  if(bulkCountEl)bulkCountEl.textContent=selCount>0?selCount+' öğe seçildi':'';
   if(bulkBarEl)bulkBarEl.innerHTML=selCount>0
-    ?'<div style="display:flex;align-items:center;gap:8px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
-      +'<span style="font-size:12px;color:var(--text2)">'+selCount+' öğe seçildi</span>'
-      +'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'siparis\',bulkSelectedIds(\'siparisArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
-      +'</div>'
+    ?'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'siparis\',bulkSelectedIds(\'siparisArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
     :'';
   if(!filtered.length){tbody.innerHTML='';if(emptyEl)emptyEl.style.display='';renderPagination('siparis-pagination',1,0,'setSiparislerPage');return;}
   if(emptyEl)emptyEl.style.display='none';
@@ -347,12 +346,11 @@ function renderFaturalar(){
     var thCb=thCheck.querySelector('input');if(thCb)thCb.checked=canBulk&&bulkAllChecked('faturaArsiv');
   }
   var bulkBarEl=document.getElementById('fatura-bulk-bar');
+  var bulkCountEl=document.getElementById('fatura-bulk-count');
   var selCount=canBulk?bulkCount('faturaArsiv'):0;
+  if(bulkCountEl)bulkCountEl.textContent=selCount>0?selCount+' öğe seçildi':'';
   if(bulkBarEl)bulkBarEl.innerHTML=selCount>0
-    ?'<div style="display:flex;align-items:center;gap:8px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
-      +'<span style="font-size:12px;color:var(--text2)">'+selCount+' öğe seçildi</span>'
-      +'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'fatura\',bulkSelectedIds(\'faturaArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
-      +'</div>'
+    ?'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'fatura\',bulkSelectedIds(\'faturaArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
     :'';
   if(!filtered.length){tbody.innerHTML='';document.getElementById('fatura-empty').style.display='';renderPagination('fatura-pagination',1,0,'setFaturalarPage');return;}
   document.getElementById('fatura-empty').style.display='none';

@@ -255,6 +255,7 @@ function renderFooter(){
   parts.push('E-mail: '+email);
   var el=document.getElementById('footer-contact-text');
   if(el)el.innerHTML=parts.join(' &nbsp;|&nbsp; ');
+  syncFooterSpacing();
 }
 async function saveSettings(){
   var prev=Object.assign({},state.settings);

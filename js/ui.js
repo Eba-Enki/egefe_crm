@@ -1,3 +1,11 @@
+function syncFooterSpacing(){
+  var footer=document.getElementById('app-footer');
+  var content=document.querySelector('.content');
+  if(!footer||!content)return;
+  content.style.paddingBottom=(footer.offsetHeight+16)+'px';
+}
+window.addEventListener('resize',syncFooterSpacing);
+
 function toggleFilterExtra(btn){
   var bar=btn.closest('.filter-bar');
   var extra=bar&&bar.querySelector('.filter-extra');

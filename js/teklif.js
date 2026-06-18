@@ -225,7 +225,7 @@ function openTeklifDetay(id){
   var _eb=document.getElementById('td-edit-btn');if(_eb)_eb.style.display=canEdit?'':'none';
   const steps=[{l:'Servis',c:'done'},{l:'Teklif',c:'done'},{l:'Bekliyor',c:t.durum==='Onay Bekleniyor'?'active':'done'},{l:t.durum==='Reddedildi'?'Reddedildi':'Onaylandı',c:t.durum==='Onaylandı'?'done':t.durum==='Reddedildi'?'rejected':'pending'}];
   document.getElementById('td-body').innerHTML=`
-    <div class="teklif-akis">${steps.map((st,i,a)=>`<div class="t-step"><div class="t-dot ${st.c}">${st.c==='done'?'✓':st.c==='active'?'⏳':st.c==='rejected'?'✕':'○'}</div><div class="t-step-lbl">${st.l}</div></div>${i<a.length-1?'<div class="t-arrow">→</div>':''}`).join('')}</div>
+    <div class="teklif-akis">${steps.map((st,i,a)=>`<div class="t-step"><div class="t-dot ${st.c}">${st.c==='done'?'✓':st.c==='active'?'⏳':st.c==='rejected'?'✕':'○'}</div><div class="t-step-lbl">${st.l}</div></div>${i<a.length-1?'<div class="t-arrow"><i class="ti ti-arrow-narrow-right"></i></div>':''}`).join('')}</div>
     ${canEdit&&t.durum==='Onay Bekleniyor'?`<div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="changeTeklifDurum('${t.id}','Onaylandı');closeModal('modal-teklif-detay')">✓ Onayla</button><button class="btn btn-danger btn-sm" onclick="changeTeklifDurum('${t.id}','Reddedildi');closeModal('modal-teklif-detay')">✕ Reddet</button></div>`:''}
     <div class="separator"></div>
     <div class="info-grid" style="margin-bottom:14px">

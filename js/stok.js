@@ -370,7 +370,7 @@ function renderHamStok(){
 
     // Header satırı
     html+='<tr style="cursor:pointer;background:var(--bg3);border-bottom:1px solid var(--border)" onclick="toggleHamStokParam(\''+paramAd.replace(/'/g,"\\'")+'\')">'
-      +'<td style="text-align:center;color:var(--accent);font-size:13px;font-weight:700">'+(expanded?'▼':'▶')+'</td>'
+      +'<td style="text-align:center;color:var(--accent);font-size:13px;font-weight:700">'+(expanded?'<i class="ti ti-arrow-narrow-down"></i>':'<i class="ti ti-arrow-narrow-right"></i>')+'</td>'
       +'<td style="font-weight:600;color:var(--text)">'+esc(tamAd)+'</td>'
       +'<td style="text-align:center;font-family:var(--font-mono);color:var(--text3)">'+totalLots+'</td>'
       +'<td style="font-size:11px;color:var(--text3)">'+ozetParts.join(' &nbsp;•&nbsp; ')+'</td>'
@@ -469,7 +469,7 @@ function renderHamGirisler(){
     var notlarFull=g.notlar||'';
     // Header satır
     html+='<tr style="cursor:pointer;background:var(--bg3)" onclick="toggleHamGiris(\''+g.id+'\')">'
-      +'<td style="text-align:center;color:var(--accent);font-weight:700">'+(expanded?'▼':'▶')+'</td>'
+      +'<td style="text-align:center;color:var(--accent);font-weight:700">'+(expanded?'<i class="ti ti-arrow-narrow-down"></i>':'<i class="ti ti-arrow-narrow-right"></i>')+'</td>'
       +'<td><span class="kn-badge">'+esc(g.evrakNo)+'</span></td>'
       +'<td style="font-family:var(--font-mono);font-size:12px">'+tarihDisp+'</td>'
       +'<td style="text-align:center;font-family:var(--font-mono);color:var(--text3)">'+((g.kalemler||[]).length)+'</td>'
@@ -689,7 +689,7 @@ function renderHamCikislar(){
     var ozetDisp=paramsEsc.slice(0,3).join(' • ')+(paramsEsc.length>3?' <span style="font-size:11px;color:var(--accent);font-weight:500">+'+(paramsEsc.length-3)+'</span>':'');
     var tarihDispC=c.tarih?c.tarih.split('-').reverse().join('.'):'—';
     html+='<tr style="cursor:pointer;background:var(--bg3)" onclick="toggleHamCikis(\''+c.id+'\')">'
-      +'<td style="text-align:center;color:var(--amber);font-weight:700">'+(expanded?'▼':'▶')+'</td>'
+      +'<td style="text-align:center;color:var(--amber);font-weight:700">'+(expanded?'<i class="ti ti-arrow-narrow-down"></i>':'<i class="ti ti-arrow-narrow-right"></i>')+'</td>'
       +'<td><span class="kn-badge">'+esc(c.evrakNo||'—')+'</span></td>'
       +'<td style="font-family:var(--font-mono);font-size:12px">'+tarihDispC+'</td>'
       +'<td style="font-size:12px">'+esc(kat)+'</td>'
@@ -975,7 +975,7 @@ function renderBitmisGirisler(){
     var urunStr=Object.keys(katOzetMap).map(function(kat){return kat+' ('+katOzetMap[kat]+')';}).join(' • ');
     var tarihDisp=g.tarih?g.tarih.split('-').reverse().join('.'):'—';
     html+='<tr style="cursor:pointer;background:var(--bg3)" onclick="toggleBitmisGiris(\''+g.id+'\')">'
-      +'<td style="text-align:center;color:var(--green);font-weight:700">'+(expanded?'▼':'▶')+'</td>'
+      +'<td style="text-align:center;color:var(--green);font-weight:700">'+(expanded?'<i class="ti ti-arrow-narrow-down"></i>':'<i class="ti ti-arrow-narrow-right"></i>')+'</td>'
       +'<td><span class="kn-badge">'+esc(g.evrakNo)+'</span></td>'
       +'<td style="font-family:var(--font-mono);font-size:12px">'+tarihDisp+'</td>'
       +'<td style="text-align:center;font-family:var(--font-mono);color:var(--text3)">'+((g.kalemler||[]).length)+'</td>'
@@ -1208,7 +1208,7 @@ function renderBitmisCikislar(){
     var tarihDispC=c.tarih?c.tarih.split('-').reverse().join('.'):'—';
     var toplam=(c.satirlar||[]).reduce(function(a,s){return a+s.miktar;},0);
     html+='<tr style="cursor:pointer;background:var(--bg3)" onclick="toggleBitmisCikis(\''+c.id+'\')">'
-      +'<td style="text-align:center;color:var(--amber);font-weight:700">'+(expanded?'▼':'▶')+'</td>'
+      +'<td style="text-align:center;color:var(--amber);font-weight:700">'+(expanded?'<i class="ti ti-arrow-narrow-down"></i>':'<i class="ti ti-arrow-narrow-right"></i>')+'</td>'
       +'<td><span class="kn-badge">'+esc(c.evrakNo||'—')+'</span></td>'
       +'<td style="font-family:var(--font-mono);font-size:12px">'+tarihDispC+'</td>'
       +'<td style="font-size:12px">'+esc(c.aciklama||'')+'</td>'

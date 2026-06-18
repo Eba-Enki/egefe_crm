@@ -206,7 +206,7 @@ function renderTable(){
     </tr>`;
   }).join('');
 }
-function sortTable(col){if(state.sortCol===col)state.sortDir=state.sortDir==='asc'?'desc':'asc';else{state.sortCol=col;state.sortDir='asc';}document.querySelectorAll('[id^=sort-]').forEach(el=>el.textContent='');const el=document.getElementById('sort-'+col);if(el)el.textContent=state.sortDir==='asc'?'▲':'▼';renderTable()}
+function sortTable(col){if(state.sortCol===col)state.sortDir=state.sortDir==='asc'?'desc':'asc';else{state.sortCol=col;state.sortDir='asc';}document.querySelectorAll('[id^=sort-]').forEach(el=>el.textContent='');const el=document.getElementById('sort-'+col);if(el)el.innerHTML=state.sortDir==='asc'?'<i class="ti ti-arrow-narrow-up"></i>':'<i class="ti ti-arrow-narrow-down"></i>';renderTable()}
 function filterTable(){renderTable()}
 function clearTeklifFilters(){
   ['tf-f-kurum','tf-f-teklif','tf-f-seri','tf-f-durum','tf-f-ts','tf-f-te'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});

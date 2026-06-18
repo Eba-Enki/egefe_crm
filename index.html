@@ -84,7 +84,7 @@
     <!-- Form paneli -->
     <div id="sistem-form-panel" style="display:none;flex-direction:column;max-width:680px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
-        <button class="btn btn-back" onclick="cancelSistemForm()">←</button>
+        <button class="btn btn-back" onclick="cancelSistemForm()"><i class="ti ti-arrow-narrow-left"></i></button>
         <div style="font-size:18px;font-weight:700;color:var(--text)" id="sistem-form-title">Yeni Kullanıcı</div>
       </div>
       <div class="form-card" style="display:flex;flex-direction:column;gap:14px;margin-bottom:16px">
@@ -123,9 +123,9 @@
     </div>
     <div class="field" style="margin-bottom:10px"><label>Kullanıcı Adı</label><input type="text" id="login-user" autocomplete="username"></div>
     <div class="field" style="margin-bottom:16px"><label>Şifre</label><input type="password" id="login-pass"></div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Giriş Yap →</button>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Giriş Yap <i class="ti ti-arrow-narrow-right"></i></button>
     <div class="login-error" id="login-error">Kullanıcı adı veya şifre hatalı.</div>
-    <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:12px;font-size:12px" onclick="backToPortal()">← Portal Seçim Sayfasına Dön</button>
+    <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:12px;font-size:12px" onclick="backToPortal()"><i class="ti ti-arrow-narrow-left"></i> Portal Seçim Sayfasına Dön</button>
   </div>
 </div>
 
@@ -296,7 +296,7 @@
     <div id="page-servis-form" class="page">
       <div class="form-page">
         <div class="form-page-header">
-          <button class="btn btn-back" onclick="showPage(state.prevPage||'servisler')">← Geri</button>
+          <button class="btn btn-back" onclick="showPage(state.prevPage||'servisler')"><i class="ti ti-arrow-narrow-left"></i> Geri</button>
           <div><div class="form-page-title" id="sf-title">Yeni Servis Kaydı</div><div class="form-page-sub" id="sf-sub">Yeni bir cihaz servisi oluşturun</div></div>
         </div>
         <input type="hidden" id="sf-edit-id">
@@ -386,7 +386,7 @@
     <div id="page-teklif-form" class="page">
       <div class="form-page" style="max-width:1000px">
         <div class="form-page-header">
-          <button class="btn btn-back" onclick="showPage('teklifler')">← Geri</button>
+          <button class="btn btn-back" onclick="showPage('teklifler')"><i class="ti ti-arrow-narrow-left"></i> Geri</button>
           <div><div class="form-page-title" id="tf-title">Yeni Teklif Hazırla</div></div>
         </div>
         <input type="hidden" id="tf-edit-id">
@@ -479,7 +479,7 @@
     <div id="page-musteri-form" class="page">
       <div class="form-page" style="max-width:580px">
         <div class="form-page-header">
-          <button class="btn btn-back" onclick="cancelMusteriAdd()">← Müşteriler</button>
+          <button class="btn btn-back" onclick="cancelMusteriAdd()"><i class="ti ti-arrow-narrow-left"></i> Müşteriler</button>
           <div class="form-page-title" id="mf-title">Yeni Müşteri</div>
         </div>
         <input type="hidden" id="mf-edit-id">
@@ -517,7 +517,7 @@
     <div id="page-urun-form" class="page">
       <div class="form-page" style="max-width:540px">
         <div class="form-page-header">
-          <button class="btn btn-back" onclick="showPage('urunler')">← Ürünler</button>
+          <button class="btn btn-back" onclick="showPage('urunler')"><i class="ti ti-arrow-narrow-left"></i> Ürünler</button>
           <div class="form-page-title" id="uf-title">Yeni Ürün</div>
         </div>
         <input type="hidden" id="uf-edit-id">
@@ -626,7 +626,7 @@
     <div id="page-siparis-form" class="page">
       <div class="form-page" style="max-width:640px">
         <div class="form-page-header">
-          <button class="btn btn-back" onclick="showPage('teklifler')">← Teklifler</button>
+          <button class="btn btn-back" onclick="showPage('teklifler')"><i class="ti ti-arrow-narrow-left"></i> Teklifler</button>
           <div class="form-page-title" id="sf2-title">Sipariş Oluştur</div>
         </div>
         <input type="hidden" id="sf2-teklif-id">

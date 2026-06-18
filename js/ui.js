@@ -399,7 +399,7 @@ function comboAddMusteri(inputId){
   goMusteriForm(null);
   if(q){var kEl=document.getElementById('mf-kurum');if(kEl)kEl.value=q;}
   var backBtn=document.querySelector('#page-musteri-form .btn-back');
-  if(backBtn)backBtn.textContent='← Geri';
+  if(backBtn)backBtn.innerHTML='<i class="ti ti-arrow-narrow-left"></i> Geri';
 }
 
 function cancelMusteriAdd(){

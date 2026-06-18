@@ -302,7 +302,7 @@ async function doLogin(){
   if(loginBtn&&loginBtn.disabled)return;
   if(loginBtn){loginBtn.disabled=true;loginBtn.textContent='Giriş yapılıyor…';}
   try{await _doLoginAsync();}finally{
-    if(loginBtn){loginBtn.disabled=false;loginBtn.textContent='Giriş Yap →';}
+    if(loginBtn){loginBtn.disabled=false;loginBtn.innerHTML='Giriş Yap <i class="ti ti-arrow-narrow-right"></i>';}
   }
 }
 async function _doLoginAsync(){

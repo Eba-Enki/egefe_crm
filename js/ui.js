@@ -52,7 +52,9 @@ function toggleCustomSelect(e,selectId){
     panel.id='cs-panel-'+selectId;
     document.body.appendChild(panel);
   }
-  panel.innerHTML=Array.prototype.map.call(sel.options,function(opt){
+  panel.innerHTML=Array.prototype.filter.call(sel.options,function(opt){
+    return opt.style.display!=='none';
+  }).map(function(opt){
     var isActive=opt.value===sel.value;
     return '<div onclick="selectCustomOption(event,\''+selectId+'\',\''+String(opt.value).replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;padding:9px 12px;border-radius:4px;cursor:pointer;background:'+(isActive?'var(--bg3)':'transparent')+'" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\''+(isActive?'var(--bg3)':'transparent')+'\'">'
       +'<span style="font-size:12px;font-weight:'+(isActive?'600':'400')+';color:'+(isActive?'var(--text)':'var(--text2)')+'">'+opt.textContent+'</span>'

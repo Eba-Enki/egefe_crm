@@ -142,8 +142,6 @@ function applyPortal(){
     badge.textContent=isServis?'Teknik Servis':isSatis?'Satış & Pazarlama':'Stok Yönetim';
     badge.className='portal-badge '+(isServis?'portal-badge-servis':isSatis?'portal-badge-satis':'portal-badge-stok');
   }
-  var sbpn=document.getElementById('sb-portal-name');
-  if(sbpn)sbpn.textContent=isServis?'Teknik Servis Portalı':isSatis?'Satış Pazarlama Portalı':'Stok Yönetim Portalı';
   document.querySelectorAll('.tf-servis-field').forEach(function(el){el.style.display=isServis?'':'none';});
   document.querySelectorAll('.tf-satis-field').forEach(function(el){el.style.display=isSatis?'':'none';});
   var defaultPage=isStok?'stok-dashboard':'dashboard';

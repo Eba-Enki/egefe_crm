@@ -10,7 +10,7 @@
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js"></script>
 <script src="vendor/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=14">
+<link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body>
 
@@ -160,12 +160,12 @@
     <div class="sb-section stok-only" style="display:none">Ana Menü</div>
     <div class="sb-item stok-only" data-page="stok-dashboard" style="display:none" onclick="showPage('stok-dashboard')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span>Dashboard</span></div>
     <div class="sb-section stok-only" style="display:none">Yarı Mamul Yönetimi</div>
-    <div class="sb-item stok-only" data-page="ham-stok" style="display:none" onclick="showPage('ham-stok')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span><span>Sheet & Strip Stok Listesi</span></div>
+    <div class="sb-item stok-only" data-page="ham-stok" style="display:none" onclick="showPage('ham-stok')"><span class="icon"><i class="ti ti-database"></i></span><span>Sheet & Strip Stok Listesi</span></div>
     <div class="sb-item stok-only" data-page="ham-girisler" style="display:none" onclick="showPage('ham-girisler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Sheet & Strip Stok Girişler</span></div>
     <div class="sb-item stok-only" data-page="ham-cikislar" style="display:none" onclick="showPage('ham-cikislar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Sheet & Strip Stok Çıkışlar</span></div>
     <div class="sb-item stok-only admin-only" data-page="stok-parametreler" style="display:none" onclick="showPage('stok-parametreler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><line x1="12" y1="14" x2="12" y2="20"/><line x1="9" y1="17" x2="15" y2="17"/></svg></span><span>Parametre Listesi</span></div>
     <div class="sb-section stok-only" style="display:none">Hazır Ürün Yönetimi</div>
-    <div class="sb-item stok-only" data-page="bitmis-stok" style="display:none" onclick="showPage('bitmis-stok')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></span><span>Hazır Ürün Stok Listesi</span></div>
+    <div class="sb-item stok-only" data-page="bitmis-stok" style="display:none" onclick="showPage('bitmis-stok')"><span class="icon"><i class="ti ti-database"></i></span><span>Hazır Ürün Stok Listesi</span></div>
     <div class="sb-item stok-only" data-page="bitmis-girisler" style="display:none" onclick="showPage('bitmis-girisler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Hazır Ürün Stok Girişler</span></div>
     <div class="sb-item stok-only" data-page="bitmis-cikislar" style="display:none" onclick="showPage('bitmis-cikislar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Hazır Ürün Stok Çıkışlar</span></div>
   </nav>
@@ -1172,7 +1172,7 @@
           </div>
           <div class="settings-nav-item" data-panel="ticari-kat" onclick="switchStokSettingsPanel('ticari-kat')">
             <span class="settings-nav-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              <i class="ti ti-database" style="font-size:16px"></i>
             </span>
             <span class="settings-nav-label">Hazır Ürün Kategorileri</span>
           </div>
@@ -1234,7 +1234,7 @@
           <div id="ssp-ticari-kat" class="settings-panel">
             <div class="settings-panel-header">
               <div class="settings-panel-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                <i class="ti ti-database" style="font-size:20px"></i>
               </div>
               <div>
                 <div class="settings-panel-title">Hazır Ürün Kategorileri</div>

@@ -258,14 +258,19 @@
     <!-- ═══ SERVİSLER ═══ -->
     <div id="page-servisler" class="page">
       <div class="filter-bar">
-        <input type="text" id="f-kurum" placeholder="Kurum / müşteri..." oninput="filterTable()">
-        <input type="text" id="f-seri" placeholder="Seri no / kayıt no..." oninput="filterTable()">
-        <select id="f-durum" onchange="filterTable()"><option value="">Tüm Durumlar</option><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Reddedildi</option><option>Gönderildi</option><option>İade Edildi</option></select>
-        <select id="f-garanti" onchange="filterTable()"><option value="">Garanti Tümü</option><option value="Evet">Garantili</option><option value="Hayır">Garantisiz</option></select>
-        <input type="date" id="f-ts" oninput="filterTable()"><input type="date" id="f-te" oninput="filterTable()">
-        <button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕</button>
-        <button class="btn btn-ghost btn-sm" onclick="exportServislerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
-        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="filter-count"></span>
+        <div class="filter-row">
+          <input type="text" id="f-kurum" placeholder="Kurum / müşteri..." oninput="filterTable()">
+          <input type="text" id="f-seri" placeholder="Seri no / kayıt no..." oninput="filterTable()">
+          <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-filter-2-x"></i></button>
+          <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="filter-count"></span>
+        </div>
+        <div class="filter-extra">
+          <select id="f-durum" onchange="filterTable()"><option value="">Tüm Durumlar</option><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Reddedildi</option><option>Gönderildi</option><option>İade Edildi</option></select>
+          <select id="f-garanti" onchange="filterTable()"><option value="">Garanti Tümü</option><option value="Evet">Garantili</option><option value="Hayır">Garantisiz</option></select>
+          <input type="date" id="f-ts" oninput="filterTable()"><input type="date" id="f-te" oninput="filterTable()">
+          <button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportServislerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
+        </div>
       </div>
       <div class="card">
         <div class="table-wrap">
@@ -353,15 +358,20 @@
     <!-- ═══ TEKLİFLER ═══ -->
     <div id="page-teklifler" class="page">
       <div class="filter-bar">
-        <input type="text" id="tf-f-kurum" placeholder="Kurum / müşteri..." oninput="renderTeklifler()">
-        <input type="text" id="tf-f-teklif" placeholder="Teklif no..." oninput="renderTeklifler()" style="width:120px">
-        <input type="text" id="tf-f-seri" placeholder="Seri no..." oninput="renderTeklifler()" style="width:110px">
-        <select id="tf-f-durum" onchange="renderTeklifler()"><option value="">Tüm Durumlar</option><option>Taslak</option><option>Gönderildi</option><option>Kabul Edildi</option><option>Reddedildi</option><option>İptal Edildi</option><option>Siparişe Aktarıldı</option></select>
-        <input type="date" id="tf-f-ts" oninput="renderTeklifler()" title="Başlangıç">
-        <input type="date" id="tf-f-te" oninput="renderTeklifler()" title="Bitiş">
-        <button class="btn btn-ghost btn-sm" onclick="clearTeklifFilters()">✕ Temizle</button>
-        <button class="btn btn-ghost btn-sm" onclick="exportTekliflerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
-        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="teklif-filter-count"></span>
+        <div class="filter-row">
+          <input type="text" id="tf-f-kurum" placeholder="Kurum / müşteri..." oninput="renderTeklifler()">
+          <input type="text" id="tf-f-teklif" placeholder="Teklif no..." oninput="renderTeklifler()" style="width:120px">
+          <input type="text" id="tf-f-seri" placeholder="Seri no..." oninput="renderTeklifler()" style="width:110px">
+          <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-filter-2-x"></i></button>
+          <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="teklif-filter-count"></span>
+        </div>
+        <div class="filter-extra">
+          <select id="tf-f-durum" onchange="renderTeklifler()"><option value="">Tüm Durumlar</option><option>Taslak</option><option>Gönderildi</option><option>Kabul Edildi</option><option>Reddedildi</option><option>İptal Edildi</option><option>Siparişe Aktarıldı</option></select>
+          <input type="date" id="tf-f-ts" oninput="renderTeklifler()" title="Başlangıç">
+          <input type="date" id="tf-f-te" oninput="renderTeklifler()" title="Bitiş">
+          <button class="btn btn-ghost btn-sm" onclick="clearTeklifFilters()">✕ Temizle</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportTekliflerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
+        </div>
       </div>
       <div class="card">
         <div class="card-header">
@@ -467,7 +477,7 @@
 
     <!-- ═══ MÜŞTERİLER ═══ -->
     <div id="page-musteriler" class="page">
-      <div class="filter-bar"><input type="text" id="fm-ara" placeholder="Ara..." oninput="renderMusteriler()" style="width:220px"><label class="btn btn-ghost btn-sm can-write" style="cursor:pointer"><i class="ti ti-plus"></i> Excel'den Ekle<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importMusterilerExcel(event)"></label><button class="btn btn-ghost btn-sm can-write" onclick="downloadMusteriSablon()" style="font-size:11px;color:var(--text3)"><i class="ti ti-cloud-download"></i> Şablonu İndir</button><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="musteri-count"></span></div>
+      <div class="filter-bar"><div class="filter-row"><input type="text" id="fm-ara" placeholder="Ara..." oninput="renderMusteriler()" style="width:220px"><label class="btn btn-ghost btn-sm can-write" style="cursor:pointer"><i class="ti ti-plus"></i> Excel'den Ekle<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importMusterilerExcel(event)"></label><button class="btn btn-ghost btn-sm can-write" onclick="downloadMusteriSablon()" style="font-size:11px;color:var(--text3)"><i class="ti ti-cloud-download"></i> Şablonu İndir</button><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="musteri-count"></span></div></div>
       <div class="card"><div class="table-wrap"><table><thead><tr><th>Kayıt No</th><th>Kurum</th><th>İlgili Kişi</th><th>Telefon</th><th>E-posta</th><th>Şehir</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead><tbody id="musteri-table-body"></tbody></table><div id="musteri-empty" class="empty-state" style="display:none"><div class="icon">⊙</div><h3 style="color:var(--text2)">Müşteri yok</h3></div></div><div id="musteri-pagination"></div></div>
     </div>
 
@@ -499,7 +509,7 @@
 
         <!-- ═══ ÜRÜNLER ═══ -->
     <div id="page-urunler" class="page">
-      <div class="filter-bar"><input type="text" id="fu-ara" placeholder="Ara..." oninput="renderUrunler()" style="width:220px"><label class="btn btn-ghost btn-sm can-write" style="cursor:pointer"><i class="ti ti-plus"></i> Excel'den Ekle<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importUrunlerExcel(event)"></label><button class="btn btn-ghost btn-sm can-write" onclick="downloadUrunSablon()" style="font-size:11px;color:var(--text3)"><i class="ti ti-cloud-download"></i> Şablonu İndir</button><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="urun-count"></span></div>
+      <div class="filter-bar"><div class="filter-row"><input type="text" id="fu-ara" placeholder="Ara..." oninput="renderUrunler()" style="width:220px"><label class="btn btn-ghost btn-sm can-write" style="cursor:pointer"><i class="ti ti-plus"></i> Excel'den Ekle<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importUrunlerExcel(event)"></label><button class="btn btn-ghost btn-sm can-write" onclick="downloadUrunSablon()" style="font-size:11px;color:var(--text3)"><i class="ti ti-cloud-download"></i> Şablonu İndir</button><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="urun-count"></span></div></div>
       <div class="card"><div class="table-wrap"><table>
         <thead><tr><th>Ürün Kodu</th><th>Ürün / İşlem Adı</th><th>Marka</th><th class="tf-satis-field" style="display:none">Kategori</th><th><span class="servis-only">Model</span><span class="satis-only">Parametre</span></th><th>Liste Fiyatı</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead>
         <tbody id="urun-table-body"></tbody>
@@ -561,14 +571,19 @@
     <!-- ═══ SİPARİŞLER ═══ -->
     <div id="page-siparisler" class="page">
       <div class="filter-bar">
-        <input type="text" id="sp-f-kurum" placeholder="Kurum / müşteri..." oninput="renderSiparisler()">
-        <input type="text" id="sp-f-no" placeholder="Sipariş no..." oninput="renderSiparisler()" style="width:120px">
-        <select id="sp-f-durum" onchange="renderSiparisler()"><option value="">Tüm Durumlar</option><option>Yeni Sipariş</option><option>Hazırlanıyor</option><option>Kısmi Sevkiyat</option><option>Tamamlandı</option><option>Fatura Edildi</option><option>İptal</option></select>
-        <input type="date" id="sp-f-ts" oninput="renderSiparisler()" title="Başlangıç">
-        <input type="date" id="sp-f-te" oninput="renderSiparisler()" title="Bitiş">
-        <button class="btn btn-ghost btn-sm" onclick="clearSiparisFilters()">✕ Temizle</button>
-        <button class="btn btn-ghost btn-sm" onclick="exportSiparislerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
-        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="siparis-filter-count"></span>
+        <div class="filter-row">
+          <input type="text" id="sp-f-kurum" placeholder="Kurum / müşteri..." oninput="renderSiparisler()">
+          <input type="text" id="sp-f-no" placeholder="Sipariş no..." oninput="renderSiparisler()" style="width:120px">
+          <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-filter-2-x"></i></button>
+          <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="siparis-filter-count"></span>
+        </div>
+        <div class="filter-extra">
+          <select id="sp-f-durum" onchange="renderSiparisler()"><option value="">Tüm Durumlar</option><option>Yeni Sipariş</option><option>Hazırlanıyor</option><option>Kısmi Sevkiyat</option><option>Tamamlandı</option><option>Fatura Edildi</option><option>İptal</option></select>
+          <input type="date" id="sp-f-ts" oninput="renderSiparisler()" title="Başlangıç">
+          <input type="date" id="sp-f-te" oninput="renderSiparisler()" title="Bitiş">
+          <button class="btn btn-ghost btn-sm" onclick="clearSiparisFilters()">✕ Temizle</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportSiparislerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
+        </div>
       </div>
       <div class="card">
         <div class="card-header">
@@ -591,13 +606,18 @@
     <!-- ═══ FATURALAR ═══ -->
     <div id="page-faturalar" class="page">
       <div class="filter-bar">
-        <input type="text" id="ft-f-kurum" placeholder="Kurum / müşteri..." oninput="renderFaturalar()">
-        <input type="text" id="ft-f-no" placeholder="Fatura no..." oninput="renderFaturalar()" style="width:120px">
-        <select id="ft-f-durum" onchange="renderFaturalar()"><option value="">Tüm Durumlar</option><option>Ödenmedi</option><option>Ödeme Bekleniyor</option><option>Ödendi</option></select>
-        <input type="date" id="ft-f-ts" oninput="renderFaturalar()" title="Başlangıç">
-        <input type="date" id="ft-f-te" oninput="renderFaturalar()" title="Bitiş">
-        <button class="btn btn-ghost btn-sm" onclick="clearFaturaFilters()">✕ Temizle</button>
-        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="fatura-filter-count"></span>
+        <div class="filter-row">
+          <input type="text" id="ft-f-kurum" placeholder="Kurum / müşteri..." oninput="renderFaturalar()">
+          <input type="text" id="ft-f-no" placeholder="Fatura no..." oninput="renderFaturalar()" style="width:120px">
+          <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-filter-2-x"></i></button>
+          <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="fatura-filter-count"></span>
+        </div>
+        <div class="filter-extra">
+          <select id="ft-f-durum" onchange="renderFaturalar()"><option value="">Tüm Durumlar</option><option>Ödenmedi</option><option>Ödeme Bekleniyor</option><option>Ödendi</option></select>
+          <input type="date" id="ft-f-ts" oninput="renderFaturalar()" title="Başlangıç">
+          <input type="date" id="ft-f-te" oninput="renderFaturalar()" title="Bitiş">
+          <button class="btn btn-ghost btn-sm" onclick="clearFaturaFilters()">✕ Temizle</button>
+        </div>
       </div>
       <div class="card">
         <div class="card-header">
@@ -915,9 +935,14 @@
     <!-- ═══ HAM STOK GÖRÜNÜMÜ ═══ -->
     <div id="page-ham-stok" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
-        <select id="hs-f-kat" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
-        <select id="hs-f-param" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Parametreler</option></select>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)"><input type="checkbox" id="hs-f-kritik" onchange="renderHamStok()"> Sadece Kritik</label>
+        <div class="filter-row">
+          <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-filter-2-x"></i></button>
+        </div>
+        <div class="filter-extra">
+          <select id="hs-f-kat" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
+          <select id="hs-f-param" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Parametreler</option></select>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)"><input type="checkbox" id="hs-f-kritik" onchange="renderHamStok()"> Sadece Kritik</label>
+        </div>
       </div>
       <div id="ham-stok-wrap"></div>
       <div id="ham-stok-pagination" style="margin-top:12px"></div>
@@ -926,9 +951,14 @@
     <!-- ═══ HAM STOK GİRİŞLER LİSTESİ ═══ -->
     <div id="page-ham-girisler" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
-        <input type="text" id="hgl-arama" placeholder="Evrak No / LOT / Parametre..." oninput="renderHamGirisler()" style="min-width:220px">
-        <input type="date" id="hgl-ts" oninput="renderHamGirisler()" title="Başlangıç">
-        <input type="date" id="hgl-te" oninput="renderHamGirisler()" title="Bitiş">
+        <div class="filter-row">
+          <input type="text" id="hgl-arama" placeholder="Evrak No / LOT / Parametre..." oninput="renderHamGirisler()" style="min-width:220px">
+          <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-filter-2-x"></i></button>
+        </div>
+        <div class="filter-extra">
+          <input type="date" id="hgl-ts" oninput="renderHamGirisler()" title="Başlangıç">
+          <input type="date" id="hgl-te" oninput="renderHamGirisler()" title="Bitiş">
+        </div>
       </div>
       <div id="ham-girisler-wrap"></div>
       <div id="ham-girisler-pagination" style="margin-top:12px"></div>
@@ -956,9 +986,14 @@
     <!-- ═══ HAM STOK ÇIKIŞLAR LİSTESİ ═══ -->
     <div id="page-ham-cikislar" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
-        <input type="text" id="hcl-arama" placeholder="Evrak No / Çıkış Nedeni..." oninput="renderHamCikislar()" style="min-width:220px">
-        <input type="date" id="hcl-ts" oninput="renderHamCikislar()" title="Başlangıç">
-        <input type="date" id="hcl-te" oninput="renderHamCikislar()" title="Bitiş">
+        <div class="filter-row">
+          <input type="text" id="hcl-arama" placeholder="Evrak No / Çıkış Nedeni..." oninput="renderHamCikislar()" style="min-width:220px">
+          <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-filter-2-x"></i></button>
+        </div>
+        <div class="filter-extra">
+          <input type="date" id="hcl-ts" oninput="renderHamCikislar()" title="Başlangıç">
+          <input type="date" id="hcl-te" oninput="renderHamCikislar()" title="Bitiş">
+        </div>
       </div>
       <div id="ham-cikislar-wrap"></div>
       <div id="ham-cikislar-pagination" style="margin-top:12px"></div>
@@ -992,8 +1027,13 @@
     <!-- ═══ TİCARİ STOK GÖRÜNÜMÜ ═══ -->
     <div id="page-bitmis-stok" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
-        <select id="bs-f-kat" onchange="renderBitmisStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
-        <input type="text" id="bs-f-arama" placeholder="Ürün adı / LOT..." oninput="renderBitmisStok()">
+        <div class="filter-row">
+          <input type="text" id="bs-f-arama" placeholder="Ürün adı / LOT..." oninput="renderBitmisStok()">
+          <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-filter-2-x"></i></button>
+        </div>
+        <div class="filter-extra">
+          <select id="bs-f-kat" onchange="renderBitmisStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
+        </div>
       </div>
       <div id="bitmis-stok-wrap"></div>
       <div id="bitmis-stok-pagination" style="margin-top:12px"></div>
@@ -1002,9 +1042,14 @@
     <!-- ═══ TİCARİ STOK GİRİŞLER LİSTESİ ═══ -->
     <div id="page-bitmis-girisler" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
-        <input type="text" id="bgl-arama" placeholder="Evrak No / Ürün / LOT..." oninput="renderBitmisGirisler()" style="min-width:220px">
-        <input type="date" id="bgl-ts" oninput="renderBitmisGirisler()" title="Başlangıç">
-        <input type="date" id="bgl-te" oninput="renderBitmisGirisler()" title="Bitiş">
+        <div class="filter-row">
+          <input type="text" id="bgl-arama" placeholder="Evrak No / Ürün / LOT..." oninput="renderBitmisGirisler()" style="min-width:220px">
+          <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-filter-2-x"></i></button>
+        </div>
+        <div class="filter-extra">
+          <input type="date" id="bgl-ts" oninput="renderBitmisGirisler()" title="Başlangıç">
+          <input type="date" id="bgl-te" oninput="renderBitmisGirisler()" title="Bitiş">
+        </div>
       </div>
       <div id="bitmis-girisler-wrap"></div>
       <div id="bitmis-girisler-pagination" style="margin-top:12px"></div>
@@ -1032,9 +1077,14 @@
     <!-- ═══ TİCARİ STOK ÇIKIŞLAR LİSTESİ ═══ -->
     <div id="page-bitmis-cikislar" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
-        <input type="text" id="bcl-arama" placeholder="Evrak No / Çıkış Nedeni / Ürün..." oninput="renderBitmisCikislar()" style="min-width:220px">
-        <input type="date" id="bcl-ts" oninput="renderBitmisCikislar()" title="Başlangıç">
-        <input type="date" id="bcl-te" oninput="renderBitmisCikislar()" title="Bitiş">
+        <div class="filter-row">
+          <input type="text" id="bcl-arama" placeholder="Evrak No / Çıkış Nedeni / Ürün..." oninput="renderBitmisCikislar()" style="min-width:220px">
+          <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-filter-2-x"></i></button>
+        </div>
+        <div class="filter-extra">
+          <input type="date" id="bcl-ts" oninput="renderBitmisCikislar()" title="Başlangıç">
+          <input type="date" id="bcl-te" oninput="renderBitmisCikislar()" title="Bitiş">
+        </div>
       </div>
       <div id="bitmis-cikislar-wrap"></div>
       <div id="bitmis-cikislar-pagination" style="margin-top:12px"></div>

@@ -1,3 +1,10 @@
+function toggleFilterExtra(btn){
+  var bar=btn.closest('.filter-bar');
+  var extra=bar&&bar.querySelector('.filter-extra');
+  if(!extra)return;
+  var open=extra.classList.toggle('open');
+  btn.classList.toggle('active',open);
+}
 var PAGE_SIZE=25;
 var _autoLogoutTimer=null;
 var _lastActivity=Date.now();

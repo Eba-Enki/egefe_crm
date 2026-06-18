@@ -350,7 +350,10 @@ input.musteri-locked{background:var(--bg4)!important;cursor:default;padding-righ
 .tab-count{background:var(--bg4);color:var(--text3);font-size:11px;font-weight:600;font-family:'DM Mono',monospace;padding:1px 7px;border-radius:10px;min-width:22px;text-align:center}
 
 /* ── FILTER BAR ── */
-.filter-bar{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 15px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.filter-bar{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.filter-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filter-extra{display:none;flex-wrap:wrap;gap:8px;align-items:center}
+.filter-extra.open{display:flex}
 .filter-bar input,.filter-bar select{
   background:var(--bg3);border:1px solid var(--border);
   border-radius:var(--radius-sm);padding:6px 10px;
@@ -360,6 +363,7 @@ input.musteri-locked{background:var(--bg4)!important;cursor:default;padding-righ
 .filter-bar input:focus,.filter-bar select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(61,155,196,.12)}
 .filter-bar input:focus-visible,.filter-bar select:focus-visible{outline:none}
 .filter-bar input{width:150px}
+.filter-toggle-btn.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 
 /* ── TEKLIF ITEMS ── */
 .teklif-items-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-top:6px}
@@ -610,7 +614,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
 
   .stats-grid{grid-template-columns:repeat(2,1fr)}
 
-  .filter-bar{flex-direction:column;align-items:stretch}
+  .filter-row,.filter-extra.open{flex-direction:column;align-items:stretch}
   .filter-bar input,.filter-bar select{width:100%}
 
   .form-actions{flex-direction:column-reverse}

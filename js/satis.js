@@ -342,7 +342,7 @@ function renderFaturalar(){
       +'<td><span class="badge '+(f.durum==='Ödendi'?'badge-onaylandi':'badge-reddedildi')+'">'+f.durum+'</span></td>'
       +'<td style="text-align:right"><div class="action-row">'
       +(canEdit?'<button class="btn-icon" title="Düzenle" onclick="openFaturaDuzenle(\''+f.id+'\')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>':'')
-      +(canEdit&&f.durum!=='Ödendi'?'<button class="btn-icon" style="color:var(--green)" onclick="markFaturaOdendi(\''+f.id+'\')" title="Ödendi İşaretle"><i class="ti ti-checks"></i></button>':'')
+      +(canEdit&&f.durum!=='Ödendi'?'<button class="btn-icon" style="color:var(--green)" onclick="markFaturaOdendi(\''+f.id+'\')" title="Ödendi İşaretle"><i class="ti ti-check"></i></button>':'')
       +(canEdit&&f.durum==='Ödendi'?'<button class="btn-icon" style="color:var(--text3)" onclick="markFaturaOdenmedi(\''+f.id+'\')" title="Ödenmedi olarak geri al">↩</button>':'')
       +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'fatura\',\''+f.id+'\')"><i class="ti ti-trash"></i></button>':'')
       +'</div></td>'

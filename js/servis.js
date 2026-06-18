@@ -177,7 +177,7 @@ function renderTable(){
     // Düzenle: sadece manuel durumlarda canEdit için; diğerleri view-only
     const editBtn=canEdit&&isManuelDurum
       ?`<button class="btn-icon" title="Düzenle" onclick="goServisForm('${s.id}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>`
-      :`<button class="btn-icon" title="Kayıt Görüntüle" style="color:var(--text2)" onclick="goServisForm('${s.id}',true)">&#128065;</button>`;
+      :`<button class="btn-icon" title="Kayıt Görüntüle" style="color:var(--accent)" onclick="goServisForm('${s.id}',true)"><i class="ti ti-info-circle"></i></button>`;
     // Durum değiştir: sadece manuel durumlarda ve arşiv değilse
     const durumBtn=canEdit&&!isArsiv&&isManuelDurum
       ?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showDurumMenu('${s.id}',this)"><i class="ti ti-progress"></i></button>`
@@ -200,7 +200,7 @@ function renderTable(){
         ${editBtn}
         ${durumBtn}
         ${teklifBtn}
-        ${isArsiv&&state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" title="Aktife Al" style="color:var(--teal);border-color:rgba(45,212,191,.3)" onclick="arsivdenGeriAl('${s.id}')">↩</button>`:''}
+        ${isArsiv&&state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" title="Aktife Al" style="color:var(--teal);border-color:rgba(45,212,191,.3)" onclick="arsivdenGeriAl('${s.id}')"><i class="ti ti-arrow-back-up"></i></button>`:''}
         ${state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('servis','${s.id}')"><i class="ti ti-trash"></i></button>`:''}
       </div></td>
     </tr>`;

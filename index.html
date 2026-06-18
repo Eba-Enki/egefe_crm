@@ -270,7 +270,7 @@
           <select id="f-durum" onchange="filterTable()"><option value="">Tüm Durumlar</option><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Reddedildi</option><option>Gönderildi</option><option>İade Edildi</option></select>
           <select id="f-garanti" onchange="filterTable()"><option value="">Garanti Tümü</option><option value="Evet">Garantili</option><option value="Hayır">Garantisiz</option></select>
           <input type="date" id="f-ts" oninput="filterTable()"><input type="date" id="f-te" oninput="filterTable()">
-          <button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearFilters()"><i class="ti ti-x"></i></button>
           <button class="btn btn-ghost btn-sm" onclick="exportServislerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
         </div>
       </div>
@@ -373,7 +373,7 @@
           <select id="tf-f-durum" onchange="renderTeklifler()"><option value="">Tüm Durumlar</option><option>Taslak</option><option>Gönderildi</option><option>Kabul Edildi</option><option>Reddedildi</option><option>İptal Edildi</option><option>Siparişe Aktarıldı</option></select>
           <input type="date" id="tf-f-ts" oninput="renderTeklifler()" title="Başlangıç">
           <input type="date" id="tf-f-te" oninput="renderTeklifler()" title="Bitiş">
-          <button class="btn btn-ghost btn-sm" onclick="clearTeklifFilters()">✕ Temizle</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearTeklifFilters()"><i class="ti ti-x"></i> Temizle</button>
           <button class="btn btn-ghost btn-sm" onclick="exportTekliflerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
         </div>
       </div>
@@ -587,7 +587,7 @@
           <select id="sp-f-durum" onchange="renderSiparisler()"><option value="">Tüm Durumlar</option><option>Yeni Sipariş</option><option>Hazırlanıyor</option><option>Kısmi Sevkiyat</option><option>Tamamlandı</option><option>Fatura Edildi</option><option>İptal</option></select>
           <input type="date" id="sp-f-ts" oninput="renderSiparisler()" title="Başlangıç">
           <input type="date" id="sp-f-te" oninput="renderSiparisler()" title="Bitiş">
-          <button class="btn btn-ghost btn-sm" onclick="clearSiparisFilters()">✕ Temizle</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearSiparisFilters()"><i class="ti ti-x"></i> Temizle</button>
           <button class="btn btn-ghost btn-sm" onclick="exportSiparislerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
         </div>
       </div>
@@ -624,7 +624,7 @@
           <select id="ft-f-durum" onchange="renderFaturalar()"><option value="">Tüm Durumlar</option><option>Ödenmedi</option><option>Ödeme Bekleniyor</option><option>Ödendi</option></select>
           <input type="date" id="ft-f-ts" oninput="renderFaturalar()" title="Başlangıç">
           <input type="date" id="ft-f-te" oninput="renderFaturalar()" title="Bitiş">
-          <button class="btn btn-ghost btn-sm" onclick="clearFaturaFilters()">✕ Temizle</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearFaturaFilters()"><i class="ti ti-x"></i> Temizle</button>
         </div>
       </div>
       <div class="card">
@@ -1380,7 +1380,7 @@
 <script src="js/state.js?v=10"></script>
 <script src="js/auth.js?v=10"></script>
 <script src="js/sistem.js?v=2"></script>
-<script src="js/ui.js?v=11"></script>
+<script src="js/ui.js?v=12"></script>
 <script src="js/dashboard.js?v=5"></script>
 <script src="js/servis.js?v=6"></script>
 <script src="js/teklif.js?v=7"></script>

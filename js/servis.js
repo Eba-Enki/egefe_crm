@@ -231,7 +231,7 @@ function clearTeklifFilters(){
   renderTeklifler();
 }
 function clearFilters(doRender){if(doRender===false){['f-kurum','f-seri'].forEach(function(id){document.getElementById(id).value='';});['f-durum','f-garanti'].forEach(function(id){document.getElementById(id).value='';});['f-ts','f-te'].forEach(function(id){document.getElementById(id).value='';});syncCustomSelectLabels();return;}['f-kurum','f-seri'].forEach(function(id){document.getElementById(id).value='';});['f-durum','f-garanti'].forEach(function(id){document.getElementById(id).value='';});['f-ts','f-te'].forEach(function(id){document.getElementById(id).value='';});syncCustomSelectLabels();renderTable();}
-function tekliflendir(sid){const ex=state.teklifler.find(t=>t.servisId===sid);if(ex){openTeklifDetay(ex.id)}else{goTeklifForm(null,sid);showPage('teklif-form',true)}}
+function tekliflendir(sid){const TEKLIF_ARSIV=['Reddedildi','Kapandı'];const ex=state.teklifler.find(t=>t.servisId===sid&&!TEKLIF_ARSIV.includes(t.durum));if(ex){openTeklifDetay(ex.id)}else{goTeklifForm(null,sid);showPage('teklif-form',true)}}
 
 // ════ SAVE SERVIS ════
 async function saveServis(){

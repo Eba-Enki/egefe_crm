@@ -276,9 +276,11 @@
         </div>
       </div>
       <div class="card">
+        <div id="servis-bulk-bar"></div>
         <div class="table-wrap">
           <table>
             <thead><tr>
+              <th id="th-servis-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('servisArsiv',this.checked,'renderTable')"></th>
               <th class="sortable" onclick="sortTable('kayitNo')">Kayıt No<span class="sort-ind" id="sort-kayitNo"></span></th>
               <th class="sortable" onclick="sortTable('kurumAdi')">Kurum / Müşteri<span class="sort-ind" id="sort-kurumAdi"></span></th>
               <th>Seri No</th>
@@ -382,9 +384,10 @@
         <div class="card-header">
           <span class="card-title">Teklifler</span>
         </div>
+        <div id="teklif-bulk-bar"></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Teklif No</th><th>Tarih</th><th>Kurum</th><th>Tutar</th><th>Durum</th><th id="th-sorumlu" style="display:none">Temsilci</th><th style="text-align:right;width:120px">İşlemler</th></tr></thead>
+            <thead><tr><th id="th-teklif-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('teklifArsiv',this.checked,'renderTeklifler')"></th><th>Teklif No</th><th>Tarih</th><th>Kurum</th><th>Tutar</th><th>Durum</th><th id="th-sorumlu" style="display:none">Temsilci</th><th style="text-align:right;width:120px">İşlemler</th></tr></thead>
             <tbody id="teklif-table-body"></tbody>
           </table>
           <div id="teklif-empty" class="empty-state" style="display:none"><div class="icon"><i class="ti ti-archive"></i></div><h3 style="color:var(--text2)">Henüz teklif yok</h3></div>
@@ -596,8 +599,10 @@
         <div class="card-header">
           <span class="card-title">Siparişler</span>
         </div>
+        <div id="siparis-bulk-bar"></div>
         <div class="table-wrap"><table>
           <thead><tr>
+            <th id="th-siparis-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('siparisArsiv',this.checked,'renderSiparisler')"></th>
             <th>Sipariş No</th><th>Tarih</th><th>Kurum</th><th>Tutar</th><th>Durum</th><th>Satış Temsilcisi</th><th style="text-align:right;width:100px">İşlemler</th>
           </tr></thead>
           <tbody id="siparis-table-body"></tbody>
@@ -632,8 +637,10 @@
         <div class="card-header">
           <span class="card-title">Faturalar</span>
         </div>
+        <div id="fatura-bulk-bar"></div>
         <div class="table-wrap"><table>
           <thead><tr>
+            <th id="th-fatura-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('faturaArsiv',this.checked,'renderFaturalar')"></th>
             <th>Fatura No</th><th>Sipariş No</th><th>Müşteri</th><th>Tutar</th><th>Fatura Tarihi</th><th>Vade</th><th>Durum</th><th style="text-align:right;width:80px">İşlemler</th>
           </tr></thead>
           <tbody id="fatura-table-body"></tbody>
@@ -1381,15 +1388,15 @@
 <script src="js/state.js?v=10"></script>
 <script src="js/auth.js?v=12"></script>
 <script src="js/sistem.js?v=2"></script>
-<script src="js/ui.js?v=17"></script>
+<script src="js/ui.js?v=18"></script>
 <script src="js/dashboard.js?v=5"></script>
-<script src="js/servis.js?v=7"></script>
-<script src="js/teklif.js?v=7"></script>
+<script src="js/servis.js?v=8"></script>
+<script src="js/teklif.js?v=8"></script>
 <script src="js/tutanak.js?v=6"></script>
-<script src="js/musteri.js?v=11"></script>
+<script src="js/musteri.js?v=12"></script>
 <script src="js/export.js?v=5"></script>
-<script src="js/satis.js?v=8"></script>
-<script src="js/stok.js?v=3"></script>
+<script src="js/satis.js?v=9"></script>
+<script src="js/stok.js?v=4"></script>
 <script src="js/init.js?v=8"></script>
 <!-- ─── FATURA MODAL ─── -->
 <div class="modal-overlay" id="modal-fatura">

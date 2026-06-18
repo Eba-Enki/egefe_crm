@@ -149,11 +149,27 @@ function renderSiparisler(){
   var tbody=document.getElementById('siparis-table-body');
   var emptyEl=document.getElementById('siparis-empty');
   if(!tbody)return;
+  var canEdit=state.currentUser&&state.currentUser.rol!=='izleyici';
+  var canBulk=isArsiv&&canEdit;
+  if(!isArsiv) bulkClear('siparisArsiv');
+  bulkSetVisible('siparisArsiv',filtered.map(function(s){return s.id;}));
+  var thCheck=document.getElementById('th-siparis-check');
+  if(thCheck){
+    thCheck.style.display=canBulk?'':'none';
+    var thCb=thCheck.querySelector('input');if(thCb)thCb.checked=canBulk&&bulkAllChecked('siparisArsiv');
+  }
+  var bulkBarEl=document.getElementById('siparis-bulk-bar');
+  var selCount=canBulk?bulkCount('siparisArsiv'):0;
+  if(bulkBarEl)bulkBarEl.innerHTML=selCount>0
+    ?'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin:0 16px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
+      +'<span style="font-size:12px;color:var(--text2)">'+selCount+' öğe seçildi</span>'
+      +'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'siparis\',bulkSelectedIds(\'siparisArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
+      +'</div>'
+    :'';
   if(!filtered.length){tbody.innerHTML='';if(emptyEl)emptyEl.style.display='';renderPagination('siparis-pagination',1,0,'setSiparislerPage');return;}
   if(emptyEl)emptyEl.style.display='none';
   var newSPH=JSON.stringify([fK,fN,fD,fTs,fTe,siparisTab]);if(newSPH!==_siparisFilterHash){siparislerPage=1;_siparisFilterHash=newSPH;}
   var currency={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'};
-  var canEdit=state.currentUser&&state.currentUser.rol!=='izleyici';
   var sortedSp=filtered.sort(function(a,b){return new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi);});
   var pagedSp=sortedSp.slice((siparislerPage-1)*PAGE_SIZE,siparislerPage*PAGE_SIZE);
   renderPagination('siparis-pagination',siparislerPage,filtered.length,'setSiparislerPage');
@@ -161,6 +177,7 @@ function renderSiparisler(){
     var toplam=(s.satirlar||[]).reduce(function(a,i){return a+i.miktar*i.birimFiyat;},0);
     var cur=currency[s.paraBirimi||'TRY']||'₺';
     return '<tr>'
+      +(canBulk?'<td><input type="checkbox" '+(bulkIsChecked('siparisArsiv',s.id)?'checked':'')+' onchange="bulkToggleRow(\'siparisArsiv\',\''+s.id+'\',\'renderSiparisler\')"></td>':'')
       +'<td><span class="kn-badge">'+esc(s.siparisNo)+'</span></td>'
       +'<td class="td-mono" style="color:var(--text2)">'+fmtDate(s.siparisTarihi||s.teklifTarihi||s.olusturmaTarihi)+'</td>'
       +'<td style="font-weight:500">'+esc(s.kurum||'—')+'</td>'
@@ -320,11 +337,27 @@ function renderFaturalar(){
   var today_ms=new Date().getTime();
   var tbody=document.getElementById('fatura-table-body');
   if(!tbody)return;
+  var canEdit=state.currentUser&&state.currentUser.rol!=='izleyici';
+  var canBulk=isArsiv&&canEdit;
+  if(!isArsiv) bulkClear('faturaArsiv');
+  bulkSetVisible('faturaArsiv',filtered.map(function(f){return f.id;}));
+  var thCheck=document.getElementById('th-fatura-check');
+  if(thCheck){
+    thCheck.style.display=canBulk?'':'none';
+    var thCb=thCheck.querySelector('input');if(thCb)thCb.checked=canBulk&&bulkAllChecked('faturaArsiv');
+  }
+  var bulkBarEl=document.getElementById('fatura-bulk-bar');
+  var selCount=canBulk?bulkCount('faturaArsiv'):0;
+  if(bulkBarEl)bulkBarEl.innerHTML=selCount>0
+    ?'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin:0 16px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
+      +'<span style="font-size:12px;color:var(--text2)">'+selCount+' öğe seçildi</span>'
+      +'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'fatura\',bulkSelectedIds(\'faturaArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
+      +'</div>'
+    :'';
   if(!filtered.length){tbody.innerHTML='';document.getElementById('fatura-empty').style.display='';renderPagination('fatura-pagination',1,0,'setFaturalarPage');return;}
   document.getElementById('fatura-empty').style.display='none';
   var newFH=JSON.stringify([fK,fN,fD,fTs,fTe,faturaTab]);if(newFH!==_faturaFilterHash){faturalarPage=1;_faturaFilterHash=newFH;}
   var currency={TRY:'₺',USD:'$',EUR:'€',GBP:'£'};
-  var canEdit=state.currentUser&&state.currentUser.rol!=='izleyici';
   var sortedFt=[...filtered].sort(function(a,b){return new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi);});
   var pagedFt=sortedFt.slice((faturalarPage-1)*PAGE_SIZE,faturalarPage*PAGE_SIZE);
   renderPagination('fatura-pagination',faturalarPage,filtered.length,'setFaturalarPage');
@@ -333,6 +366,7 @@ function renderFaturalar(){
     var vadeWarn=(vadeDate&&!isNaN(vadeDate)&&vadeDate.getTime()<today_ms&&f.durum==='Ödenmedi')?' <span style="color:var(--red);font-size:10px">⚠ Gecikmiş</span>':'';
     var cur=currency[f.paraBirimi||'TRY']||'₺';
     return '<tr>'
+      +(canBulk?'<td><input type="checkbox" '+(bulkIsChecked('faturaArsiv',f.id)?'checked':'')+' onchange="bulkToggleRow(\'faturaArsiv\',\''+f.id+'\',\'renderFaturalar\')"></td>':'')
       +'<td><span class="kn-badge">'+esc(f.faturaNo)+'</span></td>'
       +'<td><span class="kn-badge" style="color:var(--teal)">'+esc(f.siparisNo)+'</span></td>'
       +'<td style="font-weight:500">'+esc(f.kurum||'—')+'</td>'

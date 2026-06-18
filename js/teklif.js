@@ -172,10 +172,27 @@ function renderTeklifler(){
   if(thS)thS.style.display=showTemsilci?'':'none';
   var sfSeriEl=document.getElementById('tf-f-seri');
   if(sfSeriEl)sfSeriEl.style.display=currentPortal==='servis'?'':'none';
+  var canBulk=isArsiv&&canEdit;
+  if(!isArsiv) bulkClear('teklifArsiv');
+  bulkSetVisible('teklifArsiv',filtTl2.map(function(t){return t.id;}));
+  var thCheck=document.getElementById('th-teklif-check');
+  if(thCheck){
+    thCheck.style.display=canBulk?'':'none';
+    var thCb=thCheck.querySelector('input');if(thCb)thCb.checked=canBulk&&bulkAllChecked('teklifArsiv');
+  }
+  var bulkBarEl=document.getElementById('teklif-bulk-bar');
+  var selCount=canBulk?bulkCount('teklifArsiv'):0;
+  if(bulkBarEl)bulkBarEl.innerHTML=selCount>0
+    ?'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin:0 16px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
+      +'<span style="font-size:12px;color:var(--text2)">'+selCount+' öğe seçildi</span>'
+      +'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'teklif\',bulkSelectedIds(\'teklifArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
+      +'</div>'
+    :'';
   var sortedTl=[...filtTl2].sort((a,b)=>new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi));
   var pagedTl=sortedTl.slice((tekliflerPage-1)*PAGE_SIZE,tekliflerPage*PAGE_SIZE);
   renderPagination('teklif-pagination',tekliflerPage,filtTl2.length,'setTekliflerPage');
   tbody.innerHTML=pagedTl.map(t=>`<tr>
+    ${canBulk?`<td><input type="checkbox" ${bulkIsChecked('teklifArsiv',t.id)?'checked':''} onchange="bulkToggleRow('teklifArsiv','${t.id}','renderTeklifler')"></td>`:''}
     <td><span class="kn-badge">${esc(t.teklifNo)}</span></td>
     <td class="td-mono" style="color:var(--text2)">${fmtDate(t.teklifTarihi)}</td>
     <td style="font-weight:500">${esc(t.kurum||'—')}</td>

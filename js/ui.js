@@ -1,3 +1,25 @@
+// ════ GENEL TOPLU SEÇİM (arşiv listeleri) ════
+var _bulkSel={};
+var _bulkVisible={};
+function _bulkSet(key){if(!_bulkSel[key])_bulkSel[key]=new Set();return _bulkSel[key];}
+function bulkSetVisible(key,ids){_bulkVisible[key]=ids;}
+function bulkClear(key){_bulkSet(key).clear();}
+function bulkCount(key){var ids=_bulkVisible[key]||[];var s=_bulkSet(key);return ids.filter(function(id){return s.has(id);}).length;}
+function bulkAllChecked(key){var ids=_bulkVisible[key]||[];return ids.length>0&&bulkCount(key)===ids.length;}
+function bulkIsChecked(key,id){return _bulkSet(key).has(id);}
+function bulkSelectedIds(key){var ids=_bulkVisible[key]||[];var s=_bulkSet(key);return ids.filter(function(id){return s.has(id);});}
+function bulkToggleRow(key,id,renderFnName){
+  var s=_bulkSet(key);
+  if(s.has(id))s.delete(id);else s.add(id);
+  window[renderFnName]();
+}
+function bulkToggleAll(key,checked,renderFnName){
+  var ids=_bulkVisible[key]||[];
+  var s=_bulkSet(key);
+  ids.forEach(function(id){if(checked)s.add(id);else s.delete(id);});
+  window[renderFnName]();
+}
+
 function syncFooterSpacing(){
   var footer=document.getElementById('app-footer');
   var content=document.querySelector('.content');

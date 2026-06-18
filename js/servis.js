@@ -157,6 +157,23 @@ function renderTable(){
   var newSH=JSON.stringify([fK,fS,fD,fG,fTs,fTe,servisTab]);if(newSH!==_servisFilterHash){servisPage=1;_servisFilterHash=newSH;}
   document.getElementById('filter-count').textContent=data.length+' kayit';
   const canEdit = !!(state.currentUser && state.currentUser.rol !== 'izleyici' && !isArsiv);
+  const canWrite = !!(state.currentUser && state.currentUser.rol !== 'izleyici');
+  const canBulk = isArsiv && canWrite;
+  if(!isArsiv) bulkClear('servisArsiv');
+  bulkSetVisible('servisArsiv', data.map(function(s){return s.id;}));
+  var thCheck=document.getElementById('th-servis-check');
+  if(thCheck){
+    thCheck.style.display=canBulk?'':'none';
+    var thCb=thCheck.querySelector('input');if(thCb)thCb.checked=canBulk&&bulkAllChecked('servisArsiv');
+  }
+  var bulkBarEl=document.getElementById('servis-bulk-bar');
+  var selCount=canBulk?bulkCount('servisArsiv'):0;
+  if(bulkBarEl)bulkBarEl.innerHTML=selCount>0
+    ?'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin:0 16px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)">'
+      +'<span style="font-size:12px;color:var(--text2)">'+selCount+' öğe seçildi</span>'
+      +'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'servis\',bulkSelectedIds(\'servisArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'
+      +'</div>'
+    :'';
   const tbody=document.getElementById('table-body');
   const emptyEl=document.getElementById('table-empty');
   const emptyMsg=document.getElementById('table-empty-msg');
@@ -189,6 +206,7 @@ function renderTable(){
       else if(hasTeklif)teklifBtn=`<button class="btn-icon" title="Teklife Git" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')"><i class="ti ti-file-invoice"></i></button>`;
     }
     return`<tr${isArsiv?' style="opacity:0.8"':''}>
+      ${canBulk?`<td><input type="checkbox" ${bulkIsChecked('servisArsiv',s.id)?'checked':''} onchange="bulkToggleRow('servisArsiv','${s.id}','renderTable')"></td>`:''}
       <td><span class="kn-badge">${esc(s.kayitNo)}</span></td>
       <td style="font-weight:500;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.kurumAdi||'—')}</td>
       <td class="td-mono">${esc(s.seriNo||'—')}</td>

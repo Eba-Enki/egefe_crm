@@ -318,6 +318,27 @@ function confirmDelete(type,id){
   });
 }
 
+function confirmDeleteBulk(type,ids){
+  if(!ids||!ids.length)return;
+  const endpoints={servis:'servisler',teklif:'teklifler',musteri:'musteriler',urun:'urunler',siparis:'siparisler',fatura:'faturalar'};
+  const stateKeys={servis:'servisler',teklif:'teklifler',musteri:'musteriler',urun:'urunler',siparis:'siparisler',fatura:'faturalar'};
+  const ep=endpoints[type]; if(!ep)return;
+  showConfirm(ids.length+' kaydı silmek istiyor musunuz?',async function(){
+    var failed=0;
+    for(var i=0;i<ids.length;i++){
+      var id=ids[i];
+      try{await apiDelete(ep+'?id='+encodeURIComponent(id));}
+      catch(e){failed++;continue;}
+      state[stateKeys[type]]=state[stateKeys[type]].filter(function(x){return x.id!==id;});
+      if(type==='servis')state.teklifler=state.teklifler.filter(function(t){return t.servisId!==id;});
+    }
+    if(type!=='musteri') saveAll();
+    const refreshMap={servis:()=>{renderTable();renderDashboard()},teklif:renderTeklifler,siparis:renderSiparisler,fatura:renderFaturalar,musteri:renderMusteriler,urun:renderUrunler};
+    if(refreshMap[type])refreshMap[type]();
+    toast(failed?(ids.length-failed)+' silindi, '+failed+' başarısız.':ids.length+' kayıt silindi.',failed?'error':'info');
+  },{okText:'Sil',okClass:'btn-danger'});
+}
+
 
 // ════ EXCEL IMPORT — MÜŞTERİLER ════
 function downloadMusteriSablon(){

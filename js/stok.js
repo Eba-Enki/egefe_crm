@@ -615,7 +615,7 @@ function hgRenderKalemler(){
       +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="hgRemoveKalem('+i+')"><i class="ti ti-trash"></i></button>'
       +'</div>';
   }).join('');
-  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="hgAddKalem()">＋ Kalem Ekle</button></div>';
+  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="hgAddKalem()"><i class="ti ti-plus"></i> Kalem Ekle</button></div>';
 }
 
 async function saveHamGiris(){
@@ -820,7 +820,7 @@ function hcRenderSatirlar(){
       +'</div>';
   }).join('');
 
-  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="hcAddSatir()">＋ Parametre Ekle</button></div>';
+  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="hcAddSatir()"><i class="ti ti-plus"></i> Parametre Ekle</button></div>';
 
   // Stok uyarı güncelle
   hcStokUyariGuncelle();
@@ -1135,7 +1135,7 @@ function bgRenderKalemler(){
         :'')
       +'</div>';
   }).join('');
-  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bgAddKalem()">＋ Kalem Ekle</button></div>';
+  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bgAddKalem()"><i class="ti ti-plus"></i> Kalem Ekle</button></div>';
 }
 
 async function saveBitmisGiris(){
@@ -1306,7 +1306,7 @@ function bcRenderSatirlar(){
       +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="bcRemoveSatir('+i+')"><i class="ti ti-trash"></i></button>'
       +'</div>';
   }).join('');
-  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bcAddSatir()">＋ Ürün / LOT Ekle</button></div>';
+  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bcAddSatir()"><i class="ti ti-plus"></i> Ürün / LOT Ekle</button></div>';
 }
 
 function bcLotChange(idx,val){_bcSatirlar[idx].lotId=val;bcRenderSatirlar();}

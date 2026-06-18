@@ -166,11 +166,9 @@ function renderTable(){
     thCheck.style.display=canBulk?'':'none';
     var thCb=thCheck.querySelector('input');if(thCb)thCb.checked=canBulk&&bulkAllChecked('servisArsiv');
   }
-  var bulkHeaderEl=document.getElementById('servis-bulk-header');
   var bulkBarEl=document.getElementById('servis-bulk-bar');
   var bulkCountEl=document.getElementById('servis-bulk-count');
   var selCount=canBulk?bulkCount('servisArsiv'):0;
-  if(bulkHeaderEl)bulkHeaderEl.style.display=selCount>0?'':'none';
   if(bulkCountEl)bulkCountEl.textContent=selCount>0?selCount+' öğe seçildi':'';
   if(bulkBarEl)bulkBarEl.innerHTML=selCount>0
     ?'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'servis\',bulkSelectedIds(\'servisArsiv\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>'

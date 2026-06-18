@@ -10,7 +10,7 @@
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js"></script>
 <script src="vendor/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
 
@@ -267,9 +267,10 @@
           </div>
         </div>
         <div class="filter-extra">
-          <select id="f-durum" onchange="filterTable()"><option value="">Tüm Durumlar</option><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Reddedildi</option><option>Gönderildi</option><option>İade Edildi</option></select>
-          <select id="f-garanti" onchange="filterTable()"><option value="">Garanti Tümü</option><option value="Evet">Garantili</option><option value="Hayır">Garantisiz</option></select>
-          <input type="date" id="f-ts" oninput="filterTable()"><input type="date" id="f-te" oninput="filterTable()">
+          <div class="filter-field"><label class="filter-field-label">Durum</label><select id="f-durum" onchange="filterTable()"><option value="">Tüm Durumlar</option><option>Yeni Gelen</option><option>S.F. Bekleniyor</option><option>Onay Bekleniyor</option><option>Onaylandı</option><option>Reddedildi</option><option>Gönderildi</option><option>İade Edildi</option></select></div>
+          <div class="filter-field"><label class="filter-field-label">Garanti</label><select id="f-garanti" onchange="filterTable()"><option value="">Garanti Tümü</option><option value="Evet">Garantili</option><option value="Hayır">Garantisiz</option></select></div>
+          <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="f-ts" oninput="filterTable()"></div>
+          <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="f-te" oninput="filterTable()"></div>
           <button class="btn btn-ghost btn-sm" onclick="clearFilters()"><i class="ti ti-x"></i></button>
           <button class="btn btn-ghost btn-sm" onclick="exportServislerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
         </div>
@@ -370,9 +371,9 @@
           </div>
         </div>
         <div class="filter-extra">
-          <select id="tf-f-durum" onchange="renderTeklifler()"><option value="">Tüm Durumlar</option><option>Taslak</option><option>Gönderildi</option><option>Kabul Edildi</option><option>Reddedildi</option><option>İptal Edildi</option><option>Siparişe Aktarıldı</option></select>
-          <input type="date" id="tf-f-ts" oninput="renderTeklifler()" title="Başlangıç">
-          <input type="date" id="tf-f-te" oninput="renderTeklifler()" title="Bitiş">
+          <div class="filter-field"><label class="filter-field-label">Durum</label><select id="tf-f-durum" onchange="renderTeklifler()"><option value="">Tüm Durumlar</option><option>Taslak</option><option>Gönderildi</option><option>Kabul Edildi</option><option>Reddedildi</option><option>İptal Edildi</option><option>Siparişe Aktarıldı</option></select></div>
+          <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="tf-f-ts" oninput="renderTeklifler()"></div>
+          <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="tf-f-te" oninput="renderTeklifler()"></div>
           <button class="btn btn-ghost btn-sm" onclick="clearTeklifFilters()"><i class="ti ti-x"></i> Temizle</button>
           <button class="btn btn-ghost btn-sm" onclick="exportTekliflerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
         </div>
@@ -584,9 +585,9 @@
           </div>
         </div>
         <div class="filter-extra">
-          <select id="sp-f-durum" onchange="renderSiparisler()"><option value="">Tüm Durumlar</option><option>Yeni Sipariş</option><option>Hazırlanıyor</option><option>Kısmi Sevkiyat</option><option>Tamamlandı</option><option>Fatura Edildi</option><option>İptal</option></select>
-          <input type="date" id="sp-f-ts" oninput="renderSiparisler()" title="Başlangıç">
-          <input type="date" id="sp-f-te" oninput="renderSiparisler()" title="Bitiş">
+          <div class="filter-field"><label class="filter-field-label">Durum</label><select id="sp-f-durum" onchange="renderSiparisler()"><option value="">Tüm Durumlar</option><option>Yeni Sipariş</option><option>Hazırlanıyor</option><option>Kısmi Sevkiyat</option><option>Tamamlandı</option><option>Fatura Edildi</option><option>İptal</option></select></div>
+          <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="sp-f-ts" oninput="renderSiparisler()"></div>
+          <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="sp-f-te" oninput="renderSiparisler()"></div>
           <button class="btn btn-ghost btn-sm" onclick="clearSiparisFilters()"><i class="ti ti-x"></i> Temizle</button>
           <button class="btn btn-ghost btn-sm" onclick="exportSiparislerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
         </div>
@@ -621,9 +622,9 @@
           </div>
         </div>
         <div class="filter-extra">
-          <select id="ft-f-durum" onchange="renderFaturalar()"><option value="">Tüm Durumlar</option><option>Ödenmedi</option><option>Ödeme Bekleniyor</option><option>Ödendi</option></select>
-          <input type="date" id="ft-f-ts" oninput="renderFaturalar()" title="Başlangıç">
-          <input type="date" id="ft-f-te" oninput="renderFaturalar()" title="Bitiş">
+          <div class="filter-field"><label class="filter-field-label">Durum</label><select id="ft-f-durum" onchange="renderFaturalar()"><option value="">Tüm Durumlar</option><option>Ödenmedi</option><option>Ödeme Bekleniyor</option><option>Ödendi</option></select></div>
+          <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="ft-f-ts" oninput="renderFaturalar()"></div>
+          <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="ft-f-te" oninput="renderFaturalar()"></div>
           <button class="btn btn-ghost btn-sm" onclick="clearFaturaFilters()"><i class="ti ti-x"></i> Temizle</button>
         </div>
       </div>
@@ -947,8 +948,8 @@
           <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-adjustments-horizontal"></i></button>
         </div>
         <div class="filter-extra">
-          <select id="hs-f-kat" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
-          <select id="hs-f-param" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Parametreler</option></select>
+          <div class="filter-field"><label class="filter-field-label">Kategori</label><select id="hs-f-kat" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select></div>
+          <div class="filter-field"><label class="filter-field-label">Parametre</label><select id="hs-f-param" onchange="renderHamStok()" style="min-width:140px"><option value="">Tüm Parametreler</option></select></div>
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)"><input type="checkbox" id="hs-f-kritik" onchange="renderHamStok()"> Sadece Kritik</label>
         </div>
       </div>
@@ -966,8 +967,8 @@
           </div>
         </div>
         <div class="filter-extra">
-          <input type="date" id="hgl-ts" oninput="renderHamGirisler()" title="Başlangıç">
-          <input type="date" id="hgl-te" oninput="renderHamGirisler()" title="Bitiş">
+          <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="hgl-ts" oninput="renderHamGirisler()"></div>
+          <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="hgl-te" oninput="renderHamGirisler()"></div>
         </div>
       </div>
       <div id="ham-girisler-wrap"></div>
@@ -1003,8 +1004,8 @@
           </div>
         </div>
         <div class="filter-extra">
-          <input type="date" id="hcl-ts" oninput="renderHamCikislar()" title="Başlangıç">
-          <input type="date" id="hcl-te" oninput="renderHamCikislar()" title="Bitiş">
+          <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="hcl-ts" oninput="renderHamCikislar()"></div>
+          <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="hcl-te" oninput="renderHamCikislar()"></div>
         </div>
       </div>
       <div id="ham-cikislar-wrap"></div>
@@ -1046,7 +1047,7 @@
           </div>
         </div>
         <div class="filter-extra">
-          <select id="bs-f-kat" onchange="renderBitmisStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select>
+          <div class="filter-field"><label class="filter-field-label">Kategori</label><select id="bs-f-kat" onchange="renderBitmisStok()" style="min-width:140px"><option value="">Tüm Kategoriler</option></select></div>
         </div>
       </div>
       <div id="bitmis-stok-wrap"></div>
@@ -1063,8 +1064,8 @@
           </div>
         </div>
         <div class="filter-extra">
-          <input type="date" id="bgl-ts" oninput="renderBitmisGirisler()" title="Başlangıç">
-          <input type="date" id="bgl-te" oninput="renderBitmisGirisler()" title="Bitiş">
+          <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="bgl-ts" oninput="renderBitmisGirisler()"></div>
+          <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="bgl-te" oninput="renderBitmisGirisler()"></div>
         </div>
       </div>
       <div id="bitmis-girisler-wrap"></div>
@@ -1100,8 +1101,8 @@
           </div>
         </div>
         <div class="filter-extra">
-          <input type="date" id="bcl-ts" oninput="renderBitmisCikislar()" title="Başlangıç">
-          <input type="date" id="bcl-te" oninput="renderBitmisCikislar()" title="Bitiş">
+          <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="bcl-ts" oninput="renderBitmisCikislar()"></div>
+          <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="bcl-te" oninput="renderBitmisCikislar()"></div>
         </div>
       </div>
       <div id="bitmis-cikislar-wrap"></div>

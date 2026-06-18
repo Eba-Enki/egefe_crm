@@ -352,8 +352,10 @@ input.musteri-locked{background:var(--bg4)!important;cursor:default;padding-righ
 /* ── FILTER BAR ── */
 .filter-bar{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
 .filter-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.filter-extra{display:none;flex-wrap:wrap;gap:8px;align-items:center}
+.filter-extra{display:none;flex-wrap:wrap;gap:8px;align-items:flex-end}
 .filter-extra.open{display:flex}
+.filter-field{display:flex;flex-direction:column;gap:4px}
+.filter-field-label{font-size:11px;color:var(--text3)}
 .filter-bar input,.filter-bar select{
   background:var(--bg3);border:1px solid var(--border);
   border-radius:var(--radius-sm);padding:6px 10px;

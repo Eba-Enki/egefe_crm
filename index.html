@@ -271,7 +271,7 @@
           <div class="filter-field"><label class="filter-field-label">Garanti</label><div class="custom-select"><select id="f-garanti" onchange="filterTable()" class="custom-select-native"><option value="">Garanti Tümü</option><option value="Evet">Garantili</option><option value="Hayır">Garantisiz</option></select><button type="button" class="custom-select-trigger" onclick="toggleCustomSelect(event,'f-garanti')"><span class="custom-select-label">Garanti Tümü</span><i class="ti ti-chevron-down"></i></button></div></div>
           <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="f-ts" oninput="filterTable()"></div>
           <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="f-te" oninput="filterTable()"></div>
-          <button class="btn btn-ghost btn-sm" onclick="clearFilters()"><i class="ti ti-x"></i></button>
+          <button class="btn btn-ghost btn-sm" onclick="clearFilters()"><i class="ti ti-x"></i> Temizle</button>
           <button class="btn btn-ghost btn-sm" onclick="exportServislerExcel()" style="color:var(--green)"><i class="ti ti-file-download"></i> Excel</button>
         </div>
       </div>
@@ -1389,7 +1389,7 @@
 <script src="js/musteri.js?v=11"></script>
 <script src="js/export.js?v=5"></script>
 <script src="js/satis.js?v=8"></script>
-<script src="js/stok.js?v=2"></script>
+<script src="js/stok.js?v=3"></script>
 <script src="js/init.js?v=8"></script>
 <!-- ─── FATURA MODAL ─── -->
 <div class="modal-overlay" id="modal-fatura">

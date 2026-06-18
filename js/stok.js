@@ -545,7 +545,7 @@ function stokSilHamGiris(id){
       toast(e.message||'Giriş belgesi silinemedi.','error');
       return;
     }
-    await loadStokData(); renderHamGirisler(); toast('Giriş belgesi silindi.','info');
+    await loadStokData(true); renderHamGirisler(); toast('Giriş belgesi silindi.','info');
   });
 }
 
@@ -557,7 +557,7 @@ function stokSilHamLot(id){
       toast(e.message||'LOT silinemedi.','error');
       return;
     }
-    await loadStokData(); renderHamStok(); toast('Silindi.','info');
+    await loadStokData(true); renderHamStok(); toast('Silindi.','info');
   });
 }
 
@@ -670,6 +670,7 @@ async function saveHamGiris(){
     return;
   }
   if(document.getElementById('hg-edit-id')) document.getElementById('hg-edit-id').value='';
+  await loadStokData(true);
   _formDirty=false;showPage('ham-girisler');
 }
 
@@ -756,7 +757,7 @@ function stokSilHamCikis(id){
       toast(e.message||'Çıkış silinemedi.','error');
       return;
     }
-    await loadStokData(); renderHamCikislar(); toast('Çıkış silindi, stok geri yüklendi.','success');
+    await loadStokData(true); renderHamCikislar(); toast('Çıkış silindi, stok geri yüklendi.','success');
   });
 }
 
@@ -897,6 +898,7 @@ async function saveHamCikis(){
     return;
   }
   toast(stokFmtN(kitMiktar)+' Kit çıkışı yapıldı ('+res.cikis.evrakNo+').','success');
+  await loadStokData(true);
   _formDirty=false;showPage('ham-cikislar');
 }
 
@@ -1068,7 +1070,7 @@ function stokSilBitmisGiris(id){
       toast(e.message||'Silinemedi.','error');
       return;
     }
-    await loadStokData(); renderBitmisGirisler(); toast('Silindi.','info');
+    await loadStokData(true); renderBitmisGirisler(); toast('Silindi.','info');
   });
 }
 
@@ -1080,7 +1082,7 @@ function stokSilBitmisLot(id){
       toast(e.message||'LOT silinemedi.','error');
       return;
     }
-    await loadStokData(); renderBitmisStok(); toast('Silindi.','info');
+    await loadStokData(true); renderBitmisStok(); toast('Silindi.','info');
   });
 }
 function stokSilLotToplu(endpoint,ids,renderFnName){
@@ -1091,7 +1093,7 @@ function stokSilLotToplu(endpoint,ids,renderFnName){
       try{await apiDelete('stok/'+endpoint+'?id='+encodeURIComponent(ids[i]));}
       catch(e){failed++;}
     }
-    await loadStokData(); window[renderFnName]();
+    await loadStokData(true); window[renderFnName]();
     toast(failed?(ids.length-failed)+' silindi, '+failed+' başarısız.':ids.length+' kayıt silindi.',failed?'error':'info');
   },{okText:'Sil',okClass:'btn-danger'});
 }
@@ -1223,6 +1225,7 @@ async function saveBitmisGiris(){
     return;
   }
   if(document.getElementById('bg-edit-id')) document.getElementById('bg-edit-id').value='';
+  await loadStokData(true);
   _formDirty=false;showPage('bitmis-girisler');
 }
 
@@ -1306,7 +1309,7 @@ function stokSilBitmisCikis(id){
       toast(e.message||'Çıkış silinemedi.','error');
       return;
     }
-    await loadStokData(); renderBitmisCikislar(); toast('Çıkış silindi, stok geri yüklendi.','success');
+    await loadStokData(true); renderBitmisCikislar(); toast('Çıkış silindi, stok geri yüklendi.','success');
   });
 }
 
@@ -1387,6 +1390,7 @@ async function saveBitmisCikis(){
     return;
   }
   toast('Hazır ürün çıkışı kaydedildi ('+res.cikis.evrakNo+').','success');
+  await loadStokData(true);
   _formDirty=false;showPage('bitmis-cikislar');
 }
 

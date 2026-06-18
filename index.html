@@ -131,9 +131,9 @@
 
 <!-- ─── SIDEBAR ─── -->
 <div id="sidebar">
-  <div class="sb-logo" onclick="goPortalDashboard()" title="Dashboard'a git">
-    <img id="sb-logo-img" src="" alt="Egefe" style="max-width:110px;width:100%;height:auto;display:block;flex-shrink:0">
-    <button class="sb-collapse-btn" id="sb-collapse-btn" onclick="event.stopPropagation();toggleSidebarCollapse()" title="Kenar Çubuğunu Daralt">
+  <div class="sb-logo" onclick="goPortalDashboard()">
+    <img id="sb-logo-img" src="" alt="Egefe" data-tooltip="Dashboard'a git" style="max-width:110px;width:100%;height:auto;display:block;flex-shrink:0">
+    <button class="sb-collapse-btn" id="sb-collapse-btn" onclick="event.stopPropagation();toggleSidebarCollapse()" data-tooltip="Kenar Çubuğunu Daralt">
       <i class="ti ti-layout-sidebar-left-collapse"></i>
     </button>
   </div>
@@ -174,11 +174,11 @@
     <div class="sb-item stok-only admin-only" data-page="stok-ayarlar" style="display:none" onclick="showPage('stok-ayarlar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Ayarlar</span></div>
   </div>
   <div class="sb-bottom">
-    <div class="sb-user" onclick="openProfileModal()" title="Profilim">
+    <div class="sb-user" onclick="openProfileModal()" data-tooltip="Profilim">
       <div class="sb-avatar" id="sb-avatar">?</div>
       <div class="sb-user-meta" style="min-width:0"><div class="sb-username" id="sb-username">-</div><div class="sb-role" id="sb-role-text">-</div></div>
     </div>
-    <button class="btn btn-ghost sb-logout-btn" onclick="doLogout()" title="Çıkış Yap">
+    <button class="btn btn-ghost sb-logout-btn" onclick="doLogout()" data-tooltip="Çıkış Yap">
       <i class="ti ti-logout" style="color:var(--accent)"></i>
     </button>
   </div>
@@ -1381,7 +1381,7 @@
 <script src="js/state.js?v=10"></script>
 <script src="js/auth.js?v=12"></script>
 <script src="js/sistem.js?v=2"></script>
-<script src="js/ui.js?v=15"></script>
+<script src="js/ui.js?v=16"></script>
 <script src="js/dashboard.js?v=5"></script>
 <script src="js/servis.js?v=7"></script>
 <script src="js/teklif.js?v=7"></script>

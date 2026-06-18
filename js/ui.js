@@ -692,7 +692,7 @@ function _updateSidebarCollapseUI(collapsed){
   var btn=document.getElementById('sb-collapse-btn');
   if(!btn)return;
   btn.innerHTML=collapsed?'<i class="ti ti-layout-sidebar-left-expand"></i>':'<i class="ti ti-layout-sidebar-left-collapse"></i>';
-  btn.title=collapsed?'Kenar Çubuğunu Genişlet':'Kenar Çubuğunu Daralt';
+  btn.setAttribute('data-tooltip',collapsed?'Kenar Çubuğunu Genişlet':'Kenar Çubuğunu Daralt');
 }
 function toggleSidebarCollapse(){
   var collapsed=document.documentElement.classList.toggle('sidebar-collapsed');
@@ -707,11 +707,10 @@ function loadSidebarCollapse(){
   _updateSbLogoSrc();
 }
 loadSidebarCollapse();
-document.querySelectorAll('.sb-item').forEach(function(el){
-  var label=el.querySelector('span:not(.icon):not(.badge)');
-  if(label)el.setAttribute('data-tooltip',label.textContent.trim());
+function _attachSbTooltip(el,gateCollapsed){
+  if(!el)return;
   el.addEventListener('mouseenter',function(){
-    if(!document.documentElement.classList.contains('sidebar-collapsed'))return;
+    if(gateCollapsed&&!document.documentElement.classList.contains('sidebar-collapsed'))return;
     var text=el.getAttribute('data-tooltip');
     if(!text)return;
     var tip=document.getElementById('sb-tooltip');
@@ -725,6 +724,15 @@ document.querySelectorAll('.sb-item').forEach(function(el){
   el.addEventListener('mouseleave',function(){
     document.getElementById('sb-tooltip').classList.remove('show');
   });
+}
+document.querySelectorAll('.sb-item').forEach(function(el){
+  var label=el.querySelector('span:not(.icon):not(.badge)');
+  if(label)el.setAttribute('data-tooltip',label.textContent.trim());
+  _attachSbTooltip(el,true);
 });
+_attachSbTooltip(document.getElementById('sb-logo-img'),false);
+_attachSbTooltip(document.getElementById('sb-collapse-btn'),false);
+_attachSbTooltip(document.querySelector('.sb-user'),false);
+_attachSbTooltip(document.querySelector('.sb-logout-btn'),false);
 
 // ════ TUTANAKLAR ════

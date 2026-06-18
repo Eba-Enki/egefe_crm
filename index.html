@@ -378,7 +378,7 @@
           </div>
         </div>
         <div class="filter-extra">
-          <div class="filter-field"><label class="filter-field-label">Durum</label><div class="custom-select"><select id="tf-f-durum" onchange="renderTeklifler()" class="custom-select-native"><option value="">Tüm Durumlar</option><option>Taslak</option><option>Gönderildi</option><option>Kabul Edildi</option><option>Reddedildi</option><option>İptal Edildi</option><option>Siparişe Aktarıldı</option></select><button type="button" class="custom-select-trigger" onclick="toggleCustomSelect(event,'tf-f-durum')"><span class="custom-select-label">Tüm Durumlar</span><i class="ti ti-chevron-down"></i></button></div></div>
+          <div class="filter-field"><label class="filter-field-label">Durum</label><div class="custom-select"><select id="tf-f-durum" onchange="renderTeklifler()" class="custom-select-native"><option value="">Tüm Durumlar</option><option>Taslak</option><option>Gönderildi</option><option>Kabul Edildi</option><option>Reddedildi</option><option>İptal Edildi</option><option class="satis-only">Siparişe Aktarıldı</option></select><button type="button" class="custom-select-trigger" onclick="toggleCustomSelect(event,'tf-f-durum')"><span class="custom-select-label">Tüm Durumlar</span><i class="ti ti-chevron-down"></i></button></div></div>
           <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="tf-f-ts" oninput="renderTeklifler()"></div>
           <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="tf-f-te" oninput="renderTeklifler()"></div>
           <button class="btn btn-ghost btn-sm" onclick="clearTeklifFilters()"><i class="ti ti-x"></i> Temizle</button>

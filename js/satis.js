@@ -353,11 +353,13 @@ function renderFaturalar(){
 function clearSiparisFilters(){
   ['sp-f-kurum','sp-f-no','sp-f-ts','sp-f-te'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
   var e=document.getElementById('sp-f-durum');if(e)e.value='';
+  syncCustomSelectLabels();
   renderSiparisler();
 }
 function clearFaturaFilters(){
   ['ft-f-kurum','ft-f-no','ft-f-ts','ft-f-te'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
   var e=document.getElementById('ft-f-durum');if(e)e.value='';
+  syncCustomSelectLabels();
   renderFaturalar();
 }
 async function updateFaturaDurum(faturaId,changes){

@@ -144,7 +144,7 @@ function _dbServis(s, tl, mus, now, thisMonth, thisYear){
     {l:'Kabul Edildi',hex:'#4ade80'},
     {l:'Reddedildi',  hex:'#f87171'},
     {l:'Kapandı',     hex:'#2dd4bf'}
-  ];
+  ]; // Servis portalı — Kabul Edildi servis akışında kullanılmaya devam ediyor
   var tTotal = tl.length||1;
   var tklBars = tklDurumlar.map(function(d){
     return _barRow(d.l, tl.filter(function(t){return t.durum===d.l;}).length, tTotal, d.hex);
@@ -166,7 +166,7 @@ function _dbServis(s, tl, mus, now, thisMonth, thisYear){
 // ═══ SATIŞ PAZARLAMAportalı ═══
 function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
   var onayBekl   = tl.filter(function(t){return t.durum==='Taslak';});
-  var aktivSp    = sps.filter(function(s){return ['Hazırlanıyor','Kısmi Sevkiyat'].includes(s.durum);});
+  var aktivSp    = sps.filter(function(s){return ['Hazırlanıyor','Kısmi Teslimat'].includes(s.durum);});
   var odenmemis  = fts.filter(function(f){return f.durum==='Ödenmedi';});
   var odenmemisToplam = odenmemis.reduce(function(a,f){return a+(f.tutar||0);},0);
   var buAyTeklif = tl.filter(function(t){
@@ -178,19 +178,16 @@ function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
   var kpiEl = document.getElementById('db-kpi-grid');
   if(kpiEl) kpiEl.innerHTML =
     _kpiCard('Toplam Teklif',  tl.length,       onayBekl.length+' taslak',                          'var(--accent)')
-   +_kpiCard('Aktif Sipariş',  aktivSp.length,  sps.filter(function(s){return s.durum==='Kısmi Sevkiyat';}).length+' kısmi sevkiyat', 'var(--amber)')
+   +_kpiCard('Aktif Sipariş',  aktivSp.length,  sps.filter(function(s){return s.durum==='Kısmi Teslimat';}).length+' kısmi teslimat', 'var(--amber)')
    +_kpiCard('Toplam Fatura',  fts.length,      fts.filter(function(f){return f.durum==='Ödendi';}).length+' ödendi',                'var(--teal)')
    +_kpiCard('Ödenmemiş',      odenmemis.length, odenmemisToplam>0?'₺ '+_fmtN(odenmemisToplam):'Fatura yok',                         'var(--red)');
 
   // ─ Teklif Durum Dağılımı (bar chart)
   var tklDurumlar = [
-    {l:'Taslak',             hex:'#64748b'},
-    {l:'Açık Teklif',        hex:'#a78bfa'},
-    {l:'Gönderildi',         hex:'#f59e0b'},
-    {l:'Kabul Edildi',       hex:'#4ade80'},
-    {l:'Siparişe Aktarıldı', hex:'#3d9bc4'},
-    {l:'Reddedildi',         hex:'#f87171'},
-    {l:'İptal Edildi',       hex:'#94a3b8'}
+    {l:'Taslak',           hex:'#64748b'},
+    {l:'İletildi',         hex:'#f59e0b'},
+    {l:'Siparişe Dönüştü', hex:'#3d9bc4'},
+    {l:'Reddedildi',       hex:'#f87171'}
   ];
   var tTotal = tl.length||1;
   var chartTitle = document.getElementById('db-chart-title');
@@ -212,10 +209,9 @@ function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
   if(listBadge) listBadge.textContent = buAyTeklif.length+' bu ay';
 
   var TBG = {
-    'Taslak':'badge-teknik','Açık Teklif':'badge-yeni',
-    'Gönderildi':'badge-sf','Kabul Edildi':'badge-onaylandi',
-    'Siparişe Aktarıldı':'badge-teslim','Reddedildi':'badge-reddedildi',
-    'İptal Edildi':'badge-reddedildi'
+    'Taslak':'badge-sf','İletildi':'badge-onay-bekl',
+    'Siparişe Dönüştü':'badge-teslim','Reddedildi':'badge-reddedildi',
+    'Kabul Edildi':'badge-onaylandi','Kapandı':'badge-teslim'
   };
   var listEl = document.getElementById('db-list-body');
   if(listEl){
@@ -241,11 +237,11 @@ function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
 
   // ─ Alt Panel: Sipariş Durumu + Fatura Durumu (2 kolon)
   var spDurumlar = [
-    {l:'Hazırlanıyor',    hex:'#f59e0b'},
-    {l:'Kısmi Sevkiyat',  hex:'#2dd4bf'},
-    {l:'Tamamlandı',      hex:'#4ade80'},
-    {l:'Fatura Edildi',   hex:'#3d9bc4'},
-    {l:'İptal',           hex:'#f87171'}
+    {l:'Hazırlanıyor',   hex:'#f59e0b'},
+    {l:'Kısmi Teslimat', hex:'#2dd4bf'},
+    {l:'Teslim Edildi',  hex:'#4ade80'},
+    {l:'Fatura Edildi',  hex:'#3d9bc4'},
+    {l:'İptal',          hex:'#f87171'}
   ];
   var spTotal = sps.length||1;
   var spBars = spDurumlar.map(function(d){

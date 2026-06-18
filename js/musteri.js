@@ -5,7 +5,7 @@ function setUrunlerPage(n){urunlerPage=n;renderUrunler();}
 
 async function loadMusteriler(){
   try{
-    var res=await apiGet('musteriler');
+    var res=await apiGet('musteriler?portal='+currentPortal);
     state.musteriler=res.musteriler||[];
   }catch(e){
     toast(e.message||'Müşteriler yüklenemedi.','error');
@@ -39,7 +39,7 @@ async function saveMusteri(){
       savedMId=editId;
       toast('Güncellendi.','success');
     } else {
-      const res=await apiPost('musteriler',payload);
+      const res=await apiPost('musteriler',{...payload,portal:currentPortal});
       state.musteriler.push(res.musteri);
       savedMId=res.musteri.id;
       toast('Müşteri eklendi.','success');
@@ -379,7 +379,7 @@ function importMusterilerExcel(e){
           not:(row['Notlar']||'').toString().trim()
         };
         try{
-          var res=await apiPost('musteriler',payload);
+          var res=await apiPost('musteriler',{...payload,portal:currentPortal});
           state.musteriler.push(res.musteri);
           eklenen++;
         }catch(err){atlanan++;}

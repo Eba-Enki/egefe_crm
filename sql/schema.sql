@@ -32,6 +32,7 @@ CREATE TABLE user_permissions (
 CREATE TABLE customers (
   id          VARCHAR(40) PRIMARY KEY,
   kayit_no    VARCHAR(30) NULL,
+  portal      VARCHAR(10) NOT NULL DEFAULT 'servis',
   kurum       VARCHAR(255) NOT NULL,
   kisi        VARCHAR(150) NULL,
   tel         VARCHAR(50) NULL,

@@ -61,7 +61,7 @@ async function loadCoreData() {
   } catch (e) {}
 
   try {
-    var res = await apiGet('musteriler');
+    var res = await apiGet('musteriler?portal=' + currentPortal);
     state.musteriler = res.musteriler || [];
   } catch (e) {
     state.musteriler = state.musteriler || [];

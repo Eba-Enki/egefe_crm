@@ -5,10 +5,16 @@ require __DIR__ . '/../_bootstrap.php';
 $user = requireAuth($pdo);
 requireAnyPortalAccess($user, ['servis', 'satis']);
 
+function normalizePortal($value): ?string {
+    $v = strtolower(trim((string)$value));
+    return in_array($v, ['servis', 'satis'], true) ? $v : null;
+}
+
 function musteriResponse(array $row): array {
     return [
         'id'      => $row['id'],
         'kayitNo' => $row['kayit_no'],
+        'portal'  => $row['portal'],
         'kurum'   => $row['kurum'],
         'kisi'    => $row['kisi'],
         'tel'     => $row['tel'],
@@ -19,32 +25,43 @@ function musteriResponse(array $row): array {
     ];
 }
 
-
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $stmt = $pdo->query('SELECT * FROM customers ORDER BY created_at DESC');
+        $portal = normalizePortal($_GET['portal'] ?? '');
+        if (!$portal) {
+            http_response_code(400);
+            echo json_encode(['error' => 'portal parametresi (servis veya satis) zorunlu']);
+            exit;
+        }
+        requirePortalAccess($user, $portal);
+        $stmt = $pdo->prepare('SELECT * FROM customers WHERE portal = ? ORDER BY created_at DESC');
+        $stmt->execute([$portal]);
         echo json_encode(['musteriler' => array_map('musteriResponse', $stmt->fetchAll())]);
         break;
 
     case 'POST':
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
+        $portal = normalizePortal($input['portal'] ?? '');
         $kurum = trim((string)($input['kurum'] ?? ''));
-        if ($kurum === '') {
+        if (!$portal || $kurum === '') {
             http_response_code(400);
-            echo json_encode(['error' => 'Kurum adı zorunlu']);
+            echo json_encode(['error' => 'portal (servis/satis) ve kurum adı zorunlu']);
             exit;
         }
+        requirePortalAccess($user, $portal);
 
         $id = 'm' . (string)(int)round(microtime(true) * 1000);
 
-        $maxRow = $pdo->query("SELECT MAX(CAST(SUBSTRING(kayit_no, 3) AS UNSIGNED)) AS mx FROM customers WHERE kayit_no LIKE 'MK%'")->fetch();
-        $kayitNo = 'MK' . str_pad((string)((int)($maxRow['mx'] ?? 0) + 1), 5, '0', STR_PAD_LEFT);
+        $maxRow = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(kayit_no, 3) AS UNSIGNED)) AS mx FROM customers WHERE kayit_no LIKE 'MK%' AND portal = ?");
+        $maxRow->execute([$portal]);
+        $mx = $maxRow->fetch();
+        $kayitNo = 'MK' . str_pad((string)((int)($mx['mx'] ?? 0) + 1), 5, '0', STR_PAD_LEFT);
 
-        $stmt = $pdo->prepare('INSERT INTO customers (id, kayit_no, kurum, kisi, tel, email, sehir, adres, notlar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt = $pdo->prepare('INSERT INTO customers (id, kayit_no, portal, kurum, kisi, tel, email, sehir, adres, notlar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([
-            $id, $kayitNo, $kurum,
+            $id, $kayitNo, $portal, $kurum,
             strOrNull($input['kisi'] ?? null),
             strOrNull($input['tel'] ?? null),
             strOrNull($input['email'] ?? null),
@@ -69,13 +86,15 @@ switch ($method) {
             exit;
         }
 
-        $check = $pdo->prepare('SELECT id FROM customers WHERE id = ?');
+        $check = $pdo->prepare('SELECT id, portal FROM customers WHERE id = ?');
         $check->execute([$id]);
-        if (!$check->fetch()) {
+        $existing = $check->fetch();
+        if (!$existing) {
             http_response_code(404);
             echo json_encode(['error' => 'Müşteri bulunamadı']);
             exit;
         }
+        requirePortalAccess($user, $existing['portal']);
 
         $stmt = $pdo->prepare('UPDATE customers SET kurum=?, kisi=?, tel=?, email=?, sehir=?, adres=?, notlar=? WHERE id=?');
         $stmt->execute([
@@ -101,13 +120,19 @@ switch ($method) {
             echo json_encode(['error' => 'id gerekli']);
             exit;
         }
-        $stmt = $pdo->prepare('DELETE FROM customers WHERE id = ?');
-        $stmt->execute([$id]);
-        if ($stmt->rowCount() === 0) {
+
+        $check = $pdo->prepare('SELECT portal FROM customers WHERE id = ?');
+        $check->execute([$id]);
+        $existing = $check->fetch();
+        if (!$existing) {
             http_response_code(404);
             echo json_encode(['error' => 'Müşteri bulunamadı']);
             exit;
         }
+        requirePortalAccess($user, $existing['portal']);
+
+        $stmt = $pdo->prepare('DELETE FROM customers WHERE id = ?');
+        $stmt->execute([$id]);
         echo json_encode(['ok' => true]);
         break;
 

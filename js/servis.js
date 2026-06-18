@@ -187,20 +187,20 @@ function renderTable(){
   renderPagination('servis-pagination',servisPage,data.length,'setServisPage');
   tbody.innerHTML=pagedServis.map(s=>{
     const hasTeklif=state.teklifler.some(t=>t.servisId===s.id);
-    const isManuelDurum=s.durum==='Yeni Gelen'||s.durum==='S.F. Bekleniyor'||s.durum==='İade Edildi';
-    const isSFBekleniyor=s.durum==='S.F. Bekleniyor';
-    // Düzenle: sadece manuel durumlarda canEdit için; diğerleri view-only
-    const editBtn=canEdit&&isManuelDurum
+    const isArizaTespitinde=s.durum==='Arıza Tespitinde';
+    const isPreTeklif=s.durum==='Cihaz Kabul'||isArizaTespitinde;
+    // Düzenle: arşiv değilse her zaman aktif
+    const editBtn=canEdit&&!isArsiv
       ?`<button class="btn-icon" title="Düzenle" onclick="goServisForm('${s.id}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>`
       :`<button class="btn-icon" title="Kayıt Görüntüle" style="color:var(--accent)" onclick="goServisForm('${s.id}',true)"><i class="ti ti-info-circle"></i></button>`;
-    // Durum değiştir: sadece manuel durumlarda ve arşiv değilse
-    const durumBtn=canEdit&&!isArsiv&&isManuelDurum
+    // Durum değiştir: teklif sürecine girmemiş kayıtlarda (İşlemsiz İade seçeneği için)
+    const durumBtn=canEdit&&!isArsiv&&isPreTeklif
       ?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showDurumMenu('${s.id}',this)"><i class="ti ti-progress"></i></button>`
       :'';
-    // Teklif butonu: S.F. Bekleniyor + teklif yok → Tekliflendir; teklif varsa → Teklife Git
+    // Teklif butonu: Arıza Tespitinde + teklif yok → Tekliflendir; teklif varsa → Teklife Git
     let teklifBtn='';
     if(!isArsiv){
-      if(canEdit&&isSFBekleniyor&&!hasTeklif)teklifBtn=`<button class="btn-icon" title="Tekliflendir" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')"><i class="ti ti-file-invoice"></i></button>`;
+      if(canEdit&&isArizaTespitinde&&!hasTeklif)teklifBtn=`<button class="btn-icon" title="Tekliflendir" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')"><i class="ti ti-file-invoice"></i></button>`;
       else if(hasTeklif)teklifBtn=`<button class="btn-icon" title="Teklife Git" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')"><i class="ti ti-file-invoice"></i></button>`;
     }
     return`<tr${isArsiv?' style="opacity:0.8"':''}>

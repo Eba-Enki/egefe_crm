@@ -207,7 +207,7 @@ function renderTable(){
     return`<tr${isArsiv?' style="opacity:0.8"':''}>
       ${canBulk?`<td><input type="checkbox" ${bulkIsChecked('servisArsiv',s.id)?'checked':''} onchange="bulkToggleRow('servisArsiv','${s.id}','renderTable')"></td>`:''}
       <td><span class="kn-badge">${esc(s.kayitNo)}</span></td>
-      <td style="font-weight:500;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.kurumAdi||'—')}</td>
+      <td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(s.kurumAdi||'—')}</td>
       <td class="td-mono">${esc(s.seriNo||'—')}</td>
       <td class="td-mono" style="color:var(--text2)">${fmtDate(s.gelisTarihi)}</td>
       <td>${durumBadge(s.durum)}</td>

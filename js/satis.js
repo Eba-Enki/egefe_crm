@@ -179,7 +179,7 @@ function renderSiparisler(){
       +(canBulk?'<td><input type="checkbox" '+(bulkIsChecked('siparisArsiv',s.id)?'checked':'')+' onchange="bulkToggleRow(\'siparisArsiv\',\''+s.id+'\',\'renderSiparisler\')"></td>':'')
       +'<td><span class="kn-badge">'+esc(s.siparisNo)+'</span></td>'
       +'<td class="td-mono" style="color:var(--text2)">'+fmtDate(s.siparisTarihi||s.teklifTarihi||s.olusturmaTarihi)+'</td>'
-      +'<td style="font-weight:500">'+esc(s.kurum||'—')+'</td>'
+      +'<td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">'+esc(s.kurum||'—')+'</td>'
       +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+esc(cur)+' '+fmtNum(toplam)+'</td>'
       +'<td><span class="badge '+(SP_DURUM_CSS[s.durum]||'badge-sf')+'">'+esc(s.durum)+'</span></td>'
       +'<td style="font-size:12px;color:var(--text3)">'+esc(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'

@@ -121,10 +121,10 @@ function switchServisTab(tab) {
 }
 
 async function arsivdenGeriAl(sid) {
-  var updated = await updateServisDurum(sid, {durum: 'Cihaz Kabul'});
+  var updated = await updateServisDurum(sid, {durum: 'Arıza Tespitinde'});
   if(!updated) return;
   renderTable();
-  toast('Kayit aktife alindi.', 'success');
+  toast('Kayıt aktife alındı.', 'success');
 }
 
 function renderTable(){
@@ -186,7 +186,8 @@ function renderTable(){
   var pagedServis=data.slice((servisPage-1)*PAGE_SIZE,servisPage*PAGE_SIZE);
   renderPagination('servis-pagination',servisPage,data.length,'setServisPage');
   tbody.innerHTML=pagedServis.map(s=>{
-    const hasTeklif=state.teklifler.some(t=>t.servisId===s.id);
+    const TEKLIF_ARSIV=['Reddedildi','Kapandı'];
+    const hasTeklif=state.teklifler.some(t=>t.servisId===s.id&&!TEKLIF_ARSIV.includes(t.durum));
     const isArizaTespitinde=s.durum==='Arıza Tespitinde';
     const isPreTeklif=s.durum==='Cihaz Kabul'||isArizaTespitinde;
     // Düzenle: arşiv değilse her zaman aktif

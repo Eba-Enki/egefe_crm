@@ -583,11 +583,25 @@ function toast(msg,type='info'){
 function applyLogoForTheme(t){
   var isDark=(t||localStorage.getItem('ege_theme')||'dark')==='dark';
   var src=isDark?'brand_assets/logo_if_bg_color.svg':'brand_assets/logo_if_bg_white.svg';
-  document.querySelectorAll('#login-logo-img,#sb-logo-img,#portal-logo-img').forEach(function(el){
+  document.querySelectorAll('#login-logo-img,#portal-logo-img').forEach(function(el){
     el.src=src;
     el.style.filter='none';
     el.style.mixBlendMode='normal';
   });
+  _updateSbLogoSrc();
+}
+function _updateSbLogoSrc(){
+  var img=document.getElementById('sb-logo-img');
+  if(!img)return;
+  var collapsed=document.documentElement.classList.contains('sidebar-collapsed');
+  if(collapsed){
+    img.src='brand_assets/logo_favicon_more_thicker.svg';
+  } else {
+    var isDark=(localStorage.getItem('ege_theme')||'dark')==='dark';
+    img.src=isDark?'brand_assets/logo_if_bg_color.svg':'brand_assets/logo_if_bg_white.svg';
+  }
+  img.style.filter='none';
+  img.style.mixBlendMode='normal';
 }
 function setTheme(t){
   document.documentElement.setAttribute('data-theme',t);
@@ -613,12 +627,18 @@ function toggleSidebarCollapse(){
   var collapsed=document.documentElement.classList.toggle('sidebar-collapsed');
   localStorage.setItem('ege_sidebar_collapsed',collapsed?'1':'0');
   _updateSidebarCollapseUI(collapsed);
+  _updateSbLogoSrc();
 }
 function loadSidebarCollapse(){
   var collapsed=localStorage.getItem('ege_sidebar_collapsed')==='1';
   document.documentElement.classList.toggle('sidebar-collapsed',collapsed);
   _updateSidebarCollapseUI(collapsed);
+  _updateSbLogoSrc();
 }
 loadSidebarCollapse();
+document.querySelectorAll('.sb-item').forEach(function(el){
+  var label=el.querySelector('span:not(.icon):not(.badge)');
+  if(label)el.title=label.textContent.trim();
+});
 
 // ════ TUTANAKLAR ════

@@ -843,8 +843,14 @@ async function saveRedNeden() {
     notlar: document.getElementById('red-notlar').value,
     tarih: today()
   };
+  var tForServis = state.teklifler.find(function(x){return x.id===teklifId;});
   var updated = await updateTeklifDurum(teklifId, {durum: yeniDurum, redNedeni: JSON.stringify(redBilgi)});
   if (!updated) return;
+  if (tForServis && tForServis.servisId) {
+    var TEKLIF_SERVIS_MAP = {'Kabul Edildi':'Onarımda','Reddedildi':'Reddedildi','Kapandı':'Teslim Edildi'};
+    var servisDurum = TEKLIF_SERVIS_MAP[yeniDurum];
+    if (servisDurum) updateServisDurum(tForServis.servisId, {durum: servisDurum});
+  }
   closeModal('modal-red-neden');
   renderTeklifler();
   toast('Teklif ' + yeniDurum + ' olarak işaretlendi.', 'success');

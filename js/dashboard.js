@@ -40,31 +40,31 @@ function _barRow(label,cnt,total,hex){
 
 // ═══ TEKNİK SERVİS ═══
 function _dbServis(s, tl, mus, now, thisMonth, thisYear){
-  var aktif    = s.filter(function(x){return !['Tamamlandı','Reddedildi'].includes(x.durum);});
-  var bekleyen = s.filter(function(x){return ['Onay Bekleniyor','S.F. Bekleniyor'].includes(x.durum);});
+  var aktif    = s.filter(function(x){return !['Teslim Edildi','Reddedildi','İşlemsiz İade'].includes(x.durum);});
+  var bekleyen = s.filter(function(x){return ['Arıza Tespitinde','Yanıt Bekleniyor'].includes(x.durum);});
   var buAy     = s.filter(function(x){
     var d=new Date(x.gelisTarihi||x.olusturmaTarihi);
     return d.getMonth()===thisMonth && d.getFullYear()===thisYear;
   });
-  var tamamlanan = s.filter(function(x){return x.durum==='Tamamlandı';});
+  var tamamlanan = s.filter(function(x){return x.durum==='Teslim Edildi';});
 
   // ─ KPI Kartları
   var kpiEl = document.getElementById('db-kpi-grid');
   if(kpiEl) kpiEl.innerHTML =
     _kpiCard('Aktif Kayıtlar', aktif.length, 'Tamamlanmamış servisler', 'var(--accent)')
-   +_kpiCard('Bekleyen Onay', bekleyen.length, 'S.F. Bekleniyor + Onay Bekleniyor', 'var(--amber)')
+   +_kpiCard('Bekleyen', bekleyen.length, 'Arıza Tespitinde + Yanıt Bekleniyor', 'var(--amber)')
    +_kpiCard('Bu Ay Gelen', buAy.length, now.toLocaleString('tr-TR',{month:'long',year:'numeric'}), 'var(--teal)')
-   +_kpiCard('Tamamlanan', tamamlanan.length, s.length+' toplam kayıttan', 'var(--green)');
+   +_kpiCard('Teslim Edilen', tamamlanan.length, s.length+' toplam kayıttan', 'var(--green)');
 
   // ─ Durum Dağılımı (donut + legend)
   var DHEX = {
-    'Yeni Gelen':'#3d9bc4',
-    'S.F. Bekleniyor':'#f59e0b',
-    'Onay Bekleniyor':'#a78bfa',
-    'Onaylandı':'#4ade80',
-    'Kargoya Verildi':'#2dd4bf',
-    'Tamamlandı':'#64748b',
-    'Reddedildi':'#f87171'
+    'Cihaz Kabul':'#3d9bc4',
+    'Arıza Tespitinde':'#f59e0b',
+    'Yanıt Bekleniyor':'#a78bfa',
+    'Onarımda':'#4ade80',
+    'Teslim Edildi':'#2dd4bf',
+    'Reddedildi':'#f87171',
+    'İşlemsiz İade':'#f97316'
   };
   var sg = Object.entries(DHEX)
     .map(function(e){return{d:e[0],c:e[1],cnt:s.filter(function(x){return x.durum===e[0];}).length};})
@@ -140,9 +140,10 @@ function _dbServis(s, tl, mus, now, thisMonth, thisYear){
 
   // ─ Alt Panel: Teklif Özeti
   var tklDurumlar = [
-    {l:'Onay Bekleniyor', hex:'#f59e0b'},
-    {l:'Onaylandı',       hex:'#4ade80'},
-    {l:'Reddedildi',      hex:'#f87171'}
+    {l:'İletildi',    hex:'#f59e0b'},
+    {l:'Kabul Edildi',hex:'#4ade80'},
+    {l:'Reddedildi',  hex:'#f87171'},
+    {l:'Kapandı',     hex:'#2dd4bf'}
   ];
   var tTotal = tl.length||1;
   var tklBars = tklDurumlar.map(function(d){
@@ -164,7 +165,7 @@ function _dbServis(s, tl, mus, now, thisMonth, thisYear){
 
 // ═══ SATIŞ PAZARLAMAportalı ═══
 function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
-  var onayBekl   = tl.filter(function(t){return t.durum==='Onay Bekleniyor';});
+  var onayBekl   = tl.filter(function(t){return t.durum==='Taslak';});
   var aktivSp    = sps.filter(function(s){return ['Hazırlanıyor','Kısmi Sevkiyat'].includes(s.durum);});
   var odenmemis  = fts.filter(function(f){return f.durum==='Ödenmedi';});
   var odenmemisToplam = odenmemis.reduce(function(a,f){return a+(f.tutar||0);},0);
@@ -176,19 +177,20 @@ function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
   // ─ KPI Kartları
   var kpiEl = document.getElementById('db-kpi-grid');
   if(kpiEl) kpiEl.innerHTML =
-    _kpiCard('Toplam Teklif',  tl.length,       onayBekl.length+' onay bekliyor',                          'var(--accent)')
+    _kpiCard('Toplam Teklif',  tl.length,       onayBekl.length+' taslak',                          'var(--accent)')
    +_kpiCard('Aktif Sipariş',  aktivSp.length,  sps.filter(function(s){return s.durum==='Kısmi Sevkiyat';}).length+' kısmi sevkiyat', 'var(--amber)')
    +_kpiCard('Toplam Fatura',  fts.length,      fts.filter(function(f){return f.durum==='Ödendi';}).length+' ödendi',                'var(--teal)')
    +_kpiCard('Ödenmemiş',      odenmemis.length, odenmemisToplam>0?'₺ '+_fmtN(odenmemisToplam):'Fatura yok',                         'var(--red)');
 
   // ─ Teklif Durum Dağılımı (bar chart)
   var tklDurumlar = [
-    {l:'Onay Bekleniyor',    hex:'#f59e0b'},
-    {l:'Onaylandı',          hex:'#4ade80'},
-    {l:'Reddedildi',         hex:'#f87171'},
+    {l:'Taslak',             hex:'#64748b'},
+    {l:'Açık Teklif',        hex:'#a78bfa'},
+    {l:'Gönderildi',         hex:'#f59e0b'},
+    {l:'Kabul Edildi',       hex:'#4ade80'},
     {l:'Siparişe Aktarıldı', hex:'#3d9bc4'},
-    {l:'Tamamlandı',         hex:'#2dd4bf'},
-    {l:'Taslak',             hex:'#64748b'}
+    {l:'Reddedildi',         hex:'#f87171'},
+    {l:'İptal Edildi',       hex:'#94a3b8'}
   ];
   var tTotal = tl.length||1;
   var chartTitle = document.getElementById('db-chart-title');
@@ -210,9 +212,10 @@ function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
   if(listBadge) listBadge.textContent = buAyTeklif.length+' bu ay';
 
   var TBG = {
-    'Taslak':'badge-teknik','Onay Bekleniyor':'badge-sf',
-    'Onaylandı':'badge-teslim','Reddedildi':'badge-reddedildi',
-    'Siparişe Aktarıldı':'badge-onaylandi','Tamamlandı':'badge-tamamlandi'
+    'Taslak':'badge-teknik','Açık Teklif':'badge-yeni',
+    'Gönderildi':'badge-sf','Kabul Edildi':'badge-onaylandi',
+    'Siparişe Aktarıldı':'badge-teslim','Reddedildi':'badge-reddedildi',
+    'İptal Edildi':'badge-reddedildi'
   };
   var listEl = document.getElementById('db-list-body');
   if(listEl){

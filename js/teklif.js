@@ -191,7 +191,7 @@ function renderTeklifler(){
   renderPagination('teklif-pagination',tekliflerPage,filtTl2.length,'setTekliflerPage');
   tbody.innerHTML=pagedTl.map(t=>`<tr style="cursor:pointer" onclick="openTeklifDetay('${t.id}')">
     ${canBulk?`<td onclick="event.stopPropagation()"><input type="checkbox" ${bulkIsChecked('teklifArsiv',t.id)?'checked':''} onchange="bulkToggleRow('teklifArsiv','${t.id}','renderTeklifler')"></td>`:''}
-    <td><span class="kn-badge">${esc(t.teklifNo)}</span></td>
+    <td><span class="kn-badge" style="border:none;background:transparent;padding:0">${esc(t.teklifNo)}</span></td>
     <td class="td-mono" style="color:var(--text2)">${fmtDate(t.teklifTarihi)}</td>
     <td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(t.kurum||'—')}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--amber);font-size:12px">${fmtTL(calcTeklifToplam(t))}</td>

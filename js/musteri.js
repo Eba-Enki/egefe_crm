@@ -127,7 +127,7 @@ function renderTutanaklar(){
   if(emptyEl)emptyEl.style.display='none';
   tbody.innerHTML=savedTutanaklar.map(function(t){
     return '<tr style="cursor:pointer" onclick="previewTutanak(\''+t.no+'\')">'
-      +'<td><span class="kn-badge">'+t.no+'</span></td>'
+      +'<td><span class="kn-badge" style="border:none;background:transparent;padding:0">'+t.no+'</span></td>'
       +'<td class="td-mono">'+fmtDate(t.tarih)+'</td>'
       +'</tr>';
   }).join('');

@@ -188,7 +188,7 @@ function renderSiparisler(){
     var cur=currency[s.paraBirimi||'TRY']||'₺';
     return '<tr style="cursor:pointer" onclick="openSiparisDetay(\''+s.id+'\')">'
       +(canBulk?'<td onclick="event.stopPropagation()"><input type="checkbox" '+(bulkIsChecked('siparisArsiv',s.id)?'checked':'')+' onchange="bulkToggleRow(\'siparisArsiv\',\''+s.id+'\',\'renderSiparisler\')"></td>':'')
-      +'<td><span class="kn-badge">'+esc(s.siparisNo)+'</span></td>'
+      +'<td><span class="kn-badge" style="border:none;background:transparent;padding:0">'+esc(s.siparisNo)+'</span></td>'
       +'<td class="td-mono" style="color:var(--text2)">'+fmtDate(s.siparisTarihi||s.teklifTarihi||s.olusturmaTarihi)+'</td>'
       +'<td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">'+esc(s.kurum||'—')+'</td>'
       +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+esc(cur)+' '+fmtNum(toplam)+'</td>'
@@ -416,7 +416,7 @@ function renderFaturalar(){
     var cur=currency[f.paraBirimi||'TRY']||'₺';
     return '<tr>'
       +(canBulk?'<td><input type="checkbox" '+(bulkIsChecked('faturaArsiv',f.id)?'checked':'')+' onchange="bulkToggleRow(\'faturaArsiv\',\''+f.id+'\',\'renderFaturalar\')"></td>':'')
-      +'<td><span class="kn-badge">'+esc(f.faturaNo)+'</span></td>'
+      +'<td><span class="kn-badge" style="border:none;background:transparent;padding:0">'+esc(f.faturaNo)+'</span></td>'
       +'<td><span class="kn-badge" style="color:var(--teal)">'+esc(f.siparisNo)+'</span></td>'
       +'<td style="font-weight:500">'+esc(f.kurum||'—')+'</td>'
       +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+cur+' '+fmtNum(f.tutar)+'</td>'

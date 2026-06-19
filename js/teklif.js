@@ -626,7 +626,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   const totalsY = boxY;
 
   doc.setFontSize(8);
-  doc.setFont('Arial', 'normal');
+  doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textLabel);
   doc.text('Genel Toplam', mm(137.109), totalsY + mm(1.7));
   doc.setFont('Arial', 'bold');

@@ -238,6 +238,8 @@ function openTeklifDetay(id){
   document.getElementById('td-kurum').textContent=t.kurum||'—';
   var _kw=document.getElementById('td-kayitno-wrap');
   if(_kw)_kw.style.display=currentPortal==='servis'?'':'none';
+  var _kuw=document.getElementById('td-kurum-wrap');
+  if(_kuw)_kuw.style.display=currentPortal==='servis'?'':'none';
   document.getElementById('td-kayitno').textContent=t.kayitNo||'—';
   var _eb=document.getElementById('td-edit-btn');if(_eb)_eb.style.display=canEdit?'':'none';
   var _db=document.getElementById('td-delete-btn');if(_db)_db.style.display=canEdit?'':'none';
@@ -249,6 +251,7 @@ function openTeklifDetay(id){
     <div class="teklif-akis">${steps.map((st,i,a)=>`<div class="t-step"><div class="t-dot ${st.c}">${st.c==='done'?'✓':st.c==='active'?'⏳':st.c==='rejected'?'✕':'○'}</div><div class="t-step-lbl">${st.l}</div></div>${i<a.length-1?'<div class="t-arrow"><i class="ti ti-arrow-narrow-right"></i></div>':''}`).join('')}</div>
     ${canEdit&&currentPortal==='servis'&&t.durum==='İletildi'?`<div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="changeTeklifDurum('${t.id}','Kabul Edildi');closeModal('modal-teklif-detay')">✓ Kabul Et</button><button class="btn btn-danger btn-sm" onclick="changeTeklifDurum('${t.id}','Reddedildi');closeModal('modal-teklif-detay')">✕ Reddet</button></div>`:''}
     <div class="separator"></div>
+    ${isSatisTeklif?`<div class="info-item" style="margin-bottom:14px"><div class="info-item-label">Kurum</div><div class="info-item-val" style="font-weight:600">${esc(t.kurum||'—')}</div></div>`:''}
     ${(t.telefon||t.email)?`<div class="info-grid" style="margin-bottom:14px">
       <div class="info-item"><div class="info-item-label">Telefon</div><div class="info-item-val">${esc(t.telefon||'—')}</div></div>
       <div class="info-item"><div class="info-item-label">E-posta</div><div class="info-item-val">${esc(t.email||'—')}</div></div>

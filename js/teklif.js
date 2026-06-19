@@ -249,22 +249,30 @@ function openTeklifDetay(id){
     <div class="teklif-akis">${steps.map((st,i,a)=>`<div class="t-step"><div class="t-dot ${st.c}">${st.c==='done'?'✓':st.c==='active'?'⏳':st.c==='rejected'?'✕':'○'}</div><div class="t-step-lbl">${st.l}</div></div>${i<a.length-1?'<div class="t-arrow"><i class="ti ti-arrow-narrow-right"></i></div>':''}`).join('')}</div>
     ${canEdit&&currentPortal==='servis'&&t.durum==='İletildi'?`<div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="changeTeklifDurum('${t.id}','Kabul Edildi');closeModal('modal-teklif-detay')">✓ Kabul Et</button><button class="btn btn-danger btn-sm" onclick="changeTeklifDurum('${t.id}','Reddedildi');closeModal('modal-teklif-detay')">✕ Reddet</button></div>`:''}
     <div class="separator"></div>
-    <div class="info-grid" style="margin-bottom:14px">
-      ${currentPortal==='servis'?`<div class="info-item"><div class="info-item-label">Seri No</div><div class="info-item-val text-mono">${esc(t.seriNo||'—')}</div></div>`:''}
-      ${(t.telefon||t.email)?`<div class="info-item"><div class="info-item-label">Telefon</div><div class="info-item-val">${esc(t.telefon||'—')}</div></div><div class="info-item"><div class="info-item-label">E-posta</div><div class="info-item-val">${esc(t.email||'—')}</div></div>`:''}
-      <div class="info-item"><div class="info-item-label">Teklif Tarihi</div><div class="info-item-val text-mono">${fmtDate(t.teklifTarihi)}</div></div>
-      <div class="info-item"><div class="info-item-label">Geçerlilik</div><div class="info-item-val text-mono">${fmtDate(t.gecerlilikTarihi)}</div></div>
+    ${(t.telefon||t.email)?`<div class="info-grid" style="margin-bottom:14px">
+      <div class="info-item"><div class="info-item-label">Telefon</div><div class="info-item-val">${esc(t.telefon||'—')}</div></div>
+      <div class="info-item"><div class="info-item-label">E-posta</div><div class="info-item-val">${esc(t.email||'—')}</div></div>
+    </div>`:''}
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">
+      <div class="info-item-label" style="font-size:11px;margin-bottom:10px">Teklif Bilgileri</div>
+      <div class="info-grid">
+        ${currentPortal==='servis'?`<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Seri No</div><div class="info-item-val text-mono">${esc(t.seriNo||'—')}</div></div>`:''}
+        <div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Teklif Tarihi</div><div class="info-item-val text-mono">${fmtDate(t.teklifTarihi)}</div></div>
+        <div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Geçerlilik</div><div class="info-item-val text-mono">${fmtDate(t.gecerlilikTarihi)}</div></div>
+      </div>
     </div>
-    <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">
-      <thead><tr style="background:var(--bg3)"><th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:left">AÇIKLAMA</th><th style="padding:7px 9px;font-size:10px;color:var(--text3)">MİKTAR</th><th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:right">BİRİM F.</th><th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:right">TOPLAM</th></tr></thead>
-      <tbody>${sarHtml}</tbody>
-    </table>
-    <div style="display:flex;justify-content:flex-end;margin-top:12px"><div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px 16px;min-width:210px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px"><span>Ara Toplam</span><span class="text-mono">${fmtTL(ara)}</span></div>
-      
-      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);padding-top:8px"><span>Toplam</span><span class="text-mono" style="color:var(--amber)">${fmtTL(toplam)}</span></div>
-    </div></div>
-    ${t.notlar?`<div style="margin-top:12px;background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">${esc(t.notlar)}</div>`:''}
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">
+      <div class="info-item-label" style="font-size:11px;margin-bottom:10px">Kalemler</div>
+      <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">
+        <thead><tr style="background:var(--bg4)"><th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:left">AÇIKLAMA</th><th style="padding:7px 9px;font-size:10px;color:var(--text3)">MİKTAR</th><th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:right">BİRİM F.</th><th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:right">TOPLAM</th></tr></thead>
+        <tbody>${sarHtml}</tbody>
+      </table>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px"><div style="background:var(--bg4);border-radius:var(--radius-sm);padding:12px 16px;min-width:210px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px"><span>Ara Toplam</span><span class="text-mono">${fmtTL(ara)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);padding-top:8px"><span>Toplam</span><span class="text-mono" style="color:var(--amber)">${fmtTL(toplam)}</span></div>
+      </div></div>
+    </div>
+    ${t.notlar?`<div class="info-item-label" style="margin-bottom:6px">Notlar</div><div style="background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">${esc(t.notlar)}</div>`:''}
   `;
 
   // Show red/iptal info if exists

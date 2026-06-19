@@ -135,6 +135,8 @@ function openServisDetay(id){
   const canEdit=!!(state.currentUser&&state.currentUser.rol!=='izleyici'&&!isArsiv);
   document.getElementById('sd-title').textContent=s.kayitNo+' — Detay';
   var _eb=document.getElementById('sd-edit-btn');if(_eb)_eb.style.display=canEdit?'':'none';
+  var canDelete=!!(state.currentUser&&state.currentUser.rol!=='izleyici');
+  var _db=document.getElementById('sd-delete-btn');if(_db)_db.style.display=canDelete?'':'none';
   var aksesuarParcalari=Array.isArray(s.aksesuarlar)?[...s.aksesuarlar]:[];
   if(s.aksesuarDiger)aksesuarParcalari.push(s.aksesuarDiger);
   document.getElementById('sd-body').innerHTML=`
@@ -158,6 +160,7 @@ function openServisDetay(id){
   openModal('modal-servis-detay');
 }
 function editCurrentServis(){closeModal('modal-servis-detay');if(state.activeServisId)goServisForm(state.activeServisId);}
+function deleteCurrentServis(){if(!state.activeServisId)return;closeModal('modal-servis-detay');confirmDelete('servis',state.activeServisId);}
 
 function renderTable(){
   var aktifSayisi = state.servisler.filter(function(s){return ARSIV_DURUMLAR.indexOf(s.durum)<0;}).length;

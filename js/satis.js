@@ -69,8 +69,11 @@ async function quickSiparisDurumChange(sid,yeni){
 }
 
 async function siparisGeriAl(sid){
-  showConfirm('Sipariş "Hazırlanıyor" durumuna geri alınacak. Onaylıyor musunuz?',async function(){
-    var updated=await updateSiparisDurum(sid,{durum:'Hazırlanıyor'});
+  showConfirm('Sipariş "Hazırlanıyor" durumuna geri alınacak ve teslim edilen miktarlar sıfırlanacak. Onaylıyor musunuz?',async function(){
+    var sp=(state.siparisler||[]).find(function(x){return x.id===sid;});
+    if(!sp)return;
+    var satirlarSifir=(sp.satirlar||[]).map(function(s){return Object.assign({},s,{gonderilen:0});});
+    var updated=await updateSiparisDurum(sid,{durum:'Hazırlanıyor',satirlar:satirlarSifir});
     if(!updated)return;
     renderSiparisler();
     toast('Sipariş Hazırlanıyor durumuna alındı.','success');

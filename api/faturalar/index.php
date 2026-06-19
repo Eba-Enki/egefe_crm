@@ -177,6 +177,10 @@ switch ($method) {
             echo json_encode(['error' => 'id gerekli']);
             exit;
         }
+        $fatStmt = $pdo->prepare('SELECT siparis_id FROM invoices WHERE id = ?');
+        $fatStmt->execute([$id]);
+        $fatRow = $fatStmt->fetch();
+
         $stmt = $pdo->prepare('DELETE FROM invoices WHERE id = ?');
         $stmt->execute([$id]);
         if ($stmt->rowCount() === 0) {
@@ -184,6 +188,13 @@ switch ($method) {
             echo json_encode(['error' => 'Fatura bulunamadı']);
             exit;
         }
+
+        if ($fatRow && $fatRow['siparis_id']) {
+            $sid = $fatRow['siparis_id'];
+            $pdo->prepare('UPDATE order_line_items SET faturalanan = 0 WHERE order_id = ?')->execute([$sid]);
+            $pdo->prepare("UPDATE orders SET durum = 'Teslim Edildi' WHERE id = ? AND durum = 'Fatura Edildi'")->execute([$sid]);
+        }
+
         echo json_encode(['ok' => true]);
         break;
 

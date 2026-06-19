@@ -307,9 +307,14 @@ function confirmDelete(type,id){
       state.siparisler=(state.siparisler||[]).filter(function(x){return x.id!==id;});
     }
     else if(type==='fatura'){
+      var fat=(state.faturalar||[]).find(function(x){return x.id===id;});
       try{await apiDelete('faturalar?id='+encodeURIComponent(id));}
       catch(e){return toast(e.message||'Fatura silinemedi.','error');}
       state.faturalar=(state.faturalar||[]).filter(function(x){return x.id!==id;});
+      if(fat&&fat.siparisId){
+        var spIdx=(state.siparisler||[]).findIndex(function(x){return x.id===fat.siparisId&&x.durum==='Fatura Edildi';});
+        if(spIdx>=0)await updateSiparisDurum(fat.siparisId,{durum:'Teslim Edildi'});
+      }
     }
     if(type!=='musteri') saveAll();
     const refreshMap={servis:()=>{renderTable();renderDashboard()},teklif:renderTeklifler,siparis:renderSiparisler,fatura:renderFaturalar,musteri:renderMusteriler,urun:renderUrunler};
@@ -327,10 +332,15 @@ function confirmDeleteBulk(type,ids){
     var failed=0;
     for(var i=0;i<ids.length;i++){
       var id=ids[i];
+      var fatForRevert=type==='fatura'?(state.faturalar||[]).find(function(x){return x.id===id;}):null;
       try{await apiDelete(ep+'?id='+encodeURIComponent(id));}
       catch(e){failed++;continue;}
       state[stateKeys[type]]=state[stateKeys[type]].filter(function(x){return x.id!==id;});
       if(type==='servis')state.teklifler=state.teklifler.filter(function(t){return t.servisId!==id;});
+      if(type==='fatura'&&fatForRevert&&fatForRevert.siparisId){
+        var spIdx2=(state.siparisler||[]).findIndex(function(x){return x.id===fatForRevert.siparisId&&x.durum==='Fatura Edildi';});
+        if(spIdx2>=0)await updateSiparisDurum(fatForRevert.siparisId,{durum:'Teslim Edildi'});
+      }
     }
     if(type!=='musteri') saveAll();
     const refreshMap={servis:()=>{renderTable();renderDashboard()},teklif:renderTeklifler,siparis:renderSiparisler,fatura:renderFaturalar,musteri:renderMusteriler,urun:renderUrunler};

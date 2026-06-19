@@ -199,7 +199,7 @@ function renderSiparisler(){
         :'')
       +(canEdit&&ARSIV_SIPARISLER.indexOf(s.durum)<0?'<button class="btn-icon" title="Faturaya Aktar" style="color:var(--amber)" onclick="openFaturaModal(\''+s.id+'\')"><i class="ti ti-file-invoice"></i></button>':'')
       +(canEdit&&(s.durum==='Kısmi Teslimat'||s.durum==='Teslim Edildi')?'<button class="btn-icon" title="İşlemi Geri Al" style="color:var(--text3)" onclick="siparisGeriAl(\''+s.id+'\')">↩</button>':'')
-      +(canEdit&&SP_GECIS[s.durum]&&SP_GECIS[s.durum].length?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)"><i class="ti ti-progress"></i></button>':'')
+      +(canEdit&&SP_GECIS[s.durum]&&SP_GECIS[s.durum].length?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)"><i class="ti ti-loader"></i></button>':'')
       +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'siparis\',\''+s.id+'\')"><i class="ti ti-trash"></i></button>':'')
       +'</div></td>'
       +'</tr>';

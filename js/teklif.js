@@ -200,7 +200,7 @@ function renderTeklifler(){
     <td style="text-align:right"><div class="action-row">
       <button class="btn-icon" title="Detay" style="color:var(--accent)" onclick="openTeklifDetay('${t.id}')"><i class="ti ti-info-circle"></i></button>
       ${canEdit&&currentPortal==='satis'&&t.durum==='Taslak'?`<button class="btn-icon" title="Müşteriye İlet" style="color:var(--teal)" onclick="teklifGonder('${t.id}')"><i class="ti ti-send"></i></button>`:''}
-      ${canEdit&&(currentPortal!=='satis'||t.durum==='İletildi')?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)"><i class="ti ti-progress"></i></button>`:''}
+      ${canEdit&&(currentPortal!=='satis'||t.durum==='İletildi')?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)"><i class="ti ti-loader"></i></button>`:''}
       ${canEdit&&!getTeklifArsivDurumlari().includes(t.durum)?`<button class="btn-icon" title="Düzenle" onclick="goTeklifForm('${t.id}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>`:''}
       <button class="btn-icon" style="color:var(--accent)" title="PDF" onclick="printTeklifById('${t.id}')"><i class="ti ti-download"></i></button>
       ${canEdit&&currentPortal==='satis'&&t.durum==='İletildi'?`<button class="btn-icon" title="Sipariş Oluştur" style="color:var(--purple)" onclick="goSiparisForm('${t.id}')"><i class="ti ti-cube-send"></i></button>`:''}

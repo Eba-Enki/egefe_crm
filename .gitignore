@@ -1,4 +1,6 @@
 temporary screenshots/
 node_modules/
 config/db.local.php
-.vscode/
+.vscode/*
+!.vscode/tasks.json
+!.vscode/settings.json

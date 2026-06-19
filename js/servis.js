@@ -196,7 +196,7 @@ function renderTable(){
       :`<button class="btn-icon" title="Kayıt Görüntüle" style="color:var(--accent)" onclick="goServisForm('${s.id}',true)"><i class="ti ti-info-circle"></i></button>`;
     // Durum değiştir: teklif sürecine girmemiş kayıtlarda (İşlemsiz İade seçeneği için)
     const durumBtn=canEdit&&!isArsiv&&isPreTeklif
-      ?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showDurumMenu('${s.id}',this)"><i class="ti ti-progress"></i></button>`
+      ?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showDurumMenu('${s.id}',this)"><i class="ti ti-loader"></i></button>`
       :'';
     // Teklif butonu: Arıza Tespitinde + teklif yok → Tekliflendir; teklif varsa → Teklife Git
     let teklifBtn='';

@@ -152,7 +152,7 @@ function openServisDetay(id){
       <div class="pd-info-grid">
         <div class="pd-info-box"><div class="info-item-label">Seri No</div><div class="info-item-val">${esc(s.seriNo||'—')}</div></div>
         <div class="pd-info-box"><div class="info-item-label">Garanti</div><div class="info-item-val"><span class="badge ${s.garantiDurumu==='Evet'?'badge-garanti-evet':'badge-garanti-hayir'}">${esc(s.garantiDurumu)}</span></div></div>
-        <div class="pd-info-box" style="grid-column:1/-1"><div class="info-item-label">Aksesuarlar</div>${aksesuarParcalari.length?`<div class="chip-group" style="margin-top:4px">${aksesuarParcalari.map(function(a){return'<span class="chip selected">'+esc(a)+'</span>';}).join('')}</div>`:`<div class="info-item-val">—</div>`}</div>
+        <div class="pd-info-box" style="grid-column:1/-1;background:transparent;padding-left:0;padding-right:0"><div class="info-item-label">Aksesuarlar</div>${aksesuarParcalari.length?`<div class="chip-group" style="margin-top:4px">${aksesuarParcalari.map(function(a){return'<span class="chip selected">'+esc(a)+'</span>';}).join('')}</div>`:`<div class="info-item-val">—</div>`}</div>
       </div>
     </div>
     <div class="pd-section">

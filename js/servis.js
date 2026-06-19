@@ -247,9 +247,9 @@ function renderTable(){
     return`<tr style="cursor:pointer${isArsiv?';opacity:0.8':''}" onclick="openServisDetay('${s.id}')">
       ${canBulk?`<td onclick="event.stopPropagation()"><input type="checkbox" ${bulkIsChecked('servisArsiv',s.id)?'checked':''} onchange="bulkToggleRow('servisArsiv','${s.id}','renderTable')"></td>`:''}
       <td><span class="kn-badge" style="border:none">${esc(s.kayitNo)}</span></td>
+      <td class="td-mono" style="color:var(--text2)">${fmtDate(s.gelisTarihi)}</td>
       <td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(s.kurumAdi||'—')}</td>
       <td class="td-mono">${esc(s.seriNo||'—')}</td>
-      <td class="td-mono" style="color:var(--text2)">${fmtDate(s.gelisTarihi)}</td>
       <td>${durumBadge(s.durum)}</td>
       <td><span class="badge ${s.garantiDurumu==='Evet'?'badge-garanti-evet':'badge-garanti-hayir'}">${esc(s.garantiDurumu)}</span></td>
       <td style="color:var(--text2);font-size:12px">${esc(s.ilgiliKisi||'—')}</td>

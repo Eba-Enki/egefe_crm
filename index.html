@@ -1388,7 +1388,13 @@
 <!-- ── MODAL: SERVİS DETAY ── -->
 <div class="modal-overlay" id="modal-servis-detay">
   <div class="modal modal-lg">
-    <div class="modal-header"><span class="modal-title" id="sd-title">Servis Detayı</span><button class="close-btn" onclick="closeModal('modal-servis-detay')">✕</button></div>
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:20px">
+        <div><div class="info-item-label" style="margin-bottom:3px">Kayıt No</div><div class="modal-title" id="sd-kayitno" style="font-size:14px"></div></div>
+        <div><div class="info-item-label" style="margin-bottom:3px">Durum</div><div id="sd-durum"></div></div>
+      </div>
+      <button class="close-btn" onclick="closeModal('modal-servis-detay')">✕</button>
+    </div>
     <div class="modal-body" id="sd-body"></div>
     <div class="modal-footer">
       <button class="btn-icon" id="sd-delete-btn" style="color:var(--red);margin-right:auto" title="Sil" onclick="deleteCurrentServis()"><i class="ti ti-trash"></i></button>

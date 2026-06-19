@@ -584,10 +584,10 @@ function openSiparisDetay(sipId){
       +'</tr>';
   }).join('');
   var infoParts='';
-  if(s.odemeKosulu)infoParts+='<div class="info-item"><div class="info-item-label">Ödeme Koşulu</div><div class="info-item-val">'+esc(s.odemeKosulu)+'</div></div>';
-  if(s.vade)infoParts+='<div class="info-item"><div class="info-item-label">Vade</div><div class="info-item-val">'+esc(s.vade)+'</div></div>';
-  if(s.tahminTeslimat)infoParts+='<div class="info-item"><div class="info-item-label">Tahmini Teslimat</div><div class="info-item-val td-mono">'+fmtDate(s.tahminTeslimat)+'</div></div>';
-  if(s.satisTemsilcisi||s.sorumlu)infoParts+='<div class="info-item"><div class="info-item-label">Satış Temsilcisi</div><div class="info-item-val">'+esc(s.satisTemsilcisi||s.sorumlu||'')+'</div></div>';
+  if(s.odemeKosulu)infoParts+='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Ödeme Koşulu</div><div class="info-item-val">'+esc(s.odemeKosulu)+'</div></div>';
+  if(s.vade)infoParts+='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Vade</div><div class="info-item-val">'+esc(s.vade)+'</div></div>';
+  if(s.tahminTeslimat)infoParts+='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Tahmini Teslimat</div><div class="info-item-val td-mono">'+fmtDate(s.tahminTeslimat)+'</div></div>';
+  if(s.satisTemsilcisi||s.sorumlu)infoParts+='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Satış Temsilcisi</div><div class="info-item-val">'+esc(s.satisTemsilcisi||s.sorumlu||'')+'</div></div>';
   var el=document.getElementById('sp-detay-body');if(!el)return;
   el.innerHTML=
     '<div class="info-grid" style="margin-bottom:14px">'
@@ -595,10 +595,15 @@ function openSiparisDetay(sipId){
     +(s.teklifNo?'<div class="info-item"><div class="info-item-label">Teklif No</div><div class="info-item-val"><span class="kn-badge" style="color:var(--accent)">'+esc(s.teklifNo)+'</span></div></div>':'')
     +'<div class="info-item"><div class="info-item-label">Kurum</div><div class="info-item-val" style="font-weight:600">'+esc(s.kurum||'—')+'</div></div>'
     +'<div class="info-item"><div class="info-item-label">Sipariş Tarihi</div><div class="info-item-val td-mono">'+fmtDate(s.siparisTarihi||s.olusturmaTarihi)+'</div></div>'
-    +infoParts
     +'</div>'
-    +'<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:14px">'
-    +'<thead><tr style="background:var(--bg3)">'
+    +(infoParts?'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">'
+      +'<div class="info-item-label" style="font-size:11px;margin-bottom:10px">Sipariş Bilgileri</div>'
+      +'<div class="info-grid">'+infoParts+'</div>'
+      +'</div>':'')
+    +'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">'
+    +'<div class="info-item-label" style="font-size:11px;margin-bottom:10px">Kalemler</div>'
+    +'<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">'
+    +'<thead><tr style="background:var(--bg4)">'
     +'<th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:left">ÜRÜN / HİZMET</th>'
     +'<th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:center">MİKTAR</th>'
     +'<th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:center">GÖNDERİLEN</th>'
@@ -606,12 +611,13 @@ function openSiparisDetay(sipId){
     +'<th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:right">BİRİM F.</th>'
     +'<th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:right">TOPLAM</th>'
     +'</tr></thead><tbody>'+rowsHtml+'</tbody></table>'
-    +'<div style="text-align:right;margin-bottom:'+(s.notlar?'14':'4')+'px">'
-    +'<div style="display:inline-block;background:var(--bg3);border-radius:var(--radius-sm);padding:10px 16px">'
+    +'<div style="display:flex;justify-content:flex-end;margin-top:12px">'
+    +'<div style="background:var(--bg4);border-radius:var(--radius-sm);padding:10px 16px">'
     +'<div style="font-size:11px;color:var(--text3);margin-bottom:3px">TOPLAM</div>'
     +'<div style="font-size:17px;font-weight:700;color:var(--amber)">'+cur+' '+fmtNum(toplam)+'</div>'
     +'</div></div>'
-    +(s.notlar?'<div style="background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">'+esc(s.notlar)+'</div>':'');
+    +'</div>'
+    +(s.notlar?'<div class="info-item-label" style="margin-bottom:6px">Notlar</div><div style="background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">'+esc(s.notlar)+'</div>':'');
   document.getElementById('sp-detay-title').textContent=s.siparisNo+' — Detay';
   openModal('modal-siparis-detay');
 }

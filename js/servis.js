@@ -246,7 +246,7 @@ function renderTable(){
     }
     return`<tr style="cursor:pointer${isArsiv?';opacity:0.8':''}" onclick="openServisDetay('${s.id}')">
       ${canBulk?`<td onclick="event.stopPropagation()"><input type="checkbox" ${bulkIsChecked('servisArsiv',s.id)?'checked':''} onchange="bulkToggleRow('servisArsiv','${s.id}','renderTable')"></td>`:''}
-      <td><span class="kn-badge" style="border:none">${esc(s.kayitNo)}</span></td>
+      <td><span class="kn-badge" style="border:none;background:transparent;padding:0">${esc(s.kayitNo)}</span></td>
       <td class="td-mono" style="color:var(--text2)">${fmtDate(s.gelisTarihi)}</td>
       <td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(s.kurumAdi||'—')}</td>
       <td class="td-mono">${esc(s.seriNo||'—')}</td>

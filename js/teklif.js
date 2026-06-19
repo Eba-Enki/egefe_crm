@@ -232,7 +232,7 @@ function openTeklifDetay(id){
   state.activeTeklifId=id;
   const toplam=calcTeklifToplam(t);
   let ara=0;
-  const sarHtml=(t.satirlar||[]).map(s=>{const a=s.miktar*s.birimFiyat;ara+=a;const sp=s.seciliParametreler||[];const baseAciklama=(sp.length?(s._baseAciklama||(s.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim()):s.aciklama)||'—';const pHtml=sp.length?`<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">(${sp.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})</div>`:'';return`<tr style="border-bottom:1px solid rgba(36,48,69,.4)"><td style="padding:7px 9px;font-size:13px">${esc(baseAciklama)}${pHtml}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2)">${s.miktar} ${esc(s.birim)}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2);text-align:right">${fmtTL(s.birimFiyat)}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--amber);text-align:right">${fmtTL(a)}</td></tr>`;}).join('');
+  const sarHtml=(t.satirlar||[]).map(s=>{const a=s.miktar*s.birimFiyat;ara+=a;const sp=s.seciliParametreler||[];const baseAciklama=(sp.length?(s._baseAciklama||(s.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim()):s.aciklama)||'—';const pHtml=sp.length?`<div class="pd-sub-text">(${sp.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})</div>`:'';return`<tr><td>${esc(baseAciklama)}${pHtml}</td><td class="r" style="color:var(--text2)">${s.miktar} ${esc(s.birim)}</td><td class="r">${fmtTL(s.birimFiyat)}</td><td class="r">${fmtTL(a)}</td></tr>`;}).join('');
   const canEdit=state.currentUser?.rol!=='izleyici';
   document.getElementById('td-teklifno').textContent=t.teklifNo;
   document.getElementById('td-durum').innerHTML=`<span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>`;
@@ -243,31 +243,35 @@ function openTeklifDetay(id){
   var _db=document.getElementById('td-delete-btn');if(_db)_db.style.display=canEdit?'':'none';
   document.getElementById('td-body').innerHTML=`
     ${canEdit&&currentPortal==='servis'&&t.durum==='İletildi'?`<div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="changeTeklifDurum('${t.id}','Kabul Edildi');closeModal('modal-teklif-detay')">✓ Kabul Et</button><button class="btn btn-danger btn-sm" onclick="changeTeklifDurum('${t.id}','Reddedildi');closeModal('modal-teklif-detay')">✕ Reddet</button></div>`:''}
-    <div class="info-grid" style="margin-bottom:14px">
-      <div class="info-item"><div class="info-item-label">Kurum</div><div class="info-item-val" style="font-weight:600">${esc(t.kurum||'—')}</div></div>
-      <div class="info-item"><div class="info-item-label">Telefon</div><div class="info-item-val">${esc(t.telefon||'—')}</div></div>
-      <div class="info-item"><div class="info-item-label">E-posta</div><div class="info-item-val">${esc(t.email||'—')}</div></div>
+    <div class="pd-contact" style="grid-template-columns:2fr 1fr 1.5fr">
+      <div class="pd-contact-cell"><div class="info-item-label">Kurum</div><div class="info-item-val" style="font-weight:600">${esc(t.kurum||'—')}</div></div>
+      <div class="pd-contact-cell"><div class="info-item-label">Telefon</div><div class="info-item-val">${esc(t.telefon||'—')}</div></div>
+      <div class="pd-contact-cell"><div class="info-item-label">E-Posta</div><div class="info-item-val">${esc(t.email||'—')}</div></div>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">
-      <div class="info-item-label" style="font-size:11px;margin-bottom:10px">Teklif Bilgileri</div>
-      <div class="info-grid">
-        ${currentPortal==='servis'?`<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Seri No</div><div class="info-item-val text-mono">${esc(t.seriNo||'—')}</div></div>`:''}
-        <div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Teklif Tarihi</div><div class="info-item-val text-mono">${fmtDate(t.teklifTarihi)}</div></div>
-        <div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Geçerlilik</div><div class="info-item-val text-mono">${fmtDate(t.gecerlilikTarihi)}</div></div>
+    <div class="pd-section">
+      <div class="pd-section-title">Teklif Bilgileri</div>
+      <div class="pd-info-grid">
+        ${currentPortal==='servis'?`<div class="pd-info-box"><div class="info-item-label">Seri No</div><div class="info-item-val">${esc(t.seriNo||'—')}</div></div>`:''}
+        <div class="pd-info-box"><div class="info-item-label">Teklif Tarihi</div><div class="info-item-val">${fmtDate(t.teklifTarihi)||'—'}</div></div>
+        <div class="pd-info-box"><div class="info-item-label">Geçerlilik</div><div class="info-item-val">${fmtDate(t.gecerlilikTarihi)||'—'}</div></div>
       </div>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">
-      <div class="info-item-label" style="font-size:11px;margin-bottom:10px">Kalemler</div>
-      <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">
-        <thead><tr style="background:var(--bg4)"><th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:left">AÇIKLAMA</th><th style="padding:7px 9px;font-size:10px;color:var(--text3)">MİKTAR</th><th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:right">BİRİM F.</th><th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:right">TOPLAM</th></tr></thead>
-        <tbody>${sarHtml}</tbody>
-      </table>
-      <div style="display:flex;justify-content:flex-end;margin-top:12px"><div style="background:var(--bg4);border-radius:var(--radius-sm);padding:12px 16px;min-width:210px">
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px"><span>Ara Toplam</span><span class="text-mono">${fmtTL(ara)}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);padding-top:8px"><span>Toplam</span><span class="text-mono" style="color:var(--amber)">${fmtTL(toplam)}</span></div>
-      </div></div>
+    <div class="pd-section">
+      <div class="pd-section-title">Kalemler</div>
+      <div class="pd-table-wrap">
+        <table class="pd-table">
+          <thead><tr><th>Açıklama</th><th class="r">Miktar</th><th class="r">Birim F.</th><th class="r">Toplam</th></tr></thead>
+          <tbody>${sarHtml}</tbody>
+        </table>
+      </div>
+      <div class="pd-totals">
+        <div class="pd-totals-box">
+          <div class="pd-total-row"><span class="pd-tl">Ara Toplam</span><span class="pd-tv">${fmtTL(ara)}</span></div>
+          <div class="pd-total-row final"><span class="pd-tl">Toplam</span><span class="pd-tv">${fmtTL(toplam)}</span></div>
+        </div>
+      </div>
     </div>
-    ${t.notlar?`<div class="info-item-label" style="margin-bottom:6px">Notlar</div><div style="background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">${esc(t.notlar)}</div>`:''}
+    ${t.notlar?`<div class="pd-section"><div class="pd-section-title">Notlar</div><div class="pd-notes">${esc(t.notlar)}</div></div>`:''}
   `;
 
   // Show red/iptal info if exists

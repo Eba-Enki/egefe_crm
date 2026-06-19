@@ -141,30 +141,30 @@ function openServisDetay(id){
   var aksesuarParcalari=Array.isArray(s.aksesuarlar)?[...s.aksesuarlar]:[];
   if(s.aksesuarDiger)aksesuarParcalari.push(s.aksesuarDiger);
   document.getElementById('sd-body').innerHTML=`
-    <div class="info-grid" style="margin-bottom:14px">
-      <div class="info-item"><div class="info-item-label">Kurum / Müşteri</div><div class="info-item-val" style="font-weight:600">${esc(s.kurumAdi||'—')}</div></div>
-      <div class="info-item"><div class="info-item-label">İlgili Kişi</div><div class="info-item-val">${esc(s.ilgiliKisi||'—')}</div></div>
-      <div class="info-item"><div class="info-item-label">Telefon</div><div class="info-item-val">${esc(s.telefon||'—')}</div></div>
-      <div class="info-item"><div class="info-item-label">E-posta</div><div class="info-item-val">${esc(s.email||'—')}</div></div>
+    <div class="pd-contact" style="grid-template-columns:2fr 1fr 1fr 1fr">
+      <div class="pd-contact-cell"><div class="info-item-label">Kurum / Müşteri</div><div class="info-item-val" style="font-weight:600">${esc(s.kurumAdi||'—')}</div></div>
+      <div class="pd-contact-cell"><div class="info-item-label">İlgili Kişi</div><div class="info-item-val">${esc(s.ilgiliKisi||'—')}</div></div>
+      <div class="pd-contact-cell"><div class="info-item-label">Telefon</div><div class="info-item-val">${esc(s.telefon||'—')}</div></div>
+      <div class="pd-contact-cell"><div class="info-item-label">E-Posta</div><div class="info-item-val">${esc(s.email||'—')}</div></div>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">
-      <div class="info-item-label" style="font-size:11px;margin-bottom:10px">Cihaz Bilgileri</div>
-      <div class="info-grid">
-        <div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Seri No</div><div class="info-item-val text-mono">${esc(s.seriNo||'—')}</div></div>
-        <div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Garanti</div><div class="info-item-val"><span class="badge ${s.garantiDurumu==='Evet'?'badge-garanti-evet':'badge-garanti-hayir'}">${esc(s.garantiDurumu)}</span></div></div>
-        <div class="info-item" style="background:var(--bg4);grid-column:1/-1"><div class="info-item-label">Aksesuarlar</div>${aksesuarParcalari.length?`<div class="chip-group">${aksesuarParcalari.map(function(a){return'<span class="chip selected">'+esc(a)+'</span>';}).join('')}</div>`:`<div class="info-item-val">—</div>`}</div>
+    <div class="pd-section">
+      <div class="pd-section-title">Cihaz Bilgileri</div>
+      <div class="pd-info-grid">
+        <div class="pd-info-box"><div class="info-item-label">Seri No</div><div class="info-item-val">${esc(s.seriNo||'—')}</div></div>
+        <div class="pd-info-box"><div class="info-item-label">Garanti</div><div class="info-item-val"><span class="badge ${s.garantiDurumu==='Evet'?'badge-garanti-evet':'badge-garanti-hayir'}">${esc(s.garantiDurumu)}</span></div></div>
+        <div class="pd-info-box" style="grid-column:1/-1"><div class="info-item-label">Aksesuarlar</div>${aksesuarParcalari.length?`<div class="chip-group" style="margin-top:4px">${aksesuarParcalari.map(function(a){return'<span class="chip selected">'+esc(a)+'</span>';}).join('')}</div>`:`<div class="info-item-val">—</div>`}</div>
       </div>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">
-      <div class="info-item-label" style="font-size:11px;margin-bottom:10px">Kargo Bilgileri</div>
-      <div class="info-grid">
-        <div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Geliş Tarihi</div><div class="info-item-val text-mono">${fmtDate(s.gelisTarihi)}</div></div>
-        <div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Kargo Tarihi</div><div class="info-item-val text-mono">${fmtDate(s.kargoTarihi)}</div></div>
-        <div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Kargo Firması</div><div class="info-item-val">${esc(s.kargoFirmasi||'—')}</div></div>
-        <div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Teslim Alan</div><div class="info-item-val">${esc(s.teslimAlan||'—')}</div></div>
+    <div class="pd-section">
+      <div class="pd-section-title">Kargo Bilgileri</div>
+      <div class="pd-info-grid">
+        <div class="pd-info-box"><div class="info-item-label">Geliş Tarihi</div><div class="info-item-val">${fmtDate(s.gelisTarihi)||'—'}</div></div>
+        <div class="pd-info-box"><div class="info-item-label">Kargo Tarihi</div><div class="info-item-val">${fmtDate(s.kargoTarihi)||'—'}</div></div>
+        <div class="pd-info-box"><div class="info-item-label">Kargo Firması</div><div class="info-item-val">${esc(s.kargoFirmasi||'—')}</div></div>
+        <div class="pd-info-box"><div class="info-item-label">Teslim Alan</div><div class="info-item-val">${esc(s.teslimAlan||'—')}</div></div>
       </div>
     </div>
-    ${s.notlar?`<div class="info-item-label" style="margin-bottom:6px">Notlar</div><div style="background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">${esc(s.notlar)}</div>`:''}
+    ${s.notlar?`<div class="pd-section"><div class="pd-section-title">Notlar</div><div class="pd-notes">${esc(s.notlar)}</div></div>`:''}
   `;
   openModal('modal-servis-detay');
 }

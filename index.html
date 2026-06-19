@@ -10,7 +10,7 @@
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js"></script>
 <script src="vendor/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=16">
+<link rel="stylesheet" href="styles.css?v=17">
 </head>
 <body>
 
@@ -1374,12 +1374,12 @@
 
 <!-- ── MODAL: TEKLİF DETAY ── -->
 <div class="modal-overlay" id="modal-teklif-detay">
-  <div class="modal modal-lg">
+  <div class="modal modal-lg modal-preview">
     <div class="modal-header">
-      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-        <div><div class="info-item-label" style="margin-bottom:3px">Teklif No</div><div class="modal-title" id="td-teklifno" style="font-size:14px"></div></div>
-        <div id="td-kayitno-wrap"><div class="info-item-label" style="margin-bottom:3px">Kayıt No</div><div class="modal-title" id="td-kayitno" style="font-size:14px"></div></div>
-        <div><div class="info-item-label" style="margin-bottom:3px">Durum</div><div id="td-durum"></div></div>
+      <div class="pd-header-fields">
+        <div class="pd-header-field"><div class="info-item-label">Teklif No</div><div class="pd-hval" id="td-teklifno"></div></div>
+        <div class="pd-header-field" id="td-kayitno-wrap"><div class="info-item-label">Kayıt No</div><div class="pd-hval" id="td-kayitno"></div></div>
+        <div class="pd-header-field"><div class="info-item-label">Durum</div><div id="td-durum"></div></div>
       </div>
       <button class="close-btn" onclick="closeModal('modal-teklif-detay')">✕</button>
     </div>
@@ -1395,11 +1395,11 @@
 
 <!-- ── MODAL: SERVİS DETAY ── -->
 <div class="modal-overlay" id="modal-servis-detay">
-  <div class="modal modal-lg">
+  <div class="modal modal-lg modal-preview">
     <div class="modal-header">
-      <div style="display:flex;align-items:center;gap:20px">
-        <div><div class="info-item-label" style="margin-bottom:3px">Kayıt No</div><div class="modal-title" id="sd-kayitno" style="font-size:14px"></div></div>
-        <div><div class="info-item-label" style="margin-bottom:3px">Durum</div><div id="sd-durum"></div></div>
+      <div class="pd-header-fields">
+        <div class="pd-header-field"><div class="info-item-label">Kayıt No</div><div class="pd-hval" id="sd-kayitno"></div></div>
+        <div class="pd-header-field"><div class="info-item-label">Durum</div><div id="sd-durum"></div></div>
       </div>
       <button class="close-btn" onclick="closeModal('modal-servis-detay')">✕</button>
     </div>
@@ -1431,12 +1431,12 @@
 <script src="js/sistem.js?v=2"></script>
 <script src="js/ui.js?v=18"></script>
 <script src="js/dashboard.js?v=5"></script>
-<script src="js/servis.js?v=10"></script>
-<script src="js/teklif.js?v=10"></script>
+<script src="js/servis.js?v=11"></script>
+<script src="js/teklif.js?v=11"></script>
 <script src="js/tutanak.js?v=6"></script>
 <script src="js/musteri.js?v=12"></script>
 <script src="js/export.js?v=5"></script>
-<script src="js/satis.js?v=11"></script>
+<script src="js/satis.js?v=12"></script>
 <script src="js/stok.js?v=5"></script>
 <script src="js/init.js?v=8"></script>
 <!-- ─── FATURA MODAL ─── -->
@@ -1505,11 +1505,11 @@
 
 <!-- ─── SİPARİŞ DETAY MODAL ─── -->
 <div class="modal-overlay" id="modal-siparis-detay">
-  <div class="modal modal-lg">
+  <div class="modal modal-lg modal-preview">
     <div class="modal-header">
-      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-        <div><div class="info-item-label" style="margin-bottom:3px">Sipariş No</div><div class="modal-title" id="sp-detay-siparisno" style="font-size:14px"></div></div>
-        <div id="sp-detay-teklifno-wrap"><div class="info-item-label" style="margin-bottom:3px">Teklif No</div><div class="modal-title" id="sp-detay-teklifno" style="font-size:14px;color:var(--accent)"></div></div>
+      <div class="pd-header-fields">
+        <div class="pd-header-field"><div class="info-item-label">Sipariş No</div><div class="pd-hval" id="sp-detay-siparisno"></div></div>
+        <div class="pd-header-field" id="sp-detay-teklifno-wrap"><div class="info-item-label">Teklif No</div><div class="pd-hval" id="sp-detay-teklifno" style="color:var(--accent)"></div></div>
       </div>
       <button class="close-btn" onclick="closeModal('modal-siparis-detay')">✕</button>
     </div>

@@ -579,48 +579,48 @@ function openSiparisDetay(sipId){
     var rBase=rsp.length?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())||'—':k.aciklama||'—';
     var rpHtml=rsp.length?'<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">('+rsp.map(function(p){return esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad));}).join(', ')+')</div>':'';
     return '<tr>'
-      +'<td style="padding:7px 9px;font-size:13px">'+esc(rBase)+rpHtml+'</td>'
-      +'<td style="padding:7px 9px;font-size:12px;text-align:center">'+k.miktar+' '+esc(k.birim||'')+'</td>'
-      +'<td style="padding:7px 9px;font-size:12px;text-align:center;color:var(--green)">'+gonderilen+'</td>'
-      +'<td style="padding:7px 9px;font-size:12px;text-align:center;color:'+(kalan>0?'var(--amber)':'var(--text3)')+'">'+kalan+'</td>'
-      +'<td style="padding:7px 9px;font-size:12px;text-align:right">'+cur+' '+fmtNum(k.birimFiyat||0)+'</td>'
-      +'<td style="padding:7px 9px;font-size:12px;text-align:right;color:var(--amber)">'+cur+' '+fmtNum(satir)+'</td>'
+      +'<td>'+esc(rBase)+rpHtml+'</td>'
+      +'<td class="c" style="color:var(--text2)">'+k.miktar+' '+esc(k.birim||'')+'</td>'
+      +'<td class="c" style="color:var(--green)">'+gonderilen+'</td>'
+      +'<td class="c" style="color:'+(kalan>0?'var(--amber)':'var(--text3)')+'">'+kalan+'</td>'
+      +'<td class="r">'+cur+' '+fmtNum(k.birimFiyat||0)+'</td>'
+      +'<td class="r">'+cur+' '+fmtNum(satir)+'</td>'
       +'</tr>';
   }).join('');
-  var infoParts='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Sipariş Tarihi</div><div class="info-item-val td-mono">'+fmtDate(s.siparisTarihi||s.olusturmaTarihi)+'</div></div>';
-  if(s.odemeKosulu)infoParts+='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Ödeme Koşulu</div><div class="info-item-val">'+esc(s.odemeKosulu)+'</div></div>';
-  if(s.vade)infoParts+='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Vade</div><div class="info-item-val">'+esc(s.vade)+'</div></div>';
-  if(s.tahminTeslimat)infoParts+='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Tahmini Teslimat</div><div class="info-item-val td-mono">'+fmtDate(s.tahminTeslimat)+'</div></div>';
-  if(s.satisTemsilcisi||s.sorumlu)infoParts+='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Satış Temsilcisi</div><div class="info-item-val">'+esc(s.satisTemsilcisi||s.sorumlu||'')+'</div></div>';
+  var infoParts='<div class="pd-info-box"><div class="info-item-label">Sipariş Tarihi</div><div class="info-item-val">'+fmtDate(s.siparisTarihi||s.olusturmaTarihi)+'</div></div>';
+  if(s.odemeKosulu)infoParts+='<div class="pd-info-box"><div class="info-item-label">Ödeme Koşulu</div><div class="info-item-val">'+esc(s.odemeKosulu)+'</div></div>';
+  if(s.vade)infoParts+='<div class="pd-info-box"><div class="info-item-label">Vade</div><div class="info-item-val">'+esc(s.vade)+'</div></div>';
+  if(s.tahminTeslimat)infoParts+='<div class="pd-info-box"><div class="info-item-label">Tahmini Teslimat</div><div class="info-item-val">'+fmtDate(s.tahminTeslimat)+'</div></div>';
+  if(s.satisTemsilcisi||s.sorumlu)infoParts+='<div class="pd-info-box"><div class="info-item-label">Satış Temsilcisi</div><div class="info-item-val">'+esc(s.satisTemsilcisi||s.sorumlu||'')+'</div></div>';
   var el=document.getElementById('sp-detay-body');if(!el)return;
   el.innerHTML=
-    '<div class="info-grid" style="margin-bottom:14px">'
-    +'<div class="info-item"><div class="info-item-label">Kurum</div><div class="info-item-val" style="font-weight:600">'+esc(s.kurum||'—')+'</div></div>'
-    +'<div class="info-item"><div class="info-item-label">Telefon</div><div class="info-item-val">'+esc(s.telefon||'—')+'</div></div>'
-    +'<div class="info-item"><div class="info-item-label">E-posta</div><div class="info-item-val">'+esc(s.email||'—')+'</div></div>'
+    '<div class="pd-contact" style="grid-template-columns:2fr 1fr 1.5fr">'
+    +'<div class="pd-contact-cell"><div class="info-item-label">Kurum</div><div class="info-item-val" style="font-weight:600">'+esc(s.kurum||'—')+'</div></div>'
+    +'<div class="pd-contact-cell"><div class="info-item-label">Telefon</div><div class="info-item-val">'+esc(s.telefon||'—')+'</div></div>'
+    +'<div class="pd-contact-cell"><div class="info-item-label">E-Posta</div><div class="info-item-val">'+esc(s.email||'—')+'</div></div>'
     +'</div>'
-    +'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">'
-      +'<div class="info-item-label" style="font-size:11px;margin-bottom:10px">Sipariş Bilgileri</div>'
-      +'<div class="info-grid">'+infoParts+'</div>'
-      +'</div>'
-    +'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">'
-    +'<div class="info-item-label" style="font-size:11px;margin-bottom:10px">Kalemler</div>'
-    +'<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">'
-    +'<thead><tr style="background:var(--bg4)">'
-    +'<th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:left">ÜRÜN / HİZMET</th>'
-    +'<th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:center">MİKTAR</th>'
-    +'<th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:center">GÖNDERİLEN</th>'
-    +'<th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:center">KALAN</th>'
-    +'<th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:right">BİRİM F.</th>'
-    +'<th style="padding:7px 9px;font-size:10px;color:var(--text3);text-align:right">TOPLAM</th>'
+    +'<div class="pd-section">'
+      +'<div class="pd-section-title">Sipariş Bilgileri</div>'
+      +'<div class="pd-info-grid">'+infoParts+'</div>'
+    +'</div>'
+    +'<div class="pd-section">'
+    +'<div class="pd-section-title">Kalemler</div>'
+    +'<div class="pd-table-wrap">'
+    +'<table class="pd-table">'
+    +'<thead><tr>'
+    +'<th>Ürün / Hizmet</th>'
+    +'<th class="c">Miktar</th>'
+    +'<th class="c">Gönderilen</th>'
+    +'<th class="c">Kalan</th>'
+    +'<th class="r">Birim F.</th>'
+    +'<th class="r">Toplam</th>'
     +'</tr></thead><tbody>'+rowsHtml+'</tbody></table>'
-    +'<div style="display:flex;justify-content:flex-end;margin-top:12px">'
-    +'<div style="background:var(--bg4);border-radius:var(--radius-sm);padding:10px 16px">'
-    +'<div style="font-size:11px;color:var(--text3);margin-bottom:3px">TOPLAM</div>'
-    +'<div style="font-size:17px;font-weight:700;color:var(--amber)">'+cur+' '+fmtNum(toplam)+'</div>'
+    +'</div>'
+    +'<div class="pd-totals"><div class="pd-totals-box">'
+    +'<div class="pd-total-row final"><span class="pd-tl">Toplam</span><span class="pd-tv">'+cur+' '+fmtNum(toplam)+'</span></div>'
     +'</div></div>'
     +'</div>'
-    +(s.notlar?'<div class="info-item-label" style="margin-bottom:6px">Notlar</div><div style="background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">'+esc(s.notlar)+'</div>':'');
+    +(s.notlar?'<div class="pd-section"><div class="pd-section-title">Notlar</div><div class="pd-notes">'+esc(s.notlar)+'</div></div>':'');
   openModal('modal-siparis-detay');
 }
 function deleteCurrentSiparis(){if(!_activeSiparisDetayId)return;closeModal('modal-siparis-detay');confirmDelete('siparis',_activeSiparisDetayId);}

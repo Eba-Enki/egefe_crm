@@ -628,7 +628,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFontSize(8);
   doc.setFont('Arial', 'normal');
   doc.setTextColor(...C.textLabel);
-  doc.text('Ara Toplam', mm(137.109), totalsY + mm(1.7));
+  doc.text('Genel Toplam', mm(137.109), totalsY + mm(1.7));
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textMid);
   doc.text(fmtN(araToplam), mm(193.881), totalsY + mm(1.7), {align: 'right'});
@@ -637,22 +637,24 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setLineWidth(0.75);
   doc.line(mm(137.109), totalsY + mm(4.75), mm(194.63), totalsY + mm(4.75));
 
+  /* -- Genel İskonto (pasif) --
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textLabel);
   doc.text('Genel İskonto', mm(137.22), totalsY + mm(7.8));
   doc.setFont('Arial', 'normal');
   doc.text('- %', mm(193.881), totalsY + mm(7.8), {align: 'right'});
-
   doc.line(mm(137.109), totalsY + mm(10.85), mm(194.63), totalsY + mm(10.85));
+  */
 
+  /* -- KDV (pasif) --
   doc.setFont('Arial', 'bold');
   doc.text('KDV', mm(137.109), totalsY + mm(13.9));
   doc.setFont('Arial', 'normal');
   doc.text(fmtN(kdv), mm(193.881), totalsY + mm(13.9), {align: 'right'});
-
   doc.line(mm(137.109), totalsY + mm(16.95), mm(194.63), totalsY + mm(16.95));
+  */
 
-  const totalBoxY = totalsY + mm(18.269);
+  const totalBoxY = totalsY + mm(6.5);
   const totalBoxW = mm(194.63) - mm(141.901);
   doc.setDrawColor(...C.primary);
   doc.setLineWidth(1.5);

@@ -489,7 +489,7 @@ input.musteri-locked{background:var(--bg4)!important;cursor:default;padding-righ
 .separator{height:1px;background:var(--border);margin:14px 0}
 .text-mono{font-family:var(--font-mono);font-size:12px}
 .kn-badge{font-family:var(--font-mono);font-size:11px;background:var(--bg3);color:var(--text2);padding:2px 8px;border-radius:4px;border:1px solid var(--border)}
-.sort-ind{font-size:9px;color:var(--text3);margin-left:3px}
+.sort-ind{font-size:9px;color:var(--text3);margin-left:1px}
 .action-row{display:flex;gap:4px;justify-content:flex-end}
 .page{display:none}.page.active{display:block}
 .empty-state{text-align:center;padding:44px 20px;color:var(--text3)}

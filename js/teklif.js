@@ -189,22 +189,18 @@ function renderTeklifler(){
   var sortedTl=[...filtTl2].sort((a,b)=>new Date(b.olusturmaTarihi)-new Date(a.olusturmaTarihi));
   var pagedTl=sortedTl.slice((tekliflerPage-1)*PAGE_SIZE,tekliflerPage*PAGE_SIZE);
   renderPagination('teklif-pagination',tekliflerPage,filtTl2.length,'setTekliflerPage');
-  tbody.innerHTML=pagedTl.map(t=>`<tr>
-    ${canBulk?`<td><input type="checkbox" ${bulkIsChecked('teklifArsiv',t.id)?'checked':''} onchange="bulkToggleRow('teklifArsiv','${t.id}','renderTeklifler')"></td>`:''}
+  tbody.innerHTML=pagedTl.map(t=>`<tr style="cursor:pointer" onclick="openTeklifDetay('${t.id}')">
+    ${canBulk?`<td onclick="event.stopPropagation()"><input type="checkbox" ${bulkIsChecked('teklifArsiv',t.id)?'checked':''} onchange="bulkToggleRow('teklifArsiv','${t.id}','renderTeklifler')"></td>`:''}
     <td><span class="kn-badge">${esc(t.teklifNo)}</span></td>
     <td class="td-mono" style="color:var(--text2)">${fmtDate(t.teklifTarihi)}</td>
     <td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(t.kurum||'—')}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--amber);font-size:12px">${fmtTL(calcTeklifToplam(t))}</td>
     <td><span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>${getRedBilgi(t)?'<span title="'+esc(getRedBilgi(t).neden)+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
     ${showTemsilci?`<td style="font-size:12px;color:var(--text3)">${esc(t.sorumlu||'—')}</td>`:''}
-    <td style="text-align:right"><div class="action-row">
-      <button class="btn-icon" title="Detay" style="color:var(--accent)" onclick="openTeklifDetay('${t.id}')"><i class="ti ti-info-circle"></i></button>
+    <td style="text-align:right"><div class="action-row" onclick="event.stopPropagation()">
       ${canEdit&&currentPortal==='satis'&&t.durum==='Taslak'?`<button class="btn-icon" title="Müşteriye İlet" style="color:var(--teal)" onclick="teklifGonder('${t.id}')"><i class="ti ti-send"></i></button>`:''}
       ${canEdit&&(currentPortal!=='satis'||t.durum==='İletildi')?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)"><i class="ti ti-loader"></i></button>`:''}
-      ${canEdit&&!getTeklifArsivDurumlari().includes(t.durum)?`<button class="btn-icon" title="Düzenle" onclick="goTeklifForm('${t.id}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>`:''}
-      <button class="btn-icon" style="color:var(--accent)" title="PDF" onclick="printTeklifById('${t.id}')"><i class="ti ti-download"></i></button>
       ${canEdit&&currentPortal==='satis'&&t.durum==='İletildi'?`<button class="btn-icon" title="Sipariş Oluştur" style="color:var(--purple)" onclick="goSiparisForm('${t.id}')"><i class="ti ti-cube-send"></i></button>`:''}
-      ${canEdit?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('teklif','${t.id}')"><i class="ti ti-trash"></i></button>`:''}
     </div></td>
   </tr>`).join('');
 }
@@ -240,6 +236,7 @@ function openTeklifDetay(id){
   const canEdit=state.currentUser?.rol!=='izleyici';
   document.getElementById('td-title').textContent=`${t.teklifNo} — Detay`;
   var _eb=document.getElementById('td-edit-btn');if(_eb)_eb.style.display=canEdit?'':'none';
+  var _db=document.getElementById('td-delete-btn');if(_db)_db.style.display=canEdit?'':'none';
   const isSatisTeklif=currentPortal==='satis';
   const steps=isSatisTeklif
     ?[{l:'Taslak',c:'done'},{l:'İletildi',c:t.durum==='İletildi'?'active':['Siparişe Dönüştü','Reddedildi'].includes(t.durum)?'done':'pending'},{l:t.durum==='Reddedildi'?'Reddedildi':'Siparişe Dönüştü',c:t.durum==='Siparişe Dönüştü'?'done':t.durum==='Reddedildi'?'rejected':'pending'}]
@@ -288,6 +285,7 @@ function openTeklifDetay(id){
 }
 function editCurrentTeklif(){closeModal('modal-teklif-detay');if(state.activeTeklifId)goTeklifForm(state.activeTeklifId)}
 function printCurrentTeklif(){if(state.activeTeklifId)printTeklifById(state.activeTeklifId)}
+function deleteCurrentTeklif(){if(!state.activeTeklifId)return;closeModal('modal-teklif-detay');confirmDelete('teklif',state.activeTeklifId);}
 
 // ════ PDF ════
 function printTeklifById(id){

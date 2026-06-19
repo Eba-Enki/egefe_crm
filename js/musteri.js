@@ -126,13 +126,9 @@ function renderTutanaklar(){
   if(!savedTutanaklar.length){tbody.innerHTML='';if(emptyEl)emptyEl.style.display='';return;}
   if(emptyEl)emptyEl.style.display='none';
   tbody.innerHTML=savedTutanaklar.map(function(t){
-    return '<tr>'
+    return '<tr style="cursor:pointer" onclick="previewTutanak(\''+t.no+'\')">'
       +'<td><span class="kn-badge">'+t.no+'</span></td>'
       +'<td class="td-mono">'+fmtDate(t.tarih)+'</td>'
-      +'<td style="text-align:right"><div class="action-row" style="justify-content:flex-end">'
-      +'<button class="btn-icon" title="Yazdır" style="color:var(--accent)" onclick="previewTutanak(\''+t.no+'\')"><i class="ti ti-printer"></i></button>'
-      +'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteTutanak(\''+t.no+'\')"><i class="ti ti-trash"></i></button>'
-      +'</div></td>'
       +'</tr>';
   }).join('');
 }

@@ -309,6 +309,7 @@ async function showTutanakPreview(tutanak, isNew, selectedIds){
     }
     tutanak=res.tutanak;
   }
+  state.activeTutanakNo=tutanak.no;
 
   const st = state.settings;
   const logoSrc = document.getElementById('sb-logo-img').src;
@@ -408,3 +409,4 @@ function deleteTutanak(no){
     toast('Tutanak silindi.','info');
   });
 }
+function deleteCurrentTutanak(){if(!state.activeTutanakNo)return;closeModal('modal-tutanak-onizleme');deleteTutanak(state.activeTutanakNo);}

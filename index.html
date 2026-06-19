@@ -571,7 +571,6 @@
             <thead><tr>
               <th>Kayıt No</th>
               <th>Tutanak Tarihi</th>
-              <th style="text-align:right;width:120px">İşlemler</th>
             </tr></thead>
             <tbody id="tutanak-table-body"></tbody>
           </table>
@@ -1366,6 +1365,7 @@
     <div class="modal-header"><span class="modal-title" id="tutanak-modal-title">Teslim Tutanağı</span><button class="close-btn" onclick="closeModal('modal-tutanak-onizleme')">✕</button></div>
     <div class="modal-body" id="tutanak-modal-body"></div>
     <div class="modal-footer">
+      <button class="btn-icon" id="tutanak-delete-btn" style="color:var(--red);margin-right:auto" title="Sil" onclick="deleteCurrentTutanak()"><i class="ti ti-trash"></i></button>
       <button class="btn btn-ghost" onclick="closeModal('modal-tutanak-onizleme')">Kapat</button>
       <button class="btn btn-primary" id="tutanak-pdf-btn">PDF İndir / Yazdır</button>
     </div>
@@ -1378,6 +1378,7 @@
     <div class="modal-header"><span class="modal-title" id="td-title">Teklif Detayı</span><button class="close-btn" onclick="closeModal('modal-teklif-detay')">✕</button></div>
     <div class="modal-body" id="td-body"></div>
     <div class="modal-footer">
+      <button class="btn-icon" id="td-delete-btn" style="color:var(--red);margin-right:auto" title="Sil" onclick="deleteCurrentTeklif()"><i class="ti ti-trash"></i></button>
       <button class="btn btn-ghost" onclick="closeModal('modal-teklif-detay')">Kapat</button>
       <button class="btn btn-amber" id="td-edit-btn" onclick="editCurrentTeklif()">Düzenle</button>
       <button class="btn btn-primary" onclick="printCurrentTeklif()">PDF İndir</button>
@@ -1504,6 +1505,7 @@
     </div>
     <div class="modal-body" style="overflow-y:auto"><div id="sp-detay-body"></div></div>
     <div class="modal-footer">
+      <button class="btn-icon" id="sp-detay-delete-btn" style="color:var(--red);margin-right:auto" title="Sil" onclick="deleteCurrentSiparis()"><i class="ti ti-trash"></i></button>
       <button class="btn btn-ghost" onclick="closeModal('modal-siparis-detay')">Kapat</button>
       <button id="sp-detay-print-btn" class="btn btn-primary" onclick="printSiparisUretimFormu(_activeSiparisDetayId)"><i class="ti ti-printer"></i> Sipariş Formu Yazdır</button>
     </div>

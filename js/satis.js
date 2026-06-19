@@ -186,24 +186,21 @@ function renderSiparisler(){
   tbody.innerHTML=pagedSp.map(function(s){
     var toplam=(s.satirlar||[]).reduce(function(a,i){return a+i.miktar*i.birimFiyat;},0);
     var cur=currency[s.paraBirimi||'TRY']||'₺';
-    return '<tr>'
-      +(canBulk?'<td><input type="checkbox" '+(bulkIsChecked('siparisArsiv',s.id)?'checked':'')+' onchange="bulkToggleRow(\'siparisArsiv\',\''+s.id+'\',\'renderSiparisler\')"></td>':'')
+    return '<tr style="cursor:pointer" onclick="openSiparisDetay(\''+s.id+'\')">'
+      +(canBulk?'<td onclick="event.stopPropagation()"><input type="checkbox" '+(bulkIsChecked('siparisArsiv',s.id)?'checked':'')+' onchange="bulkToggleRow(\'siparisArsiv\',\''+s.id+'\',\'renderSiparisler\')"></td>':'')
       +'<td><span class="kn-badge">'+esc(s.siparisNo)+'</span></td>'
       +'<td class="td-mono" style="color:var(--text2)">'+fmtDate(s.siparisTarihi||s.teklifTarihi||s.olusturmaTarihi)+'</td>'
       +'<td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">'+esc(s.kurum||'—')+'</td>'
       +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+esc(cur)+' '+fmtNum(toplam)+'</td>'
       +'<td><span class="badge '+(SP_DURUM_CSS[s.durum]||'badge-sf')+'">'+esc(s.durum)+'</span></td>'
       +'<td style="font-size:12px;color:var(--text3)">'+esc(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
-      +'<td style="text-align:right"><div class="action-row">'
-      +'<button class="btn-icon" title="Detay" style="color:var(--accent)" onclick="openSiparisDetay(\''+s.id+'\')"><i class="ti ti-info-circle"></i></button>'
-      +(ARSIV_SIPARISLER.indexOf(s.durum)<0?'<button class="btn-icon" title="Sipariş Formu Yazdır" style="color:var(--teal)" onclick="printSiparisUretimFormu(\''+s.id+'\')"><i class="ti ti-printer"></i></button>':'')
+      +'<td style="text-align:right"><div class="action-row" onclick="event.stopPropagation()">'
       +(canEdit&&['Hazırlanıyor','Kısmi Teslimat'].indexOf(s.durum)>=0
         ?'<button class="btn-icon" title="Teslimat Gir" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')"><i class="ti ti-truck-delivery"></i></button>'
         :'')
       +(canEdit&&ARSIV_SIPARISLER.indexOf(s.durum)<0?'<button class="btn-icon" title="Faturaya Aktar" style="color:var(--amber)" onclick="openFaturaModal(\''+s.id+'\')"><i class="ti ti-file-invoice"></i></button>':'')
       +(canEdit&&(s.durum==='Kısmi Teslimat'||s.durum==='Teslim Edildi')?'<button class="btn-icon" title="İşlemi Geri Al" style="color:var(--text3)" onclick="siparisGeriAl(\''+s.id+'\')">↩</button>':'')
       +(canEdit&&SP_GECIS[s.durum]&&SP_GECIS[s.durum].length?'<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showSiparisDurumMenu(\''+s.id+'\',this)"><i class="ti ti-loader"></i></button>':'')
-      +(canEdit?'<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete(\'siparis\',\''+s.id+'\')"><i class="ti ti-trash"></i></button>':'')
       +'</div></td>'
       +'</tr>';
   }).join('');
@@ -567,6 +564,8 @@ function openSiparisDetay(sipId){
   _activeSiparisDetayId=sipId;
   var _pb=document.getElementById('sp-detay-print-btn');
   if(_pb)_pb.style.display=ARSIV_SIPARISLER.indexOf(s.durum)>=0?'none':'';
+  var _db=document.getElementById('sp-detay-delete-btn');
+  if(_db)_db.style.display=(state.currentUser&&state.currentUser.rol!=='izleyici')?'':'none';
   var cur={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[s.paraBirimi||'TRY']||'₺';
   var toplam=0;
   var rowsHtml=(s.satirlar||[]).map(function(k){
@@ -616,6 +615,7 @@ function openSiparisDetay(sipId){
   document.getElementById('sp-detay-title').textContent=s.siparisNo+' — Detay';
   openModal('modal-siparis-detay');
 }
+function deleteCurrentSiparis(){if(!_activeSiparisDetayId)return;closeModal('modal-siparis-detay');confirmDelete('siparis',_activeSiparisDetayId);}
 
 
 // ════ ÜRETİM SİPARİŞ FORMU PDF ════

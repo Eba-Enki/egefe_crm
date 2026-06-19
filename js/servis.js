@@ -248,7 +248,6 @@ function renderTable(){
         ${durumBtn}
         ${teklifBtn}
         ${isArsiv&&state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" title="Aktife Al" style="color:var(--teal);border-color:rgba(45,212,191,.3)" onclick="arsivdenGeriAl('${s.id}')"><i class="ti ti-arrow-back-up"></i></button>`:''}
-        ${state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('servis','${s.id}')"><i class="ti ti-trash"></i></button>`:''}
       </div></td>
     </tr>`;
   }).join('');

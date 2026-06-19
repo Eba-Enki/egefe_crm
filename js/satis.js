@@ -566,6 +566,10 @@ function openSiparisDetay(sipId){
   if(_pb)_pb.style.display=ARSIV_SIPARISLER.indexOf(s.durum)>=0?'none':'';
   var _db=document.getElementById('sp-detay-delete-btn');
   if(_db)_db.style.display=(state.currentUser&&state.currentUser.rol!=='izleyici')?'':'none';
+  document.getElementById('sp-detay-siparisno').textContent=s.siparisNo;
+  var _tnw=document.getElementById('sp-detay-teklifno-wrap');
+  if(_tnw)_tnw.style.display=s.teklifNo?'':'none';
+  document.getElementById('sp-detay-teklifno').textContent=s.teklifNo||'—';
   var cur={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'}[s.paraBirimi||'TRY']||'₺';
   var toplam=0;
   var rowsHtml=(s.satirlar||[]).map(function(k){
@@ -583,7 +587,7 @@ function openSiparisDetay(sipId){
       +'<td style="padding:7px 9px;font-size:12px;text-align:right;color:var(--amber)">'+cur+' '+fmtNum(satir)+'</td>'
       +'</tr>';
   }).join('');
-  var infoParts='';
+  var infoParts='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Sipariş Tarihi</div><div class="info-item-val td-mono">'+fmtDate(s.siparisTarihi||s.olusturmaTarihi)+'</div></div>';
   if(s.odemeKosulu)infoParts+='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Ödeme Koşulu</div><div class="info-item-val">'+esc(s.odemeKosulu)+'</div></div>';
   if(s.vade)infoParts+='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Vade</div><div class="info-item-val">'+esc(s.vade)+'</div></div>';
   if(s.tahminTeslimat)infoParts+='<div class="info-item" style="background:var(--bg4)"><div class="info-item-label">Tahmini Teslimat</div><div class="info-item-val td-mono">'+fmtDate(s.tahminTeslimat)+'</div></div>';
@@ -591,15 +595,14 @@ function openSiparisDetay(sipId){
   var el=document.getElementById('sp-detay-body');if(!el)return;
   el.innerHTML=
     '<div class="info-grid" style="margin-bottom:14px">'
-    +'<div class="info-item"><div class="info-item-label">Sipariş No</div><div class="info-item-val"><span class="kn-badge">'+esc(s.siparisNo)+'</span></div></div>'
-    +(s.teklifNo?'<div class="info-item"><div class="info-item-label">Teklif No</div><div class="info-item-val"><span class="kn-badge" style="color:var(--accent)">'+esc(s.teklifNo)+'</span></div></div>':'')
     +'<div class="info-item"><div class="info-item-label">Kurum</div><div class="info-item-val" style="font-weight:600">'+esc(s.kurum||'—')+'</div></div>'
-    +'<div class="info-item"><div class="info-item-label">Sipariş Tarihi</div><div class="info-item-val td-mono">'+fmtDate(s.siparisTarihi||s.olusturmaTarihi)+'</div></div>'
+    +'<div class="info-item"><div class="info-item-label">Telefon</div><div class="info-item-val">'+esc(s.telefon||'—')+'</div></div>'
+    +'<div class="info-item"><div class="info-item-label">E-posta</div><div class="info-item-val">'+esc(s.email||'—')+'</div></div>'
     +'</div>'
-    +(infoParts?'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">'
+    +'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">'
       +'<div class="info-item-label" style="font-size:11px;margin-bottom:10px">Sipariş Bilgileri</div>'
       +'<div class="info-grid">'+infoParts+'</div>'
-      +'</div>':'')
+      +'</div>'
     +'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">'
     +'<div class="info-item-label" style="font-size:11px;margin-bottom:10px">Kalemler</div>'
     +'<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">'
@@ -618,7 +621,6 @@ function openSiparisDetay(sipId){
     +'</div></div>'
     +'</div>'
     +(s.notlar?'<div class="info-item-label" style="margin-bottom:6px">Notlar</div><div style="background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">'+esc(s.notlar)+'</div>':'');
-  document.getElementById('sp-detay-title').textContent=s.siparisNo+' — Detay';
   openModal('modal-siparis-detay');
 }
 function deleteCurrentSiparis(){if(!_activeSiparisDetayId)return;closeModal('modal-siparis-detay');confirmDelete('siparis',_activeSiparisDetayId);}

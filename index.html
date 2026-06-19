@@ -1505,12 +1505,15 @@
 
 <!-- ─── SİPARİŞ DETAY MODAL ─── -->
 <div class="modal-overlay" id="modal-siparis-detay">
-  <div class="modal-card" style="max-width:660px;max-height:85vh;display:flex;flex-direction:column">
+  <div class="modal modal-lg">
     <div class="modal-header">
-      <div class="modal-title" id="sp-detay-title">Sipariş Detay</div>
-      <button class="modal-close" onclick="closeModal('modal-siparis-detay')">✕</button>
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <div><div class="info-item-label" style="margin-bottom:3px">Sipariş No</div><div class="modal-title" id="sp-detay-siparisno" style="font-size:14px"></div></div>
+        <div id="sp-detay-teklifno-wrap"><div class="info-item-label" style="margin-bottom:3px">Teklif No</div><div class="modal-title" id="sp-detay-teklifno" style="font-size:14px;color:var(--accent)"></div></div>
+      </div>
+      <button class="close-btn" onclick="closeModal('modal-siparis-detay')">✕</button>
     </div>
-    <div class="modal-body" style="overflow-y:auto"><div id="sp-detay-body"></div></div>
+    <div class="modal-body" id="sp-detay-body"></div>
     <div class="modal-footer">
       <button class="btn-icon" id="sp-detay-delete-btn" style="color:var(--red);margin-right:auto" title="Sil" onclick="deleteCurrentSiparis()"><i class="ti ti-trash"></i></button>
       <button class="btn btn-ghost" onclick="closeModal('modal-siparis-detay')">Kapat</button>

@@ -285,6 +285,11 @@ async function saveServis(){
       if(idx<0)return;
       const res=await apiPut('servisler',{...payload,id:editId});
       state.servisler[idx]=res.servis;
+      const guncelServis=res.servis;
+      const bagliTeklifler=state.teklifler.filter(function(t){return t.servisId===editId;});
+      for(const t of bagliTeklifler){
+        await updateTeklifDurum(t.id,{kurum:guncelServis.kurumAdi,ilgiliKisi:guncelServis.ilgiliKisi,telefon:guncelServis.telefon,email:guncelServis.email,seriNo:guncelServis.seriNo});
+      }
       toast('Kayıt güncellendi.','success');
     }else{
       const res=await apiPost('servisler',payload);

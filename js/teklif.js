@@ -234,7 +234,11 @@ function openTeklifDetay(id){
   let ara=0;
   const sarHtml=(t.satirlar||[]).map(s=>{const a=s.miktar*s.birimFiyat;ara+=a;const sp=s.seciliParametreler||[];const baseAciklama=(sp.length?(s._baseAciklama||(s.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim()):s.aciklama)||'—';const pHtml=sp.length?`<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">(${sp.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})</div>`:'';return`<tr style="border-bottom:1px solid rgba(36,48,69,.4)"><td style="padding:7px 9px;font-size:13px">${esc(baseAciklama)}${pHtml}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2)">${s.miktar} ${esc(s.birim)}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2);text-align:right">${fmtTL(s.birimFiyat)}</td><td style="padding:7px 9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--amber);text-align:right">${fmtTL(a)}</td></tr>`;}).join('');
   const canEdit=state.currentUser?.rol!=='izleyici';
-  document.getElementById('td-title').textContent=`${t.teklifNo} — Detay`;
+  document.getElementById('td-teklifno').textContent=t.teklifNo;
+  document.getElementById('td-kurum').textContent=t.kurum||'—';
+  var _kw=document.getElementById('td-kayitno-wrap');
+  if(_kw)_kw.style.display=currentPortal==='servis'?'':'none';
+  document.getElementById('td-kayitno').textContent=t.kayitNo||'—';
   var _eb=document.getElementById('td-edit-btn');if(_eb)_eb.style.display=canEdit?'':'none';
   var _db=document.getElementById('td-delete-btn');if(_db)_db.style.display=canEdit?'':'none';
   const isSatisTeklif=currentPortal==='satis';
@@ -246,9 +250,6 @@ function openTeklifDetay(id){
     ${canEdit&&currentPortal==='servis'&&t.durum==='İletildi'?`<div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="changeTeklifDurum('${t.id}','Kabul Edildi');closeModal('modal-teklif-detay')">✓ Kabul Et</button><button class="btn btn-danger btn-sm" onclick="changeTeklifDurum('${t.id}','Reddedildi');closeModal('modal-teklif-detay')">✕ Reddet</button></div>`:''}
     <div class="separator"></div>
     <div class="info-grid" style="margin-bottom:14px">
-      <div class="info-item"><div class="info-item-label">Teklif No</div><div class="info-item-val text-mono" style="color:var(--accent)">${esc(t.teklifNo)}</div></div>
-      ${currentPortal==='servis'?`<div class="info-item"><div class="info-item-label">Kayıt No</div><div class="info-item-val text-mono">${esc(t.kayitNo||'—')}</div></div>`:''}
-      <div class="info-item"><div class="info-item-label">Kurum</div><div class="info-item-val">${esc(t.kurum||'—')}</div></div>
       ${currentPortal==='servis'?`<div class="info-item"><div class="info-item-label">Seri No</div><div class="info-item-val text-mono">${esc(t.seriNo||'—')}</div></div>`:''}
       ${(t.telefon||t.email)?`<div class="info-item"><div class="info-item-label">Telefon</div><div class="info-item-val">${esc(t.telefon||'—')}</div></div><div class="info-item"><div class="info-item-label">E-posta</div><div class="info-item-val">${esc(t.email||'—')}</div></div>`:''}
       <div class="info-item"><div class="info-item-label">Teklif Tarihi</div><div class="info-item-val text-mono">${fmtDate(t.teklifTarihi)}</div></div>

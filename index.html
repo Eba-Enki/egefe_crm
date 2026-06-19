@@ -1375,7 +1375,14 @@
 <!-- ── MODAL: TEKLİF DETAY ── -->
 <div class="modal-overlay" id="modal-teklif-detay">
   <div class="modal modal-lg">
-    <div class="modal-header"><span class="modal-title" id="td-title">Teklif Detayı</span><button class="close-btn" onclick="closeModal('modal-teklif-detay')">✕</button></div>
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <div><div class="info-item-label" style="margin-bottom:3px">Teklif No</div><div class="modal-title" id="td-teklifno" style="font-size:14px"></div></div>
+        <div id="td-kayitno-wrap"><div class="info-item-label" style="margin-bottom:3px">Kayıt No</div><div class="modal-title" id="td-kayitno" style="font-size:14px"></div></div>
+        <div><div class="info-item-label" style="margin-bottom:3px">Kurum</div><div class="modal-title" id="td-kurum" style="font-size:14px"></div></div>
+      </div>
+      <button class="close-btn" onclick="closeModal('modal-teklif-detay')">✕</button>
+    </div>
     <div class="modal-body" id="td-body"></div>
     <div class="modal-footer">
       <button class="btn-icon" id="td-delete-btn" style="color:var(--red);margin-right:auto" title="Sil" onclick="deleteCurrentTeklif()"><i class="ti ti-trash"></i></button>

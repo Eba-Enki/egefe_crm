@@ -312,8 +312,11 @@ function confirmDelete(type,id){
       catch(e){return toast(e.message||'Fatura silinemedi.','error');}
       state.faturalar=(state.faturalar||[]).filter(function(x){return x.id!==id;});
       if(fat&&fat.siparisId){
+        if(!(state.siparisler||[]).length){
+          try{var sr=await apiGet('siparisler');state.siparisler=sr.siparisler||[];}catch(e){}
+        }
         var spIdx=(state.siparisler||[]).findIndex(function(x){return x.id===fat.siparisId&&x.durum==='Fatura Edildi';});
-        if(spIdx>=0)await updateSiparisDurum(fat.siparisId,{durum:'Teslim Edildi'});
+        if(spIdx>=0){await updateSiparisDurum(fat.siparisId,{durum:'Teslim Edildi'});renderSiparisler();}
       }
     }
     if(type!=='musteri') saveAll();
@@ -338,6 +341,9 @@ function confirmDeleteBulk(type,ids){
       state[stateKeys[type]]=state[stateKeys[type]].filter(function(x){return x.id!==id;});
       if(type==='servis')state.teklifler=state.teklifler.filter(function(t){return t.servisId!==id;});
       if(type==='fatura'&&fatForRevert&&fatForRevert.siparisId){
+        if(!(state.siparisler||[]).length){
+          try{var sr2=await apiGet('siparisler');state.siparisler=sr2.siparisler||[];}catch(e){}
+        }
         var spIdx2=(state.siparisler||[]).findIndex(function(x){return x.id===fatForRevert.siparisId&&x.durum==='Fatura Edildi';});
         if(spIdx2>=0)await updateSiparisDurum(fatForRevert.siparisId,{durum:'Teslim Edildi'});
       }

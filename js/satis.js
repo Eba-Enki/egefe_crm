@@ -81,8 +81,8 @@ async function siparisGeriAl(sid){
 }
 
 var SP_GECIS={
-  'Hazırlanıyor':['Kısmi Teslimat','Teslim Edildi','İptal'],
-  'Kısmi Teslimat':['Teslim Edildi','İptal'],
+  'Hazırlanıyor':['İptal'],
+  'Kısmi Teslimat':['İptal'],
   'Teslim Edildi':[]
 };
 function showSiparisDurumMenu(sid,btnEl){

@@ -127,6 +127,38 @@ async function arsivdenGeriAl(sid) {
   toast('Kayıt aktife alındı.', 'success');
 }
 
+// ════ SERVİS DETAY MODAL ════
+function openServisDetay(id){
+  const s=state.servisler.find(x=>x.id===id);if(!s)return;
+  state.activeServisId=id;
+  const isArsiv=ARSIV_DURUMLAR.indexOf(s.durum)>=0;
+  const canEdit=!!(state.currentUser&&state.currentUser.rol!=='izleyici'&&!isArsiv);
+  document.getElementById('sd-title').textContent=s.kayitNo+' — Detay';
+  var _eb=document.getElementById('sd-edit-btn');if(_eb)_eb.style.display=canEdit?'':'none';
+  var aksesuarParcalari=Array.isArray(s.aksesuarlar)?[...s.aksesuarlar]:[];
+  if(s.aksesuarDiger)aksesuarParcalari.push(s.aksesuarDiger);
+  document.getElementById('sd-body').innerHTML=`
+    <div class="info-grid" style="margin-bottom:14px">
+      <div class="info-item"><div class="info-item-label">Kayıt No</div><div class="info-item-val"><span class="kn-badge">${esc(s.kayitNo)}</span></div></div>
+      <div class="info-item"><div class="info-item-label">Durum</div><div class="info-item-val">${durumBadge(s.durum)}</div></div>
+      <div class="info-item"><div class="info-item-label">Kurum / Müşteri</div><div class="info-item-val" style="font-weight:600">${esc(s.kurumAdi||'—')}</div></div>
+      <div class="info-item"><div class="info-item-label">İlgili Kişi</div><div class="info-item-val">${esc(s.ilgiliKisi||'—')}</div></div>
+      <div class="info-item"><div class="info-item-label">Telefon</div><div class="info-item-val">${esc(s.telefon||'—')}</div></div>
+      <div class="info-item"><div class="info-item-label">E-posta</div><div class="info-item-val">${esc(s.email||'—')}</div></div>
+      <div class="info-item"><div class="info-item-label">Seri No</div><div class="info-item-val text-mono">${esc(s.seriNo||'—')}</div></div>
+      <div class="info-item"><div class="info-item-label">Garanti</div><div class="info-item-val"><span class="badge ${s.garantiDurumu==='Evet'?'badge-garanti-evet':'badge-garanti-hayir'}">${esc(s.garantiDurumu)}</span></div></div>
+      <div class="info-item"><div class="info-item-label">Geliş Tarihi</div><div class="info-item-val text-mono">${fmtDate(s.gelisTarihi)}</div></div>
+      ${s.kargoTarihi?`<div class="info-item"><div class="info-item-label">Kargo Tarihi</div><div class="info-item-val text-mono">${fmtDate(s.kargoTarihi)}</div></div>`:''}
+      ${s.kargoFirmasi?`<div class="info-item"><div class="info-item-label">Kargo Firması</div><div class="info-item-val">${esc(s.kargoFirmasi)}</div></div>`:''}
+      ${s.teslimAlan?`<div class="info-item"><div class="info-item-label">Teslim Alan</div><div class="info-item-val">${esc(s.teslimAlan)}</div></div>`:''}
+    </div>
+    ${aksesuarParcalari.length?`<div style="margin-bottom:14px"><div class="info-item-label" style="margin-bottom:6px">Aksesuarlar</div><div class="chip-group">${aksesuarParcalari.map(function(a){return'<span class="chip selected">'+esc(a)+'</span>';}).join('')}</div></div>`:''}
+    ${s.notlar?`<div style="background:var(--bg3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2)">${esc(s.notlar)}</div>`:''}
+  `;
+  openModal('modal-servis-detay');
+}
+function editCurrentServis(){closeModal('modal-servis-detay');if(state.activeServisId)goServisForm(state.activeServisId);}
+
 function renderTable(){
   var aktifSayisi = state.servisler.filter(function(s){return ARSIV_DURUMLAR.indexOf(s.durum)<0;}).length;
   var arsivSayisi = state.servisler.filter(function(s){return ARSIV_DURUMLAR.indexOf(s.durum)>=0;}).length;
@@ -190,10 +222,6 @@ function renderTable(){
     const hasTeklif=state.teklifler.some(t=>t.servisId===s.id&&!TEKLIF_ARSIV.includes(t.durum));
     const isArizaTespitinde=s.durum==='Arıza Tespitinde';
     const isPreTeklif=s.durum==='Cihaz Kabul'||isArizaTespitinde;
-    // Düzenle: arşiv değilse her zaman aktif
-    const editBtn=canEdit&&!isArsiv
-      ?`<button class="btn-icon" title="Düzenle" onclick="goServisForm('${s.id}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>`
-      :`<button class="btn-icon" title="Kayıt Görüntüle" style="color:var(--accent)" onclick="goServisForm('${s.id}',true)"><i class="ti ti-info-circle"></i></button>`;
     // Durum değiştir: teklif sürecine girmemiş kayıtlarda (İşlemsiz İade seçeneği için)
     const durumBtn=canEdit&&!isArsiv&&isPreTeklif
       ?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showDurumMenu('${s.id}',this)"><i class="ti ti-loader"></i></button>`
@@ -204,8 +232,8 @@ function renderTable(){
       if(canEdit&&isArizaTespitinde&&!hasTeklif)teklifBtn=`<button class="btn-icon" title="Tekliflendir" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')"><i class="ti ti-file-invoice"></i></button>`;
       else if(hasTeklif)teklifBtn=`<button class="btn-icon" title="Teklife Git" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="tekliflendir('${s.id}')"><i class="ti ti-file-invoice"></i></button>`;
     }
-    return`<tr${isArsiv?' style="opacity:0.8"':''}>
-      ${canBulk?`<td><input type="checkbox" ${bulkIsChecked('servisArsiv',s.id)?'checked':''} onchange="bulkToggleRow('servisArsiv','${s.id}','renderTable')"></td>`:''}
+    return`<tr style="cursor:pointer${isArsiv?';opacity:0.8':''}" onclick="openServisDetay('${s.id}')">
+      ${canBulk?`<td onclick="event.stopPropagation()"><input type="checkbox" ${bulkIsChecked('servisArsiv',s.id)?'checked':''} onchange="bulkToggleRow('servisArsiv','${s.id}','renderTable')"></td>`:''}
       <td><span class="kn-badge">${esc(s.kayitNo)}</span></td>
       <td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(s.kurumAdi||'—')}</td>
       <td class="td-mono">${esc(s.seriNo||'—')}</td>
@@ -213,8 +241,7 @@ function renderTable(){
       <td>${durumBadge(s.durum)}</td>
       <td><span class="badge ${s.garantiDurumu==='Evet'?'badge-garanti-evet':'badge-garanti-hayir'}">${esc(s.garantiDurumu)}</span></td>
       <td style="color:var(--text2);font-size:12px">${esc(s.ilgiliKisi||'—')}</td>
-      <td><div class="action-row" style="justify-content:flex-end">
-        ${editBtn}
+      <td><div class="action-row" style="justify-content:flex-end" onclick="event.stopPropagation()">
         ${durumBtn}
         ${teklifBtn}
         ${isArsiv&&state.currentUser&&state.currentUser.rol!=='izleyici'?`<button class="btn-icon" title="Aktife Al" style="color:var(--teal);border-color:rgba(45,212,191,.3)" onclick="arsivdenGeriAl('${s.id}')"><i class="ti ti-arrow-back-up"></i></button>`:''}

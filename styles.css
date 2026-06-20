@@ -239,6 +239,17 @@ table{width:100%;border-collapse:collapse}
 th{padding:6px 9px;text-align:left;font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);white-space:nowrap}
 th.sortable{cursor:pointer}
 th.sortable:hover{color:var(--text2)}
+
+/* ── RESIZABLE COLUMNS ── */
+.col-resize-handle{
+  position:absolute;right:0;top:0;
+  height:100%;width:6px;
+  cursor:col-resize;z-index:2;
+  border-right:2px solid transparent;
+  transition:border-color .15s;
+}
+.col-resize-handle:hover,.col-resize-handle.dragging{border-right-color:var(--accent)}
+body.col-resizing{cursor:col-resize!important;user-select:none!important}
 td{padding:7px 9px;border-bottom:1px solid rgba(36,48,69,.6);font-size:13px;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.015)}

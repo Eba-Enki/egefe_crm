@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Mockup — Teklif Hazırla</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── PORTAL TOKENS ── */
+:root {
+  --accent:       #2d91ab;
+  --accent2:      #1d7d95;
+  --accent-soft:  rgba(45,145,171,.1);
+  --accent-glow:  rgba(45,145,171,.25);
+  --portal-name:  "Teknik Servis";
+
+  --bg:     #f0f4f8;
+  --bg2:    #ffffff;
+  --bg3:    #f5f7fa;
+  --bg4:    #edf1f7;
+  --border: #d1d9e4;
+  --border2:#b8c4d4;
+  --text:   #1a2a3a;
+  --text2:  #4a6080;
+  --text3:  #8a9ab0;
+  --amber:  #d97706;
+  --amber-soft: rgba(217,119,6,.1);
+  --red:    #dc4444;
+  --green:  #16a34a;
+
+  --radius:    10px;
+  --radius-sm: 6px;
+  --sidebar-w: 220px;
+  --font: 'DM Sans', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Nunito Sans', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Fira Mono', monospace;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.1), 0 2px 4px rgba(0,0,0,.08);
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── PORTAL SWITCHER (mockup only) ── */
+.mockup-switcher {
+  background: #1a2333;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #8fa3c0;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.mockup-switcher strong { color: #e2e8f4; margin-right: 4px; }
+.switch-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid #2e3d58;
+  background: transparent;
+  color: #8fa3c0;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+  font-family: var(--font);
+  letter-spacing: .02em;
+}
+.switch-btn:hover { background: #202d40; color: #e2e8f4; }
+.switch-btn.active { color: #fff; }
+.switch-btn[data-p="servis"].active  { background: #2d91ab; border-color: #2d91ab; }
+.switch-btn[data-p="satis"].active   { background: #024f98; border-color: #024f98; }
+.switch-btn[data-p="stok"].active    { background: #16a34a; border-color: #16a34a; }
+.mockup-label { margin-left: auto; font-size: 11px; opacity: .5; letter-spacing: .04em; }
+
+/* ── APP SHELL ── */
+.app { display: flex; flex: 1; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 37px;
+  left: 0;
+  height: calc(100vh - 37px);
+  z-index: 100;
+}
+.sb-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sb-logo-img { height: 22px; opacity: .85; }
+.sb-portal-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  margin: 10px 10px 4px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+}
+.sb-portal-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.sb-section {
+  padding: 10px 18px 3px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 18px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 13px;
+  border-left: 2px solid transparent;
+  margin: 1px 0;
+  transition: color .12s, background .12s;
+}
+.sb-item:hover { color: var(--text); background: var(--bg3); }
+.sb-item.active { color: var(--accent); background: var(--accent-soft); border-left-color: var(--accent); font-weight: 500; }
+.sb-item i { font-size: 15px; opacity: .7; }
+.sb-item.active i { opacity: 1; }
+.sb-bottom {
+  margin-top: auto;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sb-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sb-user-meta { flex: 1; min-width: 0; }
+.sb-username { font-size: 12px; font-weight: 500; }
+.sb-role { font-size: 10px; color: var(--text3); }
+
+/* ── MAIN ── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 37px);
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 11px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 37px;
+  z-index: 50;
+  box-shadow: var(--shadow-sm);
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); }
+.topbar-breadcrumb .sep { color: var(--text3); }
+.topbar-breadcrumb .current { color: var(--text); font-weight: 600; font-family: var(--font-display); letter-spacing: -.02em; }
+.portal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.portal-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.topbar-actions { display: flex; gap: 8px; }
+
+/* ── CONTENT ── */
+.content { padding: 20px 24px 60px; flex: 1; }
+.form-page { max-width: 840px; }
+
+/* ── FORM CARDS ── */
+.form-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-sm);
+}
+.form-card + .form-card { margin-top: 14px; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SECTION TITLE — ŞU AN (yorum satırı, referans)
+   font-size:10px; font-weight:600; color:var(--text3);
+   text-transform:uppercase; letter-spacing:.08em;
+   padding-bottom:10px; border-bottom:1px solid var(--border);
+   margin-bottom:14px;
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SECTION TITLE — ÖNERİLEN (modal ile uyumlu)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.form-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  padding-left: 10px;
+  border-left: 3px solid var(--border2);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+/* ── FORM GRID ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-full { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 11px; font-weight: 500; color: var(--text2); }
+.field label .req { color: var(--red); margin-left: 2px; }
+
+.field input, .field select, .field textarea {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 11px;
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  width: 100%;
+  transition: border-color .15s, box-shadow .15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.field input[readonly] {
+  background: var(--bg4);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: default;
+  border-color: var(--border);
+}
+.field textarea { resize: vertical; min-height: 90px; }
+.field select option { background: var(--bg2); }
+
+/* ── COMBO (simplified) ── */
+.combo-wrap { position: relative; }
+.combo-wrap input { padding-right: 28px; }
+.combo-arrow {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+/* ── TEKLIF ITEMS TABLE ── */
+.teklif-items-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.teklif-items {
+  width: 100%;
+  border-collapse: collapse;
+}
+.teklif-items thead th {
+  padding: 9px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--accent);
+  text-align: left;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  background: var(--accent-soft);
+}
+.teklif-items thead th.r { text-align: right; }
+.teklif-items tbody td {
+  padding: 6px 6px;
+  border-bottom: 1px solid rgba(209,217,228,.5);
+  vertical-align: middle;
+}
+.teklif-items tbody tr:last-child td { border-bottom: none; }
+.teklif-items td input, .teklif-items td select {
+  background: var(--bg3);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  width: 100%;
+  transition: border-color .15s, background .15s;
+}
+.teklif-items td input:focus, .teklif-items td select:focus {
+  border-color: var(--accent);
+  background: var(--bg4);
+}
+.ti-aciklama { width: 38%; }
+.ti-miktar   { width: 10%; }
+.ti-birim    { width: 11%; }
+.ti-fiyat    { width: 15%; }
+.ti-total    { width: 14%; text-align: right; padding-right: 10px !important; font-family: var(--font-mono); font-size: 12px; color: var(--amber); white-space: nowrap; }
+.ti-del      { width: 5%; text-align: center; }
+
+/* ── TOTALS ── */
+.teklif-totals {
+  background: var(--bg3);
+  padding: 12px 16px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+}
+.totals-inner { min-width: 220px; }
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text2);
+  padding: 3px 0;
+}
+.totals-row.grand {
+  font-size: 14px;
+  font-weight: 700;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 5px;
+}
+.totals-row.grand .val {
+  color: var(--amber);
+  font-family: var(--font-mono);
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background .15s, box-shadow .15s, transform .1s;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--bg3); color: var(--text); }
+.btn-amber {
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid rgba(217,119,6,.25);
+}
+.btn-amber:hover { background: rgba(217,119,6,.18); }
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+.btn-primary:hover { background: var(--accent2); box-shadow: 0 4px 14px var(--accent-glow); }
+.btn-icon-del {
+  width: 28px; height: 28px;
+  border: 1px solid rgba(220,68,68,.2);
+  background: rgba(220,68,68,.07);
+  color: var(--red);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: background .12s;
+}
+.btn-icon-del:hover { background: rgba(220,68,68,.15); }
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  margin-top: 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  border: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent);
+  background: var(--accent-soft);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  font-family: var(--font);
+}
+.btn-add:hover { background: color-mix(in srgb, var(--accent) 15%, transparent); }
+
+/* ── FORM ACTIONS ── */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 14px 24px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── COMPARISON PANEL (mockup only) ── */
+.comparison-note {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 220px;
+  background: #1a2333;
+  border: 1px solid #2e3d58;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 11px;
+  color: #8fa3c0;
+  line-height: 1.7;
+  z-index: 150;
+}
+.comparison-note strong { color: #e2e8f4; display: block; margin-bottom: 8px; font-size: 12px; }
+.comparison-note .diff-before {
+  background: rgba(220,68,68,.08);
+  border-left: 2px solid #dc4444;
+  padding: 6px 8px;
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 6px;
+  color: #f87171;
+  font-size: 10px;
+  font-family: monospace;
+  line-height: 1.5;
+}
+.comparison-note .diff-after {
+  background: rgba(22,163,74,.08);
+  border-left: 2px solid #16a34a;
+  padding: 6px 8px;
+  border-radius: 0 4px 4px 0;
+  color: #4ade80;
+  font-size: 10px;
+  font-family: monospace;
+  line-height: 1.5;
+}
+.comparison-note .note-label {
+  font-size: 10px;
+  color: #516180;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+</style>
+</head>
+<body>
+
+<!-- MOCKUP SWITCHER -->
+<div class="mockup-switcher">
+  <strong>Portal:</strong>
+  <button class="switch-btn active" data-p="servis" onclick="switchPortal('servis')">Teknik Servis</button>
+  <button class="switch-btn" data-p="satis" onclick="switchPortal('satis')">Satış Pazarlama</button>
+  <button class="switch-btn" data-p="stok" onclick="switchPortal('stok')">Stok Yönetim</button>
+  <span class="mockup-label">MOCKUP — Form Section Header Önerisi</span>
+</div>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <img src="brand_assets/logo_if_bg_white.svg" class="sb-logo-img" alt="egefe" onerror="this.style.display='none'">
+    </div>
+    <div class="sb-portal-pill">
+      <span class="sb-portal-dot"></span>
+      <span id="sb-portal-name">Teknik Servis</span>
+    </div>
+    <nav style="flex:1; padding: 6px 0; overflow-y:auto;">
+      <div class="sb-section">Ana Menü</div>
+      <div class="sb-item"><span style="font-size:15px">⊞</span> Dashboard</div>
+      <div class="sb-item" id="sb-servis-item"><span style="font-size:15px">🔧</span> <span id="sb-second-menu">Servisler</span></div>
+      <div class="sb-item active"><span style="font-size:15px">📄</span> Teklifler</div>
+      <div class="sb-item" id="sb-tutanak-item"><span style="font-size:15px">📋</span> <span id="sb-third-menu">Tutanaklar</span></div>
+      <div class="sb-section">Kayıtlar</div>
+      <div class="sb-item"><span style="font-size:15px">👥</span> Müşteriler</div>
+      <div class="sb-item"><span style="font-size:15px">📦</span> Ürünler</div>
+    </nav>
+    <div class="sb-bottom">
+      <div class="sb-avatar">YN</div>
+      <div class="sb-user-meta">
+        <div class="sb-username">Yönetici</div>
+        <div class="sb-role">Admin</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-breadcrumb">
+          <span>Teklifler</span>
+          <span class="sep">/</span>
+          <span class="current">Teklif Hazırla</span>
+        </div>
+        <span class="portal-badge" id="portal-badge">
+          <span class="portal-badge-dot"></span>
+          <span id="portal-badge-text">Teknik Servis</span>
+        </span>
+      </div>
+      <div class="topbar-actions">
+        <!-- topbar actions placeholder -->
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="form-page">
+
+        <!-- KART 1: MÜŞTERİ / KURUM BİLGİLERİ -->
+        <div class="form-card">
+          <div class="form-section-title">Müşteri / Kurum Bilgileri</div>
+          <div class="form-grid">
+            <div class="field form-full">
+              <label>Kurum / Müşteri <span class="req">*</span></label>
+              <div class="combo-wrap">
+                <input type="text" placeholder="Listeden seçin veya yazın...">
+                <span class="combo-arrow">▾</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>İlgili Kişi</label>
+              <input type="text" placeholder="">
+            </div>
+            <!-- Teknik Servis'e özel -->
+            <div class="field" id="f-kayitno">
+              <label>İlişkili Kayıt No</label>
+              <input type="text" placeholder="Ör: KN0000001">
+            </div>
+            <!-- Satış'a özel -->
+            <div class="field" id="f-telefon" style="display:none;">
+              <label>Telefon</label>
+              <input type="text" placeholder="Telefon numarası">
+            </div>
+            <div class="field" id="f-seri" style="">
+              <label>Cihaz Seri No</label>
+              <input type="text" placeholder="">
+            </div>
+            <div class="field" id="f-eposta" style="display:none;">
+              <label>E-posta</label>
+              <input type="text" placeholder="E-posta adresi">
+            </div>
+          </div>
+        </div>
+
+        <!-- KART 2: TEKLİF BİLGİLERİ -->
+        <div class="form-card">
+          <div class="form-section-title">Teklif Bilgileri</div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Teklif No</label>
+              <input type="text" id="teklif-no-input" value="TKL-260012" readonly>
+            </div>
+            <div class="field">
+              <label>Teklif Tarihi</label>
+              <input type="date" value="2026-06-20">
+            </div>
+            <div class="field">
+              <label>Geçerlilik Tarihi</label>
+              <input type="date" placeholder="gg.aa.yyyy">
+            </div>
+            <div class="field">
+              <label>Para Birimi</label>
+              <select>
+                <option selected>₺ Türk Lirası (TRY)</option>
+                <option>$ US Dollar (USD)</option>
+                <option>€ Euro (EUR)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- KART 3: TEKLİF KALEMLERİ -->
+        <div class="form-card">
+          <div class="form-section-title">Teklif Kalemleri</div>
+          <div class="teklif-items-wrap">
+            <table class="teklif-items">
+              <thead>
+                <tr>
+                  <th class="ti-aciklama">Açıklama / İşlem (Üründen seçin veya yazın)</th>
+                  <th class="ti-miktar">Miktar</th>
+                  <th class="ti-birim">Birim</th>
+                  <th class="ti-fiyat">Birim Fiyat (₺)</th>
+                  <th class="ti-total r">Toplam</th>
+                  <th class="ti-del"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="ti-aciklama">
+                    <input type="text" placeholder="Yazın veya listeden seçin...">
+                  </td>
+                  <td class="ti-miktar">
+                    <input type="number" value="1" min="1">
+                  </td>
+                  <td class="ti-birim">
+                    <select>
+                      <option>Adet</option>
+                      <option>Saat</option>
+                      <option>Kg</option>
+                    </select>
+                  </td>
+                  <td class="ti-fiyat">
+                    <input type="number" value="0" min="0" step="0.01">
+                  </td>
+                  <td class="ti-total">₺0,00</td>
+                  <td class="ti-del">
+                    <button class="btn-icon-del" title="Sil">✕</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="teklif-totals">
+              <div class="totals-inner">
+                <div class="totals-row grand">
+                  <span>Genel Toplam</span>
+                  <span class="val">₺0,00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-add">＋ Kalem Ekle</button>
+        </div>
+
+        <!-- KART 4: NOTLAR / ŞARTLAR -->
+        <div class="form-card">
+          <div class="form-section-title">Notlar / Şartlar</div>
+          <div class="field">
+            <textarea placeholder="Genel notlar, ek şartlar, garanti koşulları..."></textarea>
+          </div>
+        </div>
+
+        <!-- FORM ACTIONS -->
+        <div class="form-actions">
+          <button class="btn btn-ghost">İptal</button>
+          <button class="btn btn-amber">Kaydet + PDF İndir</button>
+          <button class="btn btn-primary">Kaydet</button>
+        </div>
+
+      </div><!-- /form-page -->
+    </div><!-- /content -->
+  </main>
+</div><!-- /app -->
+
+<!-- COMPARISON NOTE -->
+<div class="comparison-note">
+  <strong>Değişen tek şey:</strong>
+  <div class="note-label">Eski (.form-section-title)</div>
+  <div class="diff-before">color: var(--text3)
+border-bottom: 1px solid
+padding-bottom: 10px</div>
+  <div class="note-label" style="margin-top:8px">Yeni (modal ile uyumlu)</div>
+  <div class="diff-after">color: var(--text2)  #4a6080
+border-left: 3px solid
+  var(--border2) #b8c4d4
+padding-left: 10px</div>
+  <div style="margin-top:10px; font-size:10px; color:#516180; line-height:1.6;">
+    Her portal kendi rengiyle gelir. Form'un işlevsel karakteri değişmez — sadece section başlıkları modalın dilini konuşmaya başlar.
+  </div>
+</div>
+
+<script>
+const portals = {
+  servis: {
+    accent:      '#2d91ab',
+    accent2:     '#1d7d95',
+    accentSoft:  'rgba(45,145,171,.1)',
+    accentGlow:  'rgba(45,145,171,.25)',
+    name:        'Teknik Servis',
+    teklifNo:    'TKL-260012',
+    sbSecond:    'Servisler',
+    sbThird:     'Tutanaklar',
+    showServis:  true,
+    showTutanak: true,
+    showSiparisler: false,
+    extraFields: 'servis',
+  },
+  satis: {
+    accent:      '#024f98',
+    accent2:     '#013b76',
+    accentSoft:  'rgba(2,79,152,.1)',
+    accentGlow:  'rgba(2,79,152,.25)',
+    name:        'Satış Pazarlama',
+    teklifNo:    'SQ-260006',
+    sbSecond:    'Siparişler',
+    sbThird:     'Faturalar',
+    showServis:  false,
+    showTutanak: false,
+    showSiparisler: true,
+    extraFields: 'satis',
+  },
+  stok: {
+    accent:      '#16a34a',
+    accent2:     '#15803d',
+    accentSoft:  'rgba(22,163,74,.1)',
+    accentGlow:  'rgba(22,163,74,.25)',
+    name:        'Stok Yönetim',
+    teklifNo:    'STK-260001',
+    sbSecond:    'Stok Listesi',
+    sbThird:     'Girişler',
+    showServis:  false,
+    showTutanak: false,
+    showSiparisler: false,
+    extraFields: 'stok',
+  }
+};
+
+function switchPortal(key) {
+  const p = portals[key];
+  const root = document.documentElement;
+
+  root.style.setProperty('--accent',      p.accent);
+  root.style.setProperty('--accent2',     p.accent2);
+  root.style.setProperty('--accent-soft', p.accentSoft);
+  root.style.setProperty('--accent-glow', p.accentGlow);
+
+  // switcher buttons
+  document.querySelectorAll('.switch-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.p === key);
+  });
+
+  // portal name
+  document.getElementById('sb-portal-name').textContent = p.name;
+  document.getElementById('portal-badge-text').textContent = p.name;
+
+  // teklif no
+  document.getElementById('teklif-no-input').value = p.teklifNo;
+
+  // sidebar menu labels
+  document.getElementById('sb-second-menu').textContent = p.sbSecond;
+  document.getElementById('sb-third-menu').textContent  = p.sbThird;
+
+  // portal-specific fields
+  const fKayitno = document.getElementById('f-kayitno');
+  const fSeri    = document.getElementById('f-seri');
+  const fTelefon = document.getElementById('f-telefon');
+  const fEposta  = document.getElementById('f-eposta');
+
+  if (p.extraFields === 'servis') {
+    fKayitno.style.display = '';
+    fSeri.style.display    = '';
+    fTelefon.style.display = 'none';
+    fEposta.style.display  = 'none';
+  } else if (p.extraFields === 'satis') {
+    fKayitno.style.display = 'none';
+    fSeri.style.display    = 'none';
+    fTelefon.style.display = '';
+    fEposta.style.display  = '';
+  } else {
+    fKayitno.style.display = 'none';
+    fSeri.style.display    = 'none';
+    fTelefon.style.display = 'none';
+    fEposta.style.display  = 'none';
+  }
+}
+</script>
+</body>
+</html>

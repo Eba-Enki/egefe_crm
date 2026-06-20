@@ -439,7 +439,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFontSize(8);
   doc.setTextColor(...C.textMid);
   const _lx1=mm(15.446),_lx2=mm(41.228),_lx3=mm(44.126);
-  const _lMaxW=mm(93); // right column starts at mm(141.66), leave buffer
+  const _lMaxW=mm(72); // right column starts at mm(137), leave adequate buffer
   const _rGap=mm(4.291);  // baseline-to-baseline normal row gap
   const _lh8=8*1.15;      // 8pt line height in pt (unit='pt' doc)
   let _curY=mm(42.774)+6;

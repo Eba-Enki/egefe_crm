@@ -156,25 +156,57 @@ function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
    +_kpiCard('Toplam Fatura',  fts.length,      fts.filter(function(f){return f.durum==='Ödendi';}).length+' ödendi',                'var(--teal)')
    +_kpiCard('Ödenmemiş',      odenmemis.length, odenmemisToplam>0?'₺ '+_fmtN(odenmemisToplam):'Fatura yok',                         'var(--red)');
 
-  // ─ Teklif Durum Dağılımı (bar chart)
-  var tklDurumlar = [
-    {l:'Taslak',           hex:'#64748b'},
-    {l:'İletildi',         hex:'#f59e0b'},
-    {l:'Siparişe Dönüştü', hex:'#3d9bc4'},
-    {l:'Reddedildi',       hex:'#f87171'}
-  ];
+  // ─ Teklif Durum Dağılımı (donut + legend)
+  var THEX = {
+    'Taslak':           '#64748b',
+    'İletildi':         '#f59e0b',
+    'Siparişe Dönüştü': '#3d9bc4',
+    'Reddedildi':       '#f87171'
+  };
+  var tsg = Object.entries(THEX)
+    .map(function(e){return{d:e[0],c:e[1],cnt:tl.filter(function(t){return t.durum===e[0];}).length};})
+    .filter(function(x){return x.cnt>0;});
   var tTotal = tl.length||1;
+  var TCX=70,TCY=70,TR=54,tCirc=2*Math.PI*TR;
+  var tOff=0;
+  var tsvgPaths = tsg.map(function(seg){
+    var pct=seg.cnt/tTotal;
+    var arc='<circle cx="'+TCX+'" cy="'+TCY+'" r="'+TR+'" fill="none" stroke="'+seg.c
+      +'" stroke-width="14" stroke-dasharray="'+(pct*tCirc).toFixed(2)+' '+(tCirc-pct*tCirc).toFixed(2)
+      +'" stroke-dashoffset="'+(-tOff*tCirc).toFixed(2)+'" transform="rotate(-90 '+TCX+' '+TCY+')">'
+      +'<title>'+seg.d+': '+seg.cnt+'</title></circle>';
+    tOff+=pct;
+    return arc;
+  }).join('');
+  var tLegendHtml = tsg.map(function(seg){
+    var pct=Math.round(seg.cnt/tTotal*100);
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">'
+      +'<span style="width:9px;height:9px;border-radius:50%;background:'+seg.c+';flex-shrink:0;display:inline-block"></span>'
+      +'<span style="flex:1;font-size:12px;color:var(--text2)">'+seg.d+'</span>'
+      +'<span style="font-family:var(--font-mono);font-size:12px;color:var(--text);font-weight:600">'+seg.cnt+'</span>'
+      +'<span style="font-family:var(--font-mono);font-size:11px;color:var(--text3);min-width:30px;text-align:right">'+pct+'%</span>'
+      +'</div>';
+  }).join('');
+
   var chartTitle = document.getElementById('db-chart-title');
   if(chartTitle) chartTitle.textContent = 'Teklif Durum Dağılımı';
 
   var chartBody = document.getElementById('db-chart-body');
-  if(chartBody){
-    var bars = tklDurumlar.map(function(d){
-      var cnt = tl.filter(function(t){return t.durum===d.l;}).length;
-      return cnt>0 ? _barRow(d.l, cnt, tTotal, d.hex) : '';
-    }).join('');
-    chartBody.innerHTML = bars || '<div style="color:var(--text3);font-size:13px;padding:8px 0">Henüz teklif bulunmuyor.</div>';
-  }
+  if(chartBody) chartBody.innerHTML = tl.length ?
+    '<div style="display:flex;gap:22px;align-items:flex-start">'
+      +'<div style="flex-shrink:0;position:relative;width:140px;height:140px">'
+        +'<svg width="140" height="140" viewBox="0 0 140 140">'
+          +'<circle cx="70" cy="70" r="54" fill="none" stroke="var(--bg3)" stroke-width="14"/>'
+          +tsvgPaths
+        +'</svg>'
+        +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column">'
+          +'<span style="font-size:28px;font-weight:700;font-family:var(--font-mono);line-height:1;color:var(--text)">'+tl.length+'</span>'
+          +'<span style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px">Toplam</span>'
+        +'</div>'
+      +'</div>'
+      +'<div style="flex:1">'+tLegendHtml+'</div>'
+    +'</div>'
+    : '<div style="color:var(--text3);font-size:13px;padding:8px 0">Henüz teklif bulunmuyor.</div>';
 
   // ─ Alt Panel: Sipariş Durumu + Fatura Durumu (2 kolon)
   var spDurumlar = [

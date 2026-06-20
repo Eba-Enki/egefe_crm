@@ -25,7 +25,18 @@
       "PowerShell($env:PATH -split \";\" | ForEach-Object { $_ } | Select-Object -First 30)",
       "Read(//c/Users/ebaul/**)",
       "Read(//d/Eba Eba Asus Yedek 09.02.2025/Şirketler Web Siteleri/egefe/js/**)",
-      "PowerShell(\\(Get-Content \"d:\\\\Eba Asus Yedek 09.02.2025\\\\Şirketler Web Siteleri\\\\egefe\\\\index.html\" | Measure-Object -Line\\).Lines)"
+      "PowerShell(\\(Get-Content \"d:\\\\Eba Asus Yedek 09.02.2025\\\\Şirketler Web Siteleri\\\\egefe\\\\index.html\" | Measure-Object -Line\\).Lines)",
+      "Bash(node screenshot.mjs http://localhost:3000 satis-dashboard)",
+      "PowerShell(Get-ChildItem \"C:\\\\Program Files\\\\nodejs\" -ErrorAction SilentlyContinue; Get-ChildItem \"C:\\\\Program Files \\(x86\\)\\\\nodejs\" -ErrorAction SilentlyContinue; Get-ChildItem \"$env:APPDATA\\\\npm\" -ErrorAction SilentlyContinue | Select-Object -First 5; Get-ChildItem \"$env:LOCALAPPDATA\\\\Programs\\\\nodejs\" -ErrorAction SilentlyContinue)",
+      "Read(//c//**)",
+      "Read(//d//**)",
+      "Bash(grep -v \"showConfirm\\\\|//\\\\|openModal\\\\|closeModal\")",
+      "Bash(grep -v \"//comment\")",
+      "PowerShell(Invoke-WebRequest -Uri \"https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js\" -OutFile \"d:\\\\Eba Asus Yedek 09.02.2025\\\\�irketler Web Siteleri\\\\egefe\\\\vendor\\\\jspdf.plugin.autotable.min.js\")",
+      "PowerShell(Invoke-WebRequest -Uri \"https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js\" -OutFile \"d:\\\\Eba Asus Yedek 09.02.2025\\\\�irketler Web Siteleri\\\\egefe\\\\vendor\\\\xlsx.full.min.js\")",
+      "PowerShell(Get-ChildItem \"d:\\\\Eba Asus Yedek 09.02.2025\\\\Şirketler Web Siteleri\\\\egefe\\\\vendor\" | Select-Object Name, @{N='KB';E={[Math]::Round\\($_.Length/1KB,1\\)}})",
+      "Bash(git pull *)",
+      "Bash(git stash *)"
     ],
     "additionalDirectories": [
       "d:\\Eba Asus Yedek 09.02.2025\\�irketler Web Siteleri\\egefe"

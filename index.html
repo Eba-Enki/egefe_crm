@@ -507,7 +507,13 @@
     <!-- ═══ MÜŞTERİLER ═══ -->
     <div id="page-musteriler" class="page">
       <div class="filter-bar"><div class="filter-row"><input type="text" id="fm-ara" placeholder="Ara..." oninput="renderMusteriler()" style="width:220px"><label class="btn btn-ghost btn-sm can-write" style="cursor:pointer"><i class="ti ti-plus"></i> Excel'den Ekle<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importMusterilerExcel(event)"></label><button class="btn btn-ghost btn-sm can-write" onclick="downloadMusteriSablon()" style="font-size:11px;color:var(--text3)"><i class="ti ti-cloud-download"></i> Şablonu İndir</button><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="musteri-count"></span></div></div>
-      <div class="card"><div class="table-wrap"><table><thead><tr><th>Kayıt No</th><th>Kurum</th><th>İlgili Kişi</th><th>Telefon</th><th>E-posta</th><th>Şehir</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead><tbody id="musteri-table-body"></tbody></table><div id="musteri-empty" class="empty-state" style="display:none"><div class="icon">⊙</div><h3 style="color:var(--text2)">Müşteri yok</h3></div></div><div id="musteri-pagination"></div></div>
+      <div class="card">
+        <div class="card-header">
+          <div style="display:flex;align-items:center;gap:12px"><span class="card-title">Müşteriler</span><span id="musteri-bulk-count" style="font-size:12px;color:var(--text2)"></span></div>
+          <div id="musteri-bulk-bar"></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th id="th-musteri-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('musteriList',this.checked,'renderMusteriler')"></th><th>Kayıt No</th><th>Kurum</th><th>İlgili Kişi</th><th>Telefon</th><th>E-posta</th><th>Şehir</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead><tbody id="musteri-table-body"></tbody></table><div id="musteri-empty" class="empty-state" style="display:none"><div class="icon">⊙</div><h3 style="color:var(--text2)">Müşteri yok</h3></div></div><div id="musteri-pagination"></div>
+      </div>
     </div>
 
     <!-- ═══ MÜŞTERİ FORMU (inline) ═══ -->
@@ -578,10 +584,14 @@
 <!-- ═══ TUTANAKLAR ═══ -->
     <div id="page-tutanaklar" class="page">
       <div class="card">
-        <div class="card-header"><span class="card-title">Teslim Tutanakları</span></div>
+        <div class="card-header">
+          <div style="display:flex;align-items:center;gap:12px"><span class="card-title">Teslim Tutanakları</span><span id="tutanak-bulk-count" style="font-size:12px;color:var(--text2)"></span></div>
+          <div id="tutanak-bulk-bar"></div>
+        </div>
         <div class="table-wrap">
           <table>
             <thead><tr>
+              <th id="th-tutanak-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('tutanakList',this.checked,'renderTutanaklar')"></th>
               <th>Kayıt No</th>
               <th>Tutanak Tarihi</th>
             </tr></thead>

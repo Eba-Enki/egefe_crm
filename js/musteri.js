@@ -19,12 +19,21 @@ function renderMusteriler(){
   if(q)data=data.filter(m=>(m.kurum+m.kisi+m.tel).toLowerCase().includes(q));
   document.getElementById('musteri-count').textContent=data.length+' müşteri';
   var newMH=JSON.stringify([q]);if(newMH!==_musteriFilterHash){musterilerPage=1;_musteriFilterHash=newMH;}
+  var canEdit=state.currentUser&&state.currentUser.rol!=='izleyici';
+  bulkSetVisible('musteriList',data.map(function(m){return m.id;}));
+  var thCheck=document.getElementById('th-musteri-check');
+  if(thCheck){thCheck.style.display=canEdit?'':'none';var thCb=thCheck.querySelector('input');if(thCb)thCb.checked=canEdit&&bulkAllChecked('musteriList');}
+  var bulkBarEl=document.getElementById('musteri-bulk-bar');
+  var bulkCountEl=document.getElementById('musteri-bulk-count');
+  var selCount=canEdit?bulkCount('musteriList'):0;
+  if(bulkCountEl)bulkCountEl.textContent=selCount>0?selCount+' öğe seçildi':'';
+  if(bulkBarEl)bulkBarEl.innerHTML=selCount>0?'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'musteri\',bulkSelectedIds(\'musteriList\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>':'';
   const tbody=document.getElementById('musteri-table-body');
   if(!data.length){tbody.innerHTML='';document.getElementById('musteri-empty').style.display='';renderPagination('musteri-pagination',1,0,'setMusterilerPage');return}
   document.getElementById('musteri-empty').style.display='none';
   var pagedM=data.slice((musterilerPage-1)*PAGE_SIZE,musterilerPage*PAGE_SIZE);
   renderPagination('musteri-pagination',musterilerPage,data.length,'setMusterilerPage');
-  tbody.innerHTML=pagedM.map(m=>{return`<tr><td><span class="kn-badge" style="color:var(--accent);font-size:10px">${esc(m.kayitNo||'—')}</span></td><td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(m.kurum)}</td><td style="color:var(--text2)">${esc(m.kisi||'—')}</td><td class="td-mono">${esc(m.tel||'—')}</td><td style="color:var(--text2)">${esc(m.email||'—')}</td><td>${esc(m.sehir||'—')}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goMusteriForm('${esc(m.id)}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('musteri','${esc(m.id)}')"><i class="ti ti-trash"></i></button></div></td></tr>`;}).join('');
+  tbody.innerHTML=pagedM.map(m=>{return`<tr>${canEdit?`<td onclick="event.stopPropagation()"><input type="checkbox" ${bulkIsChecked('musteriList',m.id)?'checked':''} onchange="bulkToggleRow('musteriList','${esc(m.id)}','renderMusteriler')"></td>`:''}<td><span class="kn-badge" style="color:var(--accent);font-size:10px">${esc(m.kayitNo||'—')}</span></td><td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(m.kurum)}</td><td style="color:var(--text2)">${esc(m.kisi||'—')}</td><td class="td-mono">${esc(m.tel||'—')}</td><td style="color:var(--text2)">${esc(m.email||'—')}</td><td>${esc(m.sehir||'—')}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goMusteriForm('${esc(m.id)}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('musteri','${esc(m.id)}')"><i class="ti ti-trash"></i></button></div></td></tr>`;}).join('');
 }
 async function saveMusteri(){
   const kurum=toTitleCase(document.getElementById('mf-kurum').value.trim());if(!kurum)return toast('Kurum adı zorunlu.','error');
@@ -123,10 +132,20 @@ function renderTutanaklar(){
   var tbody=document.getElementById('tutanak-table-body');
   var emptyEl=document.getElementById('tutanak-empty');
   if(!tbody)return;
+  var canEdit=state.currentUser&&state.currentUser.rol!=='izleyici';
+  bulkSetVisible('tutanakList',savedTutanaklar.map(function(t){return t.no;}));
+  var thCheck=document.getElementById('th-tutanak-check');
+  if(thCheck){thCheck.style.display=canEdit?'':'none';var thCb=thCheck.querySelector('input');if(thCb)thCb.checked=canEdit&&bulkAllChecked('tutanakList');}
+  var bulkBarEl=document.getElementById('tutanak-bulk-bar');
+  var bulkCountEl=document.getElementById('tutanak-bulk-count');
+  var selCount=canEdit?bulkCount('tutanakList'):0;
+  if(bulkCountEl)bulkCountEl.textContent=selCount>0?selCount+' öğe seçildi':'';
+  if(bulkBarEl)bulkBarEl.innerHTML=selCount>0?'<button class="btn btn-danger btn-sm" onclick="confirmDeleteBulk(\'tutanak\',bulkSelectedIds(\'tutanakList\'))"><i class="ti ti-trash"></i> Seçilenleri Sil</button>':'';
   if(!savedTutanaklar.length){tbody.innerHTML='';if(emptyEl)emptyEl.style.display='';return;}
   if(emptyEl)emptyEl.style.display='none';
   tbody.innerHTML=savedTutanaklar.map(function(t){
     return '<tr style="cursor:pointer" onclick="previewTutanak(\''+t.no+'\')">'
+      +(canEdit?'<td onclick="event.stopPropagation()"><input type="checkbox" '+(bulkIsChecked('tutanakList',t.no)?'checked':'')+' onchange="bulkToggleRow(\'tutanakList\',\''+t.no+'\',\'renderTutanaklar\')"></td>':'')
       +'<td><span class="kn-badge" style="border:none;background:transparent;padding:0">'+t.no+'</span></td>'
       +'<td class="td-mono">'+fmtDate(t.tarih)+'</td>'
       +'</tr>';
@@ -321,6 +340,21 @@ function confirmDelete(type,id){
 
 function confirmDeleteBulk(type,ids){
   if(!ids||!ids.length)return;
+  if(type==='tutanak'){
+    showConfirm(ids.length+' tutanağı silmek istiyor musunuz?',async function(){
+      var failed=0;
+      for(var i=0;i<ids.length;i++){
+        var no=ids[i];
+        try{await apiDelete('tutanaklar?id='+encodeURIComponent(no));}
+        catch(e){failed++;continue;}
+        savedTutanaklar=savedTutanaklar.filter(function(t){return t.no!==no;});
+      }
+      bulkClear('tutanakList');
+      renderTutanaklar();
+      toast(failed?(ids.length-failed)+' silindi, '+failed+' başarısız.':ids.length+' tutanak silindi.',failed?'error':'info');
+    },{okText:'Sil',okClass:'btn-danger'});
+    return;
+  }
   const endpoints={servis:'servisler',teklif:'teklifler',musteri:'musteriler',urun:'urunler',siparis:'siparisler',fatura:'faturalar'};
   const stateKeys={servis:'servisler',teklif:'teklifler',musteri:'musteriler',urun:'urunler',siparis:'siparisler',fatura:'faturalar'};
   const ep=endpoints[type]; if(!ep)return;

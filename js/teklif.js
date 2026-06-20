@@ -266,8 +266,7 @@ function openTeklifDetay(id){
       </div>
       <div class="pd-totals">
         <div class="pd-totals-box">
-          <div class="pd-total-row"><span class="pd-tl">Ara Toplam</span><span class="pd-tv">${fmtTL(ara)}</span></div>
-          <div class="pd-total-row final"><span class="pd-tl">Toplam</span><span class="pd-tv">${fmtTL(toplam)}</span></div>
+          <div class="pd-total-row final"><span class="pd-tl">Genel Toplam</span><span class="pd-tv">${fmtTL(toplam)}</span></div>
         </div>
       </div>
     </div>

@@ -520,7 +520,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
     styles: {
       font: 'Arial',
       fontSize: 8,
-      cellPadding: {top: 1.5, right: 2, bottom: 1.5, left: 2},
+      cellPadding: {top: 3, right: 2, bottom: 3, left: 2},
       textColor: C.textDark,
       lineColor: C.tableBg,
       lineWidth: 0.5
@@ -531,7 +531,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
       fontStyle: 'bold',
       fontSize: 8,
       halign: 'center',
-      cellPadding: {top: 1.6, right: 2, bottom: 1.6, left: 2}
+      cellPadding: {top: 3, right: 2, bottom: 3, left: 2}
     },
     columnStyles: {
       0: {halign: 'center', valign: 'middle', cellWidth: mm(9.525)},
@@ -580,7 +580,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setCharSpace(0);
   doc.setFont('Arial','normal');
 
-  let y = tableEndY + mm(3);
+  let y = tableEndY + mm(7);
 
   // ── BOTTOM GRID - dolu olan kutucuklar soldan sıralı gösterilir ──
   const boxY = y;

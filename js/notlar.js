@@ -59,7 +59,7 @@
           + (isT ? '<button class="ni-reply-btn" onclick="notlarToggleReply(this)">↩ cevapla</button>' : '')
         + '</div>'
         + (isT ? '<div class="ni-replies">' + repliesHtml + '</div>' : '')
-        + (isT ? '<div class="ni-reply-form">'
+        + (isT ? '<div class="ni-reply-form" style="display:none">'
             + '<textarea class="ni-reply-inp" rows="1" placeholder="Cevabınızı yazın..."></textarea>'
             + '<div class="ni-reply-btns">'
               + '<button class="btn-cancel" onclick="notlarCancelReply(this)">İptal</button>'

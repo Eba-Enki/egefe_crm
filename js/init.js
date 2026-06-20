@@ -58,6 +58,7 @@ async function loadCoreData() {
     state.settings = Object.assign({}, state.settings, apiSettings);
     if (!state.settings.parametreler) state.settings.parametreler = [];
     if (!state.settings.urunKategoriler) state.settings.urunKategoriler = [];
+    renderFooter();
   } catch (e) {}
 
   try {

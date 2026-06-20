@@ -244,6 +244,8 @@ function renderStokDashboard(){
       }).join('');
     }
   }
+
+  if(typeof renderNotlar === 'function') renderNotlar();
 }
 
 // ─── Pagination & Tab Değişkenleri ───────────────────────────────────────────

@@ -241,17 +241,30 @@
 
     <!-- ═══ DASHBOARD ═══ -->
     <div id="page-dashboard" class="page">
-      <div id="db-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:12px"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
-        <div class="card">
-          <div class="card-header"><span class="card-title" id="db-chart-title">Durum Dağılımı</span></div>
-          <div class="card-body" id="db-chart-body"></div>
+      <div class="db-cols">
+        <div class="db-col-left">
+          <div id="db-kpi-grid" class="db-kpi-grid"></div>
+          <div class="card">
+            <div class="card-header"><span class="card-title" id="db-chart-title">Durum Dağılımı</span></div>
+            <div class="card-body" id="db-chart-body"></div>
+          </div>
+          <div id="db-secondary"></div>
         </div>
-        <div class="card" style="display:flex;flex-direction:column">
-          <div class="card-header"><span class="card-title" id="db-list-title">Son Aktivite</span><span id="db-list-badge" style="font-size:10px;color:var(--text3);font-family:var(--font-mono)"></span></div>
-          <div style="flex:1;overflow:hidden" id="db-list-body"></div>
+        <div class="db-col-right">
+          <div class="card db-notlar-card" id="db-notlar-card">
+            <div class="card-header" style="flex-shrink:0"><span class="card-title">Notlar</span></div>
+            <div class="notlar-tabs">
+              <div class="notlar-tab active" data-tab="kisisel" onclick="notlarSwitchTab('db','kisisel')">Kişisel <span class="notlar-badge" id="notlar-db-cnt-k">0</span></div>
+              <div class="notlar-tab" data-tab="takim" onclick="notlarSwitchTab('db','takim')">Takım <span class="notlar-badge" id="notlar-db-cnt-t">0</span></div>
+            </div>
+            <div class="notlar-list" id="notlar-db-kisisel"></div>
+            <div class="notlar-list" id="notlar-db-takim" style="display:none"></div>
+            <div class="notlar-input-wrap" id="notlar-db-iw">
+              <textarea class="notlar-input" id="notlar-db-inp" rows="1" placeholder="Kişisel not ekle..."></textarea>
+              <button class="notlar-add-btn" onclick="notlarAdd('db')">Ekle</button>
+            </div>
+          </div>
         </div>
-        <div id="db-secondary" style="display:contents"></div>
       </div>
     </div>
 
@@ -954,10 +967,29 @@
 
     <!-- ═══ STOK DASHBOARD ═══ -->
     <div id="page-stok-dashboard" class="page stok-only">
-      <div id="stok-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div class="card"><div class="card-header"><span class="card-title">Kritik Stok Uyarıları</span><span id="stok-kritik-say" style="font-size:10px;color:var(--red);font-family:var(--font-mono)"></span></div><div id="stok-kritik-list" style="padding:0"></div></div>
-        <div class="card"><div class="card-header"><span class="card-title">Son Hareketler</span></div><div id="stok-son-hareket" style="padding:0"></div></div>
+      <div class="db-cols">
+        <div class="db-col-left">
+          <div id="stok-kpi-grid" class="db-kpi-grid"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="card"><div class="card-header"><span class="card-title">Kritik Stok Uyarıları</span><span id="stok-kritik-say" style="font-size:10px;color:var(--red);font-family:var(--font-mono)"></span></div><div id="stok-kritik-list" style="padding:0"></div></div>
+            <div class="card"><div class="card-header"><span class="card-title">Son Hareketler</span></div><div id="stok-son-hareket" style="padding:0"></div></div>
+          </div>
+        </div>
+        <div class="db-col-right">
+          <div class="card db-notlar-card" id="stok-notlar-card">
+            <div class="card-header" style="flex-shrink:0"><span class="card-title">Notlar</span></div>
+            <div class="notlar-tabs">
+              <div class="notlar-tab active" data-tab="kisisel" onclick="notlarSwitchTab('stok','kisisel')">Kişisel <span class="notlar-badge" id="notlar-stok-cnt-k">0</span></div>
+              <div class="notlar-tab" data-tab="takim" onclick="notlarSwitchTab('stok','takim')">Takım <span class="notlar-badge" id="notlar-stok-cnt-t">0</span></div>
+            </div>
+            <div class="notlar-list" id="notlar-stok-kisisel"></div>
+            <div class="notlar-list" id="notlar-stok-takim" style="display:none"></div>
+            <div class="notlar-input-wrap" id="notlar-stok-iw">
+              <textarea class="notlar-input" id="notlar-stok-inp" rows="1" placeholder="Kişisel not ekle..."></textarea>
+              <button class="notlar-add-btn" onclick="notlarAdd('stok')">Ekle</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1440,6 +1472,7 @@
 <script src="js/stok.js?v=5"></script>
 <script src="js/init.js?v=9"></script>
 <script src="js/resizable-cols.js?v=1"></script>
+<script src="js/notlar.js?v=1"></script>
 <!-- ─── FATURA MODAL ─── -->
 <div class="modal-overlay" id="modal-fatura">
   <div class="modal-card" style="max-width:620px">

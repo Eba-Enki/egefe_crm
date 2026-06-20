@@ -110,34 +110,6 @@ function _dbServis(s, tl, mus, now, thisMonth, thisYear){
       +'<div style="flex:1">'+legendHtml+'</div>'
     +'</div>';
 
-  // ─ Son Eklenen Kayıtlar
-  var listTitle = document.getElementById('db-list-title');
-  if(listTitle) listTitle.textContent = 'Son Eklenen Kayıtlar';
-  var listBadge = document.getElementById('db-list-badge');
-  if(listBadge) listBadge.textContent = mus.length+' müşteri';
-
-  var listEl = document.getElementById('db-list-body');
-  if(listEl){
-    var recent = s.slice().sort(function(a,b){
-      return new Date(b.olusturmaTarihi||b.gelisTarihi)-new Date(a.olusturmaTarihi||a.gelisTarihi);
-    }).slice(0,6);
-    if(!recent.length){
-      listEl.innerHTML='<div style="padding:28px;text-align:center;color:var(--text3);font-size:13px">Kayıt bulunamadı.</div>';
-    } else {
-      listEl.innerHTML = recent.map(function(r){
-        return '<div style="padding:11px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .12s" '
-          +'onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'" '
-          +'onclick="goServisForm(\''+r.id+'\')">'
-          +'<div style="flex:1;min-width:0">'
-            +'<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">'+esc(r.kurumAdi||'—')+'</div>'
-            +'<div style="font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--font-mono)">'+esc(r.kayitNo||'')+'</div>'
-          +'</div>'
-          +durumBadge(r.durum)
-          +'</div>';
-      }).join('');
-    }
-  }
-
   // ─ Alt Panel: Teklif Özeti
   var tklDurumlar = [
     {l:'İletildi',    hex:'#f59e0b'},
@@ -152,7 +124,7 @@ function _dbServis(s, tl, mus, now, thisMonth, thisYear){
 
   var secEl = document.getElementById('db-secondary');
   if(secEl) secEl.innerHTML =
-    '<div class="card" style="grid-column:span 2">'
+    '<div class="card">'
       +'<div class="card-header">'
         +'<span class="card-title">Teklif Özeti</span>'
         +'<span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+tl.length+' teklif toplam</span>'
@@ -161,6 +133,8 @@ function _dbServis(s, tl, mus, now, thisMonth, thisYear){
         +(tl.length ? tklBars : '<div style="color:var(--text3);font-size:13px">Henüz teklif bulunmuyor.</div>')
       +'</div>'
     +'</div>';
+
+  if(typeof renderNotlar === 'function') renderNotlar();
 }
 
 // ═══ SATIŞ PAZARLAMAportalı ═══
@@ -202,39 +176,6 @@ function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
     chartBody.innerHTML = bars || '<div style="color:var(--text3);font-size:13px;padding:8px 0">Henüz teklif bulunmuyor.</div>';
   }
 
-  // ─ Son Teklifler
-  var listTitle = document.getElementById('db-list-title');
-  if(listTitle) listTitle.textContent = 'Son Teklifler';
-  var listBadge = document.getElementById('db-list-badge');
-  if(listBadge) listBadge.textContent = buAyTeklif.length+' bu ay';
-
-  var TBG = {
-    'Taslak':'badge-sf','İletildi':'badge-onay-bekl',
-    'Siparişe Dönüştü':'badge-teslim','Reddedildi':'badge-reddedildi',
-    'Kabul Edildi':'badge-onaylandi','Kapandı':'badge-teslim'
-  };
-  var listEl = document.getElementById('db-list-body');
-  if(listEl){
-    var recent = tl.slice().sort(function(a,b){
-      return new Date(b.olusturmaTarihi||b.teklifTarihi)-new Date(a.olusturmaTarihi||a.teklifTarihi);
-    }).slice(0,6);
-    if(!recent.length){
-      listEl.innerHTML='<div style="padding:28px;text-align:center;color:var(--text3);font-size:13px">Teklif bulunamadı.</div>';
-    } else {
-      listEl.innerHTML = recent.map(function(t){
-        return '<div style="padding:11px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .12s" '
-          +'onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'" '
-          +'onclick="openTeklifDetay(\''+t.id+'\')">'
-          +'<div style="flex:1;min-width:0">'
-            +'<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">'+esc(t.kurum||'—')+'</div>'
-            +'<div style="font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--font-mono)">'+esc(t.teklifNo||'')+'</div>'
-          +'</div>'
-          +'<span class="badge '+(TBG[t.durum]||'badge-teknik')+'" style="font-size:10px;white-space:nowrap">'+esc(t.durum||'—')+'</span>'
-          +'</div>';
-      }).join('');
-    }
-  }
-
   // ─ Alt Panel: Sipariş Durumu + Fatura Durumu (2 kolon)
   var spDurumlar = [
     {l:'Hazırlanıyor',   hex:'#f59e0b'},
@@ -262,18 +203,22 @@ function _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear){
 
   var secEl = document.getElementById('db-secondary');
   if(secEl) secEl.innerHTML =
-    '<div class="card">'
-      +'<div class="card-header">'
-        +'<span class="card-title">Sipariş Durumu</span>'
-        +'<span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+sps.length+' toplam</span>'
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'
+      +'<div class="card">'
+        +'<div class="card-header">'
+          +'<span class="card-title">Sipariş Durumu</span>'
+          +'<span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+sps.length+' toplam</span>'
+        +'</div>'
+        +'<div class="card-body">'+(spBars||'<div style="color:var(--text3);font-size:13px">Sipariş bulunamadı.</div>')+'</div>'
       +'</div>'
-      +'<div class="card-body">'+(spBars||'<div style="color:var(--text3);font-size:13px">Sipariş bulunamadı.</div>')+'</div>'
-    +'</div>'
-    +'<div class="card">'
-      +'<div class="card-header">'
-        +'<span class="card-title">Fatura Durumu</span>'
-        +'<span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+fts.length+' toplam</span>'
+      +'<div class="card">'
+        +'<div class="card-header">'
+          +'<span class="card-title">Fatura Durumu</span>'
+          +'<span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+fts.length+' toplam</span>'
+        +'</div>'
+        +'<div class="card-body">'+(ftBars||'<div style="color:var(--text3);font-size:13px">Fatura bulunamadı.</div>')+'</div>'
       +'</div>'
-      +'<div class="card-body">'+(ftBars||'<div style="color:var(--text3);font-size:13px">Fatura bulunamadı.</div>')+'</div>'
     +'</div>';
+
+  if(typeof renderNotlar === 'function') renderNotlar();
 }

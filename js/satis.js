@@ -675,7 +675,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.text(st.firma||'Egefe Bilişim Sağlık San. ve Tic. A.Ş.',mm(68.457),mm(11.188)+9);
   doc.setFontSize(8);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
   doc.text(st.adres||'Harbiye Mah. Hürriyet Cad. No:7/12 Çankaya / Ankara',mm(68.457),mm(16.829)+6);
-  const vergiText=st.vergiDairesi&&st.vergiNo?`${st.vergiDairesi} Vergi Dairesi: ${st.vergiNo}`:'Başkent Vergi Dairesi: 5590520620';
+  const vergiText=st.vergiDairesi&&st.vergiNo?`${st.vergiDairesi} Vergi Dairesi: ${st.vergiNo}`:'Ulus Vergi Dairesi: 5590520620';
   doc.text(vergiText,mm(68.457),mm(21.192)+6);
   doc.text(st.web||'www.ege-fe.com',mm(68.457),mm(25.555)+6);
 

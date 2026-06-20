@@ -520,7 +520,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
     styles: {
       font: 'Arial',
       fontSize: 8,
-      cellPadding: {top: 3, right: 2, bottom: 3, left: 2},
+      cellPadding: {top: 4, right: 2, bottom: 4, left: 2},
       textColor: C.textDark,
       lineColor: C.tableBg,
       lineWidth: 0.5
@@ -531,7 +531,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
       fontStyle: 'bold',
       fontSize: 8,
       halign: 'center',
-      cellPadding: {top: 3, right: 2, bottom: 3, left: 2}
+      cellPadding: {top: 4, right: 2, bottom: 4, left: 2}
     },
     columnStyles: {
       0: {halign: 'center', valign: 'middle', cellWidth: mm(9.525)},

@@ -59,7 +59,7 @@
           + (isT ? '<button class="ni-reply-btn" onclick="notlarToggleReply(this)">↩ cevapla</button>' : '')
         + '</div>'
         + (isT ? '<div class="ni-replies">' + repliesHtml + '</div>' : '')
-        + (isT ? '<div class="ni-reply-form" style="display:none">'
+        + (isT ? '<div class="ni-reply-form">'
             + '<textarea class="ni-reply-inp" rows="1" placeholder="Cevabınızı yazın..."></textarea>'
             + '<div class="ni-reply-btns">'
               + '<button class="btn-cancel" onclick="notlarCancelReply(this)">İptal</button>'
@@ -168,12 +168,12 @@
 
   window.notlarToggleReply = function (btn) {
     var form   = btn.closest('.ni-body').querySelector('.ni-reply-form');
-    var isOpen = form.style.display === '';
+    var isOpen = form.style.display === 'block';
     // Tüm açık formları kapat
     document.querySelectorAll('.ni-reply-form').forEach(function (f) { f.style.display = 'none'; });
     document.querySelectorAll('.ni-reply-btn').forEach(function (b) { b.classList.remove('on'); });
     if (!isOpen) {
-      form.style.display = '';
+      form.style.display = 'block';
       btn.classList.add('on');
       form.querySelector('.ni-reply-inp').focus();
     }

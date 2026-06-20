@@ -1,5 +1,14 @@
 ﻿var musterilerPage=1;var _musteriFilterHash='';
+var _musteriSortCol='kurum';var _musteriSortDir='asc';
 function setMusterilerPage(n){musterilerPage=n;renderMusteriler();}
+function sortMusteri(col){
+  if(_musteriSortCol===col)_musteriSortDir=_musteriSortDir==='asc'?'desc':'asc';
+  else{_musteriSortCol=col;_musteriSortDir='asc';}
+  document.querySelectorAll('[id^=msort-]').forEach(function(el){el.innerHTML='';});
+  var el=document.getElementById('msort-'+col);
+  if(el)el.innerHTML=_musteriSortDir==='asc'?'<i class="ti ti-arrow-narrow-up"></i>':'<i class="ti ti-arrow-narrow-down"></i>';
+  renderMusteriler();
+}
 var urunlerPage=1;var _urunFilterHash='';
 function setUrunlerPage(n){urunlerPage=n;renderUrunler();}
 
@@ -18,7 +27,8 @@ function renderMusteriler(){
   const q=(document.getElementById('fm-ara').value||'').toLowerCase();
   if(q)data=data.filter(m=>(m.kurum+m.kisi+m.tel).toLowerCase().includes(q));
   document.getElementById('musteri-count').textContent=data.length+' müşteri';
-  var newMH=JSON.stringify([q]);if(newMH!==_musteriFilterHash){musterilerPage=1;_musteriFilterHash=newMH;}
+  var newMH=JSON.stringify([q,_musteriSortCol,_musteriSortDir]);if(newMH!==_musteriFilterHash){musterilerPage=1;_musteriFilterHash=newMH;}
+  data.sort(function(a,b){var va=(a[_musteriSortCol]||'').toString().toLowerCase(),vb=(b[_musteriSortCol]||'').toString().toLowerCase(),dir=_musteriSortDir==='asc'?1:-1;return va<vb?-dir:va>vb?dir:0;});
   var canEdit=state.currentUser&&state.currentUser.rol!=='izleyici';
   bulkSetVisible('musteriList',data.map(function(m){return m.id;}));
   var thCheck=document.getElementById('th-musteri-check');

@@ -27,6 +27,7 @@
   function lockLayout(table) {
     if (table.dataset.layoutLocked) return;
     table.querySelectorAll('thead th').forEach(function (th) {
+      if (th.querySelector('input[type=checkbox]')) return;
       th.style.width = th.offsetWidth + 'px';
     });
     table.style.tableLayout = 'fixed';
@@ -37,6 +38,7 @@
     var stored = loadAll()[tableKey];
     if (!stored) return;
     table.querySelectorAll('thead th').forEach(function (th, i) {
+      if (th.querySelector('input[type=checkbox]')) return;
       if (stored[i]) {
         th.style.width = stored[i] + 'px';
         th.style.minWidth = stored[i] + 'px';

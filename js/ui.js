@@ -457,8 +457,8 @@ function comboFilter(inputId,dropId,srcFn){
     html+='<div class="combo-item" style="color:var(--accent);border-top:1px solid var(--border);margin-top:2px;font-size:12px;font-weight:500" onmousedown="event.preventDefault();comboAddMusteri(\''+inputId+'\')">+ Yeni Müşteri Ekle</div>';
   }
   drop.innerHTML=html;
-  drop.innerHTML=html;
   if(_cbHL&&_cbHL.id===dropId)_cbHL.idx=-1;
+  drop.classList.add('open');
 }
 
 function comboPickItem(inputId,dropId,idx){

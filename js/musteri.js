@@ -211,17 +211,16 @@ function updateSettingsPreview(){
   if(sipp&&sipd&&prs){var p3=sipp.value.trim().toUpperCase()||'SIP';var d3=Math.min(9,Math.max(3,parseInt(sipd.value)||5));prs.textContent=p3+String(1).padStart(d3,'0');}
 }
 function renderParametreler(){
-  const list=state.settings.parametreler||[];
-  const el=document.getElementById('parametre-list');if(!el)return;
-  if(!list.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">Henüz parametre eklenmedi.</div>';return;}
+  var params=state.settings.parametreler||[];
+  var el=document.getElementById('parametre-list');if(!el)return;
+  if(!params.length){el.innerHTML='<div style="padding:28px;text-align:center;color:var(--text3);font-size:13px">Henüz parametre eklenmedi.</div>';return;}
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
   var html='<div class="table-wrap"><table class="compact-table"><thead><tr><th style="width:40px">#</th><th>Parametre Adı</th><th>Kısaltma</th><th></th></tr></thead><tbody>';
-  list.forEach(function(p,i){
-    var ad=typeof p==='string'?'':( p.ad||'');
-    var kisaltma=typeof p==='string'?p:(p.kisaltma||p.ad||'');
+  params.forEach(function(p,i){
+    var kisaltma=p.kisaltma||p.ad||'';
     html+='<tr>'
       +'<td style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">'+(i+1)+'</td>'
-      +'<td style="font-weight:500">'+esc(ad)+'</td>'
+      +'<td style="font-weight:500">'+esc(p.ad||kisaltma)+'</td>'
       +'<td style="font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent)">'+esc(kisaltma)+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteParametre('+i+')"><i class="ti ti-trash"></i></button>':'')
@@ -273,10 +272,10 @@ async function loadSettings(){
   try {
     var res=await apiGet(currentPortal+'/ayarlar');
     state.settings=Object.assign({},state.settings,res.ayarlar||{});
-    if(!state.settings.parametreler)state.settings.parametreler=[];
-    state.settings.parametreler=state.settings.parametreler.map(function(p){return typeof p==='string'?{ad:'',kisaltma:p}:p;});
     if(!state.settings.urunKategoriler)state.settings.urunKategoriler=[];
   } catch(e){}
+  if(!state.settings.parametreler)state.settings.parametreler=[];
+  state.settings.parametreler=state.settings.parametreler.map(function(p){return typeof p==='string'?{ad:'',kisaltma:p}:p;});
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''});
   var spEl=document.getElementById('set-servis-prefix');if(spEl)spEl.value=state.settings.servisPrefix||'KN';
   var sdEl=document.getElementById('set-servis-digits');if(sdEl)sdEl.value=state.settings.servisDigits||6;

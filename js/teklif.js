@@ -640,18 +640,6 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
 
   curY = notBoxTopY + mm(3) + allNotLines.length * pt8lh + mm(7);
 
-  // ── SIGNATURE LINES ──
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.75);
-  doc.line(leftX, curY, leftX + mm(50), curY);
-  doc.line(leftX + mm(60), curY, leftX + mm(110), curY);
-
-  doc.setFontSize(7);
-  doc.setFont('Arial', 'normal');
-  doc.setTextColor(...C.textLight);
-  doc.text('Yetkili İmza / Kaşe', leftX, curY + mm(4.5));
-  doc.text('Müşteri / Kaşe', leftX + mm(60), curY + mm(4.5));
-
   // ── TOTALS SECTION (Right side) ──
   const totalsY = sectionY;
 
@@ -662,10 +650,6 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textMid);
   doc.text(fmtN(araToplam), mm(193.881), totalsY + mm(1.7), {align: 'right'});
-
-  doc.setDrawColor(...C.tableBg);
-  doc.setLineWidth(0.75);
-  doc.line(mm(137.109), totalsY + mm(4.75), mm(194.63), totalsY + mm(4.75));
 
   /* -- Genel İskonto (pasif) --
   doc.setFont('Arial', 'bold');

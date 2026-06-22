@@ -105,6 +105,13 @@ async function loadCoreData() {
     } catch (e) {
       state.faturalar = state.faturalar || [];
     }
+
+    try {
+      var resP = await apiGet('satis/parametreler');
+      state.settings.parametreler = resP.parametreler || [];
+    } catch (e) {
+      state.settings.parametreler = state.settings.parametreler || [];
+    }
   }
 
   if (_currentPageId === 'dashboard') renderDashboard();

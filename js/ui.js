@@ -536,7 +536,11 @@ function openTiCombo(idx){
   const input=document.getElementById('ti-aciklama-'+idx);
   if(!input)return;
   const q=(input.value||'').toLowerCase();
-  const items=state.urunler.filter(u=>(u.urunAdi+' '+(u.marka||'')).toLowerCase().includes(q||'')).slice(0,50);
+  const katFilter=(teklifItems[idx]&&teklifItems[idx].kategori)||'';
+  const items=state.urunler.filter(u=>{
+    if(katFilter&&u.kategori!==katFilter)return false;
+    return (u.urunAdi+' '+(u.marka||'')).toLowerCase().includes(q||'');
+  }).slice(0,50);
   const drop=_getTiDrop();
   if(!items.length){drop.style.display='none';return;}
   drop.innerHTML=items.map((u,i)=>`<div class="combo-item" data-combo-idx="${i}"
@@ -650,9 +654,20 @@ function tiKeydown(event, idx){
 }
 
 document.addEventListener('click',e=>{
-  if(!e.target.closest('[id^="ti-aciklama-"]')&&!e.target.closest('#ti-combo-global'))
+  if(!e.target.closest('[id^="ti-aciklama-"]')&&!e.target.closest('#ti-combo-global')&&!e.target.closest('[id^="ti-kat-"]'))
     _getTiDrop().style.display='none';
 });
+document.addEventListener('scroll',function(){
+  const drop=document.getElementById('ti-combo-global');
+  if(!drop||drop.style.display==='none')return;
+  if(tiComboIndex<0){drop.style.display='none';return;}
+  const input=document.getElementById('ti-aciklama-'+tiComboIndex);
+  if(!input){drop.style.display='none';return;}
+  const rect=input.getBoundingClientRect();
+  if(rect.bottom<0||rect.top>window.innerHeight){drop.style.display='none';return;}
+  drop.style.top=(rect.bottom+2)+'px';
+  drop.style.left=rect.left+'px';
+},true);
 
 // ════ AKSESUAR CHIPS (servis formu) ════
 function renderSfChips(){

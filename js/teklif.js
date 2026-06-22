@@ -35,11 +35,15 @@ function updateTeklifCurrency(){const sym=getCurSymbol();const h=document.getEle
 function addTeklifItem(){teklifItems.push({aciklama:'',miktar:1,birim:'Adet',birimFiyat:0});renderTeklifItems()}
 function removeTeklifItem(i){if(teklifItems.length>1)teklifItems.splice(i,1);renderTeklifItems()}
 function renderTeklifItems(){
+  const isSatis=currentPortal==='satis';
+  const katSet=isSatis?[...new Set((state.urunler||[]).map(u=>u.kategori).filter(Boolean))].sort():[];
   document.getElementById('ti-body').innerHTML=teklifItems.map((item,i)=>{
     const params=item.seciliParametreler||[];
     const paramsHtml=params.length?`<div style="font-size:11px;color:rgb(143,164,176);margin-top:3px;padding-left:2px;line-height:1.4">(${params.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})</div>`:'';
+    const katSelectHtml=isSatis&&katSet.length?`<select id="ti-kat-${i}" style="display:block;width:100%;margin-bottom:5px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-size:11px" onchange="tiKategoriChange(${i},this.value)"><option value="">— Kategori Filtrele —</option>${katSet.map(k=>`<option value="${esc(k)}"${item.kategori===k?' selected':''}>${esc(k)}</option>`).join('')}</select>`:'';
     return `<tr>
     <td class="ti-aciklama">
+      ${katSelectHtml}
       <input type="text" id="ti-aciklama-${i}" value="${(item.aciklama||'').replace(/"/g,'&quot;')}" placeholder="Yazın veya listeden seçin..." autocomplete="off"
         oninput="teklifItems[${i}].aciklama=this.value;openTiCombo(${i})" onfocus="openTiCombo(${i})" onkeydown="tiKeydown(event,${i})">
       ${paramsHtml}
@@ -51,6 +55,15 @@ function renderTeklifItems(){
     <td class="ti-del" style="vertical-align:top"><button class="btn-icon" style="color:var(--red)" onclick="removeTeklifItem(${i})"><i class="ti ti-trash"></i></button></td>
   </tr>`;}).join('');
   updateTeklifTotals();
+}
+function tiKategoriChange(idx,kat){
+  teklifItems[idx].kategori=kat;
+  teklifItems[idx].aciklama='';
+  teklifItems[idx]._baseAciklama='';
+  teklifItems[idx].seciliParametreler=[];
+  const inp=document.getElementById('ti-aciklama-'+idx);
+  if(inp){inp.value='';inp.focus();}
+  openTiCombo(idx);
 }
 function updateTeklifTotals(){
   let toplam=0;
@@ -78,7 +91,7 @@ function onOdemeSekliChange(){
 function buildTeklifPayload(){
   var _musteriIdRaw=(document.getElementById('tf-musteri-id')||{}).value||'';
   var _musteriId=(_musteriIdRaw==='__edit_existing__')?'':_musteriIdRaw;
-  return{teklifNo:document.getElementById('tf-teklifNo').value,musteriId:_musteriId,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:toTitleCase(document.getElementById('tf-kurum').value),ilgiliKisi:toTitleCase(document.getElementById('tf-ilgiliKisi').value),teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',paraBirimi:(document.getElementById('tf-paraBirimi')||{}).value||'TRY',odemeKosulu:(document.getElementById('tf-odemeKosulu')||{}).value||'',vade:(document.getElementById('tf-vade')||{}).value||'',teslimat:(document.getElementById('tf-teslimat')||{}).value||'',satirlar:JSON.parse(JSON.stringify(teklifItems))};
+  return{teklifNo:document.getElementById('tf-teklifNo').value,musteriId:_musteriId,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:toTitleCase(document.getElementById('tf-kurum').value),ilgiliKisi:toTitleCase(document.getElementById('tf-ilgiliKisi').value),teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',paraBirimi:(document.getElementById('tf-paraBirimi')||{}).value||'TRY',odemeKosulu:(document.getElementById('tf-odemeKosulu')||{}).value||'',vade:(document.getElementById('tf-vade')||{}).value||'',teslimat:(document.getElementById('tf-teslimat')||{}).value||'',satirlar:teklifItems.map(function(s){var c=Object.assign({},s);delete c.kategori;return c;})};
 }
 async function saveTeklif(andPrint=false){
   const editId=document.getElementById('tf-edit-id').value;

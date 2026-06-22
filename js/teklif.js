@@ -643,6 +643,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   // ── TOTALS SECTION (Right side) ──
   const totalsY = sectionY;
 
+  /* -- Genel Toplam (pasif) --
   doc.setFontSize(8);
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textLabel);
@@ -650,6 +651,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textMid);
   doc.text(fmtN(araToplam), mm(193.881), totalsY + mm(1.7), {align: 'right'});
+  */
 
   /* -- Genel İskonto (pasif) --
   doc.setFont('Arial', 'bold');
@@ -668,22 +670,24 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   doc.line(mm(137.109), totalsY + mm(16.95), mm(194.63), totalsY + mm(16.95));
   */
 
-  const totalBoxY = totalsY + mm(6.5);
-  const totalBoxW = mm(194.63) - mm(141.901);
+  const totalBoxX = mm(141.901);
+  const totalBoxRightEdge = mm(194.63);
+  const totalBoxY = totalsY;
+  const totalBoxW = totalBoxRightEdge - totalBoxX;
   doc.setDrawColor(...C.primary);
   doc.setLineWidth(1.5);
   doc.setFillColor(...C.white);
-  doc.roundedRect(mm(141.901), totalBoxY, totalBoxW, mm(12.40), 2, 2, 'FD');
+  doc.roundedRect(totalBoxX, totalBoxY, totalBoxW, mm(12.40), 2, 2, 'FD');
 
   doc.setFontSize(8);
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.primary);
-  doc.text('TEKLİF TOPLAMI', mm(145.228), totalBoxY + mm(4.0));
+  doc.text('TEKLİF TOPLAMI', totalBoxRightEdge - mm(2.5), totalBoxY + mm(4.0), {align: 'right'});
 
   doc.setFontSize(11);
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text(`${pbSymbol} ${fmtN(genelToplam)}`, mm(145.228), totalBoxY + mm(9.2));
+  doc.text(`${pbSymbol} ${fmtN(genelToplam)}`, totalBoxRightEdge - mm(2.5), totalBoxY + mm(9.2), {align: 'right'});
 
   // ── FOOTER ──
   doc.setDrawColor(...C.primary);

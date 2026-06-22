@@ -536,16 +536,21 @@ function openTiCombo(idx){
   const input=document.getElementById('ti-aciklama-'+idx);
   if(!input)return;
   const q=(input.value||'').toLowerCase();
-  const katFilter=(teklifItems[idx]&&teklifItems[idx].kategori)||'';
-  const items=state.urunler.filter(u=>{
-    if(katFilter&&u.kategori!==katFilter)return false;
-    return (u.urunAdi+' '+(u.marka||'')).toLowerCase().includes(q||'');
-  }).slice(0,50);
+  const filtered=state.urunler.filter(u=>(u.urunAdi+' '+(u.kategori||'')).toLowerCase().includes(q||'')).slice(0,80);
   const drop=_getTiDrop();
-  if(!items.length){drop.style.display='none';return;}
-  drop.innerHTML=items.map((u,i)=>`<div class="combo-item" data-combo-idx="${i}"
-    data-urun="${esc(u.urunAdi)}" data-fiyat="${u.fiyat||0}" data-model="${esc(u.model||'')}"
-    onmousedown="event.preventDefault();selectTiUrun(${idx},${i})">${esc(u.urunAdi)}${u.marka?' <span style="color:var(--text3);font-size:11px">('+esc(u.marka)+')</span>':''}${u.model&&parseInt(u.model)?` <span style="color:var(--accent);font-size:11px;margin-left:6px">${esc(u.model)}P</span>`:''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`).join('');
+  if(!filtered.length){drop.style.display='none';return;}
+  const sorted=[...filtered].sort((a,b)=>(a.kategori||'').localeCompare(b.kategori||'','tr'));
+  let html='';let lastKat=undefined;let ci=0;
+  sorted.forEach(u=>{
+    const kat=u.kategori||'';
+    if(kat!==lastKat){
+      if(kat)html+=`<div style="padding:5px 12px 3px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;background:var(--bg2);cursor:default;user-select:none">${esc(kat)}</div>`;
+      lastKat=kat;
+    }
+    html+=`<div class="combo-item" data-combo-idx="${ci}" data-urun="${esc(u.urunAdi)}" data-fiyat="${u.fiyat||0}" data-model="${esc(u.model||'')}" onmousedown="event.preventDefault();selectTiUrun(${idx},${ci})">${esc(u.urunAdi)}${u.kategori?` <span style="color:var(--text3);font-size:11px">(${esc(u.kategori)})</span>`:''}${u.model&&parseInt(u.model)?` <span style="color:var(--accent);font-size:11px;margin-left:6px">${esc(u.model)}P</span>`:''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`;
+    ci++;
+  });
+  drop.innerHTML=html;
   const rect=input.getBoundingClientRect();
   drop.style.top=(rect.bottom+2)+'px';
   drop.style.left=rect.left+'px';
@@ -654,7 +659,7 @@ function tiKeydown(event, idx){
 }
 
 document.addEventListener('click',e=>{
-  if(!e.target.closest('[id^="ti-aciklama-"]')&&!e.target.closest('#ti-combo-global')&&!e.target.closest('[id^="ti-kat-"]'))
+  if(!e.target.closest('[id^="ti-aciklama-"]')&&!e.target.closest('#ti-combo-global'))
     _getTiDrop().style.display='none';
 });
 document.addEventListener('scroll',function(){

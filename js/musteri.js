@@ -210,10 +210,10 @@ function updateSettingsPreview(){
   if(tp&&td&&pt){var p2=tp.value.trim().toUpperCase()||'TKL';var d2=Math.min(9,Math.max(3,parseInt(td.value)||5));pt.textContent=p2+String(1).padStart(d2,'0');}
   if(sipp&&sipd&&prs){var p3=sipp.value.trim().toUpperCase()||'SIP';var d3=Math.min(9,Math.max(3,parseInt(sipd.value)||5));prs.textContent=p3+String(1).padStart(d3,'0');}
 }
-// "Glikoz||GLU" formatını parse eder → {ad, kisaltma}
+// seciliParametreler ve eski veri uyumluluğu için: {id,ad,kisaltma} objesini veya encode string'i parse eder
 function parseParam(p){
   if(typeof p!=='string'){
-    var k=((p&&(p.kisaltma||p.ad))||'').toString().toUpperCase();
+    var k=((p&&(p.kisaltma||p.ad))||'').toString();
     var a=(p&&p.ad&&p.ad!==k)?p.ad:'';
     return {ad:a,kisaltma:k};
   }
@@ -221,8 +221,6 @@ function parseParam(p){
   if(sep===-1)return {ad:'',kisaltma:p};
   return {ad:p.slice(0,sep),kisaltma:p.slice(sep+2)};
 }
-// {ad,kisaltma} → "Glikoz||GLU" veya "GLU"
-function encodeParam(ad,kisaltma){return ad?ad+'||'+kisaltma:kisaltma;}
 
 var _paramSatisEditIdx=null;
 function paramSatisFormAc(idx){
@@ -234,10 +232,10 @@ function paramSatisFormAc(idx){
   var idxEl=document.getElementById('param-satis-edit-idx');
   if(!card)return;
   if(_paramSatisEditIdx!==null){
-    var parsed=parseParam(state.settings.parametreler[_paramSatisEditIdx]||'');
+    var p=state.settings.parametreler[_paramSatisEditIdx]||{};
     if(title)title.textContent='Parametreyi Düzenle';
-    if(adEl)adEl.value=parsed.ad;
-    if(kisEl)kisEl.value=parsed.kisaltma;
+    if(adEl)adEl.value=p.ad||'';
+    if(kisEl)kisEl.value=p.kisaltma||'';
   } else {
     if(title)title.textContent='Yeni Parametre';
     if(adEl)adEl.value='';
@@ -261,24 +259,24 @@ async function saveParam(){
   var idxStr=idxEl?idxEl.value:'';
   var editIdx=idxStr!==''?parseInt(idxStr):null;
   if(!kisaltma)return toast('Kısaltma zorunludur.','error');
-  if(!state.settings.parametreler)state.settings.parametreler=[];
-  var list=state.settings.parametreler;
-  var parsedList=list.map(parseParam);
-  if(parsedList.some(function(p,j){return p.kisaltma===kisaltma&&j!==editIdx;}))return toast('Bu kısaltma zaten kullanılıyor.','error');
-  if(ad&&parsedList.some(function(p,j){return p.ad===ad&&j!==editIdx;}))return toast('Bu parametre adı zaten mevcut.','error');
-  var prev=list.slice();
-  var newList=list.slice();
-  if(editIdx!==null){newList[editIdx]=encodeParam(ad,kisaltma);}
-  else{newList.push(encodeParam(ad,kisaltma));}
-  newList.sort(function(a,b){var pa=parseParam(a),pb=parseParam(b);return (pa.ad||pa.kisaltma).localeCompare(pb.ad||pb.kisaltma,'tr');});
-  state.settings.parametreler=newList;
+  var list=state.settings.parametreler||[];
+  if(list.some(function(p,j){return p.kisaltma===kisaltma&&j!==editIdx;}))return toast('Bu kısaltma zaten kullanılıyor.','error');
+  if(ad&&list.some(function(p,j){return p.ad===ad&&j!==editIdx;}))return toast('Bu parametre adı zaten mevcut.','error');
   try{
-    await apiPut(currentPortal+'/ayarlar',state.settings);
+    var res;
+    if(editIdx!==null){
+      res=await apiPut('satis/parametreler',{id:list[editIdx].id,ad:ad,kisaltma:kisaltma,aktif:true});
+      list[editIdx]=res.parametre;
+    }else{
+      res=await apiPost('satis/parametreler',{ad:ad,kisaltma:kisaltma,aktif:true});
+      list.push(res.parametre);
+    }
   }catch(e){
-    state.settings.parametreler=prev;
     return toast(e.message||'Kaydedilemedi.','error');
   }
-  saveAll();paramSatisFormKapat();renderParametreler();
+  list.sort(function(a,b){return (a.ad||a.kisaltma).localeCompare(b.ad||b.kisaltma,'tr');});
+  state.settings.parametreler=list;
+  paramSatisFormKapat();renderParametreler();
   toast(editIdx!==null?'Parametre güncellendi.':'Parametre eklendi.','success');
 }
 function addParametre(){paramSatisFormAc();}
@@ -289,11 +287,10 @@ function renderParametreler(){
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
   var html='<div class="table-wrap"><table class="compact-table"><thead><tr><th style="width:40px">#</th><th>Parametre Adı</th><th>Kısaltma</th><th></th></tr></thead><tbody>';
   params.forEach(function(p,i){
-    var parsed=parseParam(p);
     html+='<tr>'
       +'<td style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">'+(i+1)+'</td>'
-      +'<td style="font-weight:500">'+esc(parsed.ad)+'</td>'
-      +'<td style="font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent)">'+esc(parsed.kisaltma)+'</td>'
+      +'<td style="font-weight:500">'+esc(p.ad||'')+'</td>'
+      +'<td style="font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent)">'+esc(p.kisaltma||p.ad||'')+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" title="Düzenle" onclick="paramSatisFormAc('+i+')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>':'')
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteParametre('+i+')"><i class="ti ti-trash"></i></button>':'')
@@ -303,15 +300,15 @@ function renderParametreler(){
   el.innerHTML=html+'</tbody></table></div>';
 }
 async function deleteParametre(i){
-  var prev=state.settings.parametreler.slice();
-  state.settings.parametreler=prev.filter(function(_,idx){return idx!==i;});
+  var list=state.settings.parametreler||[];
+  var p=list[i];if(!p)return;
   try{
-    await apiPut(currentPortal+'/ayarlar',state.settings);
+    await apiDelete('satis/parametreler?id='+p.id);
   }catch(e){
-    state.settings.parametreler=prev;
     return toast(e.message||'Parametre silinemedi.','error');
   }
-  saveAll();renderParametreler();
+  state.settings.parametreler=list.filter(function(_,idx){return idx!==i;});
+  renderParametreler();
   toast('Parametre silindi.','info');
 }
 async function loadSettings(){
@@ -320,13 +317,15 @@ async function loadSettings(){
     state.settings=Object.assign({},state.settings,res.ayarlar||{});
     if(!state.settings.urunKategoriler)state.settings.urunKategoriler=[];
   } catch(e){}
+  if(currentPortal==='satis'){
+    try{
+      var pRes=await apiGet('satis/parametreler');
+      state.settings.parametreler=pRes.parametreler||[];
+    }catch(e){
+      state.settings.parametreler=[];
+    }
+  }
   if(!state.settings.parametreler)state.settings.parametreler=[];
-  // Eski objeler veya paramAdlar'lı yapıdan encode formatına geç
-  state.settings.parametreler=state.settings.parametreler.map(function(p){
-    if(typeof p==='string'&&p.indexOf('||')!==-1)return p; // zaten encode
-    var parsed=parseParam(p);
-    return parsed.kisaltma?encodeParam(parsed.ad,parsed.kisaltma):'';
-  }).filter(Boolean);
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''});
   var spEl=document.getElementById('set-servis-prefix');if(spEl)spEl.value=state.settings.servisPrefix||'KN';
   var sdEl=document.getElementById('set-servis-digits');if(sdEl)sdEl.value=state.settings.servisDigits||6;

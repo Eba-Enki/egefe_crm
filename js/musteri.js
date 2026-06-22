@@ -106,7 +106,7 @@ function renderUrunler(){
   if(!data.length){tbody.innerHTML='';document.getElementById('urun-empty').style.display='';renderPagination('urun-pagination',1,0,'setUrunlerPage');return}
   document.getElementById('urun-empty').style.display='none';
   const isSatis=currentPortal==='satis';
-  const sorted=[...data].sort((a,b)=>(a.kategori||'').localeCompare(b.kategori||'','tr')||(a.urunAdi||'').localeCompare(b.urunAdi||'','tr'));
+  const sorted=[...data].sort((a,b)=>(a.urunKodu||'').localeCompare(b.urunKodu||'','tr',{numeric:true,sensitivity:'base'}));
   var pagedU=sorted.slice((urunlerPage-1)*PAGE_SIZE,urunlerPage*PAGE_SIZE);
   renderPagination('urun-pagination',urunlerPage,sorted.length,'setUrunlerPage');
   const _fmtFiyat=(v,pb)=>{if(!v)return'—';const sym={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'};return(sym[pb||'TRY']||'₺')+' '+new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v);};

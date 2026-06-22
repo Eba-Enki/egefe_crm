@@ -580,49 +580,87 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setCharSpace(0);
   doc.setFont('Arial','normal');
 
-  let y = tableEndY + mm(7);
+  const sectionY  = tableEndY + mm(7);
+  const leftX     = mm(15.446);
+  const leftAreaW = mm(115);
 
-  // ── BOTTOM GRID - dolu olan kutucuklar soldan sıralı gösterilir ──
-  const boxY = y;
-  const boxH = mm(13);
-  const boxPadding = 1.4;
-  const boxW = mm(36.248);
-  const boxXList = [mm(15.446), mm(53.546), mm(91.91), mm(130.274)];
+  // ── INFO BAR (Ödeme / Vade / Teslimat — tek satır düz metin) ──
+  const infoItems = [
+    t.seriNo      ? `Cihaz Seri No: ${t.seriNo}`              : null,
+    t.odemeKosulu ? `Ödeme Şekli: ${t.odemeKosulu}`            : null,
+    t.vade        ? `Vade: ${fmtDate(t.vade)}`                 : null,
+    t.teslimat    ? `Tahmini Teslimat: ${fmtDate(t.teslimat)}` : null,
+  ].filter(Boolean);
 
-  const activeBoxes = [
-    {label: 'CİHAZ SERİ NO',    value: t.seriNo},
-    {label: 'ÖDEME ŞEKLİ',      value: t.odemeKosulu},
-    {label: 'VADE',              value: t.vade ? fmtDate(t.vade) : ''},
-    {label: 'TAHMİNİ TESLİMAT', value: t.teslimat ? fmtDate(t.teslimat) : ''}
-  ].filter(b => b.value && b.value.trim());
+  let curY = sectionY;
+
+  if (infoItems.length > 0) {
+    doc.setFontSize(7);
+    doc.setFont('Arial', 'normal');
+    doc.setTextColor(...C.textLight);
+    doc.text(infoItems.join('   |   '), leftX, curY + mm(3.5));
+    curY += mm(5);
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.4);
+    doc.line(leftX, curY + mm(1), leftX + leftAreaW, curY + mm(1));
+    curY += mm(3.5);
+  }
+
+  // ── NOTES BOX ──
+  const notLabelW    = mm(10);
+  const notTextX     = leftX + mm(2.5) + notLabelW;
+  const notTextW     = leftAreaW - mm(2.5) - notLabelW - mm(2.5);
+  const pt8lh        = mm(4.5);
+  const notBoxPad    = mm(3);
 
   doc.setFontSize(8);
-  activeBoxes.forEach((box, i) => {
-    const bx = boxXList[i];
-    doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.75);
-    doc.setFillColor(...C.boxBg);
-    doc.roundedRect(bx, boxY, boxW, boxH, boxPadding, boxPadding, 'FD');
-    doc.setFont('Arial', 'bold');
-    doc.setTextColor(...C.textLight);
-    doc.text(box.label, bx + mm(2.4), boxY + mm(3.5));
-    doc.setTextColor(...C.textMid);
-    doc.text(box.value, bx + mm(2.4), boxY + mm(7.8));
+  doc.setFont('Arial', 'normal');
+  const notText    = t.notlar || 'Teklifimiz yukarıda belirtilen geçerlilik tarihi itibarıyla geçerliliğini yitirecektir.';
+  const rawLines   = notText.split('\n');
+  let allNotLines  = [];
+  rawLines.forEach(line => {
+    if (line.trim() === '') {
+      allNotLines.push('');
+    } else {
+      allNotLines = allNotLines.concat(doc.splitTextToSize(line, notTextW));
+    }
   });
 
-  const notY = activeBoxes.length > 0 ? boxY + boxH + mm(4) : boxY + mm(2);
-  doc.setFontSize(8);
+  const notBoxH    = notBoxPad + allNotLines.length * pt8lh + notBoxPad;
+  const notBoxTopY = curY;
+
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.5);
+  doc.setFillColor(...C.boxBg);
+  doc.roundedRect(leftX, notBoxTopY, leftAreaW, notBoxH, 1.5, 1.5, 'FD');
+
+  const firstLineBaseline = notBoxTopY + notBoxPad + mm(3);
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textLabel);
-  doc.text('Not :', mm(15.446), notY);
+  doc.text('Not:', leftX + mm(2.5), firstLineBaseline);
 
   doc.setFont('Arial', 'normal');
-  const notText = t.notlar || 'Teklifimiz yukarıda belirtilen geçerlilik tarihi itibarıyla geçerliliğini yitirecektir.';
-  const notLines = doc.splitTextToSize(notText, mm(100));
-  doc.text(notLines, mm(24.405), notY);
+  doc.setTextColor(...C.textMid);
+  allNotLines.forEach((line, i) => {
+    doc.text(line, notTextX, firstLineBaseline + i * pt8lh);
+  });
+
+  curY = notBoxTopY + notBoxH + mm(7);
+
+  // ── SIGNATURE LINES ──
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.75);
+  doc.line(leftX, curY, leftX + mm(50), curY);
+  doc.line(leftX + mm(60), curY, leftX + mm(110), curY);
+
+  doc.setFontSize(7);
+  doc.setFont('Arial', 'normal');
+  doc.setTextColor(...C.textLight);
+  doc.text('Yetkili İmza / Kaşe', leftX, curY + mm(4.5));
+  doc.text('Müşteri / Kaşe', leftX + mm(60), curY + mm(4.5));
 
   // ── TOTALS SECTION (Right side) ──
-  const totalsY = boxY;
+  const totalsY = sectionY;
 
   doc.setFontSize(8);
   doc.setFont('Arial', 'bold');
@@ -669,17 +707,6 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textMid);
   doc.text(`${pbSymbol} ${fmtN(genelToplam)}`, mm(145.228), totalBoxY + mm(9.2));
-
-  const sigLineY = totalBoxY + mm(10) + mm(2);
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.75);
-  doc.line(mm(15.446), sigLineY, mm(15.446) + mm(53.975), sigLineY);
-  doc.line(mm(74.712), sigLineY, mm(74.712) + mm(53.975), sigLineY);
-
-  doc.setFontSize(7);
-  doc.setFont('Arial', 'normal');
-  doc.setTextColor(...C.textLight);
-  doc.text('Yetkili İmza / Kaşe', mm(15.446), sigLineY + mm(6.058));
 
   // ── FOOTER ──
   doc.setDrawColor(...C.primary);

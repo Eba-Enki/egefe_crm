@@ -398,6 +398,7 @@ input.musteri-locked{background:var(--bg4)!important;cursor:default;padding-righ
 .combo-item:last-child{border-bottom:none}
 .combo-item:hover{background:var(--bg4)}
 .combo-item:active{background:var(--border)}
+.combo-item.highlighted{background:var(--accent-soft);outline:1px solid var(--accent-glow)}
 .combo-item .sub{font-size:11px;color:var(--text3);margin-top:1px}
 
 /* ── CHIPS ── */

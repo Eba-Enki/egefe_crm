@@ -544,7 +544,7 @@ function openTiCombo(idx){
   sorted.forEach(u=>{
     const kat=u.kategori||'';
     if(kat!==lastKat){
-      if(kat)html+=`<div style="padding:5px 12px 3px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;background:var(--bg2);cursor:default;user-select:none">${esc(kat)}</div>`;
+      if(kat)html+=`<div style="padding:6px 12px 4px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;background:var(--accent-soft);border-top:1px solid var(--accent-glow);border-bottom:1px solid var(--accent-glow);cursor:default;user-select:none">${esc(kat)}</div>`;
       lastKat=kat;
     }
     html+=`<div class="combo-item" data-combo-idx="${ci}" data-urun="${esc(u.urunAdi)}" data-fiyat="${u.fiyat||0}" data-model="${esc(u.model||'')}" onmousedown="event.preventDefault();selectTiUrun(${idx},${ci})">${esc(u.urunAdi)}${u.kategori?` <span style="color:var(--text3);font-size:11px">(${esc(u.kategori)})</span>`:''}${u.model&&parseInt(u.model)?` <span style="color:var(--accent);font-size:11px;margin-left:6px">${esc(u.model)}P</span>`:''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`;

@@ -14,7 +14,6 @@ $VARSAYILAN = [
     'web'             => '',
     'vergiDairesi'    => '',
     'vergiNo'         => '',
-    'parametreler'    => [],
     'urunKategoriler' => [],
     'servisPrefix'    => 'KN',
     'servisDigits'    => 6,
@@ -36,7 +35,9 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        echo json_encode(['ayarlar' => ayarlarOku($pdo, $VARSAYILAN)]);
+        $ayarlar = ayarlarOku($pdo, $VARSAYILAN);
+        unset($ayarlar['parametreler']);
+        echo json_encode(['ayarlar' => $ayarlar]);
         break;
 
     case 'PUT':
@@ -52,12 +53,6 @@ switch ($method) {
             if (array_key_exists($k, $input)) {
                 $ayarlar[$k] = min(9, max(3, (int)$input[$k]));
             }
-        }
-        if (array_key_exists('parametreler', $input) && is_array($input['parametreler'])) {
-            $ayarlar['parametreler'] = array_values(array_filter(
-                array_map(fn($v) => trim((string)$v), $input['parametreler']),
-                fn($v) => $v !== ''
-            ));
         }
         if (array_key_exists('urunKategoriler', $input) && is_array($input['urunKategoriler'])) {
             $ayarlar['urunKategoriler'] = array_values(array_filter(

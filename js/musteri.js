@@ -326,7 +326,8 @@ async function deleteParametre(i){
 async function loadSettings(){
   try {
     var res=await apiGet(currentPortal+'/ayarlar');
-    state.settings=Object.assign({},state.settings,res.ayarlar||{});
+    var _s=res.ayarlar||{};delete _s.parametreler;
+    state.settings=Object.assign({},state.settings,_s);
     if(!state.settings.urunKategoriler)state.settings.urunKategoriler=[];
   } catch(e){}
   if(currentPortal==='satis'){

@@ -611,7 +611,6 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   const notTextX     = leftX + mm(2.5) + notLabelW;
   const notTextW     = leftAreaW - mm(2.5) - notLabelW - mm(2.5);
   const pt8lh        = mm(4.5);
-  const notBoxPad    = mm(3);
 
   doc.setFontSize(8);
   doc.setFont('Arial', 'normal');
@@ -626,18 +625,12 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
     }
   });
 
-  const notBoxH    = notBoxPad + allNotLines.length * pt8lh + notBoxPad;
-  const notBoxTopY = curY;
+  const notBoxTopY        = curY;
+  const firstLineBaseline = notBoxTopY + mm(3);
 
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.5);
-  doc.setFillColor(...C.boxBg);
-  doc.roundedRect(leftX, notBoxTopY, leftAreaW, notBoxH, 1.5, 1.5, 'FD');
-
-  const firstLineBaseline = notBoxTopY + notBoxPad + mm(3);
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textLabel);
-  doc.text('Not:', leftX + mm(2.5), firstLineBaseline);
+  doc.text('Not:', leftX, firstLineBaseline);
 
   doc.setFont('Arial', 'normal');
   doc.setTextColor(...C.textMid);
@@ -645,7 +638,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
     doc.text(line, notTextX, firstLineBaseline + i * pt8lh);
   });
 
-  curY = notBoxTopY + notBoxH + mm(7);
+  curY = notBoxTopY + mm(3) + allNotLines.length * pt8lh + mm(7);
 
   // ── SIGNATURE LINES ──
   doc.setDrawColor(...C.border);

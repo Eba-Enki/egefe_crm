@@ -407,33 +407,38 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   doc.line(mm(15.446), mm(33.955), mm(194.556), mm(33.955));
 
   // ── RIGHT SIDE - TEKLİF MEKTUBU ──
+  // Tüm blok mm(194.556) sağ kenara hizalı:
+  //   değer sütunu → sağa yaslanmış mm(194.556)
+  //   iki nokta    → mm(170.556)  (değer sütunundan 24mm solda)
+  //   etiket       → sağa yaslanmış mm(168.556)  (iki noktadan 2mm solda)
+  const _rEdge   = mm(194.556);
+  const _colonX  = _rEdge - mm(24);
+  const _labelRX = _colonX - mm(2);
+
   doc.setFontSize(14);
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text('TEKLİF MEKTUBU', mm(141.628), mm(42.395)+11);
+  doc.text('TEKLİF MEKTUBU', _rEdge, mm(42.395)+11, {align: 'right'});
 
   doc.setFontSize(8);
   doc.setFont('Arial', 'bold');
   doc.setTextColor(...C.textMid);
-  doc.text('Teklif No', mm(141.66), mm(50.611)+6);
-  doc.text(':', mm(165.354), mm(50.611)+6);
-
+  doc.text('Teklif No', _labelRX, mm(50.611)+6, {align: 'right'});
+  doc.text(':', _colonX, mm(50.611)+6);
   doc.setFont('Arial', 'normal');
-  doc.text(t.teklifNo || '-', mm(171.249), mm(50.611)+6);
+  doc.text(t.teklifNo || '-', _rEdge, mm(50.611)+6, {align: 'right'});
 
   doc.setFont('Arial', 'bold');
-  doc.text('Teklif Tarihi', mm(141.66), mm(55.109)+6);
-  doc.text(':', mm(165.354), mm(55.109)+6);
-
+  doc.text('Teklif Tarihi', _labelRX, mm(55.109)+6, {align: 'right'});
+  doc.text(':', _colonX, mm(55.109)+6);
   doc.setFont('Arial', 'normal');
-  doc.text(fmtDate(t.teklifTarihi)||'-', mm(171.249), mm(55.109)+6);
+  doc.text(fmtDate(t.teklifTarihi)||'-', _rEdge, mm(55.109)+6, {align: 'right'});
 
   doc.setFont('Arial', 'bold');
-  doc.text('Geçerlilik Tarihi', mm(141.66), mm(59.58)+6);
-  doc.text(':', mm(165.354), mm(59.58)+6);
-
+  doc.text('Geçerlilik Tarihi', _labelRX, mm(59.58)+6, {align: 'right'});
+  doc.text(':', _colonX, mm(59.58)+6);
   doc.setFont('Arial', 'normal');
-  doc.text(fmtDate(t.gecerlilikTarihi)||'-', mm(171.249), mm(59.607)+6);
+  doc.text(fmtDate(t.gecerlilikTarihi)||'-', _rEdge, mm(59.607)+6, {align: 'right'});
 
   // ── BILL TO SECTION ──
   doc.setFontSize(8);

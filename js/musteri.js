@@ -223,7 +223,7 @@ function paramSatisFormAc(idx){
     var k=state.settings.parametreler[_paramSatisEditIdx]||'';
     if(title)title.textContent='Parametreyi Düzenle';
     if(adEl)adEl.value=(state.settings.paramAdlar||{})[k]||'';
-    if(kisEl){kisEl.value=k;kisEl.disabled=true;}
+    if(kisEl){kisEl.value=k;kisEl.disabled=false;}
   } else {
     if(title)title.textContent='Yeni Parametre';
     if(adEl)adEl.value='';
@@ -250,15 +250,18 @@ async function saveParam(){
   if(!state.settings.parametreler)state.settings.parametreler=[];
   if(!state.settings.paramAdlar)state.settings.paramAdlar={};
   var list=state.settings.parametreler;
-  if(editIdx===null&&list.indexOf(kisaltma)>=0)return toast('Bu kısaltma zaten kullanılıyor.','error');
-  if(ad&&Object.keys(state.settings.paramAdlar).some(function(k){return k!==(editIdx!==null?list[editIdx]:'')&&state.settings.paramAdlar[k]===ad;}))return toast('Bu parametre adı zaten mevcut.','error');
+  var eskiKisaltma=editIdx!==null?list[editIdx]:'';
+  if(list.some(function(k,j){return k===kisaltma&&j!==editIdx;}))return toast('Bu kısaltma zaten kullanılıyor.','error');
+  if(ad&&Object.keys(state.settings.paramAdlar).some(function(k){return k!==eskiKisaltma&&state.settings.paramAdlar[k]===ad;}))return toast('Bu parametre adı zaten mevcut.','error');
   var prevList=list.slice();
   var prevAdlar=Object.assign({},state.settings.paramAdlar);
   if(editIdx!==null){
-    if(ad)state.settings.paramAdlar[list[editIdx]]=ad;
-    else delete state.settings.paramAdlar[list[editIdx]];
+    var eskiAd=state.settings.paramAdlar[eskiKisaltma]||'';
+    delete state.settings.paramAdlar[eskiKisaltma];
+    if(ad)state.settings.paramAdlar[kisaltma]=ad;
+    var newList=list.slice();newList[editIdx]=kisaltma;
     var updatedAdlar=Object.assign({},state.settings.paramAdlar);
-    state.settings.parametreler=list.slice().sort(function(a,b){return (updatedAdlar[a]||a).localeCompare(updatedAdlar[b]||b,'tr');});
+    state.settings.parametreler=newList.sort(function(a,b){return (updatedAdlar[a]||a).localeCompare(updatedAdlar[b]||b,'tr');});
   } else {
     var yeniAdlar=Object.assign({},state.settings.paramAdlar);if(ad)yeniAdlar[kisaltma]=ad;
     state.settings.parametreler=prevList.concat(kisaltma).sort(function(a,b){return (yeniAdlar[a]||a).localeCompare(yeniAdlar[b]||b,'tr');});

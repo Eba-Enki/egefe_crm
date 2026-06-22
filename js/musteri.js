@@ -212,15 +212,16 @@ function updateSettingsPreview(){
 }
 function renderParametreler(){
   var params=state.settings.parametreler||[];
+  var adlar=state.settings.paramAdlar||{};
   var el=document.getElementById('parametre-list');if(!el)return;
   if(!params.length){el.innerHTML='<div style="padding:28px;text-align:center;color:var(--text3);font-size:13px">Henüz parametre eklenmedi.</div>';return;}
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
   var html='<div class="table-wrap"><table class="compact-table"><thead><tr><th style="width:40px">#</th><th>Parametre Adı</th><th>Kısaltma</th><th></th></tr></thead><tbody>';
-  params.forEach(function(p,i){
-    var kisaltma=p.kisaltma||p.ad||'';
+  params.forEach(function(kisaltma,i){
+    var ad=adlar[kisaltma]||'';
     html+='<tr>'
       +'<td style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">'+(i+1)+'</td>'
-      +'<td style="font-weight:500">'+esc(p.ad||kisaltma)+'</td>'
+      +'<td style="font-weight:500">'+esc(ad)+'</td>'
       +'<td style="font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent)">'+esc(kisaltma)+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteParametre('+i+')"><i class="ti ti-trash"></i></button>':'')
@@ -230,23 +231,26 @@ function renderParametreler(){
   el.innerHTML=html+'</tbody></table></div>';
 }
 async function addParametre(){
-  const adInp=document.getElementById('yeni-parametre-ad');
-  const kisInp=document.getElementById('yeni-parametre-kisaltma');
-  const ad=(adInp?adInp.value||'':'').trim();
-  const kisaltma=(kisInp?kisInp.value||'':'').trim().toUpperCase();
+  var adInp=document.getElementById('yeni-parametre-ad');
+  var kisInp=document.getElementById('yeni-parametre-kisaltma');
+  var ad=(adInp?adInp.value||'':'').trim();
+  var kisaltma=(kisInp?kisInp.value||'':'').trim().toUpperCase();
   if(!kisaltma)return toast('Kısaltma zorunludur.','error');
   if(!state.settings.parametreler)state.settings.parametreler=[];
-  const list=state.settings.parametreler;
-  if(list.some(function(p){return (typeof p==='string'?p:(p.kisaltma||'')).toUpperCase()===kisaltma;}))return toast('Bu kısaltma zaten kullanılıyor.','error');
-  if(ad&&list.some(function(p){return typeof p!=='string'&&p.ad&&p.ad===ad;}))return toast('Bu parametre adı zaten mevcut.','error');
-  var prev=list.slice();
-  var yeni=prev.concat({ad:ad,kisaltma:kisaltma});
-  yeni.sort(function(a,b){var ka=typeof a==='string'?a:(a.kisaltma||'');var kb=typeof b==='string'?b:(b.kisaltma||'');return ka.localeCompare(kb,'tr');});
-  state.settings.parametreler=yeni;
+  if(!state.settings.paramAdlar)state.settings.paramAdlar={};
+  var list=state.settings.parametreler;
+  if(list.indexOf(kisaltma)>=0)return toast('Bu kısaltma zaten kullanılıyor.','error');
+  if(ad&&Object.keys(state.settings.paramAdlar).some(function(k){return state.settings.paramAdlar[k]===ad;}))return toast('Bu parametre adı zaten mevcut.','error');
+  var prevList=list.slice();
+  var prevAdlar=Object.assign({},state.settings.paramAdlar);
+  var yeniList=prevList.concat(kisaltma).sort(function(a,b){return a.localeCompare(b,'tr');});
+  state.settings.parametreler=yeniList;
+  if(ad)state.settings.paramAdlar[kisaltma]=ad;
   try{
     await apiPut(currentPortal+'/ayarlar',state.settings);
   }catch(e){
-    state.settings.parametreler=prev;
+    state.settings.parametreler=prevList;
+    state.settings.paramAdlar=prevAdlar;
     return toast(e.message||'Parametre eklenemedi.','error');
   }
   saveAll();
@@ -256,12 +260,16 @@ async function addParametre(){
   toast('Parametre eklendi.','success');
 }
 async function deleteParametre(i){
-  var prev=state.settings.parametreler;
-  state.settings.parametreler=prev.filter((_,idx)=>idx!==i);
+  var kisaltma=state.settings.parametreler[i];
+  var prevList=state.settings.parametreler.slice();
+  var prevAdlar=Object.assign({},state.settings.paramAdlar);
+  state.settings.parametreler=prevList.filter(function(_,idx){return idx!==i;});
+  delete state.settings.paramAdlar[kisaltma];
   try{
     await apiPut(currentPortal+'/ayarlar',state.settings);
   }catch(e){
-    state.settings.parametreler=prev;
+    state.settings.parametreler=prevList;
+    state.settings.paramAdlar=prevAdlar;
     return toast(e.message||'Parametre silinemedi.','error');
   }
   saveAll();
@@ -275,7 +283,14 @@ async function loadSettings(){
     if(!state.settings.urunKategoriler)state.settings.urunKategoriler=[];
   } catch(e){}
   if(!state.settings.parametreler)state.settings.parametreler=[];
-  state.settings.parametreler=state.settings.parametreler.map(function(p){return typeof p==='string'?{ad:'',kisaltma:p}:p;});
+  if(!state.settings.paramAdlar)state.settings.paramAdlar={};
+  // Mevcut objeler varsa (önceki push'tan) kisaltma string'ine dönüştür, adı paramAdlar'a taşı
+  state.settings.parametreler=state.settings.parametreler.map(function(p){
+    if(typeof p==='string')return p;
+    var k=(p.kisaltma||p.ad||'').toUpperCase();
+    if(p.ad&&k)state.settings.paramAdlar[k]=p.ad;
+    return k;
+  }).filter(Boolean);
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''});
   var spEl=document.getElementById('set-servis-prefix');if(spEl)spEl.value=state.settings.servisPrefix||'KN';
   var sdEl=document.getElementById('set-servis-digits');if(sdEl)sdEl.value=state.settings.servisDigits||6;

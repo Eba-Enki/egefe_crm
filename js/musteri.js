@@ -243,7 +243,8 @@ async function addParametre(){
   if(ad&&Object.keys(state.settings.paramAdlar).some(function(k){return state.settings.paramAdlar[k]===ad;}))return toast('Bu parametre adı zaten mevcut.','error');
   var prevList=list.slice();
   var prevAdlar=Object.assign({},state.settings.paramAdlar);
-  var yeniList=prevList.concat(kisaltma).sort(function(a,b){return a.localeCompare(b,'tr');});
+  var yeniAdlar=Object.assign({},state.settings.paramAdlar);if(ad)yeniAdlar[kisaltma]=ad;
+  var yeniList=prevList.concat(kisaltma).sort(function(a,b){return (yeniAdlar[a]||a).localeCompare(yeniAdlar[b]||b,'tr');});
   state.settings.parametreler=yeniList;
   if(ad)state.settings.paramAdlar[kisaltma]=ad;
   try{

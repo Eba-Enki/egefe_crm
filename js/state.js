@@ -43,7 +43,7 @@ let state={
   musteriler:DB.pload('musteriler',[]),
   urunler:[],
   urunKategoriler:DB.pload('urunKategoriler',['Cihaz','Yazılım','Aksesuar','Sarf Malzeme','Diğer']),
-  settings:{firma:'',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[],paramAdlar:{}},
+  settings:{firma:'',tel:'',faks:'',adres:'',email:'',web:'',parametreler:[]},
   sortCol:'kayitNo',sortDir:'desc'
 };
 let sfAksesuarlar=[];

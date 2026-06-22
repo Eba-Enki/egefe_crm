@@ -588,16 +588,15 @@ function openParamSecModal(idx,count){
   const mevMap={};
   mevcut.forEach(p=>{const ad=typeof p==='string'?p:p.ad;const deger=typeof p==='string'?'':(p.deger||'');mevMap[ad]=deger;});
   const parametreler=state.settings.parametreler||[];
-  const paramAdlar=state.settings.paramAdlar||{};
   const titleEl=document.getElementById('parametre-sec-title');
   if(titleEl)titleEl.textContent=count+' parametre seçin';
   const list=document.getElementById('parametre-sec-list');
   if(!list)return;
   list.style.gridTemplateColumns='1fr';
   list.innerHTML=parametreler.map((p,i)=>{
-    const kisaltma=typeof p==='string'?p:(p.kisaltma||p.ad||'');
-    const ad=paramAdlar[kisaltma]||'';
-    const adLabel=ad?ad+' ('+kisaltma+')':kisaltma;
+    const parsed=parseParam(p);
+    const kisaltma=parsed.kisaltma;
+    const adLabel=parsed.ad?parsed.ad+' ('+kisaltma+')':kisaltma;
     const isChecked=kisaltma in mevMap;
     const val=isChecked?(mevMap[kisaltma]||''):'';
     return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;background:var(--bg3);border:1px solid var(--border)"><input type="checkbox" id="ps-cb-${i}" value="${kisaltma.replace(/"/g,'&quot;')}" ${isChecked?'checked':''} onchange="updateParamSecCounter()"><label for="ps-cb-${i}" style="font-size:13px;color:var(--text);flex:1;cursor:pointer">${adLabel}</label><input type="text" id="ps-val-${i}" value="${val.replace(/"/g,'&quot;')}" placeholder="değer" style="width:110px;font-size:12px;padding:3px 8px;border-radius:4px;border:1px solid var(--border2);background:var(--bg4);color:var(--text)" ${isChecked?'':'disabled'}></div>`;

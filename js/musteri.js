@@ -210,6 +210,20 @@ function updateSettingsPreview(){
   if(tp&&td&&pt){var p2=tp.value.trim().toUpperCase()||'TKL';var d2=Math.min(9,Math.max(3,parseInt(td.value)||5));pt.textContent=p2+String(1).padStart(d2,'0');}
   if(sipp&&sipd&&prs){var p3=sipp.value.trim().toUpperCase()||'SIP';var d3=Math.min(9,Math.max(3,parseInt(sipd.value)||5));prs.textContent=p3+String(1).padStart(d3,'0');}
 }
+// "Glikoz||GLU" formatını parse eder → {ad, kisaltma}
+function parseParam(p){
+  if(typeof p!=='string'){
+    var k=((p&&(p.kisaltma||p.ad))||'').toString().toUpperCase();
+    var a=(p&&p.ad&&p.ad!==k)?p.ad:'';
+    return {ad:a,kisaltma:k};
+  }
+  var sep=p.indexOf('||');
+  if(sep===-1)return {ad:'',kisaltma:p};
+  return {ad:p.slice(0,sep),kisaltma:p.slice(sep+2)};
+}
+// {ad,kisaltma} → "Glikoz||GLU" veya "GLU"
+function encodeParam(ad,kisaltma){return ad?ad+'||'+kisaltma:kisaltma;}
+
 var _paramSatisEditIdx=null;
 function paramSatisFormAc(idx){
   _paramSatisEditIdx=(idx!==undefined&&idx!==null)?idx:null;
@@ -220,14 +234,14 @@ function paramSatisFormAc(idx){
   var idxEl=document.getElementById('param-satis-edit-idx');
   if(!card)return;
   if(_paramSatisEditIdx!==null){
-    var k=state.settings.parametreler[_paramSatisEditIdx]||'';
+    var parsed=parseParam(state.settings.parametreler[_paramSatisEditIdx]||'');
     if(title)title.textContent='Parametreyi Düzenle';
-    if(adEl)adEl.value=(state.settings.paramAdlar||{})[k]||'';
-    if(kisEl){kisEl.value=k;kisEl.disabled=false;}
+    if(adEl)adEl.value=parsed.ad;
+    if(kisEl)kisEl.value=parsed.kisaltma;
   } else {
     if(title)title.textContent='Yeni Parametre';
     if(adEl)adEl.value='';
-    if(kisEl){kisEl.value='';kisEl.disabled=false;}
+    if(kisEl)kisEl.value='';
   }
   if(idxEl)idxEl.value=_paramSatisEditIdx!==null?String(_paramSatisEditIdx):'';
   card.style.display='';
@@ -248,51 +262,38 @@ async function saveParam(){
   var editIdx=idxStr!==''?parseInt(idxStr):null;
   if(!kisaltma)return toast('Kısaltma zorunludur.','error');
   if(!state.settings.parametreler)state.settings.parametreler=[];
-  if(!state.settings.paramAdlar)state.settings.paramAdlar={};
   var list=state.settings.parametreler;
-  var eskiKisaltma=editIdx!==null?list[editIdx]:'';
-  if(list.some(function(k,j){return k===kisaltma&&j!==editIdx;}))return toast('Bu kısaltma zaten kullanılıyor.','error');
-  if(ad&&Object.keys(state.settings.paramAdlar).some(function(k){return k!==eskiKisaltma&&state.settings.paramAdlar[k]===ad;}))return toast('Bu parametre adı zaten mevcut.','error');
-  var prevList=list.slice();
-  var prevAdlar=Object.assign({},state.settings.paramAdlar);
-  if(editIdx!==null){
-    var eskiAd=state.settings.paramAdlar[eskiKisaltma]||'';
-    delete state.settings.paramAdlar[eskiKisaltma];
-    if(ad)state.settings.paramAdlar[kisaltma]=ad;
-    var newList=list.slice();newList[editIdx]=kisaltma;
-    var updatedAdlar=Object.assign({},state.settings.paramAdlar);
-    state.settings.parametreler=newList.sort(function(a,b){return (updatedAdlar[a]||a).localeCompare(updatedAdlar[b]||b,'tr');});
-  } else {
-    var yeniAdlar=Object.assign({},state.settings.paramAdlar);if(ad)yeniAdlar[kisaltma]=ad;
-    state.settings.parametreler=prevList.concat(kisaltma).sort(function(a,b){return (yeniAdlar[a]||a).localeCompare(yeniAdlar[b]||b,'tr');});
-    if(ad)state.settings.paramAdlar[kisaltma]=ad;
-  }
+  var parsedList=list.map(parseParam);
+  if(parsedList.some(function(p,j){return p.kisaltma===kisaltma&&j!==editIdx;}))return toast('Bu kısaltma zaten kullanılıyor.','error');
+  if(ad&&parsedList.some(function(p,j){return p.ad===ad&&j!==editIdx;}))return toast('Bu parametre adı zaten mevcut.','error');
+  var prev=list.slice();
+  var newList=list.slice();
+  if(editIdx!==null){newList[editIdx]=encodeParam(ad,kisaltma);}
+  else{newList.push(encodeParam(ad,kisaltma));}
+  newList.sort(function(a,b){var pa=parseParam(a),pb=parseParam(b);return (pa.ad||pa.kisaltma).localeCompare(pb.ad||pb.kisaltma,'tr');});
+  state.settings.parametreler=newList;
   try{
     await apiPut(currentPortal+'/ayarlar',state.settings);
   }catch(e){
-    state.settings.parametreler=prevList;
-    state.settings.paramAdlar=prevAdlar;
+    state.settings.parametreler=prev;
     return toast(e.message||'Kaydedilemedi.','error');
   }
-  saveAll();
-  paramSatisFormKapat();
-  renderParametreler();
+  saveAll();paramSatisFormKapat();renderParametreler();
   toast(editIdx!==null?'Parametre güncellendi.':'Parametre eklendi.','success');
 }
 function addParametre(){paramSatisFormAc();}
 function renderParametreler(){
   var params=state.settings.parametreler||[];
-  var adlar=state.settings.paramAdlar||{};
   var el=document.getElementById('parametre-list');if(!el)return;
   if(!params.length){el.innerHTML='<div style="padding:28px;text-align:center;color:var(--text3);font-size:13px">Henüz parametre eklenmedi.</div>';return;}
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
   var html='<div class="table-wrap"><table class="compact-table"><thead><tr><th style="width:40px">#</th><th>Parametre Adı</th><th>Kısaltma</th><th></th></tr></thead><tbody>';
-  params.forEach(function(kisaltma,i){
-    var ad=adlar[kisaltma]||'';
+  params.forEach(function(p,i){
+    var parsed=parseParam(p);
     html+='<tr>'
       +'<td style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">'+(i+1)+'</td>'
-      +'<td style="font-weight:500">'+esc(ad)+'</td>'
-      +'<td style="font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent)">'+esc(kisaltma)+'</td>'
+      +'<td style="font-weight:500">'+esc(parsed.ad)+'</td>'
+      +'<td style="font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent)">'+esc(parsed.kisaltma)+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" title="Düzenle" onclick="paramSatisFormAc('+i+')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>':'')
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteParametre('+i+')"><i class="ti ti-trash"></i></button>':'')
@@ -302,20 +303,15 @@ function renderParametreler(){
   el.innerHTML=html+'</tbody></table></div>';
 }
 async function deleteParametre(i){
-  var kisaltma=state.settings.parametreler[i];
-  var prevList=state.settings.parametreler.slice();
-  var prevAdlar=Object.assign({},state.settings.paramAdlar);
-  state.settings.parametreler=prevList.filter(function(_,idx){return idx!==i;});
-  delete state.settings.paramAdlar[kisaltma];
+  var prev=state.settings.parametreler.slice();
+  state.settings.parametreler=prev.filter(function(_,idx){return idx!==i;});
   try{
     await apiPut(currentPortal+'/ayarlar',state.settings);
   }catch(e){
-    state.settings.parametreler=prevList;
-    state.settings.paramAdlar=prevAdlar;
+    state.settings.parametreler=prev;
     return toast(e.message||'Parametre silinemedi.','error');
   }
-  saveAll();
-  renderParametreler();
+  saveAll();renderParametreler();
   toast('Parametre silindi.','info');
 }
 async function loadSettings(){
@@ -325,13 +321,11 @@ async function loadSettings(){
     if(!state.settings.urunKategoriler)state.settings.urunKategoriler=[];
   } catch(e){}
   if(!state.settings.parametreler)state.settings.parametreler=[];
-  if(!state.settings.paramAdlar)state.settings.paramAdlar={};
-  // Mevcut objeler varsa (önceki push'tan) kisaltma string'ine dönüştür, adı paramAdlar'a taşı
+  // Eski objeler veya paramAdlar'lı yapıdan encode formatına geç
   state.settings.parametreler=state.settings.parametreler.map(function(p){
-    if(typeof p==='string')return p;
-    var k=(p.kisaltma||p.ad||'').toUpperCase();
-    if(p.ad&&k)state.settings.paramAdlar[k]=p.ad;
-    return k;
+    if(typeof p==='string'&&p.indexOf('||')!==-1)return p; // zaten encode
+    var parsed=parseParam(p);
+    return parsed.kisaltma?encodeParam(parsed.ad,parsed.kisaltma):'';
   }).filter(Boolean);
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''});
   var spEl=document.getElementById('set-servis-prefix');if(spEl)spEl.value=state.settings.servisPrefix||'KN';

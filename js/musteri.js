@@ -210,6 +210,73 @@ function updateSettingsPreview(){
   if(tp&&td&&pt){var p2=tp.value.trim().toUpperCase()||'TKL';var d2=Math.min(9,Math.max(3,parseInt(td.value)||5));pt.textContent=p2+String(1).padStart(d2,'0');}
   if(sipp&&sipd&&prs){var p3=sipp.value.trim().toUpperCase()||'SIP';var d3=Math.min(9,Math.max(3,parseInt(sipd.value)||5));prs.textContent=p3+String(1).padStart(d3,'0');}
 }
+var _paramSatisEditIdx=null;
+function paramSatisFormAc(idx){
+  _paramSatisEditIdx=(idx!==undefined&&idx!==null)?idx:null;
+  var card=document.getElementById('param-satis-form-card');
+  var title=document.getElementById('param-satis-form-title');
+  var adEl=document.getElementById('param-satis-ad');
+  var kisEl=document.getElementById('param-satis-kisaltma');
+  var idxEl=document.getElementById('param-satis-edit-idx');
+  if(!card)return;
+  if(_paramSatisEditIdx!==null){
+    var k=state.settings.parametreler[_paramSatisEditIdx]||'';
+    if(title)title.textContent='Parametreyi Düzenle';
+    if(adEl)adEl.value=(state.settings.paramAdlar||{})[k]||'';
+    if(kisEl){kisEl.value=k;kisEl.disabled=true;}
+  } else {
+    if(title)title.textContent='Yeni Parametre';
+    if(adEl)adEl.value='';
+    if(kisEl){kisEl.value='';kisEl.disabled=false;}
+  }
+  if(idxEl)idxEl.value=_paramSatisEditIdx!==null?String(_paramSatisEditIdx):'';
+  card.style.display='';
+  if(adEl)adEl.focus();
+}
+function paramSatisFormKapat(){
+  var card=document.getElementById('param-satis-form-card');
+  if(card)card.style.display='none';
+  _paramSatisEditIdx=null;
+}
+async function saveParam(){
+  var adEl=document.getElementById('param-satis-ad');
+  var kisEl=document.getElementById('param-satis-kisaltma');
+  var idxEl=document.getElementById('param-satis-edit-idx');
+  var ad=(adEl?adEl.value||'':'').trim();
+  var kisaltma=(kisEl?kisEl.value||'':'').trim().toUpperCase();
+  var idxStr=idxEl?idxEl.value:'';
+  var editIdx=idxStr!==''?parseInt(idxStr):null;
+  if(!kisaltma)return toast('Kısaltma zorunludur.','error');
+  if(!state.settings.parametreler)state.settings.parametreler=[];
+  if(!state.settings.paramAdlar)state.settings.paramAdlar={};
+  var list=state.settings.parametreler;
+  if(editIdx===null&&list.indexOf(kisaltma)>=0)return toast('Bu kısaltma zaten kullanılıyor.','error');
+  if(ad&&Object.keys(state.settings.paramAdlar).some(function(k){return k!==(editIdx!==null?list[editIdx]:'')&&state.settings.paramAdlar[k]===ad;}))return toast('Bu parametre adı zaten mevcut.','error');
+  var prevList=list.slice();
+  var prevAdlar=Object.assign({},state.settings.paramAdlar);
+  if(editIdx!==null){
+    if(ad)state.settings.paramAdlar[list[editIdx]]=ad;
+    else delete state.settings.paramAdlar[list[editIdx]];
+    var updatedAdlar=Object.assign({},state.settings.paramAdlar);
+    state.settings.parametreler=list.slice().sort(function(a,b){return (updatedAdlar[a]||a).localeCompare(updatedAdlar[b]||b,'tr');});
+  } else {
+    var yeniAdlar=Object.assign({},state.settings.paramAdlar);if(ad)yeniAdlar[kisaltma]=ad;
+    state.settings.parametreler=prevList.concat(kisaltma).sort(function(a,b){return (yeniAdlar[a]||a).localeCompare(yeniAdlar[b]||b,'tr');});
+    if(ad)state.settings.paramAdlar[kisaltma]=ad;
+  }
+  try{
+    await apiPut(currentPortal+'/ayarlar',state.settings);
+  }catch(e){
+    state.settings.parametreler=prevList;
+    state.settings.paramAdlar=prevAdlar;
+    return toast(e.message||'Kaydedilemedi.','error');
+  }
+  saveAll();
+  paramSatisFormKapat();
+  renderParametreler();
+  toast(editIdx!==null?'Parametre güncellendi.':'Parametre eklendi.','success');
+}
+function addParametre(){paramSatisFormAc();}
 function renderParametreler(){
   var params=state.settings.parametreler||[];
   var adlar=state.settings.paramAdlar||{};
@@ -224,41 +291,12 @@ function renderParametreler(){
       +'<td style="font-weight:500">'+esc(ad)+'</td>'
       +'<td style="font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent)">'+esc(kisaltma)+'</td>'
       +'<td><div class="action-row">'
+        +(canWrite?'<button class="btn-icon" title="Düzenle" onclick="paramSatisFormAc('+i+')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>':'')
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteParametre('+i+')"><i class="ti ti-trash"></i></button>':'')
       +'</div></td>'
       +'</tr>';
   });
   el.innerHTML=html+'</tbody></table></div>';
-}
-async function addParametre(){
-  var adInp=document.getElementById('yeni-parametre-ad');
-  var kisInp=document.getElementById('yeni-parametre-kisaltma');
-  var ad=(adInp?adInp.value||'':'').trim();
-  var kisaltma=(kisInp?kisInp.value||'':'').trim().toUpperCase();
-  if(!kisaltma)return toast('Kısaltma zorunludur.','error');
-  if(!state.settings.parametreler)state.settings.parametreler=[];
-  if(!state.settings.paramAdlar)state.settings.paramAdlar={};
-  var list=state.settings.parametreler;
-  if(list.indexOf(kisaltma)>=0)return toast('Bu kısaltma zaten kullanılıyor.','error');
-  if(ad&&Object.keys(state.settings.paramAdlar).some(function(k){return state.settings.paramAdlar[k]===ad;}))return toast('Bu parametre adı zaten mevcut.','error');
-  var prevList=list.slice();
-  var prevAdlar=Object.assign({},state.settings.paramAdlar);
-  var yeniAdlar=Object.assign({},state.settings.paramAdlar);if(ad)yeniAdlar[kisaltma]=ad;
-  var yeniList=prevList.concat(kisaltma).sort(function(a,b){return (yeniAdlar[a]||a).localeCompare(yeniAdlar[b]||b,'tr');});
-  state.settings.parametreler=yeniList;
-  if(ad)state.settings.paramAdlar[kisaltma]=ad;
-  try{
-    await apiPut(currentPortal+'/ayarlar',state.settings);
-  }catch(e){
-    state.settings.parametreler=prevList;
-    state.settings.paramAdlar=prevAdlar;
-    return toast(e.message||'Parametre eklenemedi.','error');
-  }
-  saveAll();
-  if(adInp)adInp.value='';
-  if(kisInp)kisInp.value='';
-  renderParametreler();
-  toast('Parametre eklendi.','success');
 }
 async function deleteParametre(i){
   var kisaltma=state.settings.parametreler[i];

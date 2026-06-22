@@ -917,16 +917,27 @@
                 <div class="settings-panel-sub">Teklif formunda seçilebilecek test parametreler ini buradan yönetin</div>
               </div>
             </div>
-            <div class="settings-section">
-              <div id="parametre-list" style="margin-bottom:16px"></div>
-              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px">
-                <div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Yeni Parametre Ekle</div>
-                <div style="display:flex;gap:8px;align-items:flex-end">
-                  <div class="field" style="margin:0;flex:2"><label style="font-size:10px">Parametre Adı</label><input type="text" id="yeni-parametre-ad" placeholder="ör. Glikoz, Kreatinin..."></div>
-                  <div class="field" style="margin:0;flex:1"><label style="font-size:10px">Kısaltma <span class="req">*</span></label><input type="text" id="yeni-parametre-kisaltma" placeholder="ör. GLU" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
-                  <button class="btn btn-primary" onclick="addParametre()" style="flex-shrink:0;margin-bottom:1px">Ekle</button>
+            <!-- Form Kartı -->
+            <div id="param-satis-form-card" class="card" style="display:none;margin-bottom:16px">
+              <div class="card-header"><span class="card-title" id="param-satis-form-title">Yeni Parametre</span></div>
+              <div class="card-body">
+                <input type="hidden" id="param-satis-edit-idx" value="">
+                <div class="form-grid">
+                  <div class="field"><label>Parametre Adı</label><input type="text" id="param-satis-ad" placeholder="ör. Glikoz, Kreatinin..."></div>
+                  <div class="field"><label>Kısaltma <span class="req">*</span></label><input type="text" id="param-satis-kisaltma" placeholder="ör. GLU" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:14px">
+                  <button class="btn btn-primary btn-sm" onclick="saveParam()">Kaydet</button>
+                  <button class="btn btn-ghost btn-sm" onclick="paramSatisFormKapat()">İptal</button>
                 </div>
               </div>
+            </div>
+            <!-- Liste -->
+            <div class="settings-section">
+              <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+                <button class="btn btn-primary btn-sm" onclick="paramSatisFormAc()">+ Yeni Parametre</button>
+              </div>
+              <div id="parametre-list"></div>
             </div>
           </div>
 

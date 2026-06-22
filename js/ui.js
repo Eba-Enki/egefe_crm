@@ -1,4 +1,4 @@
-// ════ GENEL TOPLU SEÇİM (arşiv listeleri) ════
+﻿// ════ GENEL TOPLU SEÇİM (arşiv listeleri) ════
 var _bulkSel={};
 var _bulkVisible={};
 function _bulkSet(key){if(!_bulkSel[key])_bulkSel[key]=new Set();return _bulkSel[key];}
@@ -457,7 +457,8 @@ function comboFilter(inputId,dropId,srcFn){
     html+='<div class="combo-item" style="color:var(--accent);border-top:1px solid var(--border);margin-top:2px;font-size:12px;font-weight:500" onmousedown="event.preventDefault();comboAddMusteri(\''+inputId+'\')">+ Yeni Müşteri Ekle</div>';
   }
   drop.innerHTML=html;
-  drop.classList.add('open');
+  drop.innerHTML=html;
+  if(_cbHL&&_cbHL.id===dropId)_cbHL.idx=-1;
 }
 
 function comboPickItem(inputId,dropId,idx){
@@ -514,7 +515,28 @@ function selectServisForTeklif(id){
   var foundM=state.musteriler.find(function(x){return x.kurum===(s.kurumAdi||'');});
   if(foundM)lockMusteriField('tf-kurum',foundM.id);
 }
-function comboClose(id){const el=document.getElementById(id);if(el)el.classList.remove('open');}
+function comboClose(id){const el=document.getElementById(id);if(el)el.classList.remove('open');if(_cbHL&&_cbHL.id===id){_cbHL.id=null;_cbHL.idx=-1;}}
+
+// Combo keyboard navigation state
+var _cbHL={id:null,idx:-1};
+function comboKeydown(event,inputId,dropId,srcFn){
+  var drop=document.getElementById(dropId);
+  var isOpen=drop&&drop.classList.contains('open');
+  if(event.key==='ArrowDown'){event.preventDefault();if(!isOpen){comboFilter(inputId,dropId,srcFn||getMusteriAds);}else _comboHL(dropId,1);}
+  else if(event.key==='ArrowUp'){event.preventDefault();_comboHL(dropId,-1);}
+  else if(event.key==='Enter'&&isOpen&&_cbHL.idx>=0){event.preventDefault();comboPickItem(inputId,dropId,_cbHL.idx);_cbHL.id=null;_cbHL.idx=-1;}
+  else if(event.key==='Escape'){comboClose(dropId);}
+}
+function _comboHL(dropId,dir){
+  var drop=document.getElementById(dropId);if(!drop||!drop.classList.contains('open'))return;
+  var items=drop.querySelectorAll('.combo-item');if(!items.length)return;
+  if(_cbHL.id!==dropId){_cbHL.id=dropId;_cbHL.idx=-1;}
+  var max=(drop._comboItems?drop._comboItems.length:items.length)-1;
+  items.forEach(i=>i.classList.remove('highlighted'));
+  _cbHL.idx=Math.max(0,Math.min(max,_cbHL.idx+dir));
+  items[_cbHL.idx].classList.add('highlighted');
+  items[_cbHL.idx].scrollIntoView({block:'nearest'});
+}
 
 // Teklif item row combo — keyboard + click + price autofill
 let tiComboIndex=-1;

@@ -1853,6 +1853,9 @@ async function saveStokParam(){
   var idxStr=((document.getElementById('param-edit-idx')||{}).value||'');
   if(!kisaltma) return toast('Kısaltma zorunludur.','error');
   var editIdx=idxStr!==''?parseInt(idxStr):null;
+  var digerler=stokParamList().filter(function(_,j){return j!==editIdx;});
+  if(digerler.some(function(p){return (p.kisaltma||p.ad||'').toUpperCase()===kisaltma;}))return toast('Bu kısaltma zaten kullanılıyor.','error');
+  if(ad&&digerler.some(function(p){return p.ad===ad;}))return toast('Bu parametre adı zaten mevcut.','error');
   try{
     if(editIdx!==null&&editIdx>=0&&editIdx<stokParamList().length){
       var existing=stokParamList()[editIdx];
@@ -1864,6 +1867,7 @@ async function saveStokParam(){
       state.stokSettings.parametreler.push(res2.parametre);
       toast('Parametre eklendi.','success');
     }
+    state.stokSettings.parametreler.sort(function(a,b){return (a.ad||a.kisaltma||'').localeCompare(b.ad||b.kisaltma||'','tr');});
   }catch(e){
     toast(e.message||'Kaydedilemedi.','error');
     return;

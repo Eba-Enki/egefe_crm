@@ -919,9 +919,13 @@
             </div>
             <div class="settings-section">
               <div id="parametre-list" style="margin-bottom:16px"></div>
-              <div style="display:flex;gap:8px">
-                <input type="text" id="yeni-parametre-input" placeholder="Parametre adı (ör: Glikoz, Kreatinin...)" style="flex:1">
-                <button class="btn btn-primary" onclick="addParametre()">Ekle</button>
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px">
+                <div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Yeni Parametre Ekle</div>
+                <div style="display:flex;gap:8px;align-items:flex-end">
+                  <div class="field" style="margin:0;flex:2"><label style="font-size:10px">Parametre Adı</label><input type="text" id="yeni-parametre-ad" placeholder="ör. Glikoz, Kreatinin..."></div>
+                  <div class="field" style="margin:0;flex:1"><label style="font-size:10px">Kısaltma <span class="req">*</span></label><input type="text" id="yeni-parametre-kisaltma" placeholder="ör. GLU" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+                  <button class="btn btn-primary" onclick="addParametre()" style="flex-shrink:0;margin-bottom:1px">Ekle</button>
+                </div>
               </div>
             </div>
           </div>

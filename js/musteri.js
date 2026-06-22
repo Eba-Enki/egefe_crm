@@ -214,15 +214,36 @@ function renderParametreler(){
   const list=state.settings.parametreler||[];
   const el=document.getElementById('parametre-list');if(!el)return;
   if(!list.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">Henüz parametre eklenmedi.</div>';return;}
-  el.innerHTML=list.map((p,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px"><span style="font-size:13px;color:var(--text)">${p}</span><button class="btn-icon" style="color:var(--red);flex-shrink:0" onclick="deleteParametre(${i})"><i class="ti ti-trash"></i></button></div>`).join('');
+  var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
+  var html='<div class="table-wrap"><table class="compact-table"><thead><tr><th style="width:40px">#</th><th>Parametre Adı</th><th>Kısaltma</th><th></th></tr></thead><tbody>';
+  list.forEach(function(p,i){
+    var ad=typeof p==='string'?'':( p.ad||'');
+    var kisaltma=typeof p==='string'?p:(p.kisaltma||p.ad||'');
+    html+='<tr>'
+      +'<td style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">'+(i+1)+'</td>'
+      +'<td style="font-weight:500">'+esc(ad)+'</td>'
+      +'<td style="font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent)">'+esc(kisaltma)+'</td>'
+      +'<td><div class="action-row">'
+        +(canWrite?'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteParametre('+i+')"><i class="ti ti-trash"></i></button>':'')
+      +'</div></td>'
+      +'</tr>';
+  });
+  el.innerHTML=html+'</tbody></table></div>';
 }
 async function addParametre(){
-  const inp=document.getElementById('yeni-parametre-input');const val=(inp.value||'').trim();
-  if(!val)return toast('Parametre adı girin.','error');
+  const adInp=document.getElementById('yeni-parametre-ad');
+  const kisInp=document.getElementById('yeni-parametre-kisaltma');
+  const ad=(adInp?adInp.value||'':'').trim();
+  const kisaltma=(kisInp?kisInp.value||'':'').trim().toUpperCase();
+  if(!kisaltma)return toast('Kısaltma zorunludur.','error');
   if(!state.settings.parametreler)state.settings.parametreler=[];
-  if(state.settings.parametreler.includes(val))return toast('Bu parametre zaten mevcut.','error');
-  var prev=state.settings.parametreler;
-  state.settings.parametreler=prev.concat(val);
+  const list=state.settings.parametreler;
+  if(list.some(function(p){return (typeof p==='string'?p:(p.kisaltma||'')).toUpperCase()===kisaltma;}))return toast('Bu kısaltma zaten kullanılıyor.','error');
+  if(ad&&list.some(function(p){return typeof p!=='string'&&p.ad&&p.ad===ad;}))return toast('Bu parametre adı zaten mevcut.','error');
+  var prev=list.slice();
+  var yeni=prev.concat({ad:ad,kisaltma:kisaltma});
+  yeni.sort(function(a,b){var ka=typeof a==='string'?a:(a.kisaltma||'');var kb=typeof b==='string'?b:(b.kisaltma||'');return ka.localeCompare(kb,'tr');});
+  state.settings.parametreler=yeni;
   try{
     await apiPut(currentPortal+'/ayarlar',state.settings);
   }catch(e){
@@ -230,7 +251,9 @@ async function addParametre(){
     return toast(e.message||'Parametre eklenemedi.','error');
   }
   saveAll();
-  inp.value='';renderParametreler();
+  if(adInp)adInp.value='';
+  if(kisInp)kisInp.value='';
+  renderParametreler();
   toast('Parametre eklendi.','success');
 }
 async function deleteParametre(i){
@@ -251,6 +274,7 @@ async function loadSettings(){
     var res=await apiGet(currentPortal+'/ayarlar');
     state.settings=Object.assign({},state.settings,res.ayarlar||{});
     if(!state.settings.parametreler)state.settings.parametreler=[];
+    state.settings.parametreler=state.settings.parametreler.map(function(p){return typeof p==='string'?{ad:'',kisaltma:p}:p;});
     if(!state.settings.urunKategoriler)state.settings.urunKategoriler=[];
   } catch(e){}
   ['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo'].forEach(k=>{const id='set-'+(k==='vergiDairesi'?'vergi-dairesi':k==='vergiNo'?'vergi-no':k);const el=document.getElementById(id);if(el)el.value=state.settings[k]||''});

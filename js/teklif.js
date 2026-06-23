@@ -548,7 +548,11 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
     },
     margin: {left: mm(15.446), right: mm(210 - 179.184 - 15.446)},
     didParseCell: (data) => {
-      if (data.section === 'head' && data.column.index === 1) data.cell.styles.halign = 'left';
+      if (data.section === 'head') {
+        if (data.column.index === 1) data.cell.styles.halign = 'left';
+        if (data.column.index === 4) data.cell.styles.halign = 'right';
+        if (data.column.index === 5) data.cell.styles.halign = 'right';
+      }
       if (data.section === 'body' && data.column.index === 1) {
         const extra = data.row.raw._extraPad || 0;
         if (extra > 0) {

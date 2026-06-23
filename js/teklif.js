@@ -700,6 +700,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   doc.line(mm(15.446), mm(279.929), mm(194.556), mm(279.929));
 
   doc.setFontSize(7);
+  doc.setFont('Arial', 'normal');
   doc.setTextColor(...C.textLight);
 
   const emailText = st.email || 'info@ege-fe.com';

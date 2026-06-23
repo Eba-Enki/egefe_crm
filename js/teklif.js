@@ -706,11 +706,10 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   const telText = st.tel || '0 (312) 482 5451';
   const faxText = st.fax || '0 (312) 480 5453';
 
-  doc.text('e-posta: ' + emailText, mm(59.953), mm(284.604)+5);
-  doc.text('|', mm(94.113), mm(284.604)+5);
-  doc.text('Tel: ' + telText, mm(97.662), mm(284.604)+5);
-  doc.text('|', mm(122.241), mm(284.604)+5);
-  doc.text('Fax: ' + faxText, mm(125.637), mm(284.604)+5);
+  const footerParts = ['e-posta: ' + emailText];
+  if (telText) footerParts.push('Tel: ' + telText);
+  if (faxText) footerParts.push('Fax: ' + faxText);
+  doc.text(footerParts.join('   |   '), mm(105), mm(284.604)+5, {align: 'center'});
 
   doc.save(`Teklif_${t.teklifNo || 'X'}.pdf`);
 }

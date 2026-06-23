@@ -188,12 +188,12 @@ function renderSiparisler(){
     var cur=currency[s.paraBirimi||'TRY']||'₺';
     return '<tr style="cursor:pointer" onclick="openSiparisDetay(\''+s.id+'\')">'
       +(canBulk?'<td onclick="event.stopPropagation()"><input type="checkbox" '+(bulkIsChecked('siparisArsiv',s.id)?'checked':'')+' onchange="bulkToggleRow(\'siparisArsiv\',\''+s.id+'\',\'renderSiparisler\')"></td>':'')
-      +'<td><span class="kn-badge" style="border:none;background:transparent;padding:0">'+esc(s.siparisNo)+'</span></td>'
-      +'<td class="td-mono" style="color:var(--text2)">'+fmtDate(s.siparisTarihi||s.teklifTarihi||s.olusturmaTarihi)+'</td>'
+      +'<td style="text-align:center"><span class="kn-badge" style="border:none;background:transparent;padding:0">'+esc(s.siparisNo)+'</span></td>'
+      +'<td class="td-mono" style="color:var(--text2);text-align:center">'+fmtDate(s.siparisTarihi||s.teklifTarihi||s.olusturmaTarihi)+'</td>'
       +'<td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">'+esc(s.kurum||'—')+'</td>'
-      +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+esc(cur)+' '+fmtNum(toplam)+'</td>'
-      +'<td><span class="badge '+(SP_DURUM_CSS[s.durum]||'badge-sf')+'">'+esc(s.durum)+'</span></td>'
-      +'<td style="font-size:12px;color:var(--text3)">'+esc(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
+      +'<td style="font-family:DM Mono,monospace;color:var(--amber);text-align:right">'+esc(cur)+' '+fmtNum(toplam)+'</td>'
+      +'<td style="text-align:center"><span class="badge '+(SP_DURUM_CSS[s.durum]||'badge-sf')+'">'+esc(s.durum)+'</span></td>'
+      +'<td style="font-size:12px;color:var(--text3);text-align:center">'+esc(s.satisTemsilcisi||s.sorumlu||'—')+'</td>'
       +'<td style="text-align:right"><div class="action-row" onclick="event.stopPropagation()">'
       +(canEdit&&['Hazırlanıyor','Kısmi Teslimat'].indexOf(s.durum)>=0
         ?'<button class="btn-icon" title="Teslimat Gir" style="color:var(--teal)" onclick="openKismiTeslim(\''+s.id+'\')"><i class="ti ti-truck-delivery"></i></button>'
@@ -416,13 +416,13 @@ function renderFaturalar(){
     var cur=currency[f.paraBirimi||'TRY']||'₺';
     return '<tr>'
       +(canBulk?'<td><input type="checkbox" '+(bulkIsChecked('faturaArsiv',f.id)?'checked':'')+' onchange="bulkToggleRow(\'faturaArsiv\',\''+f.id+'\',\'renderFaturalar\')"></td>':'')
-      +'<td><span class="kn-badge" style="border:none;background:transparent;padding:0">'+esc(f.faturaNo)+'</span></td>'
-      +'<td><span class="kn-badge" style="color:var(--teal)">'+esc(f.siparisNo)+'</span></td>'
+      +'<td style="text-align:center"><span class="kn-badge" style="border:none;background:transparent;padding:0">'+esc(f.faturaNo)+'</span></td>'
+      +'<td style="text-align:center"><span class="kn-badge" style="color:var(--teal)">'+esc(f.siparisNo)+'</span></td>'
       +'<td style="font-weight:500">'+esc(f.kurum||'—')+'</td>'
-      +'<td style="font-family:DM Mono,monospace;color:var(--amber)">'+cur+' '+fmtNum(f.tutar)+'</td>'
-      +'<td class="td-mono">'+esc(f.faturaTarihi||'—')+'</td>'
-      +'<td class="td-mono">'+esc(f.vadeTarihi||'—')+vadeWarn+'</td>'
-      +'<td><span class="badge '+(f.durum==='Ödendi'?'badge-onaylandi':'badge-reddedildi')+'">'+f.durum+'</span></td>'
+      +'<td style="font-family:DM Mono,monospace;color:var(--amber);text-align:right">'+cur+' '+fmtNum(f.tutar)+'</td>'
+      +'<td class="td-mono" style="text-align:center">'+esc(f.faturaTarihi||'—')+'</td>'
+      +'<td class="td-mono" style="text-align:center">'+esc(f.vadeTarihi||'—')+vadeWarn+'</td>'
+      +'<td style="text-align:center"><span class="badge '+(f.durum==='Ödendi'?'badge-onaylandi':'badge-reddedildi')+'">'+f.durum+'</span></td>'
       +'<td style="text-align:right"><div class="action-row">'
       +(canEdit?'<button class="btn-icon" title="Düzenle" onclick="openFaturaDuzenle(\''+f.id+'\')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>':'')
       +(canEdit&&f.durum!=='Ödendi'?'<button class="btn-icon" style="color:var(--green)" onclick="markFaturaOdendi(\''+f.id+'\')" title="Ödendi İşaretle"><i class="ti ti-check"></i></button>':'')

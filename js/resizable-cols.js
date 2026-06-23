@@ -22,29 +22,35 @@
     return null;
   }
 
-  // Tabloya fixed layout ver; sürüklemeden önce mevcut
-  // otomatik genişlikleri kilitler, sonraki render'lar etkilenmez.
   function lockLayout(table) {
     if (table.dataset.layoutLocked) return;
+    var totalW = 0;
     table.querySelectorAll('thead th').forEach(function (th) {
       if (th.querySelector('input[type=checkbox]')) return;
-      th.style.width = th.offsetWidth + 'px';
+      var w = th.offsetWidth;
+      th.style.width = w + 'px';
+      totalW += w;
     });
     table.style.tableLayout = 'fixed';
+    table.style.minWidth = totalW + 'px';
     table.dataset.layoutLocked = '1';
   }
 
   function applyStored(table, tableKey) {
     var stored = loadAll()[tableKey];
     if (!stored) return;
+    var totalW = 0;
     table.querySelectorAll('thead th').forEach(function (th, i) {
       if (th.querySelector('input[type=checkbox]')) return;
       if (stored[i]) {
-        th.style.width = stored[i] + 'px';
-        th.style.minWidth = stored[i] + 'px';
+        var w = Number(stored[i]);
+        th.style.width = w + 'px';
+        th.style.minWidth = w + 'px';
+        totalW += w;
       }
     });
     table.style.tableLayout = 'fixed';
+    if (totalW > 0) table.style.minWidth = totalW + 'px';
     table.dataset.layoutLocked = '1';
   }
 

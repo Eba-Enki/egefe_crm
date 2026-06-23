@@ -300,13 +300,13 @@
           <table>
             <thead><tr>
               <th id="th-servis-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('servisArsiv',this.checked,'renderTable')"></th>
-              <th class="sortable" onclick="sortTable('kayitNo')">Kayıt No<span class="sort-ind" id="sort-kayitNo"></span></th>
-              <th class="sortable" onclick="sortTable('gelisTarihi')">Giriş<span class="sort-ind" id="sort-gelisTarihi"></span></th>
+              <th class="sortable" style="text-align:center" onclick="sortTable('kayitNo')">Kayıt No<span class="sort-ind" id="sort-kayitNo"></span></th>
+              <th class="sortable" style="text-align:center" onclick="sortTable('gelisTarihi')">Giriş<span class="sort-ind" id="sort-gelisTarihi"></span></th>
               <th class="sortable" onclick="sortTable('kurumAdi')">Kurum / Müşteri<span class="sort-ind" id="sort-kurumAdi"></span></th>
-              <th>Seri No</th>
-              <th>Durum</th>
-              <th>Garanti</th>
-              <th>İlgili Kişi</th>
+              <th style="text-align:center">Seri No</th>
+              <th style="text-align:center">Durum</th>
+              <th style="text-align:center">Garanti</th>
+              <th style="text-align:center">İlgili Kişi</th>
               <th style="text-align:right">İşlemler</th>
             </tr></thead>
             <tbody id="table-body"></tbody>
@@ -408,7 +408,7 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th id="th-teklif-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('teklifArsiv',this.checked,'renderTeklifler')"></th><th>Teklif No</th><th>Tarih</th><th>Kurum</th><th>Tutar</th><th>Durum</th><th id="th-sorumlu" style="display:none">Temsilci</th><th style="text-align:right;width:120px">İşlemler</th></tr></thead>
+            <thead><tr><th id="th-teklif-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('teklifArsiv',this.checked,'renderTeklifler')"></th><th style="text-align:center">Teklif No</th><th style="text-align:center">Tarih</th><th>Kurum</th><th style="text-align:right">Tutar</th><th style="text-align:center">Durum</th><th id="th-sorumlu" style="display:none;text-align:center">Temsilci</th><th style="text-align:right;width:120px">İşlemler</th></tr></thead>
             <tbody id="teklif-table-body"></tbody>
           </table>
           <div id="teklif-empty" class="empty-state" style="display:none"><div class="icon"><i class="ti ti-archive"></i></div><h3 style="color:var(--text2)">Henüz teklif yok</h3></div>
@@ -512,7 +512,7 @@
           <div style="display:flex;align-items:center;gap:12px"><span class="card-title">Müşteriler</span><span id="musteri-bulk-count" style="font-size:12px;color:var(--text2)"></span></div>
           <div id="musteri-bulk-bar"></div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th id="th-musteri-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('musteriList',this.checked,'renderMusteriler')"></th><th class="sortable" onclick="sortMusteri('kayitNo')">Kayıt No<span class="sort-ind" id="msort-kayitNo"></span></th><th class="sortable" onclick="sortMusteri('kurum')">Kurum<span class="sort-ind" id="msort-kurum"></span></th><th class="sortable" onclick="sortMusteri('kisi')">İlgili Kişi<span class="sort-ind" id="msort-kisi"></span></th><th>Telefon</th><th>E-posta</th><th class="sortable" onclick="sortMusteri('sehir')">Şehir<span class="sort-ind" id="msort-sehir"></span></th><th style="text-align:right;width:80px">İşlemler</th></tr></thead><tbody id="musteri-table-body"></tbody></table><div id="musteri-empty" class="empty-state" style="display:none"><div class="icon">⊙</div><h3 style="color:var(--text2)">Müşteri yok</h3></div></div><div id="musteri-pagination"></div>
+        <div class="table-wrap"><table><thead><tr><th id="th-musteri-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('musteriList',this.checked,'renderMusteriler')"></th><th class="sortable" style="text-align:center" onclick="sortMusteri('kayitNo')">Kayıt No<span class="sort-ind" id="msort-kayitNo"></span></th><th class="sortable" onclick="sortMusteri('kurum')">Kurum<span class="sort-ind" id="msort-kurum"></span></th><th class="sortable" style="text-align:center" onclick="sortMusteri('kisi')">İlgili Kişi<span class="sort-ind" id="msort-kisi"></span></th><th style="text-align:center">Telefon</th><th style="text-align:center">E-posta</th><th class="sortable" style="text-align:center" onclick="sortMusteri('sehir')">Şehir<span class="sort-ind" id="msort-sehir"></span></th><th style="text-align:right;width:80px">İşlemler</th></tr></thead><tbody id="musteri-table-body"></tbody></table><div id="musteri-empty" class="empty-state" style="display:none"><div class="icon">⊙</div><h3 style="color:var(--text2)">Müşteri yok</h3></div></div><div id="musteri-pagination"></div>
       </div>
     </div>
 
@@ -546,7 +546,7 @@
     <div id="page-urunler" class="page">
       <div class="filter-bar"><div class="filter-row"><input type="text" id="fu-ara" placeholder="Ara..." oninput="renderUrunler()" style="width:220px"><label class="btn btn-ghost btn-sm can-write" style="cursor:pointer"><i class="ti ti-plus"></i> Excel'den Ekle<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importUrunlerExcel(event)"></label><button class="btn btn-ghost btn-sm can-write" onclick="downloadUrunSablon()" style="font-size:11px;color:var(--text3)"><i class="ti ti-cloud-download"></i> Şablonu İndir</button><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="urun-count"></span></div></div>
       <div class="card"><div class="table-wrap"><table>
-        <thead><tr><th>Ürün Kodu</th><th>Ürün / İşlem Adı</th><th>Marka</th><th class="tf-satis-field" style="display:none">Kategori</th><th><span class="servis-only">Model</span><span class="satis-only">Parametre Sayısı</span></th><th>Liste Fiyatı</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead>
+        <thead><tr><th style="text-align:center">Ürün Kodu</th><th>Ürün / İşlem Adı</th><th style="text-align:center">Marka</th><th class="tf-satis-field" style="display:none;text-align:center">Kategori</th><th style="text-align:center"><span class="servis-only">Model</span><span class="satis-only">Parametre Sayısı</span></th><th style="text-align:right">Liste Fiyatı</th><th style="text-align:right;width:80px">İşlemler</th></tr></thead>
         <tbody id="urun-table-body"></tbody>
       </table>
       <div id="urun-empty" class="empty-state">
@@ -636,7 +636,7 @@
         <div class="table-wrap"><table>
           <thead><tr>
             <th id="th-siparis-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('siparisArsiv',this.checked,'renderSiparisler')"></th>
-            <th>Sipariş No</th><th>Tarih</th><th>Kurum</th><th>Tutar</th><th>Durum</th><th>Satış Temsilcisi</th><th style="text-align:right;width:100px">İşlemler</th>
+            <th style="text-align:center">Sipariş No</th><th style="text-align:center">Tarih</th><th>Kurum</th><th style="text-align:right">Tutar</th><th style="text-align:center">Durum</th><th style="text-align:center">Satış Temsilcisi</th><th style="text-align:right;width:100px">İşlemler</th>
           </tr></thead>
           <tbody id="siparis-table-body"></tbody>
         </table>
@@ -677,7 +677,7 @@
         <div class="table-wrap"><table>
           <thead><tr>
             <th id="th-fatura-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('faturaArsiv',this.checked,'renderFaturalar')"></th>
-            <th>Fatura No</th><th>Sipariş No</th><th>Müşteri</th><th>Tutar</th><th>Fatura Tarihi</th><th>Vade</th><th>Durum</th><th style="text-align:right;width:80px">İşlemler</th>
+            <th style="text-align:center">Fatura No</th><th style="text-align:center">Sipariş No</th><th>Müşteri</th><th style="text-align:right">Tutar</th><th style="text-align:center">Fatura Tarihi</th><th style="text-align:center">Vade</th><th style="text-align:center">Durum</th><th style="text-align:right;width:80px">İşlemler</th>
           </tr></thead>
           <tbody id="fatura-table-body"></tbody>
         </table>

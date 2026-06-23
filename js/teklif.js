@@ -191,12 +191,12 @@ function renderTeklifler(){
   renderPagination('teklif-pagination',tekliflerPage,filtTl2.length,'setTekliflerPage');
   tbody.innerHTML=pagedTl.map(t=>`<tr style="cursor:pointer" onclick="openTeklifDetay('${t.id}')">
     ${canBulk?`<td onclick="event.stopPropagation()"><input type="checkbox" ${bulkIsChecked('teklifArsiv',t.id)?'checked':''} onchange="bulkToggleRow('teklifArsiv','${t.id}','renderTeklifler')"></td>`:''}
-    <td><span class="kn-badge" style="border:none;background:transparent;padding:0">${esc(t.teklifNo)}</span></td>
-    <td class="td-mono" style="color:var(--text2)">${fmtDate(t.teklifTarihi)}</td>
+    <td style="text-align:center"><span class="kn-badge" style="border:none;background:transparent;padding:0">${esc(t.teklifNo)}</span></td>
+    <td class="td-mono" style="color:var(--text2);text-align:center">${fmtDate(t.teklifTarihi)}</td>
     <td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(t.kurum||'—')}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--amber);font-size:12px">${fmtTL(calcTeklifToplam(t))}</td>
-    <td><span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>${getRedBilgi(t)?'<span title="'+esc(getRedBilgi(t).neden)+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
-    ${showTemsilci?`<td style="font-size:12px;color:var(--text3)">${esc(t.sorumlu||'—')}</td>`:''}
+    <td style="font-family:'DM Mono',monospace;color:var(--amber);font-size:12px;text-align:right">${fmtTL(calcTeklifToplam(t))}</td>
+    <td style="text-align:center"><span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>${getRedBilgi(t)?'<span title="'+esc(getRedBilgi(t).neden)+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
+    ${showTemsilci?`<td style="font-size:12px;color:var(--text3);text-align:center">${esc(t.sorumlu||'—')}</td>`:''}
     <td style="text-align:right"><div class="action-row" onclick="event.stopPropagation()">
       ${canEdit&&currentPortal==='satis'&&t.durum==='Taslak'?`<button class="btn-icon" title="Müşteriye İlet" style="color:var(--teal)" onclick="teklifGonder('${t.id}')"><i class="ti ti-send"></i></button>`:''}
       ${canEdit&&(currentPortal!=='satis'||t.durum==='İletildi')?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)"><i class="ti ti-loader"></i></button>`:''}

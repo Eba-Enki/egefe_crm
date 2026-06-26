@@ -621,7 +621,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
   doc.setCharSpace(0);
   doc.setFont('Arial','normal');
 
-  const sectionY  = tableEndY + mm(7);
+  const sectionY  = tableEndY + mm(5);
   const leftX     = mm(15.446);
   const leftAreaW = mm(115);
 
@@ -646,39 +646,36 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
     curY += mm(3.5);
   }
 
-  // ── NOTES BOX ──
-  const notLabelW    = mm(10);
-  const notTextX     = leftX + mm(2.5) + notLabelW;
-  const notTextW     = leftAreaW - mm(2.5) - notLabelW - mm(2.5);
-  const pt8lh        = mm(4.5);
+  // ── NOTES ──
+  const notTextX = leftX;
+  const notTextW = leftAreaW;
+  const pt8lh    = mm(4.5);
 
   doc.setFontSize(8);
   doc.setFont('Arial', 'normal');
-  const notText    = t.notlar || 'Teklifimiz yukarıda belirtilen geçerlilik tarihi itibarıyla geçerliliğini yitirecektir.';
-  const rawLines   = notText.split('\n');
-  let allNotLines  = [];
-  rawLines.forEach(line => {
-    if (line.trim() === '') {
-      allNotLines.push('');
-    } else {
-      allNotLines = allNotLines.concat(doc.splitTextToSize(line, notTextW));
-    }
-  });
+
+  // KDV/fiyat notu önce, kullanıcı notu sonra
+  let allNotLines = [];
   if(currentPortal === 'satis'){
     const pbLabel = {TRY:'TL',USD:'USD',EUR:'EUR',GBP:'GBP'}[pb] || 'TL';
     const kdvNote = kdvOranPDF > 0
       ? `Fiyatlarımız ${pbLabel} cinsinden verilmiş olup KDV (%${kdvOranPDF}) dahildir.`
       : `Fiyatlarımız ${pbLabel} cinsinden verilmiş olup KDV dahil değildir.`;
-    allNotLines.push('');
     allNotLines = allNotLines.concat(doc.splitTextToSize(kdvNote, notTextW));
   }
+  const notText  = t.notlar || 'Teklifimiz yukarıda belirtilen geçerlilik tarihi itibarıyla geçerliliğini yitirecektir.';
+  const rawLines = notText.split('\n');
+  if(allNotLines.length > 0) allNotLines.push('');
+  rawLines.forEach(line => {
+    if(line.trim() === ''){
+      allNotLines.push('');
+    } else {
+      allNotLines = allNotLines.concat(doc.splitTextToSize(line, notTextW));
+    }
+  });
 
   const notBoxTopY        = curY;
   const firstLineBaseline = notBoxTopY + mm(3);
-
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.textLabel);
-  doc.text('Not:', leftX, firstLineBaseline);
 
   doc.setFont('Arial', 'normal');
   doc.setTextColor(...C.textMid);
@@ -686,41 +683,48 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
     doc.text(line, notTextX, firstLineBaseline + i * pt8lh);
   });
 
-  curY = notBoxTopY + mm(3) + allNotLines.length * pt8lh + mm(7);
+  curY = notBoxTopY + mm(3) + allNotLines.length * pt8lh + mm(4);
 
   // ── İMZA BLOĞU (yalnızca Satış Pazarlama Portalı) ──
   if(currentPortal === 'satis'){
-    const sigY = curY;
+    const sigBoxX = leftX;
+    const sigBoxW = mm(194.556) - leftX;
+    const sigBoxH = mm(22);
+    const sigBoxY = curY;
+    const sigPad  = mm(3.5);
+
+    // Box — önce çiz, üstüne metin/logo gelsin
     doc.setDrawColor(...C.border);
     doc.setLineWidth(0.4);
-    doc.line(leftX, sigY, leftX + leftAreaW, sigY);
+    doc.setFillColor(...C.white);
+    doc.roundedRect(sigBoxX, sigBoxY, sigBoxW, sigBoxH, 2, 2, 'FD');
 
     const u = state.currentUser || {};
     if(u.ad){
       doc.setFontSize(8);
       doc.setFont('Arial','bold');
       doc.setTextColor(...C.textMid);
-      doc.text(u.ad, leftX, sigY + mm(4.5));
+      doc.text(u.ad, sigBoxX + sigPad, sigBoxY + mm(6));
       doc.setFont('Arial','normal');
       doc.setTextColor(...C.textLight);
-      if(u.email)   doc.text(u.email,   leftX, sigY + mm(9.5));
-      if(u.telefon) doc.text(u.telefon, leftX, sigY + mm(14.5));
+      if(u.email)   doc.text(u.email,   sigBoxX + sigPad, sigBoxY + mm(11));
+      if(u.telefon) doc.text(u.telefon, sigBoxX + sigPad, sigBoxY + mm(16));
     }
 
     if(brandLogoPngDataUrl){
       const bLogoW = mm(26);
       const bLogoH = mm(26 * (212/674));
-      const bLogoX = mm(194.556) - bLogoW;
-      const bLogoY = sigY + mm(3);
+      const bLogoX = sigBoxX + sigBoxW - sigPad - bLogoW;
+      const bLogoY = sigBoxY + sigPad;
       try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
       const trademarkY = bLogoY + bLogoH + mm(2.5);
       doc.setFontSize(5.5);
       doc.setFont('Arial','normal');
       doc.setTextColor(...C.textLight);
-      doc.text('Cromtest®, Egefe A.Ş.\'nin tescilli markasıdır.', mm(194.556), trademarkY, {align:'right'});
+      doc.text('Cromtest®, Egefe A.Ş.\'nin tescilli markasıdır.', sigBoxX + sigBoxW - sigPad, trademarkY, {align:'right'});
     }
 
-    curY = sigY + mm(20);
+    curY = sigBoxY + sigBoxH + mm(2);
   }
 
   // ── TOTALS SECTION (Right side) ──

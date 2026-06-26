@@ -721,26 +721,8 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
       const bLogoW = mm(26);
       const bLogoH = mm(26 * (212/674));
       const bLogoX = sigBoxX + sigBoxW - sigPad - bLogoW;
-      const bLogoY = sigBoxY + sigPad;
+      const bLogoY = sigBoxY + (sigBoxH - bLogoH) / 2;
       try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
-      const trademarkY = bLogoY + bLogoH + mm(2.5);
-      doc.setFont('Arial','normal');
-      doc.setTextColor(...C.textLight);
-      // ® superscript: CROMTEST + ® (küçük, yüksek) + devamı
-      const trRightX = sigBoxX + sigBoxW - sigPad;
-      const tmSeg1 = 'CROMTEST';
-      const tmSeg2 = ' markası, Egefe Bilişim Sağlık Sanayi ve Ticaret A.Ş.\'nin tescilli markasıdır.';
-      doc.setFontSize(5.5);
-      const s1W  = doc.getTextWidth(tmSeg1);
-      const regW = doc.getTextWidth('®'); // ® at 5.5pt (rezerve alan)
-      const s2W  = doc.getTextWidth(tmSeg2);
-      const startX = trRightX - s1W - regW - s2W;
-      doc.text(tmSeg1, startX, trademarkY);
-      doc.setFontSize(3.5);
-      const regSmW = doc.getTextWidth('®');
-      doc.text('®', startX + s1W + (regW - regSmW) / 2, trademarkY - mm(0.8));
-      doc.setFontSize(5.5);
-      doc.text(tmSeg2, startX + s1W + regW, trademarkY);
     }
 
     curY = sigBoxY + sigBoxH + mm(2);
@@ -823,6 +805,30 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
   if (telText) footerParts.push('Tel: ' + telText);
   if (faxText) footerParts.push('Fax: ' + faxText);
   doc.text(footerParts.join('   |   '), mm(105), mm(284.604)+5, {align: 'center'});
+
+  // ── TRADEMARK FOOTNOTE (sadece Satış Pazarlama Portalı) ──
+  if(currentPortal === 'satis' && !imzaGizle){
+    const fnY = mm(291);
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.3);
+    doc.line(mm(15.446), fnY - mm(1.5), mm(194.556), fnY - mm(1.5));
+    doc.setFont('Arial','normal');
+    doc.setTextColor(...C.textLight);
+    const tmSeg1 = 'CROMTEST';
+    const tmSeg2 = ' markası, Egefe Bilişim Sağlık Sanayi ve Ticaret A.Ş.\'nin tescilli markasıdır.';
+    doc.setFontSize(5.5);
+    const s1W  = doc.getTextWidth(tmSeg1);
+    const regW = doc.getTextWidth('®');
+    const s2W  = doc.getTextWidth(tmSeg2);
+    const totalW = s1W + regW + s2W;
+    const fnStartX = mm(105) - totalW / 2;
+    doc.text(tmSeg1, fnStartX, fnY);
+    doc.setFontSize(3.5);
+    const regSmW = doc.getTextWidth('®');
+    doc.text('®', fnStartX + s1W + (regW - regSmW) / 2, fnY - mm(0.8));
+    doc.setFontSize(5.5);
+    doc.text(tmSeg2, fnStartX + s1W + regW, fnY);
+  }
 
   doc.save(`Teklif_${t.teklifNo || 'X'}.pdf`);
 }

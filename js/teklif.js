@@ -303,12 +303,20 @@ function printTeklifById(id){
   logoImg.onload=function(){
     const cv=document.createElement('canvas');cv.width=534;cv.height=252;
     cv.getContext('2d').drawImage(logoImg,0,0,534,252);
-    _generateTeklifPDF(t,cv.toDataURL('image/png'));
+    const logoPng=cv.toDataURL('image/png');
+    const brandImg=new Image();
+    brandImg.onload=function(){
+      const cv2=document.createElement('canvas');cv2.width=674;cv2.height=212;
+      cv2.getContext('2d').drawImage(brandImg,0,0,674,212);
+      _generateTeklifPDF(t,logoPng,cv2.toDataURL('image/png'));
+    };
+    brandImg.onerror=function(){_generateTeklifPDF(t,logoPng,null);};
+    brandImg.src='brand_assets/crom_test_logo.svg';
   };
-  logoImg.onerror=function(){_generateTeklifPDF(t,null);};
+  logoImg.onerror=function(){_generateTeklifPDF(t,null,null);};
   logoImg.src='brand_assets/logo_if_bg_white.svg';
 }
-async function _generateTeklifPDF(t,logoPngDataUrl){
+async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
   // Embed Arial fonts for full Turkish character support
   const toB64 = buf => {
     const bytes = new Uint8Array(buf);
@@ -649,6 +657,36 @@ async function _generateTeklifPDF(t,logoPngDataUrl){
   });
 
   curY = notBoxTopY + mm(3) + allNotLines.length * pt8lh + mm(7);
+
+  // ── İMZA BLOĞU ──
+  const sigY = curY;
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.4);
+  doc.line(leftX, sigY, leftX + leftAreaW, sigY);
+
+  const u = state.currentUser || {};
+  if(u.ad){
+    doc.setFontSize(8);
+    doc.setFont('Arial','bold');
+    doc.setTextColor(...C.textMid);
+    doc.text(u.ad, leftX, sigY + mm(4.5));
+    const contactParts = [u.telefon, u.email].filter(Boolean);
+    if(contactParts.length){
+      doc.setFont('Arial','normal');
+      doc.setTextColor(...C.textLight);
+      doc.text(contactParts.join('   ·   '), leftX, sigY + mm(8.5));
+    }
+  }
+
+  if(brandLogoPngDataUrl){
+    const bLogoW = mm(38);
+    const bLogoH = mm(38 * (212/674));
+    const bLogoX = leftX + leftAreaW - bLogoW;
+    const bLogoY = sigY + mm(1.5);
+    try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
+  }
+
+  curY = sigY + mm(14);
 
   // ── TOTALS SECTION (Right side) ──
   const totalsY = sectionY;

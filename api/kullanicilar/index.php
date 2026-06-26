@@ -104,8 +104,8 @@ switch ($method) {
 
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO users (id, ad, username, sifre_hash, sifre_salt, email, rol) VALUES (?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$id, $ad, $username, $hash, $salt, strOrNull($input['email'] ?? null), $rol]);
+            $stmt = $pdo->prepare('INSERT INTO users (id, ad, username, sifre_hash, sifre_salt, email, telefon, rol) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$id, $ad, $username, $hash, $salt, strOrNull($input['email'] ?? null), strOrNull($input['telefon'] ?? null), $rol]);
             savePermissions($pdo, $id, izinlerFromInput($input));
             $pdo->commit();
         } catch (Throwable $e) {
@@ -161,11 +161,11 @@ switch ($method) {
             if ($password !== '') {
                 $salt = generateSalt();
                 $hash = hashPassword($password, $salt);
-                $stmt = $pdo->prepare('UPDATE users SET ad=?, username=?, email=?, rol=?, sifre_hash=?, sifre_salt=? WHERE id=?');
-                $stmt->execute([$ad, $username, strOrNull($input['email'] ?? null), $rol, $hash, $salt, $id]);
+                $stmt = $pdo->prepare('UPDATE users SET ad=?, username=?, email=?, telefon=?, rol=?, sifre_hash=?, sifre_salt=? WHERE id=?');
+                $stmt->execute([$ad, $username, strOrNull($input['email'] ?? null), strOrNull($input['telefon'] ?? null), $rol, $hash, $salt, $id]);
             } else {
-                $stmt = $pdo->prepare('UPDATE users SET ad=?, username=?, email=?, rol=? WHERE id=?');
-                $stmt->execute([$ad, $username, strOrNull($input['email'] ?? null), $rol, $id]);
+                $stmt = $pdo->prepare('UPDATE users SET ad=?, username=?, email=?, telefon=?, rol=? WHERE id=?');
+                $stmt->execute([$ad, $username, strOrNull($input['email'] ?? null), strOrNull($input['telefon'] ?? null), $rol, $id]);
             }
             savePermissions($pdo, $id, izinlerFromInput($input));
             $pdo->commit();

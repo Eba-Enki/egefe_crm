@@ -84,6 +84,7 @@ function goSistemUserForm(editId){
   if(el('sf-username')) el('sf-username').value = u ? u.username : '';
   if(el('sf-sifre'))    el('sf-sifre').value    = '';
   if(el('sys-email'))    el('sys-email').value     = u ? (u.email||'') : '';
+  if(el('sf-telefon'))  el('sf-telefon').value    = u ? (u.telefon||'') : '';
   if(el('sf-rol'))      el('sf-rol').value       = u ? u.rol : 'kullanıcı';
 
   _renderIzinMatrix(u);
@@ -173,7 +174,8 @@ async function saveSistemUser(){
     };
   }
 
-  var payload = {ad:ad, username:username, email:email, rol:rol, izinler:izinler};
+  var telefon  = ((el('sf-telefon')||{}).value||'').trim();
+  var payload = {ad:ad, username:username, email:email, telefon:telefon||null, rol:rol, izinler:izinler};
   if(sifre) payload.password = sifre;
 
   try{

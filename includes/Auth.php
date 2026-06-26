@@ -49,6 +49,7 @@ function userResponse(PDO $pdo, array $user, ?array $izinler = null): array {
         'ad'       => $user['ad'],
         'username' => $user['username'],
         'email'    => $user['email'],
+        'telefon'  => $user['telefon'] ?? null,
         'rol'      => ROL_DB_TO_APP[$user['rol']] ?? $user['rol'],
         'sonGiris' => $user['son_giris'],
         'izinler'  => $izinler ?? userPermissions($pdo, $user['id']),

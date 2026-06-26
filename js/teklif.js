@@ -665,7 +665,6 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
   }
   const notText  = t.notlar || 'Teklifimiz yukarıda belirtilen geçerlilik tarihi itibarıyla geçerliliğini yitirecektir.';
   const rawLines = notText.split('\n');
-  if(allNotLines.length > 0) allNotLines.push('');
   rawLines.forEach(line => {
     if(line.trim() === ''){
       allNotLines.push('');
@@ -686,6 +685,12 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
   curY = notBoxTopY + mm(3) + allNotLines.length * pt8lh + mm(4);
 
   // ── İMZA BLOĞU (yalnızca Satış Pazarlama Portalı) ──
+  // Teklif Toplamı kutusuyla çakışmayı önle
+  const totalsEndY = (currentPortal === 'satis' && kdvOranPDF > 0)
+    ? sectionY + mm(16) + mm(12.40)
+    : sectionY + mm(12.40);
+  curY = Math.max(curY, totalsEndY + mm(1.5));
+
   if(currentPortal === 'satis'){
     const sigBoxX = leftX;
     const sigBoxW = mm(194.556) - leftX;

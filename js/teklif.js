@@ -254,6 +254,8 @@ function openTeklifDetay(id){
         ${currentPortal==='servis'?`<div class="pd-info-box"><div class="info-item-label">Seri No</div><div class="info-item-val">${esc(t.seriNo||'—')}</div></div>`:''}
         <div class="pd-info-box"><div class="info-item-label">Teklif Tarihi</div><div class="info-item-val">${fmtDate(t.teklifTarihi)||'—'}</div></div>
         <div class="pd-info-box"><div class="info-item-label">Geçerlilik</div><div class="info-item-val">${fmtDate(t.gecerlilikTarihi)||'—'}</div></div>
+        ${t.odemeKosulu?`<div class="pd-info-box"><div class="info-item-label">Ödeme Şekli</div><div class="info-item-val">${esc(t.odemeKosulu)}</div></div>`:''}
+        ${t.vade?`<div class="pd-info-box"><div class="info-item-label">Vade</div><div class="info-item-val">${esc(t.vade)}</div></div>`:''}
       </div>
     </div>
     <div class="pd-section">

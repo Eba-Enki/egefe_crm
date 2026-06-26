@@ -634,6 +634,20 @@ function openParamSecModal(idx,count){
   updateParamSecCounter();
   openModal('modal-parametre-sec');
 }
+function _renderParamChips(){
+  const chipsEl=document.getElementById('parametre-sec-chips');
+  if(!chipsEl)return;
+  const checked=[...document.querySelectorAll('#parametre-sec-list input[type=checkbox]:checked')];
+  if(checked.length===0){chipsEl.style.display='none';chipsEl.innerHTML='';return;}
+  chipsEl.style.display='flex';
+  chipsEl.innerHTML=checked.map(cb=>{
+    const i=cb.id.replace('ps-cb-','');
+    const vi=document.getElementById('ps-val-'+i);
+    const deger=vi?vi.value.trim():'';
+    const label=cb.value+(deger?' : '+deger:'');
+    return `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 12px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600;border:1px solid var(--accent)">${label}<button type="button" onclick="(function(){var cb=document.getElementById('ps-cb-${i}');if(cb){cb.checked=false;var vi=document.getElementById('ps-val-${i}');if(vi){vi.value='';vi.disabled=true;}updateParamSecCounter();}})()" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;line-height:1;padding:0 0 0 2px">×</button></span>`;
+  }).join('');
+}
 function updateParamSecCounter(){
   const all=document.querySelectorAll('#parametre-sec-list input[type=checkbox]');
   const checked=[...all].filter(c=>c.checked);
@@ -645,6 +659,7 @@ function updateParamSecCounter(){
     const vi=document.getElementById('ps-val-'+i);
     if(vi)vi.disabled=!cb.checked;
   });
+  _renderParamChips();
 }
 function confirmParamSec(){
   const checkboxes=[...document.querySelectorAll('#parametre-sec-list input[type=checkbox]:checked')];

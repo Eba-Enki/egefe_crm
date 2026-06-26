@@ -487,8 +487,7 @@
           <div class="form-section-title">Ticari Koşullar</div>
           <div class="form-grid">
             <div class="field"><label>Ödeme Şekli</label><select id="tf-odemeKosulu" onchange="onOdemeSekliChange()"><option value="">— Seçin —</option><option value="Peşin">Peşin</option><option value="Vadeli">Vadeli</option></select></div>
-            <div class="field"><label>Vade Tarihi</label><input type="date" id="tf-vade" disabled></div>
-            <div class="field"><label>Tahmini Teslimat Tarihi</label><input type="date" id="tf-teslimat"></div>
+            <div class="field"><label>Vade (Gün)</label><div style="display:flex;align-items:center;gap:6px"><input type="number" id="tf-vade" min="1" placeholder="Gün sayısı" disabled style="flex:1"><span style="white-space:nowrap;color:var(--text-muted,#888);font-size:0.9em">Gün</span></div></div>
           </div>
         </div>
         <div class="form-card">

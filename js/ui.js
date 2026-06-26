@@ -325,8 +325,7 @@ function goTeklifForm(editId,servisId){
     var _fil=document.getElementById('tf-ilgiliKisi');if(_fil)_fil.value=t.ilgiliKisi||'';
     var _fpb=document.getElementById('tf-paraBirimi');if(_fpb)_fpb.value=t.paraBirimi||'TRY';
     var _fok=document.getElementById('tf-odemeKosulu');if(_fok)_fok.value=t.odemeKosulu||'';
-    var _fvd=document.getElementById('tf-vade');if(_fvd)_fvd.value=t.vade||'';
-    var _ftsl=document.getElementById('tf-teslimat');if(_ftsl)_ftsl.value=t.teslimat||'';
+    var _fvd=document.getElementById('tf-vade');if(_fvd)_fvd.value=(t.vade||'').replace(/\s*Gün$/i,'');
     onOdemeSekliChange();
     teklifItems=t.satirlar?JSON.parse(JSON.stringify(t.satirlar)):[{aciklama:'',miktar:1,birim:'Adet',birimFiyat:0}];
     var foundTM=state.musteriler.find(function(x){return (t.musteriId&&x.id===t.musteriId)||x.kurum===(t.kurum||'');});
@@ -338,7 +337,7 @@ function goTeklifForm(editId,servisId){
     document.getElementById('tf-teklifTarihi').value=today();
     document.getElementById('tf-gecerlilik').value='';
     document.getElementById('tf-notlar').value='';
-    ['tf-kayitNo','tf-seriNo','tf-kurum','tf-ilgiliKisi','tf-telefon','tf-email','tf-odemeKosulu','tf-vade','tf-teslimat'].forEach(function(fid){var e=document.getElementById(fid);if(e)e.value='';});onOdemeSekliChange();
+    ['tf-kayitNo','tf-seriNo','tf-kurum','tf-ilgiliKisi','tf-telefon','tf-email','tf-odemeKosulu','tf-vade'].forEach(function(fid){var e=document.getElementById(fid);if(e)e.value='';});onOdemeSekliChange();
     var _fpb0=document.getElementById('tf-paraBirimi');if(_fpb0)_fpb0.value='TRY';
     var _sa0=document.getElementById('tf-servis-ara');if(_sa0)_sa0.dataset.servisid='';
     unlockMusteriField('tf-kurum');

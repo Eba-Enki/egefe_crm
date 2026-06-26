@@ -304,14 +304,23 @@ function printTeklifById(id){
     const cv=document.createElement('canvas');cv.width=534;cv.height=252;
     cv.getContext('2d').drawImage(logoImg,0,0,534,252);
     const logoPng=cv.toDataURL('image/png');
-    const brandImg=new Image();
-    brandImg.onload=function(){
-      const cv2=document.createElement('canvas');cv2.width=674;cv2.height=212;
-      cv2.getContext('2d').drawImage(brandImg,0,0,674,212);
-      _generateTeklifPDF(t,logoPng,cv2.toDataURL('image/png'));
-    };
-    brandImg.onerror=function(){_generateTeklifPDF(t,logoPng,null);};
-    brandImg.src='brand_assets/crom_test_logo.svg';
+    fetch('brand_assets/crom_test_logo.svg')
+      .then(function(r){return r.text();})
+      .then(function(svgText){
+        var fixedSvg=svgText.replace(/class="st0"/g,'fill="#024F98"');
+        var blob=new Blob([fixedSvg],{type:'image/svg+xml'});
+        var bUrl=URL.createObjectURL(blob);
+        var brandImg=new Image();
+        brandImg.onload=function(){
+          var cv2=document.createElement('canvas');cv2.width=674;cv2.height=212;
+          cv2.getContext('2d').drawImage(brandImg,0,0,674,212);
+          URL.revokeObjectURL(bUrl);
+          _generateTeklifPDF(t,logoPng,cv2.toDataURL('image/png'));
+        };
+        brandImg.onerror=function(){URL.revokeObjectURL(bUrl);_generateTeklifPDF(t,logoPng,null);};
+        brandImg.src=bUrl;
+      })
+      .catch(function(){_generateTeklifPDF(t,logoPng,null);});
   };
   logoImg.onerror=function(){_generateTeklifPDF(t,null,null);};
   logoImg.src='brand_assets/logo_if_bg_white.svg';
@@ -670,23 +679,21 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
     doc.setFont('Arial','bold');
     doc.setTextColor(...C.textMid);
     doc.text(u.ad, leftX, sigY + mm(4.5));
-    const contactParts = [u.telefon, u.email].filter(Boolean);
-    if(contactParts.length){
-      doc.setFont('Arial','normal');
-      doc.setTextColor(...C.textLight);
-      doc.text(contactParts.join('   ·   '), leftX, sigY + mm(8.5));
-    }
+    doc.setFont('Arial','normal');
+    doc.setTextColor(...C.textLight);
+    if(u.email)   doc.text(u.email,   leftX, sigY + mm(8.5));
+    if(u.telefon) doc.text(u.telefon, leftX, sigY + mm(12));
   }
 
   if(brandLogoPngDataUrl){
-    const bLogoW = mm(38);
-    const bLogoH = mm(38 * (212/674));
+    const bLogoW = mm(40);
+    const bLogoH = mm(40 * (212/674));
     const bLogoX = leftX + leftAreaW - bLogoW;
-    const bLogoY = sigY + mm(1.5);
+    const bLogoY = sigY + mm(3);
     try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
   }
 
-  curY = sigY + mm(14);
+  curY = sigY + mm(17);
 
   // ── TOTALS SECTION (Right side) ──
   const totalsY = sectionY;

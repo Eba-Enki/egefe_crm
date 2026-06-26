@@ -62,7 +62,7 @@ function fmtTL(v){if(v===''||v==null)return'—';return new Intl.NumberFormat('t
 function fmtNum(v){if(v===''||v==null)return'—';return new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v)}
 function nextTN(){const p=(state.settings&&state.settings.teklifPrefix)||'TKL';const d=parseInt((state.settings&&state.settings.teklifDigits)||5);const n=state.teklifler.map(t=>parseInt((t.teklifNo||'').replace(p,''))||0);return p+String((n.length?Math.max(...n):0)+1).padStart(d,'0')}
 function durumBadge(d){return`<span class="badge ${DURUM_CLASS[d]||''}">${d||'—'}</span>`}
-function calcTeklifToplam(t){return(t.satirlar||[]).reduce(function(a,s){return a+(s.miktar*s.birimFiyat)},0)}
+function calcTeklifToplam(t){var ara=(t.satirlar||[]).reduce(function(a,s){return a+(s.miktar*s.birimFiyat)},0);var kdvOran=t.kdvOran||0;return ara+Math.round(ara*kdvOran)/100;}
 
 // ════ AUTH ════
 // ════ PORTAL ════

@@ -77,6 +77,7 @@ function teklifResponse(PDO $pdo, array $row, ?array $satirlar = null): array {
         'paraBirimi'         => $row['para_birimi'],
         'odemeKosulu'        => $row['odeme_kosulu'],
         'vade'               => $row['vade'],
+        'kdvOran'            => (int)($row['kdv_oran'] ?? 0),
         'teslimat'           => $row['teslimat'],
         'sorumlu'            => $row['sorumlu'],
         'durum'              => $row['durum'],
@@ -154,10 +155,11 @@ switch ($method) {
         $id = 't' . (string)(int)round(microtime(true) * 1000);
         $teklifNo = nextTeklifNo($pdo, $portal);
         $satirlar = satirlarFromInput($input);
+        $kdvOran = in_array((int)($input['kdvOran'] ?? 0), [0, 10, 20], true) ? (int)($input['kdvOran'] ?? 0) : 0;
 
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO quotes (id, portal, teklif_no, musteri_id, servis_id, kayit_no, seri_no, kurum, ilgili_kisi, telefon, email, teklif_tarihi, gecerlilik_tarihi, notlar, para_birimi, odeme_kosulu, vade, teslimat, sorumlu, durum, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt = $pdo->prepare('INSERT INTO quotes (id, portal, teklif_no, musteri_id, servis_id, kayit_no, seri_no, kurum, ilgili_kisi, telefon, email, teklif_tarihi, gecerlilik_tarihi, notlar, para_birimi, odeme_kosulu, vade, kdv_oran, teslimat, sorumlu, durum, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([
                 $id, $portal, $teklifNo,
                 strOrNull($input['musteriId'] ?? null),
@@ -174,6 +176,7 @@ switch ($method) {
                 in_array($input['paraBirimi'] ?? '', PARA_BIRIMLERI, true) ? $input['paraBirimi'] : 'TRY',
                 strOrNull($input['odemeKosulu'] ?? null),
                 strOrNull($input['vade'] ?? null),
+                $kdvOran,
                 strOrNull($input['teslimat'] ?? null),
                 strOrNull($input['sorumlu'] ?? null) ?? $user['ad'],
                 'Taslak',
@@ -213,10 +216,11 @@ switch ($method) {
         requirePortalAccess($user, $existing['portal']);
 
         $satirlar = satirlarFromInput($input);
+        $kdvOran = in_array((int)($input['kdvOran'] ?? 0), [0, 10, 20], true) ? (int)($input['kdvOran'] ?? 0) : 0;
 
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('UPDATE quotes SET musteri_id=?, servis_id=?, kayit_no=?, seri_no=?, kurum=?, ilgili_kisi=?, telefon=?, email=?, teklif_tarihi=?, gecerlilik_tarihi=?, notlar=?, para_birimi=?, odeme_kosulu=?, vade=?, teslimat=?, sorumlu=?, durum=?, red_nedeni=? WHERE id=?');
+            $stmt = $pdo->prepare('UPDATE quotes SET musteri_id=?, servis_id=?, kayit_no=?, seri_no=?, kurum=?, ilgili_kisi=?, telefon=?, email=?, teklif_tarihi=?, gecerlilik_tarihi=?, notlar=?, para_birimi=?, odeme_kosulu=?, vade=?, kdv_oran=?, teslimat=?, sorumlu=?, durum=?, red_nedeni=? WHERE id=?');
             $stmt->execute([
                 strOrNull($input['musteriId'] ?? null),
                 strOrNull($input['servisId'] ?? null),
@@ -232,6 +236,7 @@ switch ($method) {
                 in_array($input['paraBirimi'] ?? '', PARA_BIRIMLERI, true) ? $input['paraBirimi'] : 'TRY',
                 strOrNull($input['odemeKosulu'] ?? null),
                 strOrNull($input['vade'] ?? null),
+                $kdvOran,
                 strOrNull($input['teslimat'] ?? null),
                 strOrNull($input['sorumlu'] ?? $existing['sorumlu']),
                 enumOrDefault($input['durum'] ?? $existing['durum'], DURUM_DEGERLERI, $existing['durum']),

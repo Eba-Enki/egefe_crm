@@ -53,15 +53,36 @@ function renderTeklifItems(){
   updateTeklifTotals();
 }
 function updateTeklifTotals(){
-  let toplam=0;
+  let araToplam=0;
   teklifItems.forEach(function(item,i){
     const a=item.miktar*(item.birimFiyat||0);
-    toplam+=a;
+    araToplam+=a;
     const el=document.getElementById('ti-total-'+i);
     if(el)el.textContent=fmtCur(a);
   });
-  const araEl=document.getElementById('tt-ara');if(araEl)araEl.textContent=fmtCur(toplam);
-  const genEl=document.getElementById('tt-genel');if(genEl)genEl.textContent=fmtCur(toplam);
+  var kdvCb=document.getElementById('tf-kdv-cb');
+  var kdvSel=document.getElementById('tf-kdv-oran');
+  var kdvOran=(kdvCb&&kdvCb.checked&&kdvSel)?parseInt(kdvSel.value)||0:0;
+  var kdvTutar=Math.round(araToplam*kdvOran)/100;
+  var genel=araToplam+kdvTutar;
+
+  var araEl=document.getElementById('tt-ara');if(araEl)araEl.textContent=fmtCur(araToplam);
+  var araLabelEl=document.getElementById('tt-ara-label');if(araLabelEl)araLabelEl.textContent=kdvOran>0?'Ara Toplam':'Toplam';
+  var araRow=document.getElementById('tt-ara-row');
+  if(araRow){if(kdvOran>0)araRow.classList.remove('grand');else araRow.classList.add('grand');}
+
+  var kdvRow=document.getElementById('tt-kdv-row');if(kdvRow)kdvRow.style.display=kdvOran>0?'':'none';
+  var kdvLbl=document.getElementById('tt-kdv-label');if(kdvLbl)kdvLbl.textContent='KDV (%'+kdvOran+')';
+  var kdvVal=document.getElementById('tt-kdv');if(kdvVal)kdvVal.textContent=fmtCur(kdvTutar);
+
+  var genelRow=document.getElementById('tt-genel-row');if(genelRow)genelRow.style.display=kdvOran>0?'':'none';
+  var genEl=document.getElementById('tt-genel');if(genEl)genEl.textContent=fmtCur(genel);
+}
+function onKdvChange(){
+  var cb=document.getElementById('tf-kdv-cb');
+  var sel=document.getElementById('tf-kdv-oran');
+  if(sel)sel.style.display=(cb&&cb.checked)?'':'none';
+  updateTeklifTotals();
 }
 
 // ════ ÖDEME ŞEKLİ ════
@@ -78,7 +99,7 @@ function onOdemeSekliChange(){
 function buildTeklifPayload(){
   var _musteriIdRaw=(document.getElementById('tf-musteri-id')||{}).value||'';
   var _musteriId=(_musteriIdRaw==='__edit_existing__')?'':_musteriIdRaw;
-  return{teklifNo:document.getElementById('tf-teklifNo').value,musteriId:_musteriId,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:toTitleCase(document.getElementById('tf-kurum').value),ilgiliKisi:toTitleCase(document.getElementById('tf-ilgiliKisi').value),teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',paraBirimi:(document.getElementById('tf-paraBirimi')||{}).value||'TRY',odemeKosulu:(document.getElementById('tf-odemeKosulu')||{}).value||'',vade:(function(){var _v=(document.getElementById('tf-vade')||{}).value||'';return _v?_v+' Gün':'';})(),satirlar:JSON.parse(JSON.stringify(teklifItems))};
+  return{teklifNo:document.getElementById('tf-teklifNo').value,musteriId:_musteriId,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:toTitleCase(document.getElementById('tf-kurum').value),ilgiliKisi:toTitleCase(document.getElementById('tf-ilgiliKisi').value),teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',paraBirimi:(document.getElementById('tf-paraBirimi')||{}).value||'TRY',odemeKosulu:(document.getElementById('tf-odemeKosulu')||{}).value||'',vade:(function(){var _v=(document.getElementById('tf-vade')||{}).value||'';return _v?_v+' Gün':'';})(),kdvOran:(function(){var _cb=document.getElementById('tf-kdv-cb');var _sel=document.getElementById('tf-kdv-oran');return(_cb&&_cb.checked&&_sel)?parseInt(_sel.value)||0:0;})(),satirlar:JSON.parse(JSON.stringify(teklifItems))};
 }
 async function saveTeklif(andPrint=false){
   const editId=document.getElementById('tf-edit-id').value;
@@ -367,8 +388,9 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
     };
   });
 
-  const kdv = 0;
-  const genelToplam = araToplam + kdv;
+  const kdvOranPDF = (currentPortal === 'satis') ? (t.kdvOran || 0) : 0;
+  const kdvTutar = Math.round(araToplam * kdvOranPDF) / 100;
+  const genelToplam = araToplam + kdvTutar;
   const pb = t.paraBirimi || 'TRY';
   const pbSymbol = {TRY:'TL',USD:'USD',EUR:'EUR',GBP:'GBP'}[pb] || 'TL';
 
@@ -642,6 +664,14 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
       allNotLines = allNotLines.concat(doc.splitTextToSize(line, notTextW));
     }
   });
+  if(currentPortal === 'satis'){
+    const pbLabel = {TRY:'TL',USD:'USD',EUR:'EUR',GBP:'GBP'}[pb] || 'TL';
+    const kdvNote = kdvOranPDF > 0
+      ? `Fiyatlarımız ${pbLabel} cinsinden verilmiş olup KDV (%${kdvOranPDF}) dahildir.`
+      : `Fiyatlarımız ${pbLabel} cinsinden verilmiş olup KDV dahil değildir.`;
+    allNotLines.push('');
+    allNotLines = allNotLines.concat(doc.splitTextToSize(kdvNote, notTextW));
+  }
 
   const notBoxTopY        = curY;
   const firstLineBaseline = notBoxTopY + mm(3);
@@ -658,87 +688,100 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
 
   curY = notBoxTopY + mm(3) + allNotLines.length * pt8lh + mm(7);
 
-  // ── İMZA BLOĞU ──
-  const sigY = curY;
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.4);
-  doc.line(leftX, sigY, leftX + leftAreaW, sigY);
+  // ── İMZA BLOĞU (yalnızca Satış Pazarlama Portalı) ──
+  if(currentPortal === 'satis'){
+    const sigY = curY;
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.4);
+    doc.line(leftX, sigY, leftX + leftAreaW, sigY);
 
-  const u = state.currentUser || {};
-  if(u.ad){
-    doc.setFontSize(8);
-    doc.setFont('Arial','bold');
-    doc.setTextColor(...C.textMid);
-    doc.text(u.ad, leftX, sigY + mm(4.5));
-    doc.setFont('Arial','normal');
-    doc.setTextColor(...C.textLight);
-    if(u.email)   doc.text(u.email,   leftX, sigY + mm(9.5));
-    if(u.telefon) doc.text(u.telefon, leftX, sigY + mm(14.5));
+    const u = state.currentUser || {};
+    if(u.ad){
+      doc.setFontSize(8);
+      doc.setFont('Arial','bold');
+      doc.setTextColor(...C.textMid);
+      doc.text(u.ad, leftX, sigY + mm(4.5));
+      doc.setFont('Arial','normal');
+      doc.setTextColor(...C.textLight);
+      if(u.email)   doc.text(u.email,   leftX, sigY + mm(9.5));
+      if(u.telefon) doc.text(u.telefon, leftX, sigY + mm(14.5));
+    }
+
+    if(brandLogoPngDataUrl){
+      const bLogoW = mm(26);
+      const bLogoH = mm(26 * (212/674));
+      const bLogoX = mm(194.556) - bLogoW;
+      const bLogoY = sigY + mm(3);
+      try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
+      const trademarkY = bLogoY + bLogoH + mm(2.5);
+      doc.setFontSize(5.5);
+      doc.setFont('Arial','normal');
+      doc.setTextColor(...C.textLight);
+      doc.text('Cromtest®, Egefe A.Ş.\'nin tescilli markasıdır.', mm(194.556), trademarkY, {align:'right'});
+    }
+
+    curY = sigY + mm(20);
   }
-
-  if(brandLogoPngDataUrl){
-    const bLogoW = mm(26);
-    const bLogoH = mm(26 * (212/674));
-    const bLogoX = leftX + leftAreaW - bLogoW;
-    const bLogoY = sigY + mm(3);
-    try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
-    const trademarkY = bLogoY + bLogoH + mm(1.5);
-    doc.setFontSize(5.5);
-    doc.setFont('Arial','normal');
-    doc.setTextColor(...C.textLight);
-    doc.text('Cromtest®, Egefe A.Ş.\'nin tescilli markasıdır.', leftX + leftAreaW, trademarkY, {align:'right'});
-  }
-
-  curY = sigY + mm(20);
 
   // ── TOTALS SECTION (Right side) ──
   const totalsY = sectionY;
-
-  /* -- Genel Toplam (pasif) --
-  doc.setFontSize(8);
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.textLabel);
-  doc.text('Genel Toplam', mm(137.109), totalsY + mm(1.7));
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.textMid);
-  doc.text(fmtN(araToplam), mm(193.881), totalsY + mm(1.7), {align: 'right'});
-  */
-
-  /* -- Genel İskonto (pasif) --
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.textLabel);
-  doc.text('Genel İskonto', mm(137.22), totalsY + mm(7.8));
-  doc.setFont('Arial', 'normal');
-  doc.text('- %', mm(193.881), totalsY + mm(7.8), {align: 'right'});
-  doc.line(mm(137.109), totalsY + mm(10.85), mm(194.63), totalsY + mm(10.85));
-  */
-
-  /* -- KDV (pasif) --
-  doc.setFont('Arial', 'bold');
-  doc.text('KDV', mm(137.109), totalsY + mm(13.9));
-  doc.setFont('Arial', 'normal');
-  doc.text(fmtN(kdv), mm(193.881), totalsY + mm(13.9), {align: 'right'});
-  doc.line(mm(137.109), totalsY + mm(16.95), mm(194.63), totalsY + mm(16.95));
-  */
-
   const totalBoxX = mm(141.901);
   const totalBoxRightEdge = mm(194.63);
-  const totalBoxY = totalsY;
   const totalBoxW = totalBoxRightEdge - totalBoxX;
-  doc.setDrawColor(...C.primary);
-  doc.setLineWidth(1.5);
-  doc.setFillColor(...C.white);
-  doc.roundedRect(totalBoxX, totalBoxY, totalBoxW, mm(12.40), 2, 2, 'FD');
 
-  doc.setFontSize(8);
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.primary);
-  doc.text('TEKLİF TOPLAMI', totalBoxRightEdge - mm(2.5), totalBoxY + mm(4.0), {align: 'right'});
+  if(currentPortal === 'satis' && kdvOranPDF > 0){
+    // Ara Toplam row
+    doc.setFontSize(8);
+    doc.setFont('Arial','bold');
+    doc.setTextColor(...C.textLabel);
+    doc.text('Ara Toplam', mm(143), totalsY + mm(5));
+    doc.setFont('Arial','normal');
+    doc.setTextColor(...C.textMid);
+    doc.text(`${pbSymbol} ${fmtN(araToplam)}`, totalBoxRightEdge - mm(2.5), totalsY + mm(5), {align:'right'});
 
-  doc.setFontSize(11);
-  doc.setFont('Arial', 'bold');
-  doc.setTextColor(...C.textMid);
-  doc.text(`${pbSymbol} ${fmtN(genelToplam)}`, totalBoxRightEdge - mm(2.5), totalBoxY + mm(9.2), {align: 'right'});
+    // KDV row
+    doc.setFont('Arial','bold');
+    doc.setTextColor(...C.textLabel);
+    doc.text(`KDV (%${kdvOranPDF})`, mm(143), totalsY + mm(11));
+    doc.setFont('Arial','normal');
+    doc.setTextColor(...C.textMid);
+    doc.text(`${pbSymbol} ${fmtN(kdvTutar)}`, totalBoxRightEdge - mm(2.5), totalsY + mm(11), {align:'right'});
+
+    // Divider
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.3);
+    doc.line(mm(143), totalsY + mm(14), totalBoxRightEdge, totalsY + mm(14));
+
+    // TEKLİF TOPLAMI box (shifted down)
+    const totalBoxY = totalsY + mm(16);
+    doc.setDrawColor(...C.primary);
+    doc.setLineWidth(1.5);
+    doc.setFillColor(...C.white);
+    doc.roundedRect(totalBoxX, totalBoxY, totalBoxW, mm(12.40), 2, 2, 'FD');
+    doc.setFontSize(8);
+    doc.setFont('Arial','bold');
+    doc.setTextColor(...C.primary);
+    doc.text('TEKLİF TOPLAMI', totalBoxRightEdge - mm(2.5), totalBoxY + mm(4.0), {align:'right'});
+    doc.setFontSize(11);
+    doc.setFont('Arial','bold');
+    doc.setTextColor(...C.textMid);
+    doc.text(`${pbSymbol} ${fmtN(genelToplam)}`, totalBoxRightEdge - mm(2.5), totalBoxY + mm(9.2), {align:'right'});
+  } else {
+    // No KDV: single box (mevcut görünüm)
+    const totalBoxY = totalsY;
+    doc.setDrawColor(...C.primary);
+    doc.setLineWidth(1.5);
+    doc.setFillColor(...C.white);
+    doc.roundedRect(totalBoxX, totalBoxY, totalBoxW, mm(12.40), 2, 2, 'FD');
+    doc.setFontSize(8);
+    doc.setFont('Arial','bold');
+    doc.setTextColor(...C.primary);
+    doc.text('TEKLİF TOPLAMI', totalBoxRightEdge - mm(2.5), totalBoxY + mm(4.0), {align:'right'});
+    doc.setFontSize(11);
+    doc.setFont('Arial','bold');
+    doc.setTextColor(...C.textMid);
+    doc.text(`${pbSymbol} ${fmtN(genelToplam)}`, totalBoxRightEdge - mm(2.5), totalBoxY + mm(9.2), {align:'right'});
+  }
 
   // ── FOOTER ──
   doc.setDrawColor(...C.primary);

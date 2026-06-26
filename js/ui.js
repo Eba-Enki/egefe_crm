@@ -327,6 +327,10 @@ function goTeklifForm(editId,servisId){
     var _fok=document.getElementById('tf-odemeKosulu');if(_fok)_fok.value=t.odemeKosulu||'';
     var _fvd=document.getElementById('tf-vade');if(_fvd)_fvd.value=(t.vade||'').replace(/\s*Gün$/i,'');
     onOdemeSekliChange();
+    var _kdvLbl=document.getElementById('tf-kdv-label');if(_kdvLbl)_kdvLbl.style.display=currentPortal==='satis'?'flex':'none';
+    var _kdvCb=document.getElementById('tf-kdv-cb');var _kdvSel=document.getElementById('tf-kdv-oran');
+    if(_kdvCb)_kdvCb.checked=!!(t.kdvOran&&t.kdvOran>0);
+    if(_kdvSel){_kdvSel.value=(t.kdvOran>0)?String(t.kdvOran):'10';_kdvSel.style.display=(t.kdvOran>0)?'':'none';}
     teklifItems=t.satirlar?JSON.parse(JSON.stringify(t.satirlar)):[{aciklama:'',miktar:1,birim:'Adet',birimFiyat:0}];
     var foundTM=state.musteriler.find(function(x){return (t.musteriId&&x.id===t.musteriId)||x.kurum===(t.kurum||'');});
     if(foundTM)lockMusteriField('tf-kurum',foundTM.id);
@@ -339,6 +343,9 @@ function goTeklifForm(editId,servisId){
     document.getElementById('tf-notlar').value='';
     ['tf-kayitNo','tf-seriNo','tf-kurum','tf-ilgiliKisi','tf-telefon','tf-email','tf-odemeKosulu','tf-vade'].forEach(function(fid){var e=document.getElementById(fid);if(e)e.value='';});onOdemeSekliChange();
     var _fpb0=document.getElementById('tf-paraBirimi');if(_fpb0)_fpb0.value='TRY';
+    var _kdvLbl0=document.getElementById('tf-kdv-label');if(_kdvLbl0)_kdvLbl0.style.display=currentPortal==='satis'?'flex':'none';
+    var _kdvCb0=document.getElementById('tf-kdv-cb');if(_kdvCb0)_kdvCb0.checked=false;
+    var _kdvSel0=document.getElementById('tf-kdv-oran');if(_kdvSel0){_kdvSel0.value='10';_kdvSel0.style.display='none';}
     var _sa0=document.getElementById('tf-servis-ara');if(_sa0)_sa0.dataset.servisid='';
     unlockMusteriField('tf-kurum');
     if(servisId){

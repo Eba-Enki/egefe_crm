@@ -461,7 +461,16 @@
           </div>
         </div>
         <div class="form-card">
-          <div class="form-section-title">Teklif Kalemleri</div>
+          <div class="form-section-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            Teklif Kalemleri
+            <label id="tf-kdv-label" style="display:none;align-items:center;gap:8px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap">
+              <input type="checkbox" id="tf-kdv-cb" onchange="onKdvChange()"> KDV'li
+              <select id="tf-kdv-oran" style="display:none;font-size:12px;padding:2px 6px" onchange="updateTeklifTotals()">
+                <option value="10">%10</option>
+                <option value="20">%20</option>
+              </select>
+            </label>
+          </div>
           <div class="teklif-items-wrap">
             <table class="teklif-items">
               <thead><tr>
@@ -477,8 +486,9 @@
             </table>
             <div class="teklif-totals">
               <div class="totals-inner">
-                <div class="totals-row grand"><span>Toplam</span><span class="val" id="tt-ara">0,00 ₺</span></div>
-                
+                <div class="totals-row grand" id="tt-ara-row"><span id="tt-ara-label">Toplam</span><span class="val" id="tt-ara">0,00 ₺</span></div>
+                <div class="totals-row" id="tt-kdv-row" style="display:none"><span id="tt-kdv-label">KDV (%10)</span><span class="val" id="tt-kdv">0,00 ₺</span></div>
+                <div class="totals-row grand" id="tt-genel-row" style="display:none"><span>Toplam</span><span class="val" id="tt-genel">0,00 ₺</span></div>
               </div>
             </div>
           </div>

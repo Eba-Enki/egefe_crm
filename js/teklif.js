@@ -673,18 +673,23 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
     doc.setFont('Arial','normal');
     doc.setTextColor(...C.textLight);
     if(u.email)   doc.text(u.email,   leftX, sigY + mm(9.5));
-    if(u.telefon) doc.text(u.telefon, leftX, sigY + mm(12.5));
+    if(u.telefon) doc.text(u.telefon, leftX, sigY + mm(14.5));
   }
 
   if(brandLogoPngDataUrl){
-    const bLogoW = mm(40);
-    const bLogoH = mm(40 * (212/674));
+    const bLogoW = mm(26);
+    const bLogoH = mm(26 * (212/674));
     const bLogoX = leftX + leftAreaW - bLogoW;
     const bLogoY = sigY + mm(3);
     try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
+    const trademarkY = bLogoY + bLogoH + mm(1.5);
+    doc.setFontSize(5.5);
+    doc.setFont('Arial','normal');
+    doc.setTextColor(...C.textLight);
+    doc.text('Cromtest®, Egefe A.Ş.\'nin tescilli markasıdır.', leftX + leftAreaW, trademarkY, {align:'right'});
   }
 
-  curY = sigY + mm(17);
+  curY = sigY + mm(20);
 
   // ── TOTALS SECTION (Right side) ──
   const totalsY = sectionY;

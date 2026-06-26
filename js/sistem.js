@@ -2,6 +2,16 @@
 
 var _sistemEditId = null;
 
+function sfFormatTelefon(el){
+  var digits=el.value.replace(/\D/g,'').slice(0,11);
+  var out='';
+  if(digits.length>0) out+=digits.slice(0,4);
+  if(digits.length>4) out+=' '+digits.slice(4,7);
+  if(digits.length>7) out+=' '+digits.slice(7,9);
+  if(digits.length>9) out+=' '+digits.slice(9,11);
+  el.value=out;
+}
+
 async function showSistemScreen(user){
   var ss = document.getElementById('sistem-screen');
   if(!ss) return;

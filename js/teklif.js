@@ -307,7 +307,9 @@ function printTeklifById(id){
     fetch('brand_assets/crom_test_logo.svg')
       .then(function(r){return r.text();})
       .then(function(svgText){
-        var fixedSvg=svgText.replace(/class="st0"/g,'fill="#024F98"');
+        var fixedSvg=svgText
+          .replace(/class="st0"/g,'fill="#024F98"')
+          .replace('viewBox="0 0 337 105.7"','width="674" height="212" viewBox="0 0 337 105.7"');
         var blob=new Blob([fixedSvg],{type:'image/svg+xml'});
         var bUrl=URL.createObjectURL(blob);
         var brandImg=new Image();
@@ -682,7 +684,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
     doc.setFont('Arial','normal');
     doc.setTextColor(...C.textLight);
     if(u.email)   doc.text(u.email,   leftX, sigY + mm(8.5));
-    if(u.telefon) doc.text(u.telefon, leftX, sigY + mm(12));
+    if(u.telefon) doc.text(u.telefon, leftX, sigY + mm(13.5));
   }
 
   if(brandLogoPngDataUrl){

@@ -804,14 +804,8 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
   const footerParts = ['e-posta: ' + emailText];
   if (telText) footerParts.push('Tel: ' + telText);
   if (faxText) footerParts.push('Fax: ' + faxText);
-  doc.text(footerParts.join('   |   '), mm(105), mm(284.604)+5, {align: 'center'});
-
   // ── TRADEMARK FOOTNOTE (sadece Satış Pazarlama Portalı) ──
   if(currentPortal === 'satis' && !imzaGizle){
-    const fnY = mm(291);
-    doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.3);
-    doc.line(mm(15.446), fnY - mm(1.5), mm(194.556), fnY - mm(1.5));
     doc.setFont('Arial','normal');
     doc.setTextColor(...C.textLight);
     const tmSeg1 = 'CROMTEST';
@@ -822,6 +816,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     const s2W  = doc.getTextWidth(tmSeg2);
     const totalW = s1W + regW + s2W;
     const fnStartX = mm(105) - totalW / 2;
+    const fnY = mm(284.604) + 5;
     doc.text(tmSeg1, fnStartX, fnY);
     doc.setFontSize(3.5);
     const regSmW = doc.getTextWidth('®');
@@ -829,6 +824,11 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     doc.setFontSize(5.5);
     doc.text(tmSeg2, fnStartX + s1W + regW, fnY);
   }
+
+  doc.setFontSize(7);
+  doc.setFont('Arial', 'normal');
+  doc.setTextColor(...C.textLight);
+  doc.text(footerParts.join('   |   '), mm(105), mm(284.604)+5+mm(4.5), {align: 'center'});
 
   doc.save(`Teklif_${t.teklifNo || 'X'}.pdf`);
 }

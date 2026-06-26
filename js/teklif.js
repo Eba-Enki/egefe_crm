@@ -320,6 +320,7 @@ function deleteCurrentTeklif(){if(!state.activeTeklifId)return;closeModal('modal
 // ════ PDF ════
 function printTeklifById(id){
   const t=state.teklifler.find(x=>x.id===id);if(!t)return;
+  const imzaGizle=!!(document.getElementById('tf-imza-gizle')||{}).checked;
   const logoImg=new Image();
   logoImg.onload=function(){
     const cv=document.createElement('canvas');cv.width=534;cv.height=252;
@@ -329,15 +330,15 @@ function printTeklifById(id){
     brandImg.onload=function(){
       var cv2=document.createElement('canvas');cv2.width=674;cv2.height=212;
       cv2.getContext('2d').drawImage(brandImg,0,0,674,212);
-      _generateTeklifPDF(t,logoPng,cv2.toDataURL('image/png'));
+      _generateTeklifPDF(t,logoPng,cv2.toDataURL('image/png'),imzaGizle);
     };
-    brandImg.onerror=function(){_generateTeklifPDF(t,logoPng,null);};
+    brandImg.onerror=function(){_generateTeklifPDF(t,logoPng,null,imzaGizle);};
     brandImg.src='brand_assets/crom_test_logo.svg';
   };
-  logoImg.onerror=function(){_generateTeklifPDF(t,null,null);};
+  logoImg.onerror=function(){_generateTeklifPDF(t,null,null,imzaGizle);};
   logoImg.src='brand_assets/logo_if_bg_white.svg';
 }
-async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
+async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle=false){
   // Embed Arial fonts for full Turkish character support
   const toB64 = buf => {
     const bytes = new Uint8Array(buf);
@@ -684,14 +685,14 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
 
   curY = notBoxTopY + mm(3) + allNotLines.length * pt8lh + mm(4);
 
-  // ── İMZA BLOĞU (yalnızca Satış Pazarlama Portalı) ──
+  // ── İMZA BLOĞU (yalnızca Satış Pazarlama Portalı, imza gizlenmemişse) ──
   // Teklif Toplamı kutusuyla çakışmayı önle
   const totalsEndY = (currentPortal === 'satis' && kdvOranPDF > 0)
     ? sectionY + mm(16) + mm(12.40)
     : sectionY + mm(12.40);
   curY = Math.max(curY, totalsEndY + mm(1.5));
 
-  if(currentPortal === 'satis'){
+  if(currentPortal === 'satis' && !imzaGizle){
     const sigBoxX = leftX;
     const sigBoxW = mm(194.556) - leftX;
     const sigBoxH = mm(22);
@@ -723,10 +724,23 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
       const bLogoY = sigBoxY + sigPad;
       try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
       const trademarkY = bLogoY + bLogoH + mm(2.5);
-      doc.setFontSize(5.5);
       doc.setFont('Arial','normal');
       doc.setTextColor(...C.textLight);
-      doc.text('Cromtest®, Egefe A.Ş.\'nin tescilli markasıdır.', sigBoxX + sigBoxW - sigPad, trademarkY, {align:'right'});
+      // ® superscript: CROMTEST + ® (küçük, yüksek) + devamı
+      const trRightX = sigBoxX + sigBoxW - sigPad;
+      const tmSeg1 = 'CROMTEST';
+      const tmSeg2 = ' markası, Egefe Bilişim Sağlık Sanayi ve Ticaret A.Ş.\'nin tescilli markasıdır.';
+      doc.setFontSize(5.5);
+      const s1W  = doc.getTextWidth(tmSeg1);
+      const regW = doc.getTextWidth('®'); // ® at 5.5pt (rezerve alan)
+      const s2W  = doc.getTextWidth(tmSeg2);
+      const startX = trRightX - s1W - regW - s2W;
+      doc.text(tmSeg1, startX, trademarkY);
+      doc.setFontSize(3.5);
+      const regSmW = doc.getTextWidth('®');
+      doc.text('®', startX + s1W + (regW - regSmW) / 2, trademarkY - mm(0.8));
+      doc.setFontSize(5.5);
+      doc.text(tmSeg2, startX + s1W + regW, trademarkY);
     }
 
     curY = sigBoxY + sigBoxH + mm(2);
@@ -746,7 +760,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
     doc.text('Ara Toplam', mm(143), totalsY + mm(5));
     doc.setFont('Arial','normal');
     doc.setTextColor(...C.textMid);
-    doc.text(`${pbSymbol} ${fmtN(araToplam)}`, totalBoxRightEdge - mm(2.5), totalsY + mm(5), {align:'right'});
+    doc.text(`${fmtN(araToplam)} ${pbSymbol}`, totalBoxRightEdge - mm(2.5), totalsY + mm(5), {align:'right'});
 
     // KDV row
     doc.setFont('Arial','bold');
@@ -754,7 +768,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
     doc.text(`KDV (%${kdvOranPDF})`, mm(143), totalsY + mm(11));
     doc.setFont('Arial','normal');
     doc.setTextColor(...C.textMid);
-    doc.text(`${pbSymbol} ${fmtN(kdvTutar)}`, totalBoxRightEdge - mm(2.5), totalsY + mm(11), {align:'right'});
+    doc.text(`${fmtN(kdvTutar)} ${pbSymbol}`, totalBoxRightEdge - mm(2.5), totalsY + mm(11), {align:'right'});
 
     // Divider
     doc.setDrawColor(...C.border);
@@ -774,7 +788,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
     doc.setFontSize(11);
     doc.setFont('Arial','bold');
     doc.setTextColor(...C.textMid);
-    doc.text(`${pbSymbol} ${fmtN(genelToplam)}`, totalBoxRightEdge - mm(2.5), totalBoxY + mm(9.2), {align:'right'});
+    doc.text(`${fmtN(genelToplam)} ${pbSymbol}`, totalBoxRightEdge - mm(2.5), totalBoxY + mm(9.2), {align:'right'});
   } else {
     // No KDV: single box (mevcut görünüm)
     const totalBoxY = totalsY;
@@ -789,7 +803,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl){
     doc.setFontSize(11);
     doc.setFont('Arial','bold');
     doc.setTextColor(...C.textMid);
-    doc.text(`${pbSymbol} ${fmtN(genelToplam)}`, totalBoxRightEdge - mm(2.5), totalBoxY + mm(9.2), {align:'right'});
+    doc.text(`${fmtN(genelToplam)} ${pbSymbol}`, totalBoxRightEdge - mm(2.5), totalBoxY + mm(9.2), {align:'right'});
   }
 
   // ── FOOTER ──

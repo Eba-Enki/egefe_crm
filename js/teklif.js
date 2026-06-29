@@ -697,7 +697,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
       : `Fiyatlarımız ${pbLabel} cinsinden verilmiş olup KDV dahil değildir.`;
     allNotLines = allNotLines.concat(doc.splitTextToSize(kdvNote, notTextW));
   }
-  const notText  = t.notlar || 'Teklifimiz yukarıda belirtilen geçerlilik tarihi itibarıyla geçerliliğini yitirecektir.';
+  const notText  = t.notlar || 'Teklifimiz, yukarıda belirtilen tarihe kadar geçerlidir.';
   const rawLines = notText.split('\n');
   rawLines.forEach(line => {
     if(line.trim() === ''){

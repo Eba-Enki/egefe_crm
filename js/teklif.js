@@ -318,13 +318,13 @@ function editCurrentTeklif(){closeModal('modal-teklif-detay');if(state.activeTek
 function printCurrentTeklif(){if(state.activeTeklifId)printTeklifById(state.activeTeklifId)}
 function deleteCurrentTeklif(){if(!state.activeTeklifId)return;closeModal('modal-teklif-detay');confirmDelete('teklif',state.activeTeklifId);}
 async function revizeTeklif(id){
-  const t=state.teklifler.find(x=>x.id===id);if(!t)return;
+  const t=state.teklifler.find(x=>x.id===id);if(!t||t.durum!=='İletildi')return;
   const baseNo=t.teklifNo.replace(/-R\d+$/,'');
   const esc2=baseNo.replace(/[-[\]{}()*+?.,\\^$|#\s]/g,'\\$&');
   const maxRevNo=state.teklifler.reduce(function(mx,x){const m=x.teklifNo.match(new RegExp('^'+esc2+'-R(\\d+)$'));return m?Math.max(mx,parseInt(m[1])):mx;},0);
   const newTeklifNo=baseNo+'-R'+(maxRevNo+1);
   showConfirm('"'+t.teklifNo+'" revizyonu oluşturulsun mu? Mevcut teklif "Revize Edildi" olarak arşive taşınacak.',async function(){
-    const prevDurum=t.durum;
+    const prevDurum='İletildi';
     const updated=await updateTeklifDurum(id,{durum:'Revize Edildi'});
     if(!updated)return;
     const payload={

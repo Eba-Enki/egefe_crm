@@ -1,6 +1,6 @@
 -- Migration 010: Teklif revizyon sistemi
--- quotes tablosuna parent_id ve revizyon_no kolonları eklenir
+-- 1) quotes tablosuna parent_id ve revizyon_no kolonları eklenir (zaten eklendiyse atla)
+-- 2) durum ENUM'una 'Revize Edildi' değeri eklenir
 
 ALTER TABLE quotes
-  ADD COLUMN parent_id VARCHAR(50) NULL DEFAULT NULL,
-  ADD COLUMN revizyon_no INT NOT NULL DEFAULT 0;
+  MODIFY COLUMN durum ENUM('Taslak','İletildi','Kabul Edildi','Siparişe Dönüştü','Reddedildi','Kapandı','Revize Edildi') NOT NULL DEFAULT 'Taslak';

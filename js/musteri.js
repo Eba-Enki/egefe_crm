@@ -106,17 +106,28 @@ function renderUrunler(){
   if(!data.length){tbody.innerHTML='';document.getElementById('urun-empty').style.display='';renderPagination('urun-pagination',1,0,'setUrunlerPage');return}
   document.getElementById('urun-empty').style.display='none';
   const isSatis=currentPortal==='satis';
-  const sorted=[...data].sort((a,b)=>(a.urunKodu||'').localeCompare(b.urunKodu||'','tr',{numeric:true,sensitivity:'base'}));
+  const isServis=currentPortal==='servis';
+  const sorted=isServis
+    ?[...data].sort((a,b)=>(a.model||'').localeCompare(b.model||'','tr')||(a.urunAdi||'').localeCompare(b.urunAdi||'','tr'))
+    :[...data].sort((a,b)=>(a.urunKodu||'').localeCompare(b.urunKodu||'','tr',{numeric:true,sensitivity:'base'}));
   var pagedU=sorted.slice((urunlerPage-1)*PAGE_SIZE,urunlerPage*PAGE_SIZE);
   renderPagination('urun-pagination',urunlerPage,sorted.length,'setUrunlerPage');
   const _fmtFiyat=(v,pb)=>{if(!v)return'—';const sym={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'};return(sym[pb||'TRY']||'₺')+' '+new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v);};
   const colCount=isSatis?7:6;
-  let lastKat=undefined;let rows='';
+  let lastGrp=undefined;let rows='';
   pagedU.forEach(u=>{
-    const kat=u.kategori||'';
-    if(isSatis&&kat!==lastKat){
-      if(kat)rows+=`<tr><td colspan="${colCount}" style="padding:6px 12px 4px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;background:var(--accent-soft);border-top:1px solid var(--accent-glow);border-bottom:1px solid var(--accent-glow);user-select:none">${esc(kat)}</td></tr>`;
-      lastKat=kat;
+    if(isSatis){
+      const kat=u.kategori||'';
+      if(kat!==lastGrp){
+        if(kat)rows+=`<tr><td colspan="${colCount}" style="padding:6px 12px 4px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;background:var(--accent-soft);border-top:1px solid var(--accent-glow);border-bottom:1px solid var(--accent-glow);user-select:none">${esc(kat)}</td></tr>`;
+        lastGrp=kat;
+      }
+    } else if(isServis){
+      const mod=u.model||'';
+      if(mod!==lastGrp){
+        if(mod)rows+=`<tr><td colspan="${colCount}" style="padding:6px 12px 4px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;background:var(--accent-soft);border-top:1px solid var(--accent-glow);border-bottom:1px solid var(--accent-glow);user-select:none">${esc(mod)}</td></tr>`;
+        lastGrp=mod;
+      }
     }
     rows+=`<tr><td class="td-mono" style="color:var(--accent);font-size:11px;text-align:center">${esc(u.urunKodu||'—')}</td><td style="font-weight:500">${esc(u.urunAdi)}</td><td style="color:var(--text2);text-align:center">${esc(u.marka||'—')}</td>${isSatis?`<td style="color:var(--text2);font-size:12px;text-align:center">${esc(u.kategori||'—')}</td>`:''}<td class="td-mono" style="color:var(--text2);text-align:center">${esc(u.model||'—')}</td><td class="td-mono" style="color:var(--amber);text-align:right">${_fmtFiyat(u.fiyat,u.paraBirimi)}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goUrunForm('${esc(u.id)}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('urun','${esc(u.id)}')"><i class="ti ti-trash"></i></button></div></td></tr>`;
   });

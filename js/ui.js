@@ -568,18 +568,29 @@ function openTiCombo(idx){
   const input=document.getElementById('ti-aciklama-'+idx);
   if(!input)return;
   const q=(input.value||'').toLowerCase();
-  const filtered=state.urunler.filter(u=>(u.urunAdi+' '+(u.kategori||'')).toLowerCase().includes(q||'')).slice(0,80);
+  const isServis=currentPortal==='servis';
+  const filtered=state.urunler.filter(u=>(u.urunAdi+' '+(u.kategori||'')+(isServis?' '+(u.model||'')+(u.marka?' '+u.marka:''):'')).toLowerCase().includes(q||'')).slice(0,80);
   const drop=_getTiDrop();
   if(!filtered.length){drop.style.display='none';return;}
-  const sorted=[...filtered].sort((a,b)=>(a.kategori||'').localeCompare(b.kategori||'','tr'));
-  let html='';let lastKat=undefined;let ci=0;
+  const sorted=isServis
+    ?[...filtered].sort((a,b)=>(a.model||'').localeCompare(b.model||'','tr')||(a.urunAdi||'').localeCompare(b.urunAdi||'','tr'))
+    :[...filtered].sort((a,b)=>(a.kategori||'').localeCompare(b.kategori||'','tr'));
+  let html='';let lastGrp=undefined;let ci=0;
   sorted.forEach(u=>{
-    const kat=u.kategori||'';
-    if(kat!==lastKat){
-      if(kat)html+=`<div style="padding:6px 12px 4px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;background:var(--accent-soft);border-top:1px solid var(--accent-glow);border-bottom:1px solid var(--accent-glow);cursor:default;user-select:none">${esc(kat)}</div>`;
-      lastKat=kat;
+    if(isServis){
+      const mod=u.model||'';
+      if(mod!==lastGrp){
+        if(mod)html+=`<div style="padding:6px 12px 4px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;background:var(--accent-soft);border-top:1px solid var(--accent-glow);border-bottom:1px solid var(--accent-glow);cursor:default;user-select:none">${esc(mod)}</div>`;
+        lastGrp=mod;
+      }
+    } else {
+      const kat=u.kategori||'';
+      if(kat!==lastGrp){
+        if(kat)html+=`<div style="padding:6px 12px 4px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;background:var(--accent-soft);border-top:1px solid var(--accent-glow);border-bottom:1px solid var(--accent-glow);cursor:default;user-select:none">${esc(kat)}</div>`;
+        lastGrp=kat;
+      }
     }
-    html+=`<div class="combo-item" data-combo-idx="${ci}" data-urun="${esc(u.urunAdi)}" data-fiyat="${u.fiyat||0}" data-model="${esc(u.model||'')}" onmousedown="event.preventDefault();selectTiUrun(${idx},${ci})">${esc(u.urunAdi)}${u.kategori?` <span style="color:var(--text3);font-size:11px">(${esc(u.kategori)})</span>`:''}${u.model&&parseInt(u.model)?` <span style="color:var(--accent);font-size:11px;margin-left:6px">${esc(u.model)}P</span>`:''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`;
+    html+=`<div class="combo-item" data-combo-idx="${ci}" data-urun="${esc(u.urunAdi)}" data-fiyat="${u.fiyat||0}" data-model="${esc(u.model||'')}" onmousedown="event.preventDefault();selectTiUrun(${idx},${ci})">${esc(u.urunAdi)}${u.kategori?` <span style="color:var(--text3);font-size:11px">(${esc(u.kategori)})</span>`:''}${!isServis&&u.model&&parseInt(u.model)?` <span style="color:var(--accent);font-size:11px;margin-left:6px">${esc(u.model)}P</span>`:''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`;
     ci++;
   });
   drop.innerHTML=html;
@@ -605,17 +616,20 @@ function selectTiUrun(idx, itemIdx){
   const drop=_getTiDrop();
   const item=drop.querySelector('[data-combo-idx="'+itemIdx+'"]');
   if(!item)return;
-  const val=item.dataset.urun;
+  const urunAdi=item.dataset.urun;
   const fiyat=parseFloat(item.dataset.fiyat)||0;
-  const paramCount=parseInt(item.dataset.model)||0;
-  teklifItems[idx].aciklama=val;
-  teklifItems[idx]._baseAciklama=val;
+  const modelStr=item.dataset.model||'';
+  const isServis=currentPortal==='servis';
+  const paramCount=isServis?0:parseInt(modelStr)||0;
+  const aciklama=isServis&&modelStr?urunAdi+' — '+modelStr:urunAdi;
+  teklifItems[idx].aciklama=aciklama;
+  teklifItems[idx]._baseAciklama=aciklama;
   teklifItems[idx].seciliParametreler=[];
   if(fiyat>0)teklifItems[idx].birimFiyat=fiyat;
   drop.style.display='none';
   tiComboHighlight=-1;
   const inp=document.getElementById('ti-aciklama-'+idx);
-  if(inp)inp.value=val;
+  if(inp)inp.value=aciklama;
   const fiyatInp=document.getElementById('ti-fiyat-'+idx);
   if(fiyatInp&&fiyat>0)fiyatInp.value=fiyat;
   updateTeklifTotals();

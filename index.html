@@ -1457,6 +1457,7 @@
     <div class="modal-footer">
       <button class="btn-icon" id="td-delete-btn" style="color:var(--red);margin-right:auto" title="Sil" onclick="deleteCurrentTeklif()"><i class="ti ti-trash"></i></button>
       <button class="btn btn-ghost" onclick="closeModal('modal-teklif-detay')">Kapat</button>
+      <button class="btn btn-ghost" id="td-revize-btn" style="display:none" onclick="revizeTeklif(state.activeTeklifId)">Revize Et</button>
       <button class="btn btn-amber" id="td-edit-btn" onclick="editCurrentTeklif()">Düzenle</button>
       <button class="btn btn-primary" onclick="printCurrentTeklif()">PDF İndir</button>
     </div>

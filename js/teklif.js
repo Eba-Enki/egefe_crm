@@ -136,8 +136,8 @@ async function saveTeklif(andPrint=false){
 function saveTeklifAndPrint(){saveTeklif(true)}
 
 // ════ TEKLIF LIST ════
-const TSD={'Taslak':'badge-sf','İletildi':'badge-onay-bekl','Kabul Edildi':'badge-onaylandi','Siparişe Dönüştü':'badge-teslim','Reddedildi':'badge-reddedildi','Kapandı':'badge-teslim'};
-function getTeklifArsivDurumlari(){return currentPortal==='satis'?['Siparişe Dönüştü','Reddedildi']:['Reddedildi','Kapandı'];}
+const TSD={'Taslak':'badge-sf','İletildi':'badge-onay-bekl','Kabul Edildi':'badge-onaylandi','Siparişe Dönüştü':'badge-teslim','Reddedildi':'badge-reddedildi','Kapandı':'badge-teslim','Revize Edildi':'badge-sf'};
+function getTeklifArsivDurumlari(){return currentPortal==='satis'?['Siparişe Dönüştü','Reddedildi','Revize Edildi']:['Reddedildi','Kapandı'];}
 let teklifTab='aktif';
 function switchTeklifTab(tab){
   teklifTab=tab;
@@ -262,6 +262,7 @@ function openTeklifDetay(id){
   document.getElementById('td-kayitno').textContent=t.kayitNo||'—';
   var _eb=document.getElementById('td-edit-btn');if(_eb)_eb.style.display=canEdit?'':'none';
   var _db=document.getElementById('td-delete-btn');if(_db)_db.style.display=canEdit?'':'none';
+  var _rb=document.getElementById('td-revize-btn');if(_rb)_rb.style.display=(canEdit&&currentPortal==='satis'&&t.durum==='İletildi')?'':'none';
   document.getElementById('td-body').innerHTML=`
     ${canEdit&&currentPortal==='servis'&&t.durum==='İletildi'?`<div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="changeTeklifDurum('${t.id}','Kabul Edildi');closeModal('modal-teklif-detay')">✓ Kabul Et</button><button class="btn btn-danger btn-sm" onclick="changeTeklifDurum('${t.id}','Reddedildi');closeModal('modal-teklif-detay')">✕ Reddet</button></div>`:''}
     <div class="pd-contact" style="grid-template-columns:2fr 1fr 1.5fr">
@@ -316,6 +317,38 @@ function openTeklifDetay(id){
 function editCurrentTeklif(){closeModal('modal-teklif-detay');if(state.activeTeklifId)goTeklifForm(state.activeTeklifId)}
 function printCurrentTeklif(){if(state.activeTeklifId)printTeklifById(state.activeTeklifId)}
 function deleteCurrentTeklif(){if(!state.activeTeklifId)return;closeModal('modal-teklif-detay');confirmDelete('teklif',state.activeTeklifId);}
+async function revizeTeklif(id){
+  const t=state.teklifler.find(x=>x.id===id);if(!t)return;
+  const baseNo=t.teklifNo.replace(/-R\d+$/,'');
+  const esc2=baseNo.replace(/[-[\]{}()*+?.,\\^$|#\s]/g,'\\$&');
+  const maxRevNo=state.teklifler.reduce(function(mx,x){const m=x.teklifNo.match(new RegExp('^'+esc2+'-R(\\d+)$'));return m?Math.max(mx,parseInt(m[1])):mx;},0);
+  const newTeklifNo=baseNo+'-R'+(maxRevNo+1);
+  showConfirm('"'+t.teklifNo+'" revizyonu oluşturulsun mu? Mevcut teklif "Revize Edildi" olarak arşive taşınacak.',async function(){
+    const prevDurum=t.durum;
+    const updated=await updateTeklifDurum(id,{durum:'Revize Edildi'});
+    if(!updated)return;
+    const payload={
+      teklifNo:newTeklifNo,parentId:t.parentId||id,revizyonNo:maxRevNo+1,
+      musteriId:t.musteriId,kurum:t.kurum,ilgiliKisi:t.ilgiliKisi,telefon:t.telefon,email:t.email,
+      teklifTarihi:today(),gecerlilikTarihi:t.gecerlilikTarihi,notlar:t.notlar,
+      paraBirimi:t.paraBirimi,odemeKosulu:t.odemeKosulu,vade:t.vade,kdvOran:t.kdvOran,
+      satirlar:JSON.parse(JSON.stringify(t.satirlar||[])),sorumlu:t.sorumlu,
+      portal:currentPortal,durum:'Taslak'
+    };
+    try{
+      const res=await apiPost('teklifler',payload);
+      state.teklifler.push(res.teklif);
+      closeModal('modal-teklif-detay');
+      renderTeklifler();renderDashboard();
+      toast('Revizyon oluşturuldu: '+newTeklifNo,'success');
+      goTeklifForm(res.teklif.id);showPage('teklif-form',true);
+    }catch(e){
+      await updateTeklifDurum(id,{durum:prevDurum});
+      const ri=state.teklifler.findIndex(x=>x.id===id);if(ri>=0)state.teklifler[ri].durum=prevDurum;
+      toast(e.message||'Revizyon oluşturulamadı.','error');
+    }
+  },{title:'Revizyon Oluştur',okText:'Revize Et',okClass:'btn-primary'});
+}
 
 // ════ PDF ════
 function printTeklifById(id){

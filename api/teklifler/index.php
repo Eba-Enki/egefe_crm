@@ -5,7 +5,7 @@ require __DIR__ . '/../_bootstrap.php';
 $user = requireAuth($pdo);
 
 // Satış: Taslak→İletildi→Siparişe Dönüştü|Reddedildi  /  Servis: +Kabul Edildi+Kapandı
-const DURUM_DEGERLERI = ['Taslak','İletildi','Kabul Edildi','Siparişe Dönüştü','Reddedildi','Kapandı'];
+const DURUM_DEGERLERI = ['Taslak','İletildi','Kabul Edildi','Siparişe Dönüştü','Reddedildi','Kapandı','Revize Edildi'];
 const BIRIM_DEGERLERI = ['Adet','Saat','Gün','Parça'];
 const PARA_BIRIMLERI = ['TRY','USD','EUR','GBP'];
 
@@ -82,6 +82,8 @@ function teklifResponse(PDO $pdo, array $row, ?array $satirlar = null): array {
         'sorumlu'            => $row['sorumlu'],
         'durum'              => $row['durum'],
         'redNedeni'          => $row['red_nedeni'],
+        'parentId'           => $row['parent_id'],
+        'revizyonNo'         => (int)($row['revizyon_no'] ?? 0),
         'satirlar'           => $satirlar ?? fetchSatirlar($pdo, $row['id']),
         'olusturanKullanici' => $row['olusturan_kullanici'],
         'olusturmaTarihi'    => $row['created_at'],
@@ -153,15 +155,20 @@ switch ($method) {
         requirePortalAccess($user, $portal);
 
         $id = 't' . (string)(int)round(microtime(true) * 1000);
-        $teklifNo = nextTeklifNo($pdo, $portal);
+        $parentId = strOrNull($input['parentId'] ?? null);
+        $revizyonNo = (int)($input['revizyonNo'] ?? 0);
+        // Revizyon ise gelen teklifNo kullan, değilse otomatik üret
+        $teklifNo = ($parentId !== null && !empty($input['teklifNo']))
+            ? trim((string)$input['teklifNo'])
+            : nextTeklifNo($pdo, $portal);
         $satirlar = satirlarFromInput($input);
         $kdvOran = in_array((int)($input['kdvOran'] ?? 0), [0, 10, 20], true) ? (int)($input['kdvOran'] ?? 0) : 0;
 
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO quotes (id, portal, teklif_no, musteri_id, servis_id, kayit_no, seri_no, kurum, ilgili_kisi, telefon, email, teklif_tarihi, gecerlilik_tarihi, notlar, para_birimi, odeme_kosulu, vade, kdv_oran, teslimat, sorumlu, durum, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt = $pdo->prepare('INSERT INTO quotes (id, portal, teklif_no, parent_id, revizyon_no, musteri_id, servis_id, kayit_no, seri_no, kurum, ilgili_kisi, telefon, email, teklif_tarihi, gecerlilik_tarihi, notlar, para_birimi, odeme_kosulu, vade, kdv_oran, teslimat, sorumlu, durum, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([
-                $id, $portal, $teklifNo,
+                $id, $portal, $teklifNo, $parentId, $revizyonNo,
                 strOrNull($input['musteriId'] ?? null),
                 strOrNull($input['servisId'] ?? null),
                 strOrNull($input['kayitNo'] ?? null),

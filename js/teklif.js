@@ -727,7 +727,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
 
   if(currentPortal === 'satis' && !imzaGizle){
     const sigBoxX = leftX;
-    const sigBoxW = mm(85);
+    const sigBoxW = mm(65);
     const sigBoxH = mm(22);
     const sigBoxY = curY;
     const sigPad  = mm(3.5);

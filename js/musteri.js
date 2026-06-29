@@ -398,9 +398,15 @@ function confirmDelete(type,id){
       state.teklifler=state.teklifler.filter(t=>t.servisId!==id);
     }
     else if(type==='teklif'){
+      const deletedT=state.teklifler.find(x=>x.id===id);
+      const parentId=deletedT?.parentId;
       try{await apiDelete('teklifler?id='+encodeURIComponent(id));}
       catch(e){return toast(e.message||'Teklif silinemedi.','error');}
       state.teklifler=state.teklifler.filter(x=>x.id!==id);
+      if(parentId){
+        const parent=state.teklifler.find(x=>x.id===parentId);
+        if(parent&&parent.durum==='Revize Edildi')await updateTeklifDurum(parentId,{durum:'İletildi'});
+      }
     }
     else if(type==='musteri'){
       try{await apiDelete('musteriler?id='+encodeURIComponent(id));}

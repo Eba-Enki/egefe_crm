@@ -86,6 +86,9 @@ function teklifResponse(PDO $pdo, array $row, ?array $satirlar = null): array {
         'revizyonNo'         => (int)($row['revizyon_no'] ?? 0),
         'satirlar'           => $satirlar ?? fetchSatirlar($pdo, $row['id']),
         'olusturanKullanici' => $row['olusturan_kullanici'],
+        'olusturanAd'        => $row['olusturan_ad'] ?? null,
+        'olusturanEmail'     => $row['olusturan_email'] ?? null,
+        'olusturanTelefon'   => $row['olusturan_telefon'] ?? null,
         'olusturmaTarihi'    => $row['created_at'],
     ];
 }
@@ -122,7 +125,7 @@ switch ($method) {
         }
         requirePortalAccess($user, $portal);
 
-        $stmt = $pdo->prepare('SELECT * FROM quotes WHERE portal = ? ORDER BY created_at DESC');
+        $stmt = $pdo->prepare('SELECT q.*, u.ad AS olusturan_ad, u.email AS olusturan_email, u.telefon AS olusturan_telefon FROM quotes q LEFT JOIN users u ON u.id = q.olusturan_kullanici WHERE q.portal = ? ORDER BY q.created_at DESC');
         $stmt->execute([$portal]);
         $rows = $stmt->fetchAll();
 
@@ -196,7 +199,7 @@ switch ($method) {
             throw $e;
         }
 
-        $stmt = $pdo->prepare('SELECT * FROM quotes WHERE id = ?');
+        $stmt = $pdo->prepare('SELECT q.*, u.ad AS olusturan_ad, u.email AS olusturan_email, u.telefon AS olusturan_telefon FROM quotes q LEFT JOIN users u ON u.id = q.olusturan_kullanici WHERE q.id = ?');
         $stmt->execute([$id]);
         http_response_code(201);
         echo json_encode(['teklif' => teklifResponse($pdo, $stmt->fetch())]);
@@ -257,7 +260,7 @@ switch ($method) {
             throw $e;
         }
 
-        $stmt = $pdo->prepare('SELECT * FROM quotes WHERE id = ?');
+        $stmt = $pdo->prepare('SELECT q.*, u.ad AS olusturan_ad, u.email AS olusturan_email, u.telefon AS olusturan_telefon FROM quotes q LEFT JOIN users u ON u.id = q.olusturan_kullanici WHERE q.id = ?');
         $stmt->execute([$id]);
         echo json_encode(['teklif' => teklifResponse($pdo, $stmt->fetch())]);
         break;

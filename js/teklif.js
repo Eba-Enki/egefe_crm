@@ -215,7 +215,7 @@ function renderTeklifler(){
     <td style="text-align:center"><span class="kn-badge" style="border:none;background:transparent;padding:0">${esc(t.teklifNo)}</span></td>
     <td class="td-mono" style="color:var(--text2);text-align:center">${fmtDate(t.teklifTarihi)}</td>
     <td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(t.kurum||'—')}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--amber);font-size:12px;text-align:right">${fmtTL(calcTeklifToplam(t))}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--amber);font-size:12px;text-align:right">${fmtParaBirimi(calcTeklifToplam(t),t.paraBirimi)}</td>
     <td style="text-align:center"><span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>${getRedBilgi(t)?'<span title="'+esc(getRedBilgi(t).neden)+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
     ${showTemsilci?`<td style="font-size:12px;color:var(--text3);text-align:center">${esc(t.sorumlu||'—')}</td>`:''}
     <td style="text-align:right"><div class="action-row" onclick="event.stopPropagation()">
@@ -253,7 +253,7 @@ function openTeklifDetay(id){
   state.activeTeklifId=id;
   const toplam=calcTeklifToplam(t);
   let ara=0;
-  const sarHtml=(t.satirlar||[]).map(s=>{const a=s.miktar*s.birimFiyat;ara+=a;const sp=s.seciliParametreler||[];const baseAciklama=(sp.length?(s._baseAciklama||(s.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim()):s.aciklama)||'—';const pHtml=sp.length?`<div class="pd-sub-text">(${sp.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})</div>`:'';return`<tr><td>${esc(baseAciklama)}${pHtml}</td><td class="r" style="color:var(--text2)">${s.miktar} ${esc(s.birim)}</td><td class="r">${fmtTL(s.birimFiyat)}</td><td class="r">${fmtTL(a)}</td></tr>`;}).join('');
+  const sarHtml=(t.satirlar||[]).map(s=>{const a=s.miktar*s.birimFiyat;ara+=a;const sp=s.seciliParametreler||[];const baseAciklama=(sp.length?(s._baseAciklama||(s.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim()):s.aciklama)||'—';const pHtml=sp.length?`<div class="pd-sub-text">(${sp.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})</div>`:'';return`<tr><td>${esc(baseAciklama)}${pHtml}</td><td class="r" style="color:var(--text2)">${s.miktar} ${esc(s.birim)}</td><td class="r">${fmtParaBirimi(s.birimFiyat,t.paraBirimi)}</td><td class="r">${fmtParaBirimi(a,t.paraBirimi)}</td></tr>`;}).join('');
   const canEdit=state.currentUser?.rol!=='izleyici';
   document.getElementById('td-teklifno').textContent=t.teklifNo;
   document.getElementById('td-durum').innerHTML=`<span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>`;
@@ -290,7 +290,7 @@ function openTeklifDetay(id){
       </div>
       <div class="pd-totals">
         <div class="pd-totals-box">
-          <div class="pd-total-row final"><span class="pd-tl">Genel Toplam</span><span class="pd-tv">${fmtTL(toplam)}</span></div>
+          <div class="pd-total-row final"><span class="pd-tl">Genel Toplam</span><span class="pd-tv">${fmtParaBirimi(toplam,t.paraBirimi)}</span></div>
         </div>
       </div>
     </div>
@@ -738,7 +738,8 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     doc.setFillColor(...C.white);
     doc.roundedRect(sigBoxX, sigBoxY, sigBoxW, sigBoxH, 2, 2, 'FD');
 
-    const u = state.currentUser || {};
+    const cu = state.currentUser || {};
+    const u = t.olusturanAd ? {ad:t.olusturanAd,email:t.olusturanEmail,telefon:t.olusturanTelefon} : cu;
     if(u.ad){
       doc.setFontSize(8);
       doc.setFont('Arial','bold');

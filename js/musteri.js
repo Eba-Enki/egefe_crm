@@ -135,7 +135,7 @@ function renderUrunler(){
   const isServis=currentPortal==='servis';
   const sorted=isServis
     ?[...data].sort((a,b)=>(a.model||'').localeCompare(b.model||'','tr')||(a.urunAdi||'').localeCompare(b.urunAdi||'','tr'))
-    :[...data].sort((a,b)=>(a.urunKodu||'').localeCompare(b.urunKodu||'','tr',{numeric:true,sensitivity:'base'}));
+    :[...data].sort((a,b)=>kategoriSiraIndex(a.kategori)-kategoriSiraIndex(b.kategori)||(a.urunKodu||'').localeCompare(b.urunKodu||'','tr',{numeric:true,sensitivity:'base'}));
   var pagedU=sorted.slice((urunlerPage-1)*PAGE_SIZE,urunlerPage*PAGE_SIZE);
   renderPagination('urun-pagination',urunlerPage,sorted.length,'setUrunlerPage');
   const _fmtFiyat=(v,pb)=>{if(!v)return'—';const sym={'TRY':'₺','USD':'$','EUR':'€','GBP':'£'};return(sym[pb||'TRY']||'₺')+' '+new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v);};
@@ -215,7 +215,30 @@ function renderUrunKategorileri(){
   const el=document.getElementById('urun-kategori-list');if(!el)return;
   const cats=state.settings.urunKategoriler||[];
   if(!cats.length){el.innerHTML='<div style="font-size:12px;color:var(--text3)">Henüz kategori yok.</div>';return;}
-  el.innerHTML=cats.map((k,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px"><span style="font-size:13px;color:var(--text)">${k}</span><button class="btn-icon" style="color:var(--red);flex-shrink:0" onclick="deleteUrunKategori(${i})"><i class="ti ti-trash"></i></button></div>`).join('');
+  el.innerHTML=cats.map((k,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px">
+    <span style="font-size:13px;color:var(--text)">${esc(k)}</span>
+    <div style="display:flex;align-items:center;gap:2px;flex-shrink:0">
+      <button class="btn-icon" title="Yukarı taşı" style="${i===0?'opacity:.3;pointer-events:none':''}" onclick="moveUrunKategori(${i},-1)"><i class="ti ti-arrow-narrow-up"></i></button>
+      <button class="btn-icon" title="Aşağı taşı" style="${i===cats.length-1?'opacity:.3;pointer-events:none':''}" onclick="moveUrunKategori(${i},1)"><i class="ti ti-arrow-narrow-down"></i></button>
+      <button class="btn-icon" style="color:var(--red)" title="Sil" onclick="deleteUrunKategori(${i})"><i class="ti ti-trash"></i></button>
+    </div>
+  </div>`).join('');
+}
+async function moveUrunKategori(i,dir){
+  var list=state.settings.urunKategoriler||[];
+  var j=i+dir;
+  if(j<0||j>=list.length)return;
+  var prev=list;
+  var next=list.slice();
+  var tmp=next[i];next[i]=next[j];next[j]=tmp;
+  state.settings.urunKategoriler=next;
+  try{
+    await apiPut(currentPortal+'/ayarlar',state.settings);
+  }catch(e){
+    state.settings.urunKategoriler=prev;
+    return toast(e.message||'Sıra güncellenemedi.','error');
+  }
+  renderUrunKategorileri();
 }
 async function addUrunKategori(){
   const inp=document.getElementById('yeni-kategori-input');if(!inp)return;

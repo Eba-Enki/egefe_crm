@@ -375,6 +375,7 @@ function goMusteriForm(editId){
   document.getElementById('mf-edit-id').value=editId||'';
   document.getElementById('mf-title').textContent=m?'Müşteri Düzenle':'Yeni Müşteri';
   ['mf-kurum','mf-kisi','mf-tel','mf-email','mf-sehir','mf-adres','mf-not'].forEach(id=>{const f=id.replace('mf-','');document.getElementById(id).value=m?.[f]||''});
+  var mfPage=document.getElementById('mf-form-page');if(mfPage)mfPage.style.maxWidth=currentPortal==='satis'?'820px':'580px';
   if(currentPortal==='satis'){
     musteriKisiler=(m&&m.iletisimKisileri&&m.iletisimKisileri.length)
       ?JSON.parse(JSON.stringify(m.iletisimKisileri))
@@ -610,7 +611,7 @@ function openTiCombo(idx){
   if(!filtered.length){drop.style.display='none';return;}
   const sorted=isServis
     ?[...filtered].sort((a,b)=>(a.model||'').localeCompare(b.model||'','tr')||(a.urunAdi||'').localeCompare(b.urunAdi||'','tr'))
-    :[...filtered].sort((a,b)=>(a.kategori||'').localeCompare(b.kategori||'','tr'));
+    :[...filtered].sort((a,b)=>kategoriSiraIndex(a.kategori)-kategoriSiraIndex(b.kategori)||(a.kategori||'').localeCompare(b.kategori||'','tr'));
   let html='';let lastGrp=undefined;let ci=0;
   sorted.forEach(u=>{
     if(isServis){
@@ -626,7 +627,7 @@ function openTiCombo(idx){
         lastGrp=kat;
       }
     }
-    html+=`<div class="combo-item" data-combo-idx="${ci}" data-urun="${esc(u.urunAdi)}" data-fiyat="${u.fiyat||0}" data-model="${esc(u.model||'')}" onmousedown="event.preventDefault();selectTiUrun(${idx},${ci})">${esc(u.urunAdi)}${u.kategori?` <span style="color:var(--text3);font-size:11px">(${esc(u.kategori)})</span>`:''}${!isServis&&u.model&&parseInt(u.model)?` <span style="color:var(--accent);font-size:11px;margin-left:6px">${esc(u.model)}P</span>`:''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`;
+    html+=`<div class="combo-item" data-combo-idx="${ci}" data-urun="${esc(u.urunAdi)}" data-fiyat="${u.fiyat||0}" data-model="${esc(u.model||'')}" data-kategori="${esc(u.kategori||'')}" onmousedown="event.preventDefault();selectTiUrun(${idx},${ci})">${esc(u.urunAdi)}${u.kategori?` <span style="color:var(--text3);font-size:11px">(${esc(u.kategori)})</span>`:''}${!isServis&&u.model&&parseInt(u.model)?` <span style="color:var(--accent);font-size:11px;margin-left:6px">${esc(u.model)}P</span>`:''}${u.fiyat?` <span style="color:var(--amber);font-size:11px;margin-left:8px">${fmtTL(u.fiyat)}</span>`:''}</div>`;
     ci++;
   });
   drop.innerHTML=html;
@@ -655,9 +656,10 @@ function selectTiUrun(idx, itemIdx){
   const urunAdi=item.dataset.urun;
   const fiyat=parseFloat(item.dataset.fiyat)||0;
   const modelStr=item.dataset.model||'';
+  const kategori=item.dataset.kategori||'';
   const isServis=currentPortal==='servis';
   const paramCount=isServis?0:parseInt(modelStr)||0;
-  const aciklama=isServis&&modelStr?urunAdi+' — '+modelStr:urunAdi;
+  const aciklama=isServis&&modelStr?urunAdi+' — '+modelStr:(kategori?urunAdi+' ('+kategori+')':urunAdi);
   teklifItems[idx].aciklama=aciklama;
   teklifItems[idx]._baseAciklama=aciklama;
   teklifItems[idx].seciliParametreler=[];

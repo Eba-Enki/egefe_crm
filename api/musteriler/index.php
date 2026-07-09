@@ -12,17 +12,35 @@ function normalizePortal($value): ?string {
 
 function musteriResponse(array $row): array {
     return [
-        'id'      => $row['id'],
-        'kayitNo' => $row['kayit_no'],
-        'portal'  => $row['portal'],
-        'kurum'   => $row['kurum'],
-        'kisi'    => $row['kisi'],
-        'tel'     => $row['tel'],
-        'email'   => $row['email'],
-        'sehir'   => $row['sehir'],
-        'adres'   => $row['adres'],
-        'not'     => $row['notlar'],
+        'id'                => $row['id'],
+        'kayitNo'           => $row['kayit_no'],
+        'portal'            => $row['portal'],
+        'kurum'             => $row['kurum'],
+        'kisi'              => $row['kisi'],
+        'tel'               => $row['tel'],
+        'email'             => $row['email'],
+        'sehir'             => $row['sehir'],
+        'adres'             => $row['adres'],
+        'not'               => $row['notlar'],
+        'iletisimKisileri'  => !empty($row['iletisim_kisileri']) ? json_decode($row['iletisim_kisileri'], true) : [],
     ];
+}
+
+// İlgili kişi listesi yalnızca Satış Pazarlama Portalı'nda kullanılır; boş ad satırları elenir
+function iletisimKisilerFromInput(array $input, string $portal): array {
+    if ($portal !== 'satis') return [];
+    $out = [];
+    foreach (($input['iletisimKisileri'] ?? []) as $k) {
+        $ad = trim((string)($k['ad'] ?? ''));
+        if ($ad === '') continue;
+        $out[] = [
+            'ad'        => $ad,
+            'departman' => trim((string)($k['departman'] ?? '')),
+            'tel'       => trim((string)($k['tel'] ?? '')),
+            'email'     => trim((string)($k['email'] ?? '')),
+        ];
+    }
+    return $out;
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -59,10 +77,11 @@ switch ($method) {
         $mx = $maxRow->fetch();
         $kayitNo = 'MK' . str_pad((string)((int)($mx['mx'] ?? 0) + 1), 5, '0', STR_PAD_LEFT);
 
-        $stmt = $pdo->prepare('INSERT INTO customers (id, kayit_no, portal, kurum, kisi, tel, email, sehir, adres, notlar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt = $pdo->prepare('INSERT INTO customers (id, kayit_no, portal, kurum, kisi, iletisim_kisileri, tel, email, sehir, adres, notlar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([
             $id, $kayitNo, $portal, $kurum,
             strOrNull($input['kisi'] ?? null),
+            json_encode(iletisimKisilerFromInput($input, $portal), JSON_UNESCAPED_UNICODE),
             strOrNull($input['tel'] ?? null),
             strOrNull($input['email'] ?? null),
             strOrNull($input['sehir'] ?? null),
@@ -96,10 +115,11 @@ switch ($method) {
         }
         requirePortalAccess($user, $existing['portal']);
 
-        $stmt = $pdo->prepare('UPDATE customers SET kurum=?, kisi=?, tel=?, email=?, sehir=?, adres=?, notlar=? WHERE id=?');
+        $stmt = $pdo->prepare('UPDATE customers SET kurum=?, kisi=?, iletisim_kisileri=?, tel=?, email=?, sehir=?, adres=?, notlar=? WHERE id=?');
         $stmt->execute([
             $kurum,
             strOrNull($input['kisi'] ?? null),
+            json_encode(iletisimKisilerFromInput($input, $existing['portal']), JSON_UNESCAPED_UNICODE),
             strOrNull($input['tel'] ?? null),
             strOrNull($input['email'] ?? null),
             strOrNull($input['sehir'] ?? null),

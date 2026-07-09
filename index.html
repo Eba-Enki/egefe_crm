@@ -442,6 +442,10 @@
               </div>
             </div>
             <div class="field"><label>İlgili Kişi</label><input type="text" id="tf-ilgiliKisi"></div>
+            <div class="field tf-satis-field" id="tf-ilgili-kisi-sec-wrap" style="display:none">
+              <label>Kayıtlı Kişi Seç</label>
+              <select id="tf-ilgili-kisi-sec" onchange="onTfIlgiliKisiSecim()"></select>
+            </div>
             <!-- Servis portalı alanları -->
             <div class="field tf-servis-field"><label>İlişkili Kayıt No</label><input type="text" id="tf-kayitNo" placeholder="Ör: KN000001" style="color:var(--accent)"></div>
             <div class="field tf-servis-field"><label>Cihaz Seri No</label><input type="text" id="tf-seriNo"></div>
@@ -540,13 +544,29 @@
         <div class="form-card">
           <div class="form-grid">
             <div class="field form-full"><label>Kurum Adı <span class="req">*</span></label><input type="text" id="mf-kurum" placeholder="Hastane / Şirket adı"></div>
-            <div class="field"><label>İlgili Kişi</label><input type="text" id="mf-kisi"></div>
-            <div class="field"><label>Telefon</label><input type="tel" id="mf-tel"></div>
-            <div class="field"><label>E-posta</label><input type="email" id="mf-email"></div>
+            <div class="field tf-servis-field"><label>İlgili Kişi</label><input type="text" id="mf-kisi"></div>
+            <div class="field tf-servis-field"><label>Telefon</label><input type="tel" id="mf-tel"></div>
+            <div class="field tf-servis-field"><label>E-posta</label><input type="email" id="mf-email"></div>
             <div class="field"><label>Şehir</label><input type="text" id="mf-sehir"></div>
             <div class="field form-full"><label>Adres</label><textarea id="mf-adres" rows="2"></textarea></div>
             <div class="field form-full"><label>Notlar</label><textarea id="mf-not" rows="2"></textarea></div>
           </div>
+        </div>
+        <div class="form-card tf-satis-field" style="display:none">
+          <div class="form-section-title">İlgili Kişiler <span style="font-weight:400;color:var(--text3)">(satın alma, teknik, muhasebe vb.)</span></div>
+          <div class="teklif-items-wrap">
+            <table class="teklif-items">
+              <thead><tr>
+                <th class="mk-ad">Ad Soyad</th>
+                <th class="mk-departman">Departman</th>
+                <th class="mk-tel">Telefon</th>
+                <th class="mk-email">E-posta</th>
+                <th class="mk-del"></th>
+              </tr></thead>
+              <tbody id="mk-body"></tbody>
+            </table>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="addMusteriKisi()"><i class="ti ti-plus"></i> Kişi Ekle</button>
         </div>
         <div class="form-actions">
           <button class="btn btn-ghost" onclick="showPage('musteriler')">İptal</button>
@@ -1497,15 +1517,15 @@
 <div id="toast-container"></div>
 
 <script src="js/api.js?v=2"></script>
-<script src="js/state.js?v=10"></script>
+<script src="js/state.js?v=11"></script>
 <script src="js/auth.js?v=12"></script>
 <script src="js/sistem.js?v=2"></script>
-<script src="js/ui.js?v=18"></script>
+<script src="js/ui.js?v=19"></script>
 <script src="js/dashboard.js?v=5"></script>
 <script src="js/servis.js?v=12"></script>
-<script src="js/teklif.js?v=16"></script>
+<script src="js/teklif.js?v=17"></script>
 <script src="js/tutanak.js?v=6"></script>
-<script src="js/musteri.js?v=12"></script>
+<script src="js/musteri.js?v=13"></script>
 <script src="js/export.js?v=5"></script>
 <script src="js/satis.js?v=12"></script>
 <script src="js/stok.js?v=5"></script>

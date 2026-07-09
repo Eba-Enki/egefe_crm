@@ -481,6 +481,8 @@ input.musteri-locked{background:var(--bg4)!important;cursor:default;padding-righ
 .ti-aciklama{width:36%;vertical-align:top}.ti-miktar{width:9%;vertical-align:top}.ti-birim{width:10%;vertical-align:top}.ti-fiyat{width:13%;vertical-align:top}
 .ti-total{width:13%;font-family:var(--font-mono);font-size:12px;color:var(--amber);padding-right:10px!important;text-align:right;white-space:nowrap;vertical-align:top}
 .ti-del{width:4%;text-align:center;vertical-align:top}
+.mk-ad{width:30%;vertical-align:top}.mk-departman{width:24%;vertical-align:top}.mk-tel{width:20%;vertical-align:top}.mk-email{width:22%;vertical-align:top}
+.mk-del{width:4%;text-align:center;vertical-align:top}
 .teklif-totals{background:var(--bg3);padding:13px 16px;display:flex;justify-content:flex-end}
 .totals-inner{min-width:220px}
 .totals-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px}

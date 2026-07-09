@@ -338,6 +338,7 @@ function goTeklifForm(editId,servisId){
     if(foundTM)lockMusteriField('tf-kurum',foundTM.id);
     else if(t.kurum){var _hidTF=document.getElementById('tf-musteri-id');if(_hidTF)_hidTF.value='__edit_existing__';}
     else unlockMusteriField('tf-kurum');
+    refreshTfIlgiliKisiPicker(foundTM);
   } else {
     document.getElementById('tf-teklifNo').value=nextTN();
     document.getElementById('tf-teklifTarihi').value=today();
@@ -352,6 +353,7 @@ function goTeklifForm(editId,servisId){
     var _imzaCb0=document.getElementById('tf-imza-gizle');if(_imzaCb0)_imzaCb0.checked=false;
     var _sa0=document.getElementById('tf-servis-ara');if(_sa0)_sa0.dataset.servisid='';
     unlockMusteriField('tf-kurum');
+    refreshTfIlgiliKisiPicker(null);
     if(servisId){
       const s=state.servisler.find(x=>x.id===servisId);
       if(s){
@@ -361,7 +363,7 @@ function goTeklifForm(editId,servisId){
         var _fku2=document.getElementById('tf-kurum');if(_fku2)_fku2.value=s.kurumAdi||'';
         var _fil2=document.getElementById('tf-ilgiliKisi');if(_fil2)_fil2.value=s.ilgiliKisi||'';
         var foundTM2=state.musteriler.find(function(x){return x.kurum===(s.kurumAdi||'');});
-        if(foundTM2)lockMusteriField('tf-kurum',foundTM2.id);
+        if(foundTM2){lockMusteriField('tf-kurum',foundTM2.id);refreshTfIlgiliKisiPicker(foundTM2);}
       }
     }
     teklifItems=[{aciklama:'',miktar:1,birim:'Adet',birimFiyat:0}];
@@ -373,6 +375,12 @@ function goMusteriForm(editId){
   document.getElementById('mf-edit-id').value=editId||'';
   document.getElementById('mf-title').textContent=m?'Müşteri Düzenle':'Yeni Müşteri';
   ['mf-kurum','mf-kisi','mf-tel','mf-email','mf-sehir','mf-adres','mf-not'].forEach(id=>{const f=id.replace('mf-','');document.getElementById(id).value=m?.[f]||''});
+  if(currentPortal==='satis'){
+    musteriKisiler=(m&&m.iletisimKisileri&&m.iletisimKisileri.length)
+      ?JSON.parse(JSON.stringify(m.iletisimKisileri))
+      :(m&&m.kisi?[{ad:m.kisi,departman:'',tel:m.tel||'',email:m.email||''}]:[{ad:'',departman:'',tel:'',email:''}]);
+    renderMusteriKisiler();
+  }
   showPage('musteri-form',true);
 }
 function goUrunForm(editId){
@@ -404,6 +412,32 @@ var _MUSTERI_COMBO_CFG={
   'sf-kurumAdi':{clear:'sf-kurum-clear-btn',hidden:'sf-musteri-id'},
   'tf-kurum':{clear:'tf-kurum-clear-btn',hidden:'tf-musteri-id'}
 };
+
+// ════ TEKLİF FORMU — KAYITLI İLGİLİ KİŞİ SEÇİMİ (yalnızca Satış Pazarlama Portalı) ════
+var _tfIlgiliKisiListesi=[];
+function refreshTfIlgiliKisiPicker(musteri){
+  var wrap=document.getElementById('tf-ilgili-kisi-sec-wrap');
+  var sel=document.getElementById('tf-ilgili-kisi-sec');
+  if(!wrap||!sel)return;
+  var liste=(currentPortal==='satis'&&musteri&&musteri.iletisimKisileri)?musteri.iletisimKisileri:[];
+  _tfIlgiliKisiListesi=liste;
+  if(!liste.length){wrap.style.display='none';sel.innerHTML='';return;}
+  var curAd=(document.getElementById('tf-ilgiliKisi')||{}).value||'';
+  var matchIdx=liste.findIndex(function(k){return k.ad===curAd;});
+  sel.innerHTML=liste.map(function(k,i){return`<option value="${i}">${esc(k.ad)}${k.departman?' — '+esc(k.departman):''}</option>`;}).join('');
+  sel.value=matchIdx>=0?String(matchIdx):'0';
+  wrap.style.display='';
+  if(matchIdx<0)onTfIlgiliKisiSecim();
+}
+function onTfIlgiliKisiSecim(){
+  var sel=document.getElementById('tf-ilgili-kisi-sec');
+  if(!sel)return;
+  var k=_tfIlgiliKisiListesi[parseInt(sel.value)];
+  if(!k)return;
+  var ki=document.getElementById('tf-ilgiliKisi');if(ki)ki.value=k.ad||'';
+  var tel=document.getElementById('tf-telefon');if(tel)tel.value=k.tel||'';
+  var eml=document.getElementById('tf-email');if(eml)eml.value=k.email||'';
+}
 
 function lockMusteriField(inputId,musteriId){
   var inp=document.getElementById(inputId);
@@ -442,6 +476,7 @@ function clearMusteriSelection(inputId){
   if(inp){inp.value='';setTimeout(function(){inp.focus();},50);}
   if(inputId==='tf-kurum'){
     ['tf-ilgiliKisi','tf-telefon','tf-email'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+    refreshTfIlgiliKisiPicker(null);
   } else if(inputId==='sf-kurumAdi'){
     ['sf-ilgiliKisi','sf-telefon','sf-email'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
   }
@@ -487,6 +522,7 @@ function comboPickItem(inputId,dropId,idx){
         var ki=document.getElementById('tf-ilgiliKisi');if(ki)ki.value=m.kisi||'';
         var tel=document.getElementById('tf-telefon');if(tel)tel.value=m.tel||'';
         var eml=document.getElementById('tf-email');if(eml)eml.value=m.email||'';
+        refreshTfIlgiliKisiPicker(m);
       } else {
         var ki2=document.getElementById('sf-ilgiliKisi');if(ki2)ki2.value=m.kisi||'';
         var tel2=document.getElementById('sf-telefon');if(tel2)tel2.value=m.tel||'';

@@ -46,10 +46,35 @@ function renderMusteriler(){
   renderPagination('musteri-pagination',musterilerPage,data.length,'setMusterilerPage');
   tbody.innerHTML=pagedM.map(m=>{return`<tr>${canEdit?`<td onclick="event.stopPropagation()"><input type="checkbox" ${bulkIsChecked('musteriList',m.id)?'checked':''} onchange="bulkToggleRow('musteriList','${esc(m.id)}','renderMusteriler')"></td>`:''}<td style="text-align:center"><span class="kn-badge" style="color:var(--accent);font-size:10px">${esc(m.kayitNo||'—')}</span></td><td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(m.kurum)}</td><td style="color:var(--text2);text-align:center">${esc(m.kisi||'—')}</td><td class="td-mono" style="text-align:center">${esc(m.tel||'—')}</td><td style="color:var(--text2);text-align:center">${esc(m.email||'—')}</td><td style="text-align:center">${esc(m.sehir||'—')}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goMusteriForm('${esc(m.id)}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('musteri','${esc(m.id)}')"><i class="ti ti-trash"></i></button></div></td></tr>`;}).join('');
 }
+// ════ MÜŞTERİ İLGİLİ KİŞİLERİ (yalnızca Satış Pazarlama Portalı) ════
+var musteriKisiler=[];
+function addMusteriKisi(){musteriKisiler.push({ad:'',departman:'',tel:'',email:''});renderMusteriKisiler();}
+function removeMusteriKisi(i){if(musteriKisiler.length>1)musteriKisiler.splice(i,1);else musteriKisiler=[{ad:'',departman:'',tel:'',email:''}];renderMusteriKisiler();}
+function renderMusteriKisiler(){
+  var body=document.getElementById('mk-body');if(!body)return;
+  body.innerHTML=musteriKisiler.map(function(k,i){
+    return `<tr>
+      <td class="mk-ad"><input type="text" value="${esc(k.ad||'')}" placeholder="Ad Soyad" oninput="musteriKisiler[${i}].ad=this.value"></td>
+      <td class="mk-departman"><input type="text" value="${esc(k.departman||'')}" placeholder="Satın Alma, Teknik..." oninput="musteriKisiler[${i}].departman=this.value"></td>
+      <td class="mk-tel"><input type="tel" value="${esc(k.tel||'')}" oninput="musteriKisiler[${i}].tel=this.value"></td>
+      <td class="mk-email"><input type="email" value="${esc(k.email||'')}" oninput="musteriKisiler[${i}].email=this.value"></td>
+      <td class="mk-del"><button class="btn-icon" style="color:var(--red)" onclick="removeMusteriKisi(${i})"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
+  }).join('');
+}
 async function saveMusteri(){
   const kurum=toTitleCase(document.getElementById('mf-kurum').value.trim());if(!kurum)return toast('Kurum adı zorunlu.','error');
   const editId=document.getElementById('mf-edit-id').value;
-  const payload={kurum,kisi:toTitleCase(document.getElementById('mf-kisi').value.trim()),tel:formatTel(document.getElementById('mf-tel').value),email:document.getElementById('mf-email').value.trim(),sehir:toTitleCase(document.getElementById('mf-sehir').value.trim()),adres:toTitleCase(document.getElementById('mf-adres').value.trim()),not:document.getElementById('mf-not').value.trim()};
+  const isSatisPortal=currentPortal==='satis';
+  var kisiListesi=[];
+  var birincil={kisi:'',tel:'',email:''};
+  if(isSatisPortal){
+    kisiListesi=musteriKisiler.map(function(k){return{ad:toTitleCase((k.ad||'').trim()),departman:toTitleCase((k.departman||'').trim()),tel:formatTel(k.tel||''),email:(k.email||'').trim()};}).filter(function(k){return k.ad;});
+    if(kisiListesi.length)birincil={kisi:kisiListesi[0].ad,tel:kisiListesi[0].tel,email:kisiListesi[0].email};
+  } else {
+    birincil={kisi:toTitleCase(document.getElementById('mf-kisi').value.trim()),tel:formatTel(document.getElementById('mf-tel').value),email:document.getElementById('mf-email').value.trim()};
+  }
+  const payload={kurum,kisi:birincil.kisi,tel:birincil.tel,email:birincil.email,iletisimKisileri:kisiListesi,sehir:toTitleCase(document.getElementById('mf-sehir').value.trim()),adres:toTitleCase(document.getElementById('mf-adres').value.trim()),not:document.getElementById('mf-not').value.trim()};
   var savedMId;
   try{
     if(editId){
@@ -77,6 +102,7 @@ async function saveMusteri(){
       var ki=document.getElementById('tf-ilgiliKisi');if(ki)ki.value=payload.kisi||'';
       var tel=document.getElementById('tf-telefon');if(tel)tel.value=payload.tel||'';
       var eml=document.getElementById('tf-email');if(eml)eml.value=payload.email||'';
+      if(typeof refreshTfIlgiliKisiPicker==='function')refreshTfIlgiliKisiPicker(state.musteriler.find(function(x){return x.id===savedMId;}));
     } else if(ret.inputId==='sf-kurumAdi'){
       var ki2=document.getElementById('sf-ilgiliKisi');if(ki2)ki2.value=payload.kisi||'';
       var tel2=document.getElementById('sf-telefon');if(tel2)tel2.value=payload.tel||'';

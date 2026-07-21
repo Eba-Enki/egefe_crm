@@ -8,7 +8,7 @@ requirePortalAccess($user, 'servis');
 const GARANTI_DEGERLERI = ['Evet', 'Hayır'];
 const DURUM_DEGERLERI = ['Cihaz Kabul', 'Arıza Tespitinde', 'Yanıt Bekleniyor', 'Onarımda', 'Teslim Edildi', 'Reddedildi', 'İşlemsiz İade'];
 
-function servisResponse(array $row): array {
+function servisResponse(PDO $pdo, array $row, ?array $durumGecmisi = null): array {
     return [
         'id'               => $row['id'],
         'kayitNo'          => $row['kayit_no'],
@@ -30,6 +30,7 @@ function servisResponse(array $row): array {
         'notlar'           => $row['notlar'],
         'olusturanKullanici' => $row['olusturan_kullanici'],
         'olusturmaTarihi'  => $row['created_at'],
+        'durumGecmisi'     => $durumGecmisi ?? fetchStatusHistory($pdo, 'servis', $row['id']),
     ];
 }
 
@@ -60,7 +61,12 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case 'GET':
         $stmt = $pdo->query('SELECT * FROM service_records ORDER BY created_at DESC');
-        echo json_encode(['servisler' => array_map('servisResponse', $stmt->fetchAll())]);
+        $rows = $stmt->fetchAll();
+        $durumMap = fetchStatusHistoryMap($pdo, 'servis', array_column($rows, 'id'));
+        echo json_encode(['servisler' => array_map(
+            fn(array $r) => servisResponse($pdo, $r, $durumMap[$r['id']] ?? []),
+            $rows
+        )]);
         break;
 
     case 'POST':
@@ -74,6 +80,7 @@ switch ($method) {
 
         $id = 's' . (string)(int)round(microtime(true) * 1000);
         $kayitNo = nextServisKayitNo($pdo);
+        $durum = enumOrDefault($input['durum'] ?? null, DURUM_DEGERLERI, 'Cihaz Kabul');
 
         $stmt = $pdo->prepare('INSERT INTO service_records (id, kayit_no, musteri_id, kurum_adi, ilgili_kisi, telefon, email, urun_adi, seri_no, aksesuarlar, aksesuar_diger, gelis_tarihi, garanti_durumu, durum, kargo_tarihi, kargo_firmasi, teslim_alan, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([
@@ -89,18 +96,19 @@ switch ($method) {
             strOrNull($input['aksesuarDiger'] ?? null),
             strOrNull($input['gelisTarihi'] ?? null),
             enumOrDefault($input['garantiDurumu'] ?? null, GARANTI_DEGERLERI, 'Hayır'),
-            enumOrDefault($input['durum'] ?? null, DURUM_DEGERLERI, 'Yeni Gelen'),
+            $durum,
             strOrNull($input['kargoTarihi'] ?? null),
             strOrNull($input['kargoFirmasi'] ?? null),
             strOrNull($input['teslimAlan'] ?? null),
             strOrNull($input['notlar'] ?? null),
             $user['id'],
         ]);
+        logStatusHistory($pdo, 'servis', $id, $durum, $user['id']);
 
         $stmt = $pdo->prepare('SELECT * FROM service_records WHERE id = ?');
         $stmt->execute([$id]);
         http_response_code(201);
-        echo json_encode(['servis' => servisResponse($stmt->fetch())]);
+        echo json_encode(['servis' => servisResponse($pdo, $stmt->fetch())]);
         break;
 
     case 'PUT':
@@ -113,13 +121,16 @@ switch ($method) {
             exit;
         }
 
-        $check = $pdo->prepare('SELECT id FROM service_records WHERE id = ?');
+        $check = $pdo->prepare('SELECT * FROM service_records WHERE id = ?');
         $check->execute([$id]);
-        if (!$check->fetch()) {
+        $existing = $check->fetch();
+        if (!$existing) {
             http_response_code(404);
             echo json_encode(['error' => 'Kayıt bulunamadı']);
             exit;
         }
+
+        $yeniDurum = enumOrDefault($input['durum'] ?? $existing['durum'], DURUM_DEGERLERI, $existing['durum']);
 
         $stmt = $pdo->prepare('UPDATE service_records SET musteri_id=?, kurum_adi=?, ilgili_kisi=?, telefon=?, email=?, urun_adi=?, seri_no=?, aksesuarlar=?, aksesuar_diger=?, gelis_tarihi=?, garanti_durumu=?, durum=?, kargo_tarihi=?, kargo_firmasi=?, teslim_alan=?, notlar=? WHERE id=?');
         $stmt->execute([
@@ -134,17 +145,20 @@ switch ($method) {
             strOrNull($input['aksesuarDiger'] ?? null),
             strOrNull($input['gelisTarihi'] ?? null),
             enumOrDefault($input['garantiDurumu'] ?? null, GARANTI_DEGERLERI, 'Hayır'),
-            enumOrDefault($input['durum'] ?? null, DURUM_DEGERLERI, 'Yeni Gelen'),
+            $yeniDurum,
             strOrNull($input['kargoTarihi'] ?? null),
             strOrNull($input['kargoFirmasi'] ?? null),
             strOrNull($input['teslimAlan'] ?? null),
             strOrNull($input['notlar'] ?? null),
             $id,
         ]);
+        if ($yeniDurum !== $existing['durum']) {
+            logStatusHistory($pdo, 'servis', $id, $yeniDurum, $user['id']);
+        }
 
         $stmt = $pdo->prepare('SELECT * FROM service_records WHERE id = ?');
         $stmt->execute([$id]);
-        echo json_encode(['servis' => servisResponse($stmt->fetch())]);
+        echo json_encode(['servis' => servisResponse($pdo, $stmt->fetch())]);
         break;
 
     case 'DELETE':

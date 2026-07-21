@@ -67,5 +67,25 @@ function calcTeklifToplam(t){var ara=(t.satirlar||[]).reduce(function(a,s){retur
 // Ürün kategorilerinin Ayarlar > Ürün Kategorileri listesindeki manuel sırasını döndürür (bilinmeyen/boş kategori listenin sonuna düşer)
 function kategoriSiraIndex(kategori){var list=(state.settings&&state.settings.urunKategoriler)||[];var idx=list.indexOf(kategori||'');return idx===-1?list.length:idx;}
 
+// ════ SÜREÇ GEÇMİŞİ (durum zaman çizelgesi) ════
+const SG_TEKLIF_ETIKET={'Taslak':'Teklif oluşturuldu','İletildi':'Teklif iletildi','Kabul Edildi':'Teklif kabul edildi','Reddedildi':'Teklif reddedildi','Kapandı':'Teklif kapandı','Revize Edildi':'Teklif revize edildi','Siparişe Dönüştü':'Teklif siparişe dönüştü'};
+const SG_SERVIS_ETIKET={'Cihaz Kabul':'Cihaz kabul edildi','Arıza Tespitinde':'Arıza tespit edildi','Yanıt Bekleniyor':'Teklif yanıtı bekleniyor','Onarımda':'Onarıma alındı','Teslim Edildi':'Teslim edildi','Reddedildi':'Reddedildi','İşlemsiz İade':'İşlemsiz iade edildi'};
+const SG_TEKLIF_RENK={'Kabul Edildi':'sg-green','Siparişe Dönüştü':'sg-green','Reddedildi':'sg-red'};
+const SG_SERVIS_RENK={'Teslim Edildi':'sg-green','Reddedildi':'sg-red','İşlemsiz İade':'sg-red'};
+function sgFmtTarih(t){if(!t)return'';try{return new Date(t.replace(' ','T')).toLocaleDateString('tr-TR');}catch(e){return t;}}
+// items: [{tip:'teklif'|'servis', durum, tarih, showTag, meta}] — süreç geçmişi zaman çizelgesini HTML olarak üretir
+function sgBuildItemsHtml(items){
+  if(!items||!items.length)return'<div class="sg-empty">Henüz kayıtlı bir durum geçmişi yok.</div>';
+  return'<div class="sg-timeline">'+items.map(function(it){
+    var etiketMap=it.tip==='teklif'?SG_TEKLIF_ETIKET:SG_SERVIS_ETIKET;
+    var renkMap=it.tip==='teklif'?SG_TEKLIF_RENK:SG_SERVIS_RENK;
+    var baslik=etiketMap[it.durum]||it.durum;
+    var cls=renkMap[it.durum]||'';
+    var tagHtml=it.showTag?'<span class="sg-tag sg-tag-'+it.tip+'">'+(it.tip==='teklif'?'Teklif':'Servis')+'</span>':'';
+    var metaHtml=it.meta?'<div class="sg-meta" style="font-size:11.5px;color:var(--text3);margin-top:2px">'+esc(it.meta)+'</div>':'';
+    return'<div class="sg-item '+cls+'"><div class="sg-dot"></div><div class="sg-row"><span class="sg-title">'+esc(baslik)+'</span><span class="sg-date">'+sgFmtTarih(it.tarih)+'</span>'+tagHtml+'</div>'+metaHtml+'</div>';
+  }).join('')+'</div>';
+}
+
 // ════ AUTH ════
 // ════ PORTAL ════

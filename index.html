@@ -372,6 +372,10 @@
           <div class="form-section-title">Notlar</div>
           <div class="field"><textarea id="sf-notlar" rows="3" placeholder="Arıza açıklaması, yapılan işlemler..."></textarea></div>
         </div>
+        <div class="form-card" id="sf-surec-card" style="display:none">
+          <div class="form-section-title">Süreç Geçmişi</div>
+          <div id="sf-surec-gecmisi"></div>
+        </div>
         <div class="form-actions">
           <button class="btn btn-ghost" onclick="showPage(state.prevPage||'servisler')">İptal</button>
           <button class="btn btn-primary" id="sf-save-btn" onclick="saveServis()">Kaydet</button>
@@ -1517,13 +1521,13 @@
 <div id="toast-container"></div>
 
 <script src="js/api.js?v=2"></script>
-<script src="js/state.js?v=12"></script>
+<script src="js/state.js?v=13"></script>
 <script src="js/auth.js?v=12"></script>
 <script src="js/sistem.js?v=2"></script>
-<script src="js/ui.js?v=22"></script>
+<script src="js/ui.js?v=23"></script>
 <script src="js/dashboard.js?v=5"></script>
 <script src="js/servis.js?v=12"></script>
-<script src="js/teklif.js?v=17"></script>
+<script src="js/teklif.js?v=18"></script>
 <script src="js/tutanak.js?v=6"></script>
 <script src="js/musteri.js?v=14"></script>
 <script src="js/export.js?v=5"></script>

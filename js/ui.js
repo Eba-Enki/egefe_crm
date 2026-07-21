@@ -285,6 +285,7 @@ function goServisForm(editId,viewOnly){
     var foundSM=state.musteriler.find(function(x){return x.kurum===(s.kurumAdi||'');});
     if(foundSM)lockMusteriField('sf-kurumAdi',foundSM.id);
     else unlockMusteriField('sf-kurumAdi');
+    renderSfSurecGecmisi(s);
   } else {
     document.getElementById('sf-title').textContent='Yeni Servis Kaydı';
     document.getElementById('sf-sub').textContent='Yeni bir cihaz servisi oluşturun';
@@ -295,6 +296,7 @@ function goServisForm(editId,viewOnly){
     var sfDurumEl=document.getElementById('sf-durum');if(sfDurumEl)sfDurumEl.value='Cihaz Kabul';
     sfAksesuarlar=[];
     unlockMusteriField('sf-kurumAdi');
+    var sfSurecCard0=document.getElementById('sf-surec-card');if(sfSurecCard0)sfSurecCard0.style.display='none';
   }
   renderSfChips();
   if(viewOnly){
@@ -305,6 +307,22 @@ function goServisForm(editId,viewOnly){
     document.querySelectorAll('#page-servis-form .seri-no-row .btn-icon,#page-servis-form button[onclick*="addSeriNoRow"]').forEach(function(el){el.style.display='none';});
   }
   showPage('servis-form',true);
+}
+// Servis kaydının kendi durum geçmişini, ona bağlı tekliflerin durum geçmişiyle birleştirip kronolojik gösterir
+async function renderSfSurecGecmisi(s){
+  var card=document.getElementById('sf-surec-card');
+  var body=document.getElementById('sf-surec-gecmisi');
+  if(!card||!body)return;
+  card.style.display='';
+  body.innerHTML='<div class="sg-empty">Yükleniyor...</div>';
+  try{await loadTeklifler();}catch(e){}
+  var items=(s.durumGecmisi||[]).map(function(h){return{tip:'servis',durum:h.durum,tarih:h.tarih,showTag:true};});
+  var bagliTeklifler=(state.teklifler||[]).filter(function(t){return t.servisId===s.id;});
+  bagliTeklifler.forEach(function(t){
+    (t.durumGecmisi||[]).forEach(function(h){items.push({tip:'teklif',durum:h.durum,tarih:h.tarih,showTag:true,meta:t.teklifNo});});
+  });
+  items.sort(function(a,b){return new Date(a.tarih)-new Date(b.tarih);});
+  body.innerHTML=sgBuildItemsHtml(items);
 }
 function goTeklifForm(editId,servisId){
   if(state.currentUser?.rol==='izleyici'){toast('Yetki yok.','error');return}

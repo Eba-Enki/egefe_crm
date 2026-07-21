@@ -58,7 +58,7 @@ function replaceSatirlar(PDO $pdo, string $quoteId, array $satirlar): void {
     }
 }
 
-function teklifResponse(PDO $pdo, array $row, ?array $satirlar = null): array {
+function teklifResponse(PDO $pdo, array $row, ?array $satirlar = null, ?array $durumGecmisi = null): array {
     return [
         'id'                 => $row['id'],
         'portal'             => $row['portal'],
@@ -90,6 +90,7 @@ function teklifResponse(PDO $pdo, array $row, ?array $satirlar = null): array {
         'olusturanEmail'     => $row['olusturan_email'] ?? null,
         'olusturanTelefon'   => $row['olusturan_telefon'] ?? null,
         'olusturmaTarihi'    => $row['created_at'],
+        'durumGecmisi'       => $durumGecmisi ?? fetchStatusHistory($pdo, 'teklif', $row['id']),
     ];
 }
 
@@ -130,6 +131,7 @@ switch ($method) {
         $rows = $stmt->fetchAll();
 
         $satirlarMap = [];
+        $durumMap = [];
         if ($rows) {
             $ids = array_column($rows, 'id');
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
@@ -138,10 +140,11 @@ switch ($method) {
             foreach ($satirStmt->fetchAll() as $s) {
                 $satirlarMap[$s['quote_id']][] = mapSatirRow($s);
             }
+            $durumMap = fetchStatusHistoryMap($pdo, 'teklif', $ids);
         }
 
         echo json_encode(['teklifler' => array_map(
-            fn(array $r) => teklifResponse($pdo, $r, $satirlarMap[$r['id']] ?? []),
+            fn(array $r) => teklifResponse($pdo, $r, $satirlarMap[$r['id']] ?? [], $durumMap[$r['id']] ?? []),
             $rows
         )]);
         break;
@@ -193,6 +196,7 @@ switch ($method) {
                 $user['id'],
             ]);
             replaceSatirlar($pdo, $id, $satirlar);
+            logStatusHistory($pdo, 'teklif', $id, 'Taslak', $user['id']);
             $pdo->commit();
         } catch (Throwable $e) {
             $pdo->rollBack();
@@ -227,6 +231,7 @@ switch ($method) {
 
         $satirlar = satirlarFromInput($input);
         $kdvOran = in_array((int)($input['kdvOran'] ?? 0), [0, 10, 20], true) ? (int)($input['kdvOran'] ?? 0) : 0;
+        $yeniDurum = enumOrDefault($input['durum'] ?? $existing['durum'], DURUM_DEGERLERI, $existing['durum']);
 
         $pdo->beginTransaction();
         try {
@@ -249,11 +254,14 @@ switch ($method) {
                 $kdvOran,
                 strOrNull($input['teslimat'] ?? null),
                 strOrNull($input['sorumlu'] ?? $existing['sorumlu']),
-                enumOrDefault($input['durum'] ?? $existing['durum'], DURUM_DEGERLERI, $existing['durum']),
+                $yeniDurum,
                 strOrNull($input['redNedeni'] ?? $existing['red_nedeni']),
                 $id,
             ]);
             replaceSatirlar($pdo, $id, $satirlar);
+            if ($yeniDurum !== $existing['durum']) {
+                logStatusHistory($pdo, 'teklif', $id, $yeniDurum, $user['id']);
+            }
             $pdo->commit();
         } catch (Throwable $e) {
             $pdo->rollBack();

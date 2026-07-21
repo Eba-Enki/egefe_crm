@@ -294,6 +294,10 @@ function openTeklifDetay(id){
         </div>
       </div>
     </div>
+    <div class="pd-section">
+      <div class="pd-section-title">Süreç Geçmişi</div>
+      ${sgBuildItemsHtml((t.durumGecmisi||[]).map(function(h){return{tip:'teklif',durum:h.durum,tarih:h.tarih,showTag:false};}))}
+    </div>
     ${t.notlar?`<div class="pd-section"><div class="pd-section-title">Notlar</div><div class="pd-notes">${esc(t.notlar)}</div></div>`:''}
   `;
 

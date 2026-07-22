@@ -80,6 +80,8 @@ CREATE TABLE service_records (
   telefon             VARCHAR(50) NULL,
   email               VARCHAR(150) NULL,
   urun_adi            VARCHAR(255) NULL,
+  marka               VARCHAR(150) NULL,
+  model               VARCHAR(150) NULL,
   seri_no             VARCHAR(255) NULL,
   aksesuarlar         JSON NULL,
   aksesuar_diger      VARCHAR(255) NULL,

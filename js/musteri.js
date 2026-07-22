@@ -166,7 +166,15 @@ async function saveUrun(){
   var urunKoduEl=document.getElementById('uf-urunKodu');var urunKodu=urunKoduEl?urunKoduEl.value.trim():'';
   const pbEl2=document.getElementById('uf-paraBirimi');const paraBirimi=pbEl2?pbEl2.value:'TRY';
   const katEl=document.getElementById('uf-kategori');
-  const payload={portal:currentPortal,urunAdi:toTitleCase(urunAdi),urunKodu,marka:toTitleCase(document.getElementById('uf-marka').value.trim()),model:toTitleCase(document.getElementById('uf-model').value.trim()),kategori:katEl?katEl.value:'',fiyat,paraBirimi,aciklama:document.getElementById('uf-aciklama').value.trim()};
+  var markaVal,modelVal;
+  if(currentPortal==='servis'){
+    var markaSelEl=document.getElementById('uf-marka-sel');markaVal=markaSelEl?markaSelEl.value:'';
+    var modelSelEl=document.getElementById('uf-model-sel');modelVal=modelSelEl?modelSelEl.value:'';
+  }else{
+    markaVal=toTitleCase(document.getElementById('uf-marka').value.trim());
+    modelVal=toTitleCase(document.getElementById('uf-model').value.trim());
+  }
+  const payload={portal:currentPortal,urunAdi:toTitleCase(urunAdi),urunKodu,marka:markaVal,model:modelVal,kategori:katEl?katEl.value:'',fiyat,paraBirimi,aciklama:document.getElementById('uf-aciklama').value.trim()};
   try{
     if(editId){
       const idx=state.urunler.findIndex(x=>x.id===editId);
@@ -266,6 +274,102 @@ async function deleteUrunKategori(i){
     return toast(e.message||'Kategori silinemedi.','error');
   }
   renderUrunKategorileri();toast('Kategori silindi.','info');
+}
+
+// ════ ÜRÜN MARKA & MODEL ════
+function renderUrunMarkalari(){
+  const el=document.getElementById('urun-marka-list');if(!el)return;
+  const markalar=state.settings.urunMarkalar||[];
+  if(!markalar.length){el.innerHTML='<div style="font-size:12px;color:var(--text3)">Henüz marka yok.</div>';return;}
+  el.innerHTML=markalar.map((m,i)=>{
+    const modeller=m.modeller||[];
+    const modelChips=modeller.length?modeller.map((mod,j)=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--bg4);border:1px solid var(--border2);border-radius:5px;padding:3px 4px 3px 9px;font-size:12px;color:var(--text2)">${esc(mod)}<button class="btn-icon" style="width:18px;height:18px;color:var(--red)" title="Modeli sil" onclick="deleteUrunModel(${i},${j})"><i class="ti ti-x" style="font-size:11px"></i></button></span>`).join(''):'<span style="font-size:11px;color:var(--text3)">Henüz model yok.</span>';
+    return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;padding:10px 12px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;font-weight:600;color:var(--text)">${esc(m.ad)}</span>
+        <div style="display:flex;align-items:center;gap:2px;flex-shrink:0">
+          <button class="btn-icon" title="Yukarı taşı" style="${i===0?'opacity:.3;pointer-events:none':''}" onclick="moveUrunMarka(${i},-1)"><i class="ti ti-arrow-narrow-up"></i></button>
+          <button class="btn-icon" title="Aşağı taşı" style="${i===markalar.length-1?'opacity:.3;pointer-events:none':''}" onclick="moveUrunMarka(${i},1)"><i class="ti ti-arrow-narrow-down"></i></button>
+          <button class="btn-icon" style="color:var(--red)" title="Markayı sil" onclick="deleteUrunMarka(${i})"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+      <div style="margin:8px 0 6px;display:flex;flex-wrap:wrap;gap:6px">${modelChips}</div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="yeni-model-input-${i}" placeholder="Yeni model adı" style="flex:1;font-size:12px" onkeydown="if(event.key==='Enter'){event.preventDefault();addUrunModel(${i})}">
+        <button class="btn btn-ghost btn-sm" onclick="addUrunModel(${i})">+ Model</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function moveUrunMarka(i,dir){
+  var list=state.settings.urunMarkalar||[];
+  var j=i+dir;if(j<0||j>=list.length)return;
+  var prev=list;var next=list.slice();
+  var tmp=next[i];next[i]=next[j];next[j]=tmp;
+  state.settings.urunMarkalar=next;
+  try{
+    await apiPut('servis/ayarlar',state.settings);
+  }catch(e){
+    state.settings.urunMarkalar=prev;
+    return toast(e.message||'Sıra güncellenemedi.','error');
+  }
+  renderUrunMarkalari();
+}
+async function addUrunMarka(){
+  const inp=document.getElementById('yeni-marka-input');if(!inp)return;
+  const val=toTitleCase(inp.value.trim());if(!val)return toast('Marka adı girin.','error');
+  if(!state.settings.urunMarkalar)state.settings.urunMarkalar=[];
+  if(state.settings.urunMarkalar.some(m=>m.ad===val))return toast('Bu marka zaten mevcut.','error');
+  var prev=state.settings.urunMarkalar;
+  state.settings.urunMarkalar=prev.concat([{ad:val,modeller:[]}]);
+  try{
+    await apiPut('servis/ayarlar',state.settings);
+  }catch(e){
+    state.settings.urunMarkalar=prev;
+    return toast(e.message||'Marka eklenemedi.','error');
+  }
+  inp.value='';renderUrunMarkalari();toast('Marka eklendi.','success');
+}
+async function deleteUrunMarka(i){
+  if(!state.settings.urunMarkalar)return;
+  var prev=state.settings.urunMarkalar;
+  state.settings.urunMarkalar=prev.filter((_,idx)=>idx!==i);
+  try{
+    await apiPut('servis/ayarlar',state.settings);
+  }catch(e){
+    state.settings.urunMarkalar=prev;
+    return toast(e.message||'Marka silinemedi.','error');
+  }
+  renderUrunMarkalari();toast('Marka silindi.','info');
+}
+async function addUrunModel(markaIdx){
+  var inp=document.getElementById('yeni-model-input-'+markaIdx);if(!inp)return;
+  var val=toTitleCase(inp.value.trim());if(!val)return toast('Model adı girin.','error');
+  var list=state.settings.urunMarkalar||[];
+  var marka=list[markaIdx];if(!marka)return;
+  if((marka.modeller||[]).includes(val))return toast('Bu model zaten mevcut.','error');
+  var prev=state.settings.urunMarkalar;
+  var next=prev.map((m,idx)=>idx===markaIdx?{...m,modeller:(m.modeller||[]).concat(val)}:m);
+  state.settings.urunMarkalar=next;
+  try{
+    await apiPut('servis/ayarlar',state.settings);
+  }catch(e){
+    state.settings.urunMarkalar=prev;
+    return toast(e.message||'Model eklenemedi.','error');
+  }
+  renderUrunMarkalari();toast('Model eklendi.','success');
+}
+async function deleteUrunModel(markaIdx,modelIdx){
+  var prev=state.settings.urunMarkalar||[];
+  var next=prev.map((m,idx)=>idx===markaIdx?{...m,modeller:(m.modeller||[]).filter((_,j)=>j!==modelIdx)}:m);
+  state.settings.urunMarkalar=next;
+  try{
+    await apiPut('servis/ayarlar',state.settings);
+  }catch(e){
+    state.settings.urunMarkalar=prev;
+    return toast(e.message||'Model silinemedi.','error');
+  }
+  renderUrunMarkalari();toast('Model silindi.','info');
 }
 
 // ════ AYARLAR ════
@@ -389,6 +493,7 @@ async function loadSettings(){
     var _s=res.ayarlar||{};delete _s.parametreler;
     state.settings=Object.assign({},state.settings,_s);
     if(!state.settings.urunKategoriler)state.settings.urunKategoriler=[];
+    if(!state.settings.urunMarkalar)state.settings.urunMarkalar=[];
   } catch(e){}
   if(currentPortal==='satis'){
     try{
@@ -413,6 +518,7 @@ async function loadSettings(){
   if(siparisDiv)siparisDiv.style.display=isSatis?'':'none';
   updateSettingsPreview();
   renderUrunKategorileri();
+  renderUrunMarkalari();
   renderParametreler();
 }
 function renderFooter(){

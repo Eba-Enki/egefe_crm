@@ -346,6 +346,8 @@
         <div class="form-card">
           <div class="form-section-title">Cihaz Bilgileri</div>
           <div class="form-grid">
+            <div class="field"><label>Marka</label><select id="sf-marka-sel" onchange="onSfMarkaChange()"><option value="">— Seçin —</option></select></div>
+            <div class="field"><label>Model</label><select id="sf-model-sel"><option value="">— Seçin —</option></select></div>
             <div class="field form-full">
               <label>Cihaz Seri No</label>
               <div id="seri-no-list"></div>
@@ -396,7 +398,7 @@
           </div>
         </div>
         <div class="filter-extra">
-          <div class="filter-field"><label class="filter-field-label">Durum</label><div class="custom-select"><select id="tf-f-durum" onchange="renderTeklifler()" class="custom-select-native"><option value="">Tüm Durumlar</option><option>Taslak</option><option>Gönderildi</option><option>Kabul Edildi</option><option>Reddedildi</option><option>İptal Edildi</option><option class="satis-only">Siparişe Aktarıldı</option></select><button type="button" class="custom-select-trigger" onclick="toggleCustomSelect(event,'tf-f-durum')"><span class="custom-select-label">Tüm Durumlar</span><i class="ti ti-chevron-down"></i></button></div></div>
+          <div class="filter-field"><label class="filter-field-label">Durum</label><div class="custom-select"><select id="tf-f-durum" onchange="renderTeklifler()" class="custom-select-native"><option value="">Tüm Durumlar</option><option>Taslak</option><option>İletildi</option><option>Kabul Edildi</option><option>Reddedildi</option><option class="servis-only">Kapandı</option><option class="satis-only">Siparişe Dönüştü</option><option class="satis-only">Revize Edildi</option></select><button type="button" class="custom-select-trigger" onclick="toggleCustomSelect(event,'tf-f-durum')"><span class="custom-select-label">Tüm Durumlar</span><i class="ti ti-chevron-down"></i></button></div></div>
           <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="tf-f-ts" oninput="renderTeklifler()"></div>
           <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="tf-f-te" oninput="renderTeklifler()"></div>
           <button class="btn btn-ghost btn-sm" onclick="clearTeklifFilters()"><i class="ti ti-x"></i> Temizle</button>
@@ -603,9 +605,15 @@
           <div class="form-grid">
             <div class="field"><label>Ürün / İşlem Adı <span class="req">*</span></label><input type="text" id="uf-urunAdi" placeholder="Kalibrasyon, Tamir, Yazılım Güncelleme..."></div>
             <div class="field"><label>Ürün Kodu</label><input type="text" id="uf-urunKodu" placeholder="Örn: SKU-001"></div>
-            <div class="field"><label>Marka</label><input type="text" id="uf-marka"></div>
+            <div class="field"><label>Marka</label>
+              <input type="text" id="uf-marka" class="satis-only" style="display:none">
+              <select id="uf-marka-sel" class="servis-only" style="display:none" onchange="onUrunMarkaChange()"><option value="">— Seçin —</option></select>
+            </div>
             <div class="field tf-satis-field" style="display:none"><label>Kategori</label><select id="uf-kategori"><option value="">— Seçin —</option></select></div>
-            <div class="field"><label><span class="servis-only">Model</span><span class="satis-only">Parametre Sayısı</span></label><input type="text" id="uf-model"></div>
+            <div class="field"><label><span class="servis-only">Model</span><span class="satis-only">Parametre Sayısı</span></label>
+              <input type="text" id="uf-model" class="satis-only" style="display:none">
+              <select id="uf-model-sel" class="servis-only" style="display:none"><option value="">— Seçin —</option></select>
+            </div>
             <div class="field"><label>Liste Fiyatı</label><input type="number" id="uf-fiyat" min="0" step="0.01" placeholder="0.00"></div>
             <div class="field"><label>Para Birimi</label><select id="uf-paraBirimi"><option value="TRY">₺ TL</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option><option value="GBP">£ GBP</option></select></div>
             <div class="field form-full"><label>Açıklama</label><textarea id="uf-aciklama" rows="2"></textarea></div>
@@ -807,6 +815,12 @@
             </span>
             <span class="settings-nav-label">Ürün Kategorileri</span>
           </div>
+          <div class="settings-nav-item servis-only" data-panel="markalar" onclick="switchSettingsPanel('markalar')" style="display:none">
+            <span class="settings-nav-icon">
+              <i class="ti ti-tag" style="font-size:16px"></i>
+            </span>
+            <span class="settings-nav-label">Marka &amp; Model</span>
+          </div>
           <div class="settings-nav-section">Sistem</div>
           <div class="settings-nav-item" data-panel="veri" onclick="switchSettingsPanel('veri')">
             <span class="settings-nav-icon">
@@ -994,6 +1008,26 @@
               <div style="display:flex;gap:8px">
                 <input type="text" id="yeni-kategori-input" placeholder="Yeni kategori adı" style="flex:1">
                 <button class="btn btn-primary" onclick="addUrunKategori()">Ekle</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel: Marka & Model -->
+          <div id="sp-markalar" class="settings-panel servis-only" style="display:none">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon">
+                <i class="ti ti-tag" style="font-size:20px"></i>
+              </div>
+              <div>
+                <div class="settings-panel-title">Marka &amp; Model</div>
+                <div class="settings-panel-sub">Ürün formunda dropdown ile seçilebilecek marka ve model listesini yönetin</div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div id="urun-marka-list" style="margin-bottom:16px"></div>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="yeni-marka-input" placeholder="Yeni marka adı" style="flex:1">
+                <button class="btn btn-primary" onclick="addUrunMarka()">Ekle</button>
               </div>
             </div>
           </div>

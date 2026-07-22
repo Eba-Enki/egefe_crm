@@ -18,6 +18,8 @@ function servisResponse(PDO $pdo, array $row, ?array $durumGecmisi = null): arra
         'telefon'          => $row['telefon'],
         'email'            => $row['email'],
         'urunAdi'          => $row['urun_adi'],
+        'marka'            => $row['marka'],
+        'model'            => $row['model'],
         'seriNo'           => $row['seri_no'],
         'aksesuarlar'      => $row['aksesuarlar'] ? json_decode($row['aksesuarlar'], true) : [],
         'aksesuarDiger'    => $row['aksesuar_diger'],
@@ -82,7 +84,7 @@ switch ($method) {
         $kayitNo = nextServisKayitNo($pdo);
         $durum = enumOrDefault($input['durum'] ?? null, DURUM_DEGERLERI, 'Cihaz Kabul');
 
-        $stmt = $pdo->prepare('INSERT INTO service_records (id, kayit_no, musteri_id, kurum_adi, ilgili_kisi, telefon, email, urun_adi, seri_no, aksesuarlar, aksesuar_diger, gelis_tarihi, garanti_durumu, durum, kargo_tarihi, kargo_firmasi, teslim_alan, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt = $pdo->prepare('INSERT INTO service_records (id, kayit_no, musteri_id, kurum_adi, ilgili_kisi, telefon, email, urun_adi, marka, model, seri_no, aksesuarlar, aksesuar_diger, gelis_tarihi, garanti_durumu, durum, kargo_tarihi, kargo_firmasi, teslim_alan, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([
             $id, $kayitNo,
             strOrNull($input['musteriId'] ?? null),
@@ -91,6 +93,8 @@ switch ($method) {
             strOrNull($input['telefon'] ?? null),
             strOrNull($input['email'] ?? null),
             strOrNull($input['urunAdi'] ?? null),
+            strOrNull($input['marka'] ?? null),
+            strOrNull($input['model'] ?? null),
             strOrNull($input['seriNo'] ?? null),
             json_encode($input['aksesuarlar'] ?? [], JSON_UNESCAPED_UNICODE),
             strOrNull($input['aksesuarDiger'] ?? null),
@@ -132,7 +136,7 @@ switch ($method) {
 
         $yeniDurum = enumOrDefault($input['durum'] ?? $existing['durum'], DURUM_DEGERLERI, $existing['durum']);
 
-        $stmt = $pdo->prepare('UPDATE service_records SET musteri_id=?, kurum_adi=?, ilgili_kisi=?, telefon=?, email=?, urun_adi=?, seri_no=?, aksesuarlar=?, aksesuar_diger=?, gelis_tarihi=?, garanti_durumu=?, durum=?, kargo_tarihi=?, kargo_firmasi=?, teslim_alan=?, notlar=? WHERE id=?');
+        $stmt = $pdo->prepare('UPDATE service_records SET musteri_id=?, kurum_adi=?, ilgili_kisi=?, telefon=?, email=?, urun_adi=?, marka=?, model=?, seri_no=?, aksesuarlar=?, aksesuar_diger=?, gelis_tarihi=?, garanti_durumu=?, durum=?, kargo_tarihi=?, kargo_firmasi=?, teslim_alan=?, notlar=? WHERE id=?');
         $stmt->execute([
             strOrNull($input['musteriId'] ?? null),
             $kurumAdi,
@@ -140,6 +144,8 @@ switch ($method) {
             strOrNull($input['telefon'] ?? null),
             strOrNull($input['email'] ?? null),
             strOrNull($input['urunAdi'] ?? null),
+            strOrNull($input['marka'] ?? null),
+            strOrNull($input['model'] ?? null),
             strOrNull($input['seriNo'] ?? null),
             json_encode($input['aksesuarlar'] ?? [], JSON_UNESCAPED_UNICODE),
             strOrNull($input['aksesuarDiger'] ?? null),

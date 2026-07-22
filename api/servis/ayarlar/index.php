@@ -21,6 +21,7 @@ $VARSAYILAN = [
     'teklifDigits' => 5,
     'siparisPrefix'=> 'SIP',
     'siparisDigits'=> 5,
+    'urunMarkalar' => [],
 ];
 
 function ayarlarOku(PDO $pdo, array $varsayilan): array {
@@ -57,6 +58,18 @@ switch ($method) {
                 array_map(fn($v) => trim((string)$v), $input['parametreler']),
                 fn($v) => $v !== ''
             ));
+        }
+        if (array_key_exists('urunMarkalar', $input) && is_array($input['urunMarkalar'])) {
+            $ayarlar['urunMarkalar'] = array_values(array_filter(array_map(function ($m) {
+                $ad = trim((string)($m['ad'] ?? ''));
+                if ($ad === '') return null;
+                $modeller = is_array($m['modeller'] ?? null) ? $m['modeller'] : [];
+                $modeller = array_values(array_filter(
+                    array_map(fn($v) => trim((string)$v), $modeller),
+                    fn($v) => $v !== ''
+                ));
+                return ['ad' => $ad, 'modeller' => $modeller];
+            }, $input['urunMarkalar'])));
         }
 
         $json = json_encode($ayarlar, JSON_UNESCAPED_UNICODE);

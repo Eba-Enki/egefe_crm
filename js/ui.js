@@ -273,6 +273,8 @@ function goServisForm(editId,viewOnly){
     document.getElementById('sf-telefon').value=s.telefon||'';
     document.getElementById('sf-email').value=s.email||'';
     setSeriNolar(s.seriNo?s.seriNo.split(',').map(function(x){return x.trim();}).filter(Boolean):['']);
+    fillMarkaSelect('sf-marka-sel',s.marka||'');
+    fillModelSelect('sf-model-sel',s.marka||'',s.model||'');
     document.getElementById('sf-garantiDurumu').value=s.garantiDurumu||'Hayır';
     document.getElementById('sf-aksesuar-diger').value=s.aksesuarDiger||'';
     document.getElementById('sf-gelisTarihi').value=s.gelisTarihi||'';
@@ -291,6 +293,8 @@ function goServisForm(editId,viewOnly){
     document.getElementById('sf-sub').textContent='Yeni bir cihaz servisi oluşturun';
     ['sf-kurumAdi','sf-ilgiliKisi','sf-telefon','sf-email','sf-aksesuar-diger','sf-gelisTarihi','sf-kargoTarihi','sf-kargoFirmasi','sf-teslimAlan','sf-notlar'].forEach(function(i){var el=document.getElementById(i);if(el)el.value=''});
     setSeriNolar(['']);
+    fillMarkaSelect('sf-marka-sel','');
+    fillModelSelect('sf-model-sel','','');
     document.getElementById('sf-garantiDurumu').value='Hayır';
     document.getElementById('sf-gelisTarihi').value=today();
     var sfDurumEl=document.getElementById('sf-durum');if(sfDurumEl)sfDurumEl.value='Cihaz Kabul';
@@ -413,7 +417,37 @@ function goUrunForm(editId){
   if(urunAdiEl)urunAdiEl.placeholder=currentPortal==='satis'?'Alkolmetre, Kamera, Yazıcı...':'Kalibrasyon, Tamir, Yazılım Güncelleme...';
   const katEl=document.getElementById('uf-kategori');
   if(katEl){katEl.innerHTML='<option value="">— Seçin —</option>'+((state.settings&&state.settings.urunKategoriler)||[]).map(k=>`<option value="${k}">${k}</option>`).join('');katEl.value=u?.kategori||'';}
+  fillUrunMarkaSelect(u?.marka||'');
+  fillUrunModelSelect(u?.marka||'',u?.model||'');
   showPage('urun-form',true);
+}
+function fillMarkaSelect(selId,secili){
+  var sel=document.getElementById(selId);if(!sel)return;
+  var markalar=(state.settings&&state.settings.urunMarkalar)||[];
+  var opts=markalar.map(m=>`<option value="${m.ad}">${m.ad}</option>`).join('');
+  if(secili&&!markalar.some(m=>m.ad===secili))opts+=`<option value="${secili}">${secili} (listede yok)</option>`;
+  sel.innerHTML='<option value="">— Seçin —</option>'+opts;
+  sel.value=secili||'';
+}
+function fillModelSelect(selId,marka,secili){
+  var sel=document.getElementById(selId);if(!sel)return;
+  var markalar=(state.settings&&state.settings.urunMarkalar)||[];
+  var m=markalar.find(x=>x.ad===marka);
+  var modeller=m?(m.modeller||[]):[];
+  var opts=modeller.map(md=>`<option value="${md}">${md}</option>`).join('');
+  if(secili&&!modeller.includes(secili))opts+=`<option value="${secili}">${secili} (listede yok)</option>`;
+  sel.innerHTML='<option value="">— Seçin —</option>'+opts;
+  sel.value=secili||'';
+}
+function fillUrunMarkaSelect(secili){fillMarkaSelect('uf-marka-sel',secili);}
+function fillUrunModelSelect(marka,secili){fillModelSelect('uf-model-sel',marka,secili);}
+function onUrunMarkaChange(){
+  var sel=document.getElementById('uf-marka-sel');
+  fillUrunModelSelect(sel?sel.value:'','');
+}
+function onSfMarkaChange(){
+  var sel=document.getElementById('sf-marka-sel');
+  fillModelSelect('sf-model-sel',sel?sel.value:'','');
 }
 // ════ TITLE CASE (Türkçe destekli) ════
 function toTitleCase(str){

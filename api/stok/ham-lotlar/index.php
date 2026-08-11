@@ -71,9 +71,9 @@ switch ($method) {
             echo json_encode(['error' => 'LOT bulunamadı']);
             exit;
         }
-        if ((int)$lot['mevcut_strip'] !== (int)$lot['strip_giren']) {
+        if ((int)$lot['mevcut_strip'] !== 0) {
             http_response_code(400);
-            echo json_encode(['error' => 'Bu LOT\'tan stok kullanıldığı için silinemez.']);
+            echo json_encode(['error' => 'Bu LOT tükenmediği için silinemez.']);
             exit;
         }
         $pdo->prepare('DELETE FROM raw_stock_lots WHERE id = ?')->execute([$id]);

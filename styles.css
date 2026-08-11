@@ -251,6 +251,12 @@ th.sortable:hover{color:var(--text2)}
 .col-resize-handle:hover,.col-resize-handle.dragging{border-right-color:var(--accent)}
 body.col-resizing{cursor:col-resize!important;user-select:none!important}
 
+/* ── STOK YÖNETİM: tüm tablolarda ortala (isim sütunları hariç) ── */
+table[data-resize-key] th,
+table[data-resize-key] td{text-align:center}
+table[data-resize-key] th.col-name,
+table[data-resize-key] td.col-name{text-align:left}
+
 /* ── DASHBOARD 2-COLUMN LAYOUT ─────────────────────────────────── */
 .db-cols{display:flex;gap:14px;align-items:flex-start}
 .db-col-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}

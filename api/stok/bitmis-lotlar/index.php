@@ -64,9 +64,9 @@ switch ($method) {
             echo json_encode(['error' => 'LOT bulunamadı']);
             exit;
         }
-        if ((float)$lot['mevcut_miktar'] !== (float)$lot['miktar']) {
+        if ((float)$lot['mevcut_miktar'] !== 0.0) {
             http_response_code(400);
-            echo json_encode(['error' => 'Bu LOT\'tan stok kullanıldığı için silinemez.']);
+            echo json_encode(['error' => 'Bu LOT tükenmediği için silinemez.']);
             exit;
         }
         $pdo->prepare('DELETE FROM finished_stock_lots WHERE id = ?')->execute([$id]);

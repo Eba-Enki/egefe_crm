@@ -343,7 +343,7 @@ function renderHamStok(){
   var allKats=stokKatList();
 
   // ─ Accordion header tablosu
-  var html='<div class="table-wrap"><table class="compact-table"><thead><tr>'
+  var html='<div class="table-wrap"><table class="compact-table" data-resize-key="stok-ham-durum"><thead><tr>'
     +'<th style="width:28px"></th>'
     +'<th>Parametre</th>'
     +'<th style="width:60px;text-align:center">LOT</th>'
@@ -395,7 +395,7 @@ function renderHamStok(){
     // Accordion içerik satırı
     if(expanded){
       // İçerideki sub-tablo
-      var subHtml='<table class="compact-table" style="width:100%;margin:0">'
+      var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-ham-durum-detay'+(canBulk?'-bulk':'')+'">'
         +'<thead><tr style="background:var(--bg4)">'
         +(canBulk?'<th style="width:24px"></th>':'')
         +'<th>Kategori</th><th>Cut-off</th><th>LOT No</th>'
@@ -476,7 +476,7 @@ function renderHamGirisler(){
   var totalHG=girisler.length;
   girisler=girisler.slice((_hamGirislerPage-1)*PAGE_SIZE,_hamGirislerPage*PAGE_SIZE);
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
-  var html='<div class="table-wrap"><table class="compact-table"><thead><tr>'
+  var html='<div class="table-wrap"><table class="compact-table" data-resize-key="stok-ham-girisler"><thead><tr>'
     +'<th style="width:28px"></th><th>Evrak No</th><th style="width:90px">Tarih</th><th style="width:50px;text-align:center">Kalem</th>'
     +'<th>Özet</th><th style="width:180px">Notlar</th><th></th>'
     +'</tr></thead><tbody>';
@@ -501,7 +501,7 @@ function renderHamGirisler(){
       +'</tr>';
     // Accordion detay
     if(expanded){
-      var subHtml='<table class="compact-table" style="width:100%;margin:0"><thead><tr style="background:var(--bg4)">'
+      var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-ham-girisler-detay"><thead><tr style="background:var(--bg4)">'
         +'<th>Kategori</th><th>Parametre</th><th>Cut-off</th><th>LOT No</th>'
         +'<th style="text-align:right">Sheet</th><th style="text-align:right">Strip</th><th>SKT</th>'
         +'</tr></thead><tbody>';
@@ -581,7 +581,7 @@ function renderHamGirisForm(){
       if(document.getElementById('hg-evrak')) document.getElementById('hg-evrak').value=g.evrakNo||'';
       if(document.getElementById('hg-tarih')) document.getElementById('hg-tarih').value=g.tarih||'';
       if(document.getElementById('hg-notlar')) document.getElementById('hg-notlar').value=g.notlar||'';
-      _hgKalemler=(g.kalemler||[]).map(function(k){return Object.assign({},k);});
+      _hgKalemler=(g.kalemler||[]).map(function(k){return Object.assign({},k,{sheetMiktar:k.sheetMiktar||k.sheetGiren||0});});
       hgRenderKalemler();
       return;
     }
@@ -697,7 +697,7 @@ function renderHamCikislar(){
   var totalHC=cikislar.length;
   cikislar=cikislar.slice((_hamCikislarPage-1)*PAGE_SIZE,_hamCikislarPage*PAGE_SIZE);
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
-  var html='<div class="table-wrap"><table class="compact-table"><thead><tr>'
+  var html='<div class="table-wrap"><table class="compact-table" data-resize-key="stok-ham-cikislar"><thead><tr>'
     +'<th style="width:28px"></th><th>Evrak No</th><th style="width:90px">Tarih</th><th>Kategori</th>'
     +'<th>Çıkış Nedeni</th><th style="width:50px;text-align:center">Kit</th><th>Özet</th><th></th>'
     +'</tr></thead><tbody>';
@@ -721,7 +721,7 @@ function renderHamCikislar(){
       +'</div></td>'
       +'</tr>';
     if(expanded){
-      var subHtml='<table class="compact-table" style="width:100%;margin:0"><thead><tr style="background:var(--bg4)">'
+      var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-ham-cikislar-detay"><thead><tr style="background:var(--bg4)">'
         +'<th>Parametre</th><th>Cut-off</th><th>LOT No</th><th style="text-align:right">Strip Çıkış</th>'
         +'</tr></thead><tbody>';
       (c.satirlar||[]).forEach(function(s){
@@ -958,7 +958,7 @@ function renderBitmisStok(){
       +'</div>';
   }
 
-  var html=bulkUi+'<div class="table-wrap"><table class="compact-table"><thead><tr>'
+  var html=bulkUi+'<div class="table-wrap"><table class="compact-table" data-resize-key="stok-bitmis-liste'+(canBulk?'-bulk':'')+'"><thead><tr>'
     +(canBulk?'<th style="width:28px"><input type="checkbox" '+(allChecked?'checked':'')+' onchange="bulkToggleAll(\'bitmisStokArsiv\',this.checked,\'renderBitmisStok\')"></th>':'')
     +'<th>Ürün Adı</th><th>LOT No</th><th>Kategori</th><th>Parametreler</th><th style="text-align:right">Giren</th><th style="text-align:right">Mevcut</th><th>Giriş Tarihi</th><th>SKT</th><th></th></tr></thead><tbody>';
   pagedBL.forEach(function(l){
@@ -1007,7 +1007,7 @@ function renderBitmisGirisler(){
   var totalBG=girisler.length;
   girisler=girisler.slice((_bitmisGirislerPage-1)*PAGE_SIZE,_bitmisGirislerPage*PAGE_SIZE);
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
-  var html='<div class="table-wrap"><table class="compact-table"><thead><tr>'
+  var html='<div class="table-wrap"><table class="compact-table" data-resize-key="stok-bitmis-girisler"><thead><tr>'
     +'<th style="width:28px"></th><th>Evrak No</th><th>Tarih</th><th style="width:50px;text-align:center">Kalem</th>'
     +'<th>Ürünler Özeti</th><th>Notlar</th><th></th>'
     +'</tr></thead><tbody>';
@@ -1029,7 +1029,7 @@ function renderBitmisGirisler(){
       +'</div></td>'
       +'</tr>';
     if(expanded){
-      var subHtml='<table class="compact-table" style="width:100%;margin:0"><thead><tr style="background:var(--bg4)">'
+      var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-bitmis-girisler-detay"><thead><tr style="background:var(--bg4)">'
         +'<th>Ürün Adı</th><th>Kategori</th><th>LOT No</th><th style="text-align:right">Miktar</th><th>SKT</th><th>Parametreler</th>'
         +'</tr></thead><tbody>';
       (g.kalemler||[]).forEach(function(k){
@@ -1252,7 +1252,7 @@ function renderBitmisCikislar(){
   var totalBC=cikislar.length;
   cikislar=cikislar.slice((_bitmisCikislarPage-1)*PAGE_SIZE,_bitmisCikislarPage*PAGE_SIZE);
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
-  var html='<div class="table-wrap"><table class="compact-table"><thead><tr>'
+  var html='<div class="table-wrap"><table class="compact-table" data-resize-key="stok-bitmis-cikislar"><thead><tr>'
     +'<th style="width:28px"></th><th>Evrak No</th><th>Tarih</th><th>Çıkış Nedeni</th>'
     +'<th>Ürünler Özeti</th><th style="width:60px;text-align:right">Toplam</th><th></th>'
     +'</tr></thead><tbody>';
@@ -1274,7 +1274,7 @@ function renderBitmisCikislar(){
       +'</div></td>'
       +'</tr>';
     if(expanded){
-      var subHtml='<table class="compact-table" style="width:100%;margin:0"><thead><tr style="background:var(--bg4)">'
+      var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-bitmis-cikislar-detay"><thead><tr style="background:var(--bg4)">'
         +'<th>Ürün Adı</th><th>LOT No</th><th style="text-align:right">Miktar</th>'
         +'</tr></thead><tbody>';
       (c.satirlar||[]).forEach(function(s){
@@ -1427,7 +1427,7 @@ function renderStokHareket(){
   var TIP={'ham-giris':'Ham Giriş','ham-cikis':'Ham Çıkış','bitmis-giris':'Ticari Giriş','bitmis-cikis':'Ticari Çıkış'};
   var TCOL={'ham-giris':'var(--teal)','ham-cikis':'var(--amber)','bitmis-giris':'var(--green)','bitmis-cikis':'var(--red)'};
 
-  var html='<div class="table-wrap"><table class="compact-table"><thead><tr>'
+  var html='<div class="table-wrap"><table class="compact-table" data-resize-key="stok-hareket"><thead><tr>'
     +'<th>Tarih</th><th>Tür</th><th>Evrak / Ref</th><th>Açıklama</th><th>Kategori</th><th style="text-align:right">Miktar</th><th>Kullanıcı</th>'
     +'</tr></thead><tbody>';
   pagedSH.forEach(function(h){
@@ -1886,7 +1886,7 @@ function stokParamTabloRender(){
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
   var totalP=params.length;
   var pagedParams=params.slice((_stokParamPage-1)*PAGE_SIZE,_stokParamPage*PAGE_SIZE);
-  var html='<div class="table-wrap"><table class="compact-table"><thead><tr><th style="width:40px">#</th><th>Parametre Adı</th><th>Kısaltma</th><th style="text-align:center">Durum</th><th></th></tr></thead><tbody>';
+  var html='<div class="table-wrap"><table class="compact-table" data-resize-key="stok-parametreler"><thead><tr><th style="width:40px">#</th><th>Parametre Adı</th><th>Kısaltma</th><th style="text-align:center">Durum</th><th></th></tr></thead><tbody>';
   pagedParams.forEach(function(p,i){
     var globalIdx=(_stokParamPage-1)*PAGE_SIZE+i;
     var kisaltma=p.kisaltma||p.ad;

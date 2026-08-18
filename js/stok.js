@@ -1068,7 +1068,7 @@ function renderHamSayimlar(){
 function setHamSayimlarPage(p){_hamSayimlarPage=p;renderHamSayimlar();}
 
 function stokSilHamSayim(id){
-  showConfirm('Bu sayım kaydı silinecek. Stok miktarlarına bir etkisi olmayacak. Emin misiniz?',async function(){
+  showConfirm('Bu sayım kaydı silinecek. Sayımdan doğan düzeltme giriş/çıkışları varsa onlar da geri alınır (stok eski haline döner). Emin misiniz?',async function(){
     try{
       await apiDelete('stok/ham-sayim?id='+encodeURIComponent(id));
     }catch(e){
@@ -1805,7 +1805,7 @@ function renderBitmisSayimlar(){
 function setBitmisSayimlarPage(p){_bitmisSayimlarPage=p;renderBitmisSayimlar();}
 
 function stokSilBitmisSayim(id){
-  showConfirm('Bu sayım kaydı silinecek. Stok miktarlarına bir etkisi olmayacak. Emin misiniz?',async function(){
+  showConfirm('Bu sayım kaydı silinecek. Sayımdan doğan düzeltme giriş/çıkışları varsa onlar da geri alınır (stok eski haline döner). Emin misiniz?',async function(){
     try{
       await apiDelete('stok/bitmis-sayim?id='+encodeURIComponent(id));
     }catch(e){
@@ -2575,6 +2575,32 @@ function stokExportBitmisStokExcel(){
     return [l.lotNo,l.urunAdi||'',kat,(l.parametreler||[]).join(', '),l.tarih||'',l.miktar||0,l.mevcutMiktar||0,stokFmtSkt(l.sktTarih),l.evrakNo||'',l.mevcutMiktar===0?'Tükendi':'Mevcut'];
   });
   _xlsxDownload(rows,headers,'Harzır Ürün Stok','hazir-urun-stok-listesi');
+}
+
+function stokExportHamSayimSablonuExcel(){
+  if(!_hsSatirlar||!_hsSatirlar.length){toast('Önce kategori seçip LOT listesinin gelmesini bekleyin.','error');return;}
+  var lotById={};
+  (state.hamStokLotlar||[]).forEach(function(l){lotById[l.id]=l;});
+  var headers=['Parametre','Kategori','LOT No','Cut-off','Sistem Sheet','Sistem Strip','Sayılan Sheet','Sayılan Strip'];
+  var rows=_hsSatirlar.map(function(s){
+    var lot=lotById[s.lotId]||{};
+    var kat=(stokKatById(lot.kategoriId)||{}).ad||lot.kategoriId||'';
+    return [lot.parametreAd||'',kat,lot.lotNo||'',lot.cutoff||'',s.sistemSheet||0,s.sistemMiktar||0,'',''];
+  });
+  _xlsxDownload(rows,headers,'Sayım Şablonu','sayim-sablonu-sheet-strip');
+}
+
+function stokExportBitmisSayimSablonuExcel(){
+  if(!_bsSatirlar||!_bsSatirlar.length){toast('Önce kategori seçip LOT listesinin gelmesini bekleyin.','error');return;}
+  var lotById={};
+  (state.bitmisStokLotlar||[]).forEach(function(l){lotById[l.id]=l;});
+  var headers=['Ürün Adı','Kategori','LOT No','Sistem Miktar','Sayılan Miktar'];
+  var rows=_bsSatirlar.map(function(s){
+    var lot=lotById[s.lotId]||{};
+    var kat=(stokTicariKatById(lot.kategoriId)||{}).ad||lot.kategoriId||'';
+    return [lot.urunAdi||'',kat,lot.lotNo||'',s.sistemMiktar||0,''];
+  });
+  _xlsxDownload(rows,headers,'Sayım Şablonu','sayim-sablonu-hazir-urun');
 }
 
 function stokExportBitmisGirislerExcel(){

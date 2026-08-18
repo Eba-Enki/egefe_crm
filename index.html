@@ -1216,7 +1216,10 @@
           <div class="field"><label>Kategori</label><select id="hs-kategori" onchange="hsKategoriChange()"></select></div>
           <div class="field form-full"><label>Notlar</label><textarea id="hs-notlar" rows="2" placeholder="ör. Ağustos 2026 fiziki sayımı"></textarea></div>
         </div>
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin:18px 0 8px">Sayım Kalemleri <span style="font-weight:400;color:var(--text3)">— saydığınız LOT'lara miktar girin, saymadıklarınızı boş bırakabilirsiniz</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 8px">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Sayım Kalemleri <span style="font-weight:400;color:var(--text3)">— saydığınız LOT'lara miktar girin, saymadıklarınızı boş bırakabilirsiniz</span></div>
+          <button type="button" class="btn btn-ghost btn-sm" style="color:var(--green)" onclick="stokExportHamSayimSablonuExcel()"><i class="ti ti-file-download"></i> Excel'e Aktar</button>
+        </div>
         <div id="hs-satirlar"></div>
         <div style="display:flex;gap:10px;margin-top:18px">
           <button class="btn btn-primary" onclick="saveHamSayim()">Sayımı Kaydet</button>
@@ -1348,7 +1351,10 @@
           <div class="field"><label>Kategori</label><select id="bs-kategori" onchange="bsKategoriChange()"></select></div>
           <div class="field form-full"><label>Notlar</label><textarea id="bs-notlar" rows="2" placeholder="ör. Ağustos 2026 fiziki sayımı"></textarea></div>
         </div>
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin:18px 0 8px">Sayım Kalemleri <span style="font-weight:400;color:var(--text3)">— saydığınız LOT'lara miktar girin, saymadıklarınızı boş bırakabilirsiniz</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 8px">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Sayım Kalemleri <span style="font-weight:400;color:var(--text3)">— saydığınız LOT'lara miktar girin, saymadıklarınızı boş bırakabilirsiniz</span></div>
+          <button type="button" class="btn btn-ghost btn-sm" style="color:var(--green)" onclick="stokExportBitmisSayimSablonuExcel()"><i class="ti ti-file-download"></i> Excel'e Aktar</button>
+        </div>
         <div id="bs-satirlar"></div>
         <div style="display:flex;gap:10px;margin-top:18px">
           <button class="btn btn-primary" onclick="saveBitmisSayim()">Sayımı Kaydet</button>

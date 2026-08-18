@@ -182,7 +182,59 @@ switch ($method) {
             exit;
         }
 
-        $pdo->prepare('DELETE FROM raw_stock_counts WHERE id = ?')->execute([$id]);
+        // Bu sayımdan doğan düzeltme giriş/çıkış belgelerini bul (varsa) — sayım
+        // silinince onlar da geri alınmalı, aksi halde stok düzeltmesi sayımsız kalır.
+        $evrakStmt = $pdo->prepare('SELECT DISTINCT duzeltme_evrak_no FROM raw_stock_count_items WHERE count_id = ? AND duzeltme_evrak_no IS NOT NULL');
+        $evrakStmt->execute([$id]);
+        $evrakNolar = array_column($evrakStmt->fetchAll(), 'duzeltme_evrak_no');
+
+        $girisIds = [];
+        $cikisIds = [];
+        foreach ($evrakNolar as $evrakNo) {
+            $g = $pdo->prepare('SELECT id FROM raw_stock_entries WHERE evrak_no = ?');
+            $g->execute([$evrakNo]);
+            $gRow = $g->fetch();
+            if ($gRow) { $girisIds[] = $gRow['id']; continue; }
+            $c = $pdo->prepare('SELECT id FROM raw_stock_exits WHERE evrak_no = ?');
+            $c->execute([$evrakNo]);
+            $cRow = $c->fetch();
+            if ($cRow) { $cikisIds[] = $cRow['id']; }
+        }
+
+        foreach ($girisIds as $girisId) {
+            $lotStmt = $pdo->prepare('SELECT * FROM raw_stock_lots WHERE giris_id = ?');
+            $lotStmt->execute([$girisId]);
+            foreach ($lotStmt->fetchAll() as $lot) {
+                if ((int)$lot['mevcut_strip'] !== (int)$lot['strip_giren']) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Bu sayımdan oluşan düzeltme girişindeki ' . $lot['lot_no'] . ' LOT\'undan stok kullanıldığı için sayım silinemez.']);
+                    exit;
+                }
+            }
+        }
+
+        $pdo->beginTransaction();
+        try {
+            foreach ($girisIds as $girisId) {
+                $pdo->prepare('DELETE FROM raw_stock_lots WHERE giris_id = ?')->execute([$girisId]);
+                $pdo->prepare('DELETE FROM raw_stock_entries WHERE id = ?')->execute([$girisId]);
+            }
+            foreach ($cikisIds as $cikisId) {
+                $items = $pdo->prepare('SELECT lot_id, strip_cikis FROM raw_stock_exit_items WHERE exit_id = ?');
+                $items->execute([$cikisId]);
+                $incStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip + ? WHERE id = ?');
+                foreach ($items->fetchAll() as $item) {
+                    if ($item['lot_id']) $incStmt->execute([$item['strip_cikis'], $item['lot_id']]);
+                }
+                $pdo->prepare('DELETE FROM raw_stock_exits WHERE id = ?')->execute([$cikisId]);
+            }
+            $pdo->prepare('DELETE FROM raw_stock_counts WHERE id = ?')->execute([$id]);
+            $pdo->commit();
+        } catch (Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+
         echo json_encode(['ok' => true]);
         break;
 

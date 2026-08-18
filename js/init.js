@@ -17,12 +17,12 @@ var _VISIBILITY_STALE_MS = 30000; // 30 saniye
 var _FORM_PAGES = new Set([
   'servis-form','teklif-form','musteri-form','urun-form',
   'siparis-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris',
-  'bitmis-cikis','kullanici-form'
+  'bitmis-cikis','bitmis-sayim','kullanici-form'
 ]);
 
 var _STOK_PAGES = new Set([
   'stok-dashboard','ham-stok','ham-girisler','ham-cikislar','ham-sayimlar',
-  'bitmis-stok','bitmis-girisler','bitmis-cikislar',
+  'bitmis-stok','bitmis-girisler','bitmis-cikislar','bitmis-sayimlar',
   'stok-ayarlar','stok-parametreler'
 ]);
 

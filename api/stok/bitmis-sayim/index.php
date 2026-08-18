@@ -6,31 +6,20 @@ $user = requireAuth($pdo);
 requirePortalAccess($user, 'stok');
 
 
-function stokSPS(PDO $pdo, string $kategoriId): int {
-    $stmt = $pdo->prepare('SELECT sheet_boyu, kesim_boleni, fire_pct FROM stock_categories WHERE id = ?');
-    $stmt->execute([$kategoriId]);
-    $k = $stmt->fetch();
-    if (!$k || !$k['sheet_boyu'] || !$k['kesim_boleni']) return 90;
-    return (int)round(((float)$k['sheet_boyu'] / (float)$k['kesim_boleni']) * (1 - (float)($k['fire_pct'] ?? 0) / 100));
-}
-
 function kalemResponse(array $row): array {
     return [
         'lotId'           => $row['lot_id'],
         'lotNo'           => $row['lot_no'],
-        'parametreAd'     => $row['parametre_ad'],
-        'cutoff'          => $row['cutoff'],
+        'urunAdi'         => $row['urun_adi'],
         'kategoriId'      => $row['lot_kategori_id'],
-        'sistemMiktar'    => (int)$row['sistem_miktar'],
-        'sayilanSheet'    => (int)$row['sayilan_sheet'],
-        'sayilanStrip'    => (int)$row['sayilan_strip'],
-        'sayilanMiktar'   => (int)$row['sayilan_miktar'],
+        'sistemMiktar'    => (float)$row['sistem_miktar'],
+        'sayilanMiktar'   => (float)$row['sayilan_miktar'],
         'duzeltmeEvrakNo' => $row['duzeltme_evrak_no'],
     ];
 }
 
 function fetchKalemler(PDO $pdo, string $countId): array {
-    $stmt = $pdo->prepare('SELECT i.*, l.lot_no, l.cutoff, l.kategori_id AS lot_kategori_id FROM raw_stock_count_items i LEFT JOIN raw_stock_lots l ON l.id = i.lot_id WHERE i.count_id = ? ORDER BY i.id ASC');
+    $stmt = $pdo->prepare('SELECT i.*, l.lot_no, l.kategori_id AS lot_kategori_id FROM finished_stock_count_items i LEFT JOIN finished_stock_lots l ON l.id = i.lot_id WHERE i.count_id = ? ORDER BY i.id ASC');
     $stmt->execute([$countId]);
     return array_map('kalemResponse', $stmt->fetchAll());
 }
@@ -48,17 +37,17 @@ function sayimResponse(PDO $pdo, array $row, ?array $kalemler = null): array {
     ];
 }
 
-function nextHamSayimEvrak(PDO $pdo): string {
-    $prefix = 'SY';
+function nextBitmisSayimEvrak(PDO $pdo): string {
+    $prefix = 'BSY';
     $stmt = $pdo->prepare('SELECT data FROM settings WHERE portal = ?');
     $stmt->execute(['stok']);
     $row = $stmt->fetch();
     if ($row) {
         $data = json_decode($row['data'], true) ?? [];
-        if (!empty($data['hamSayimPrefix'])) $prefix = (string)$data['hamSayimPrefix'];
+        if (!empty($data['bitmisSayimPrefix'])) $prefix = (string)$data['bitmisSayimPrefix'];
     }
 
-    $stmt = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(evrak_no, ?) AS UNSIGNED)) AS mx FROM raw_stock_counts WHERE evrak_no LIKE CONCAT(?, '-%')");
+    $stmt = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(evrak_no, ?) AS UNSIGNED)) AS mx FROM finished_stock_counts WHERE evrak_no LIKE CONCAT(?, '-%')");
     $stmt->execute([strlen($prefix) + 2, $prefix]);
     $mx = (int)($stmt->fetch()['mx'] ?? 0);
 
@@ -69,14 +58,14 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $stmt = $pdo->query('SELECT * FROM raw_stock_counts ORDER BY created_at DESC');
+        $stmt = $pdo->query('SELECT * FROM finished_stock_counts ORDER BY created_at DESC');
         $rows = $stmt->fetchAll();
 
         $kalemlerMap = [];
         if ($rows) {
             $ids = array_column($rows, 'id');
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
-            $kalemStmt = $pdo->prepare("SELECT i.*, l.lot_no, l.cutoff, l.kategori_id AS lot_kategori_id FROM raw_stock_count_items i LEFT JOIN raw_stock_lots l ON l.id = i.lot_id WHERE i.count_id IN ($placeholders) ORDER BY i.count_id, i.id ASC");
+            $kalemStmt = $pdo->prepare("SELECT i.*, l.lot_no, l.kategori_id AS lot_kategori_id FROM finished_stock_count_items i LEFT JOIN finished_stock_lots l ON l.id = i.lot_id WHERE i.count_id IN ($placeholders) ORDER BY i.count_id, i.id ASC");
             $kalemStmt->execute($ids);
             foreach ($kalemStmt->fetchAll() as $k) {
                 $kalemlerMap[$k['count_id']][] = kalemResponse($k);
@@ -115,14 +104,12 @@ switch ($method) {
                 echo json_encode(['error' => (($i + 1)) . '. kalemde LOT eksik']);
                 exit;
             }
-            $sayilanSheet = (int)($k['sayilanSheet'] ?? 0);
-            $sayilanStrip = (int)($k['sayilanStrip'] ?? 0);
-            if ($sayilanSheet < 0 || $sayilanStrip < 0) {
+            if (!isset($k['sayilanMiktar']) || $k['sayilanMiktar'] === '' || (float)$k['sayilanMiktar'] < 0) {
                 http_response_code(400);
                 echo json_encode(['error' => (($i + 1)) . '. kalemde sayılan miktar geçersiz']);
                 exit;
             }
-            $stmt = $pdo->prepare('SELECT * FROM raw_stock_lots WHERE id = ?');
+            $stmt = $pdo->prepare('SELECT * FROM finished_stock_lots WHERE id = ?');
             $stmt->execute([$lotId]);
             $lot = $stmt->fetch();
             if (!$lot) {
@@ -130,28 +117,21 @@ switch ($method) {
                 echo json_encode(['error' => 'Seçili LOT bulunamadı']);
                 exit;
             }
-            $sps = stokSPS($pdo, (string)$lot['kategori_id']);
-            // Sistem miktarı, sayım kaydedildiği andaki mevcut_strip değerinin anlık görüntüsüdür.
-            $items[] = [
-                'lot' => $lot,
-                'sistemMiktar' => (int)$lot['mevcut_strip'],
-                'sayilanSheet' => $sayilanSheet,
-                'sayilanStrip' => $sayilanStrip,
-                'sayilanMiktar' => $sayilanSheet * $sps + $sayilanStrip,
-            ];
+            // Sistem miktarı, sayım kaydedildiği andaki mevcut_miktar değerinin anlık görüntüsüdür.
+            $items[] = ['lot' => $lot, 'sistemMiktar' => (float)$lot['mevcut_miktar'], 'sayilanMiktar' => (float)$k['sayilanMiktar']];
         }
 
-        $evrakNo = strOrNull($input['evrakNo'] ?? null) ?? nextHamSayimEvrak($pdo);
-        $id = 'hs' . (string)(int)round(microtime(true) * 1000);
+        $evrakNo = strOrNull($input['evrakNo'] ?? null) ?? nextBitmisSayimEvrak($pdo);
+        $id = 'bs' . (string)(int)round(microtime(true) * 1000);
 
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO raw_stock_counts (id, evrak_no, tarih, kategori_id, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?)');
+            $stmt = $pdo->prepare('INSERT INTO finished_stock_counts (id, evrak_no, tarih, kategori_id, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?)');
             $stmt->execute([$id, $evrakNo, $tarih, $kategoriId, $notlar, $user['id']]);
 
-            $itemStmt = $pdo->prepare('INSERT INTO raw_stock_count_items (count_id, lot_id, parametre_ad, sistem_miktar, sayilan_sheet, sayilan_strip, sayilan_miktar) VALUES (?, ?, ?, ?, ?, ?, ?)');
+            $itemStmt = $pdo->prepare('INSERT INTO finished_stock_count_items (count_id, lot_id, urun_adi, sistem_miktar, sayilan_miktar) VALUES (?, ?, ?, ?, ?)');
             foreach ($items as $it) {
-                $itemStmt->execute([$id, $it['lot']['id'], $it['lot']['parametre_ad'], $it['sistemMiktar'], $it['sayilanSheet'], $it['sayilanStrip'], $it['sayilanMiktar']]);
+                $itemStmt->execute([$id, $it['lot']['id'], $it['lot']['urun_adi'], $it['sistemMiktar'], $it['sayilanMiktar']]);
             }
 
             $pdo->commit();
@@ -160,7 +140,7 @@ switch ($method) {
             throw $e;
         }
 
-        $stmt = $pdo->prepare('SELECT * FROM raw_stock_counts WHERE id = ?');
+        $stmt = $pdo->prepare('SELECT * FROM finished_stock_counts WHERE id = ?');
         $stmt->execute([$id]);
         http_response_code(201);
         echo json_encode(['sayim' => sayimResponse($pdo, $stmt->fetch())]);
@@ -174,7 +154,7 @@ switch ($method) {
             exit;
         }
 
-        $check = $pdo->prepare('SELECT * FROM raw_stock_counts WHERE id = ?');
+        $check = $pdo->prepare('SELECT * FROM finished_stock_counts WHERE id = ?');
         $check->execute([$id]);
         if (!$check->fetch()) {
             http_response_code(404);
@@ -182,7 +162,7 @@ switch ($method) {
             exit;
         }
 
-        $pdo->prepare('DELETE FROM raw_stock_counts WHERE id = ?')->execute([$id]);
+        $pdo->prepare('DELETE FROM finished_stock_counts WHERE id = ?')->execute([$id]);
         echo json_encode(['ok' => true]);
         break;
 

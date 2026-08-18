@@ -329,6 +329,7 @@ CREATE TABLE raw_stock_count_items (
   sayilan_sheet  INT NOT NULL DEFAULT 0,
   sayilan_strip  INT NOT NULL DEFAULT 0,
   sayilan_miktar INT NOT NULL DEFAULT 0,
+  duzeltme_evrak_no VARCHAR(50) NULL,
   CONSTRAINT fk_rsci_count FOREIGN KEY (count_id) REFERENCES raw_stock_counts(id) ON DELETE CASCADE,
   CONSTRAINT fk_rsci_lot FOREIGN KEY (lot_id) REFERENCES raw_stock_lots(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci;
@@ -388,6 +389,31 @@ CREATE TABLE finished_stock_exit_items (
   miktar_cikis  DECIMAL(15,3) NOT NULL DEFAULT 0,
   CONSTRAINT fk_fsxi_exit FOREIGN KEY (exit_id) REFERENCES finished_stock_exits(id) ON DELETE CASCADE,
   CONSTRAINT fk_fsxi_lot FOREIGN KEY (lot_id) REFERENCES finished_stock_lots(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci;
+
+-- Hazır ürün fiziki stok sayımı kayıtları (sayım, kaydedildiğinde stok miktarını değiştirmez)
+CREATE TABLE finished_stock_counts (
+  id                  VARCHAR(40) PRIMARY KEY,
+  evrak_no            VARCHAR(50) NULL,
+  tarih               DATE NULL,
+  kategori_id         VARCHAR(40) NULL,
+  notlar              TEXT NULL,
+  olusturan_kullanici VARCHAR(40) NULL,
+  created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_fsc_kategori FOREIGN KEY (kategori_id) REFERENCES stock_categories(id) ON DELETE SET NULL,
+  CONSTRAINT fk_fsc_user FOREIGN KEY (olusturan_kullanici) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci;
+
+CREATE TABLE finished_stock_count_items (
+  id               INT AUTO_INCREMENT PRIMARY KEY,
+  count_id         VARCHAR(40) NOT NULL,
+  lot_id           VARCHAR(40) NULL,
+  urun_adi         VARCHAR(255) NULL,
+  sistem_miktar    DECIMAL(15,3) NOT NULL DEFAULT 0,
+  sayilan_miktar   DECIMAL(15,3) NOT NULL DEFAULT 0,
+  duzeltme_evrak_no VARCHAR(50) NULL,
+  CONSTRAINT fk_fsci_count FOREIGN KEY (count_id) REFERENCES finished_stock_counts(id) ON DELETE CASCADE,
+  CONSTRAINT fk_fsci_lot FOREIGN KEY (lot_id) REFERENCES finished_stock_lots(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci;
 
 -- ────────────────────────────────── AYARLAR ────────────────────────────────

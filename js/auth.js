@@ -29,6 +29,7 @@ var PORTAL_SAYFALAR = {
     {id:'bitmis-stok',    label:'Hazır Ürün Stok Listesi'},
     {id:'bitmis-girisler',label:'Hazır Ürün Girişler'},
     {id:'bitmis-cikislar',label:'Hazır Ürün Çıkışlar'},
+    {id:'bitmis-sayimlar',label:'Hazır Ürün Stok Sayımı'},
     {id:'stok-ayarlar',   label:'Ayarlar'}
   ]
 };

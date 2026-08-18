@@ -306,7 +306,7 @@ function renderHamStok(){
   // Sekmeye göre filtrele
   var lots = _hamStokTab==='arsiv'
     ? allLots.filter(function(l){return l.mevcutStrip===0;})
-    : allLots; // aktif sekmede tüm lot'lar gösteriliyor (parametre grup bazlı)
+    : allLots.filter(function(l){return l.mevcutStrip>0;});
 
   var wrap=document.getElementById('ham-stok-wrap'); if(!wrap)return;
   var isArsiv=_hamStokTab==='arsiv';
@@ -389,7 +389,7 @@ function renderHamStok(){
       +'<td class="col-name" style="font-weight:600;color:var(--text)">'+esc(tamAd)+'</td>'
       +'<td style="text-align:center;font-family:var(--font-mono);color:var(--text3)">'+totalLots+'</td>'
       +'<td style="font-size:11px;color:var(--text3)">'+ozetParts.join(' &nbsp;•&nbsp; ')+'</td>'
-      +'<td>'+durumBadgeHtml+'</td>'
+      +'<td>'+(isArsiv?'':durumBadgeHtml)+'</td>'
       +'</tr>';
 
     // Accordion içerik satırı

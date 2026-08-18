@@ -701,14 +701,12 @@ function renderHamCikislar(){
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
   var html='<div class="table-wrap"><table class="compact-table" data-resize-key="stok-ham-cikislar"><thead><tr>'
     +'<th style="width:28px"></th><th>Evrak No</th><th style="width:90px">Tarih</th><th>Kategori</th>'
-    +'<th>Çıkış Nedeni</th><th style="width:50px;text-align:center">Kit</th><th>Özet</th><th></th>'
+    +'<th>Çıkış Nedeni</th><th style="width:50px;text-align:center">Kit</th><th>Notlar</th><th></th>'
     +'</tr></thead><tbody>';
   cikislar.forEach(function(c){
     var expanded=_expandedHamCikislar.has(c.id);
     var kat=(stokKatById(c.kategoriId)||{}).ad||c.kategoriId||'';
-    var satirArr=(c.satirlar||[]);
-    var paramsEsc=satirArr.map(function(s){return esc(s.parametreAd+(s.cutoff?' ('+s.cutoff+')':''));});
-    var ozetDisp=paramsEsc.slice(0,3).join(' • ')+(paramsEsc.length>3?' <span style="font-size:11px;color:var(--accent);font-weight:500">+'+(paramsEsc.length-3)+'</span>':'');
+    var notlarDisp=c.notlar?esc(c.notlar):'<span style="color:var(--text3)">—</span>';
     var tarihDispC=c.tarih?c.tarih.split('-').reverse().join('.'):'—';
     html+='<tr style="cursor:pointer;background:var(--bg3)" onclick="toggleHamCikis(\''+c.id+'\')">'
       +'<td style="text-align:center;color:var(--amber);font-weight:700">'+(expanded?'<i class="ti ti-arrow-narrow-down"></i>':'<i class="ti ti-arrow-narrow-right"></i>')+'</td>'
@@ -717,7 +715,7 @@ function renderHamCikislar(){
       +'<td style="font-size:12px">'+esc(kat)+'</td>'
       +'<td style="font-size:12px">'+esc(c.aciklama||'')+'</td>'
       +'<td style="text-align:center;font-family:var(--font-mono)">'+stokFmtN(c.kitMiktari)+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)">'+ozetDisp+'</td>'
+      +'<td style="font-size:12px;color:var(--text2);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+esc(c.notlar||'')+'">'+notlarDisp+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilHamCikis(\''+c.id+'\')"><i class="ti ti-trash"></i></button>':'')
       +'</div></td>'
@@ -1311,12 +1309,11 @@ function renderBitmisCikislar(){
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
   var html='<div class="table-wrap"><table class="compact-table" data-resize-key="stok-bitmis-cikislar"><thead><tr>'
     +'<th style="width:28px"></th><th>Evrak No</th><th>Tarih</th><th>Çıkış Nedeni</th>'
-    +'<th>Ürünler Özeti</th><th style="width:60px">Toplam</th><th></th>'
+    +'<th>Notlar</th><th style="width:60px">Toplam</th><th></th>'
     +'</tr></thead><tbody>';
   cikislar.forEach(function(c){
     var expanded=_expandedBitmisCikislar.has(c.id);
-    var katOzetMap={};(c.satirlar||[]).forEach(function(s){var katAd=(stokTicariKatById(s.kategoriId)||{}).ad||s.kategoriId||'—';katOzetMap[katAd]=(katOzetMap[katAd]||0)+1;});
-    var urunStr=Object.keys(katOzetMap).map(function(kat){return kat+' ('+katOzetMap[kat]+')';}).join(' • ');
+    var notlarDisp=c.notlar?esc(c.notlar):'<span style="color:var(--text3)">—</span>';
     var tarihDispC=c.tarih?c.tarih.split('-').reverse().join('.'):'—';
     var toplam=(c.satirlar||[]).reduce(function(a,s){return a+s.miktar;},0);
     html+='<tr style="cursor:pointer;background:var(--bg3)" onclick="toggleBitmisCikis(\''+c.id+'\')">'
@@ -1324,7 +1321,7 @@ function renderBitmisCikislar(){
       +'<td><span class="kn-badge">'+esc(c.evrakNo||'—')+'</span></td>'
       +'<td style="font-family:var(--font-mono);font-size:12px">'+tarihDispC+'</td>'
       +'<td style="font-size:12px">'+esc(c.aciklama||'')+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)">'+esc(urunStr)+'</td>'
+      +'<td style="font-size:12px;color:var(--text2);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+esc(c.notlar||'')+'">'+notlarDisp+'</td>'
       +'<td style="font-family:var(--font-mono)">'+stokFmtN(toplam)+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();stokSilBitmisCikis(\''+c.id+'\')"><i class="ti ti-trash"></i></button>':'')

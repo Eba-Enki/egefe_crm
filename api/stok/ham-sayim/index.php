@@ -6,6 +6,14 @@ $user = requireAuth($pdo);
 requirePortalAccess($user, 'stok');
 
 
+function stokSPS(PDO $pdo, string $kategoriId): int {
+    $stmt = $pdo->prepare('SELECT sheet_boyu, kesim_boleni, fire_pct FROM stock_categories WHERE id = ?');
+    $stmt->execute([$kategoriId]);
+    $k = $stmt->fetch();
+    if (!$k || !$k['sheet_boyu'] || !$k['kesim_boleni']) return 90;
+    return (int)round(((float)$k['sheet_boyu'] / (float)$k['kesim_boleni']) * (1 - (float)($k['fire_pct'] ?? 0) / 100));
+}
+
 function kalemResponse(array $row): array {
     return [
         'lotId'         => $row['lot_id'],
@@ -14,6 +22,8 @@ function kalemResponse(array $row): array {
         'cutoff'        => $row['cutoff'],
         'kategoriId'    => $row['lot_kategori_id'],
         'sistemMiktar'  => (int)$row['sistem_miktar'],
+        'sayilanSheet'  => (int)$row['sayilan_sheet'],
+        'sayilanStrip'  => (int)$row['sayilan_strip'],
         'sayilanMiktar' => (int)$row['sayilan_miktar'],
     ];
 }
@@ -104,7 +114,9 @@ switch ($method) {
                 echo json_encode(['error' => (($i + 1)) . '. kalemde LOT eksik']);
                 exit;
             }
-            if (!isset($k['sayilanMiktar']) || $k['sayilanMiktar'] === '' || (int)$k['sayilanMiktar'] < 0) {
+            $sayilanSheet = (int)($k['sayilanSheet'] ?? 0);
+            $sayilanStrip = (int)($k['sayilanStrip'] ?? 0);
+            if ($sayilanSheet < 0 || $sayilanStrip < 0) {
                 http_response_code(400);
                 echo json_encode(['error' => (($i + 1)) . '. kalemde sayılan miktar geçersiz']);
                 exit;
@@ -117,8 +129,15 @@ switch ($method) {
                 echo json_encode(['error' => 'Seçili LOT bulunamadı']);
                 exit;
             }
+            $sps = stokSPS($pdo, (string)$lot['kategori_id']);
             // Sistem miktarı, sayım kaydedildiği andaki mevcut_strip değerinin anlık görüntüsüdür.
-            $items[] = ['lot' => $lot, 'sistemMiktar' => (int)$lot['mevcut_strip'], 'sayilanMiktar' => (int)$k['sayilanMiktar']];
+            $items[] = [
+                'lot' => $lot,
+                'sistemMiktar' => (int)$lot['mevcut_strip'],
+                'sayilanSheet' => $sayilanSheet,
+                'sayilanStrip' => $sayilanStrip,
+                'sayilanMiktar' => $sayilanSheet * $sps + $sayilanStrip,
+            ];
         }
 
         $evrakNo = strOrNull($input['evrakNo'] ?? null) ?? nextHamSayimEvrak($pdo);
@@ -129,9 +148,9 @@ switch ($method) {
             $stmt = $pdo->prepare('INSERT INTO raw_stock_counts (id, evrak_no, tarih, kategori_id, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?)');
             $stmt->execute([$id, $evrakNo, $tarih, $kategoriId, $notlar, $user['id']]);
 
-            $itemStmt = $pdo->prepare('INSERT INTO raw_stock_count_items (count_id, lot_id, parametre_ad, sistem_miktar, sayilan_miktar) VALUES (?, ?, ?, ?, ?)');
+            $itemStmt = $pdo->prepare('INSERT INTO raw_stock_count_items (count_id, lot_id, parametre_ad, sistem_miktar, sayilan_sheet, sayilan_strip, sayilan_miktar) VALUES (?, ?, ?, ?, ?, ?, ?)');
             foreach ($items as $it) {
-                $itemStmt->execute([$id, $it['lot']['id'], $it['lot']['parametre_ad'], $it['sistemMiktar'], $it['sayilanMiktar']]);
+                $itemStmt->execute([$id, $it['lot']['id'], $it['lot']['parametre_ad'], $it['sistemMiktar'], $it['sayilanSheet'], $it['sayilanStrip'], $it['sayilanMiktar']]);
             }
 
             $pdo->commit();

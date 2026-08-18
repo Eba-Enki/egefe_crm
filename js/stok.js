@@ -1021,17 +1021,21 @@ function renderHamSayimlar(){
       +'</tr>';
     if(expanded){
       var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-ham-sayimlar-detay"><thead><tr style="background:var(--bg4)">'
-        +'<th class="col-name">Parametre</th><th>LOT No</th><th>Cut-off</th><th>Sistem Miktarı</th><th>Sayılan Miktar</th><th>Fark</th>'
+        +'<th class="col-name">Parametre</th><th>LOT No</th><th>Cut-off</th><th>Sistem Sheet</th><th>Sistem Strip</th><th>Sayılan Sheet</th><th>Sayılan Strip</th><th>Fark</th>'
         +'</tr></thead><tbody>';
       kalemler.forEach(function(k){
+        var sps=stokSPS(k.kategoriId);
+        var sistemSheet=sps>0?Math.floor(k.sistemMiktar/sps):0;
         var fark=k.sayilanMiktar-k.sistemMiktar;
         var farkDisp=fark===0?'<span style="color:var(--green)">0</span>':'<span style="color:var(--red);font-weight:600">'+(fark>0?'+':'')+stokFmtN(fark)+'</span>';
         subHtml+='<tr>'
           +'<td class="col-name" style="font-weight:500">'+esc(k.parametreAd||'')+'</td>'
           +'<td><span class="kn-badge">'+esc(k.lotNo||'')+'</span></td>'
           +'<td style="font-family:var(--font-mono)">'+esc(k.cutoff||'—')+'</td>'
+          +'<td style="font-family:var(--font-mono)">'+stokFmtN(sistemSheet)+'</td>'
           +'<td style="font-family:var(--font-mono)">'+stokFmtN(k.sistemMiktar)+'</td>'
-          +'<td style="font-family:var(--font-mono)">'+stokFmtN(k.sayilanMiktar)+'</td>'
+          +'<td style="font-family:var(--font-mono)">'+stokFmtN(k.sayilanSheet)+'</td>'
+          +'<td style="font-family:var(--font-mono)">'+stokFmtN(k.sayilanStrip)+'</td>'
           +'<td style="font-family:var(--font-mono)">'+farkDisp+'</td>'
           +'</tr>';
       });
@@ -1088,8 +1092,8 @@ function hsKategoriChange(){
 
 function hsBuildSatirlar(){
   var katId=(document.getElementById('hs-kategori')||{}).value||'';
-  var eskiMiktarlar={};
-  _hsSatirlar.forEach(function(s){eskiMiktarlar[s.lotId]=s.sayilanMiktar;});
+  var eskiDegerler={};
+  _hsSatirlar.forEach(function(s){eskiDegerler[s.lotId]={sheet:s.sayilanSheet,strip:s.sayilanStrip};});
   var lots=(state.hamStokLotlar||[]).filter(function(l){
     if(!(l.mevcutStrip>0)) return false;
     if(katId&&l.kategoriId!==katId) return false;
@@ -1099,12 +1103,18 @@ function hsBuildSatirlar(){
     return c!==0?c:(a.lotNo||'').localeCompare(b.lotNo||'','tr');
   });
   _hsSatirlar=lots.map(function(l){
-    return {lotId:l.id,sistemMiktar:l.mevcutStrip,sayilanMiktar:eskiMiktarlar[l.id]!==undefined?eskiMiktarlar[l.id]:''};
+    var eski=eskiDegerler[l.id];
+    return {lotId:l.id,sistemMiktar:l.mevcutStrip,sistemSheet:stokMevcutSheet(l),sps:stokSPS(l.kategoriId),
+      sayilanSheet:eski?eski.sheet:'',sayilanStrip:eski?eski.strip:''};
   });
 }
 
-function hsMiktarChange(idx,val){
-  _hsSatirlar[idx].sayilanMiktar=val===''?'':(parseInt(val)||0);
+function hsSheetChange(idx,val){
+  _hsSatirlar[idx].sayilanSheet=val===''?'':(parseInt(val)||0);
+  hsRenderSatirlar();
+}
+function hsStripChange(idx,val){
+  _hsSatirlar[idx].sayilanStrip=val===''?'':(parseInt(val)||0);
   hsRenderSatirlar();
 }
 
@@ -1118,20 +1128,23 @@ function hsRenderSatirlar(){
   (state.hamStokLotlar||[]).forEach(function(l){lotById[l.id]=l;});
   var rows=_hsSatirlar.map(function(s,i){
     var lot=lotById[s.lotId]||{};
-    var girildi=s.sayilanMiktar!=='';
-    var fark=girildi?(parseInt(s.sayilanMiktar)||0)-s.sistemMiktar:null;
+    var girildi=s.sayilanSheet!==''||s.sayilanStrip!=='';
+    var toplamStrip=(parseInt(s.sayilanSheet)||0)*s.sps+(parseInt(s.sayilanStrip)||0);
+    var fark=girildi?toplamStrip-s.sistemMiktar:null;
     var farkDisp=!girildi?'<span style="color:var(--text3)">—</span>':(fark===0?'<span style="color:var(--green)">0</span>':'<span style="color:var(--red);font-weight:600">'+(fark>0?'+':'')+stokFmtN(fark)+'</span>');
     return '<tr>'
       +'<td class="col-name" style="font-weight:500">'+esc(lot.parametreAd||'')+'</td>'
       +'<td><span class="kn-badge">'+esc(lot.lotNo||'')+'</span></td>'
       +'<td style="font-family:var(--font-mono)">'+esc(lot.cutoff||'—')+'</td>'
+      +'<td style="font-family:var(--font-mono);color:var(--text3)">'+stokFmtN(s.sistemSheet)+'</td>'
       +'<td style="font-family:var(--font-mono);color:var(--text3)">'+stokFmtN(s.sistemMiktar)+'</td>'
-      +'<td style="width:120px"><input type="number" min="0" placeholder="—" value="'+esc(String(s.sayilanMiktar))+'" style="width:100%" onchange="hsMiktarChange('+i+',this.value)"></td>'
+      +'<td style="width:100px"><input type="number" min="0" placeholder="Sheet" value="'+esc(String(s.sayilanSheet))+'" style="width:100%" onchange="hsSheetChange('+i+',this.value)"></td>'
+      +'<td style="width:100px"><input type="number" min="0" placeholder="Strip" value="'+esc(String(s.sayilanStrip))+'" style="width:100%" onchange="hsStripChange('+i+',this.value)"></td>'
       +'<td style="font-family:var(--font-mono)">'+farkDisp+'</td>'
       +'</tr>';
   }).join('');
   el.innerHTML='<div class="table-wrap"><table class="compact-table" style="width:100%"><thead><tr>'
-    +'<th class="col-name">Parametre</th><th>LOT No</th><th>Cut-off</th><th>Sistem Miktarı</th><th>Sayılan Miktar</th><th>Fark</th>'
+    +'<th class="col-name">Parametre</th><th>LOT No</th><th>Cut-off</th><th>Sistem Sheet</th><th>Sistem Strip</th><th>Sayılan Sheet</th><th>Sayılan Strip</th><th>Fark</th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 
@@ -1145,8 +1158,8 @@ async function saveHamSayim(){
   if(!evrakNo) return toast('Evrak No zorunludur.','error');
   if(!tarih) return toast('Sayım tarihi zorunludur.','error');
 
-  var kalemler=_hsSatirlar.filter(function(s){return s.sayilanMiktar!=='';}).map(function(s){
-    return {lotId:s.lotId,sayilanMiktar:parseInt(s.sayilanMiktar)||0};
+  var kalemler=_hsSatirlar.filter(function(s){return s.sayilanSheet!==''||s.sayilanStrip!=='';}).map(function(s){
+    return {lotId:s.lotId,sayilanSheet:parseInt(s.sayilanSheet)||0,sayilanStrip:parseInt(s.sayilanStrip)||0};
   });
   if(!kalemler.length) return toast('En az bir LOT için sayılan miktar girin.','error');
 

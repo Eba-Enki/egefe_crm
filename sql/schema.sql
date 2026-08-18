@@ -326,6 +326,8 @@ CREATE TABLE raw_stock_count_items (
   lot_id         VARCHAR(40) NULL,
   parametre_ad   VARCHAR(150) NULL,
   sistem_miktar  INT NOT NULL DEFAULT 0,
+  sayilan_sheet  INT NOT NULL DEFAULT 0,
+  sayilan_strip  INT NOT NULL DEFAULT 0,
   sayilan_miktar INT NOT NULL DEFAULT 0,
   CONSTRAINT fk_rsci_count FOREIGN KEY (count_id) REFERENCES raw_stock_counts(id) ON DELETE CASCADE,
   CONSTRAINT fk_rsci_lot FOREIGN KEY (lot_id) REFERENCES raw_stock_lots(id) ON DELETE SET NULL

@@ -24,6 +24,7 @@ var PORTAL_SAYFALAR = {
     {id:'ham-stok',       label:'Sheet & Strip Stok Listesi'},
     {id:'ham-girisler',   label:'Sheet & Strip Girişler'},
     {id:'ham-cikislar',   label:'Sheet & Strip Çıkışlar'},
+    {id:'ham-sayimlar',   label:'Sheet & Strip Stok Sayımı'},
     {id:'stok-parametreler', label:'Parametre Listesi'},
     {id:'bitmis-stok',    label:'Hazır Ürün Stok Listesi'},
     {id:'bitmis-girisler',label:'Hazır Ürün Girişler'},

@@ -164,6 +164,7 @@
     <div class="sb-item stok-only" data-page="ham-stok" style="display:none" onclick="showPage('ham-stok')"><span class="icon"><i class="ti ti-database"></i></span><span>Sheet & Strip Stok Listesi</span></div>
     <div class="sb-item stok-only" data-page="ham-girisler" style="display:none" onclick="showPage('ham-girisler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Sheet & Strip Stok Girişler</span></div>
     <div class="sb-item stok-only" data-page="ham-cikislar" style="display:none" onclick="showPage('ham-cikislar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Sheet & Strip Stok Çıkışlar</span></div>
+    <div class="sb-item stok-only" data-page="ham-sayimlar" style="display:none" onclick="showPage('ham-sayimlar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span>Sheet & Strip Stok Sayımı</span></div>
     <div class="sb-item stok-only admin-only" data-page="stok-parametreler" style="display:none" onclick="showPage('stok-parametreler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><line x1="12" y1="14" x2="12" y2="20"/><line x1="9" y1="17" x2="15" y2="17"/></svg></span><span>Parametre Listesi</span></div>
     <div class="sb-section stok-only" style="display:none">Hazır Ürün Yönetimi</div>
     <div class="sb-item stok-only" data-page="bitmis-stok" style="display:none" onclick="showPage('bitmis-stok')"><span class="icon"><i class="ti ti-database"></i></span><span>Hazır Ürün Stok Listesi</span></div>
@@ -232,6 +233,7 @@
       <button class="btn btn-ghost btn-sm stok-only" id="topbar-stok-excel" style="display:none;color:var(--green)" onclick="stokSayfaExcel()"><i class="ti ti-file-download"></i> Excel</button>
       <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-ham-giris" style="display:none" onclick="goHamGirisYeni()"><i class="ti ti-plus"></i> Yeni Yarı Mamul Giriş</button>
       <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-ham-cikis" style="display:none" onclick="goHamCikisYeni()"><i class="ti ti-plus"></i> Yarı Mamul Çıkışı</button>
+      <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-ham-sayim" style="display:none" onclick="goHamSayimYeni()"><i class="ti ti-plus"></i> Yeni Sayım</button>
       <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-bitmis-giris" style="display:none" onclick="goBitmisGirisYeni()"><i class="ti ti-plus"></i> Yeni Hazır Ürün Giriş</button>
       <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-bitmis-cikis" style="display:none" onclick="goBitmisCikisYeni()"><i class="ti ti-plus"></i> Hazır Ürün Çıkışı</button>
       <button class="btn btn-primary btn-sm admin-only stok-only" id="topbar-stok-param" style="display:none" onclick="stokParamFormAc()"><i class="ti ti-plus"></i> Yeni Parametre</button>
@@ -1179,6 +1181,44 @@
         <div style="display:flex;gap:10px;margin-top:18px">
           <button class="btn btn-primary" onclick="saveHamCikis()">Stoktan Düş</button>
           <button class="btn btn-ghost" onclick="showPage('ham-cikislar')">İptal</button>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ═══ HAM STOK SAYIM LİSTESİ ═══ -->
+    <div id="page-ham-sayimlar" class="page stok-only">
+      <div class="filter-bar" style="margin-bottom:14px">
+        <div class="filter-row">
+          <button class="btn-icon filter-toggle-btn" type="button" onclick="toggleFilterExtra(this)" title="Filtreler"><i class="ti ti-adjustments-horizontal"></i></button>
+          <div class="filter-search">
+            <input type="text" id="hsl-arama" placeholder="Evrak No / Notlar..." oninput="renderHamSayimlar()" style="min-width:220px">
+          </div>
+        </div>
+        <div class="filter-extra">
+          <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="hsl-ts" oninput="renderHamSayimlar()"></div>
+          <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="hsl-te" oninput="renderHamSayimlar()"></div>
+        </div>
+      </div>
+      <div id="ham-sayimlar-wrap"></div>
+      <div id="ham-sayimlar-pagination" style="margin-top:12px"></div>
+    </div>
+
+    <!-- ═══ HAM STOK SAYIM FORMU ═══ -->
+    <div id="page-ham-sayim" class="page stok-only">
+      <div class="form-wrap"><div class="form-card">
+        <div class="form-section-title" style="margin-bottom:16px">Fiziki Stok Sayımı</div>
+        <div style="font-size:12px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px">Bu form yalnızca sayımı kaydeder; stok miktarlarını değiştirmez.</div>
+        <div class="form-grid">
+          <div class="field"><label>Evrak No <span class="req">*</span></label><input type="text" id="hs-evrak"></div>
+          <div class="field"><label>Sayım Tarihi <span class="req">*</span></label><input type="date" id="hs-tarih"></div>
+          <div class="field"><label>Kategori</label><select id="hs-kategori" onchange="hsKategoriChange()"></select></div>
+          <div class="field form-full"><label>Notlar</label><textarea id="hs-notlar" rows="2" placeholder="ör. Ağustos 2026 fiziki sayımı"></textarea></div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin:18px 0 8px">Sayım Kalemleri <span style="font-weight:400;color:var(--text3)">— saydığınız LOT'lara miktar girin, saymadıklarınızı boş bırakabilirsiniz</span></div>
+        <div id="hs-satirlar"></div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn btn-primary" onclick="saveHamSayim()">Sayımı Kaydet</button>
+          <button class="btn btn-ghost" onclick="showPage('ham-sayimlar')">İptal</button>
         </div>
       </div></div>
     </div>

@@ -743,10 +743,8 @@ function renderHamCikislar(){
 function setHamCikislarPage(p){_hamCikislarPage=p;renderHamCikislar();}
 
 function goHamCikisYeni(){
-  var evrak=nextHamCikisEvrak();
-  if(document.getElementById('hc-evrak')) document.getElementById('hc-evrak').value=evrak;
-  var dispEl=document.getElementById('hc-evrak-display');
-  if(dispEl) dispEl.textContent='Evrak No: '+evrak;
+  var evrakEl=document.getElementById('hc-evrak');
+  if(evrakEl) evrakEl.value=nextHamCikisEvrak();
   showPage('ham-cikis');
 }
 
@@ -768,37 +766,60 @@ var _hcSatirlar=[];
 
 function renderHamCikisForm(){
   stokInit();
-  _hcSatirlar=[{paramKey:'',lotId:''}];
-  // Evrak no göster
-  var evrak=(document.getElementById('hc-evrak')||{}).value||nextHamCikisEvrak();
-  if(document.getElementById('hc-evrak')) document.getElementById('hc-evrak').value=evrak;
-  var dispEl=document.getElementById('hc-evrak-display');
-  if(dispEl) dispEl.textContent='Evrak No: '+evrak;
+  _hcSatirlar=[];
+  var evrakEl=document.getElementById('hc-evrak');
+  if(evrakEl&&!evrakEl.value) evrakEl.value=nextHamCikisEvrak();
   var tarihEl=document.getElementById('hc-tarih');
   if(tarihEl&&!tarihEl.value) tarihEl.value=stokToday();
   if(document.getElementById('hc-kit')) document.getElementById('hc-kit').value='';
   stokNedenSelect('hc-aciklama');
   if(document.getElementById('hc-notlar')) document.getElementById('hc-notlar').value='';
   stokKatSelect('hc-kategori','');
+  hcRenderParamChips();
   hcRenderSatirlar();
 }
 
-function hcKategoriChange(){_hcSatirlar=[{paramKey:'',lotId:''}];hcRenderSatirlar();}
-
-function hcAddSatir(){
-  _hcSatirlar.push({paramKey:'',lotId:''});
+function hcKategoriChange(){
+  _hcSatirlar.forEach(function(s){s.lotId='';});
   hcRenderSatirlar();
-  var el=document.getElementById('hc-param-'+(_hcSatirlar.length-1));
-  if(el) el.focus();
+}
+
+function hcToggleParam(key){
+  var idx=_hcSatirlar.findIndex(function(s){return s.paramKey===key;});
+  if(idx>=0){
+    _hcSatirlar=_hcSatirlar.filter(function(s){return s.paramKey!==key;});
+  } else {
+    var kitMiktar=parseInt((document.getElementById('hc-kit')||{}).value)||0;
+    _hcSatirlar.push({paramKey:key,lotId:'',miktar:kitMiktar});
+  }
+  hcRenderParamChips();
+  hcRenderSatirlar();
+}
+
+function hcAddLot(key){
+  _hcSatirlar.push({paramKey:key,lotId:'',miktar:0});
+  hcRenderSatirlar();
 }
 
 function hcRemoveSatir(idx){
   _hcSatirlar.splice(idx,1);
+  hcRenderParamChips();
   hcRenderSatirlar();
 }
 
-function hcLotKeydown(i,e){
-  if(e.key==='Enter'){e.preventDefault();hcAddSatir();}
+function hcRenderParamChips(){
+  var el=document.getElementById('hc-param-chips'); if(!el) return;
+  var params=stokParamList().filter(function(p){return p.aktif!==false;});
+  if(!params.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--text3)">Tanımlı parametre yok.</div>';
+    return;
+  }
+  el.innerHTML=params.map(function(p){
+    var k=p.kisaltma||p.ad;
+    var label=k+(p.ad&&p.ad!==k?' — '+p.ad:'');
+    var sel=_hcSatirlar.some(function(s){return s.paramKey===k;});
+    return '<button type="button" class="chip'+(sel?' selected':'')+'" onclick="hcToggleParam(\''+esc(k)+'\')">'+esc(label)+'</button>';
+  }).join('');
 }
 
 function hcRenderSatirlar(){
@@ -806,58 +827,83 @@ function hcRenderSatirlar(){
   var kitMiktar=parseInt((document.getElementById('hc-kit')||{}).value)||0;
   var el=document.getElementById('hc-satirlar'); if(!el) return;
 
-  var params=stokParamList().filter(function(p){return p.aktif!==false;});
+  if(!_hcSatirlar.length){
+    el.innerHTML='<div style="text-align:center;padding:18px;color:var(--text3);font-size:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px dashed var(--border)">Yukarıdan çıkışa dahil edilecek parametreleri seçin.</div>';
+    hcStokUyariGuncelle();
+    return;
+  }
+
+  var params=stokParamList();
   var lots=(state.hamStokLotlar||[]).filter(function(l){return l.kategoriId===katId&&l.mevcutStrip>0;});
 
-  var rows=_hcSatirlar.map(function(s,i){
-    var paramOptions=params.map(function(p){
-      var k=p.kisaltma||p.ad;
-      var label=k+(p.ad&&p.ad!==k?' — '+p.ad:'');
-      return '<option value="'+esc(k)+'"'+(s.paramKey===k?' selected':'')+'>'+esc(label)+'</option>';
-    }).join('');
+  var order=[]; var groups={};
+  _hcSatirlar.forEach(function(s,i){
+    if(!groups[s.paramKey]){groups[s.paramKey]=[];order.push(s.paramKey);}
+    groups[s.paramKey].push(i);
+  });
 
-    var filtLots=lots.filter(function(l){
-      if(!s.paramKey) return true;
-      return l.parametreAd===s.paramKey;
+  var rows='';
+  order.forEach(function(key){
+    var idxs=groups[key];
+    var paramDef=params.find(function(p){return (p.kisaltma||p.ad)===key;});
+    var kisa=paramDef?(paramDef.kisaltma||paramDef.ad):key;
+    var paramLabel=kisa+(paramDef&&paramDef.ad&&paramDef.ad!==kisa?' — '+paramDef.ad:'');
+    var filtLots=lots.filter(function(l){return l.parametreAd===key;});
+
+    idxs.forEach(function(i,rowInGroup){
+      var s=_hcSatirlar[i];
+      var usedByOthers=idxs.filter(function(j){return j!==i;}).map(function(j){return _hcSatirlar[j].lotId;});
+      var availLots=filtLots.filter(function(l){return l.id===s.lotId||usedByOthers.indexOf(l.id)===-1;});
+      var lotOptions=availLots.map(function(l){
+        var ms=stokMevcutSheet(l);
+        var cutoffInfo=l.cutoff?' (cut-off: '+l.cutoff+')':'';
+        return '<option value="'+esc(l.id)+'"'+(s.lotId===l.id?' selected':'')+'>'+esc(l.lotNo+cutoffInfo)+' — '+stokFmtN(l.mevcutStrip)+' strip ('+ms+' sh)</option>';
+      }).join('');
+      if(!lotOptions) lotOptions='<option value="">— Mevcut LOT yok —</option>';
+
+      rows+='<tr>'
+        +(rowInGroup===0?'<td class="col-name" rowspan="'+(idxs.length+1)+'" style="font-weight:500;white-space:nowrap;vertical-align:top;padding-top:10px">'+esc(paramLabel)+'</td>':'')
+        +'<td><select style="width:100%" onchange="hcLotChange('+i+',this.value)"><option value="">LOT Seçin...</option>'+lotOptions+'</select></td>'
+        +'<td style="width:110px"><input type="number" min="1" value="'+(s.miktar||'')+'" style="width:100%" onchange="hcMiktarChange('+i+',this.value)"></td>'
+        +'<td style="width:36px;text-align:center"><button type="button" class="btn-icon" style="color:var(--red)" onclick="hcRemoveSatir('+i+')"><i class="ti ti-trash"></i></button></td>'
+        +'</tr>';
     });
-    var lotOptions=filtLots.map(function(l){
-      var ms=stokMevcutSheet(l);
-      var cutoffInfo=l.cutoff?' (cut-off: '+l.cutoff+')':'';
-      return '<option value="'+esc(l.id)+'"'+(s.lotId===l.id?' selected':'')+'>'+esc(l.lotNo+cutoffInfo)+' — '+stokFmtN(l.mevcutStrip)+' strip ('+ms+' sh)</option>';
-    }).join('');
-    if(!lotOptions) lotOptions='<option value="">— Mevcut LOT yok —</option>';
 
-    var secilenLot=filtLots.find(function(l){return l.id===s.lotId;});
-    var mevcutInfo=secilenLot?'Mevcut: '+stokFmtN(secilenLot.mevcutStrip)+' strip':'';
+    var toplam=idxs.reduce(function(sum,i){return sum+(parseInt(_hcSatirlar[i].miktar)||0);},0);
+    var eksik=kitMiktar-toplam;
+    var durumRengi=eksik!==0?'var(--red)':'var(--green)';
+    var durumMetin=stokFmtN(toplam)+' / '+stokFmtN(kitMiktar)+' strip dağıtıldı'+(eksik>0?' — '+stokFmtN(eksik)+' eksik':(eksik<0?' — '+stokFmtN(-eksik)+' fazla':' ✓'));
+    rows+='<tr style="background:var(--bg3)">'
+      +'<td colspan="2" style="font-size:11px;font-weight:500;color:'+durumRengi+'">'+durumMetin+'</td>'
+      +'<td style="text-align:center"><button type="button" class="btn-icon" title="Bu parametre için LOT ekle" onclick="hcAddLot(\''+esc(key)+'\')"><i class="ti ti-plus"></i></button></td>'
+      +'</tr>';
+  });
 
-    return '<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:8px">'
-      +'<div class="field" style="margin:0"><label style="font-size:11px">Parametre</label>'
-        +'<select id="hc-param-'+i+'" onchange="hcParamChange('+i+',this.value)"><option value="">Seçin...</option>'+paramOptions+'</select></div>'
-      +'<div class="field" style="margin:0"><label style="font-size:11px">LOT <span style="color:var(--text3);font-weight:400">'+esc(mevcutInfo)+'</span></label>'
-        +'<select onchange="hcLotChange('+i+',this.value)" onkeydown="hcLotKeydown('+i+',event)"><option value="">LOT Seçin...</option>'+lotOptions+'</select></div>'
-      +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="hcRemoveSatir('+i+')"><i class="ti ti-trash"></i></button>'
-      +'</div>';
-  }).join('');
+  el.innerHTML='<div class="table-wrap"><table class="compact-table" style="width:100%"><thead><tr><th class="col-name">Parametre</th><th>LOT</th><th>Strip Miktarı</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 
-  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="hcAddSatir()"><i class="ti ti-plus"></i> Parametre Ekle</button></div>';
-
-  // Stok uyarı güncelle
   hcStokUyariGuncelle();
 }
-
-function hcParamChange(idx,val){_hcSatirlar[idx].paramKey=val;_hcSatirlar[idx].lotId='';hcRenderSatirlar();}
 function hcLotChange(idx,val){_hcSatirlar[idx].lotId=val;hcRenderSatirlar();}
-function hcUpdateStrips(){hcRenderSatirlar();}
+function hcMiktarChange(idx,val){_hcSatirlar[idx].miktar=parseInt(val)||0;hcRenderSatirlar();}
+
+function hcUpdateStrips(){
+  var kitMiktar=parseInt((document.getElementById('hc-kit')||{}).value)||0;
+  var counts={};
+  _hcSatirlar.forEach(function(s){counts[s.paramKey]=(counts[s.paramKey]||0)+1;});
+  _hcSatirlar.forEach(function(s){
+    if(counts[s.paramKey]===1) s.miktar=kitMiktar;
+  });
+  hcRenderSatirlar();
+}
 
 function hcStokUyariGuncelle(){
-  var kitMiktar=parseInt((document.getElementById('hc-kit')||{}).value)||0;
   var uyariEl=document.getElementById('hc-stok-uyari'); if(!uyariEl) return;
   var uyarilar=[];
   _hcSatirlar.forEach(function(s){
     if(!s.lotId) return;
     var lot=(state.hamStokLotlar||[]).find(function(l){return l.id===s.lotId;});
-    if(lot&&kitMiktar>lot.mevcutStrip){
-      uyarilar.push(esc(lot.parametreAd)+(lot.cutoff?' ('+esc(lot.cutoff)+')':'')+': '+stokFmtN(lot.mevcutStrip)+' strip mevcut, '+stokFmtN(kitMiktar)+' gerekli');
+    if(lot&&(parseInt(s.miktar)||0)>lot.mevcutStrip){
+      uyarilar.push(esc(lot.parametreAd)+(lot.cutoff?' ('+esc(lot.cutoff)+')':'')+' — '+esc(lot.lotNo)+': '+stokFmtN(lot.mevcutStrip)+' strip mevcut, '+stokFmtN(s.miktar)+' isteniyor');
     }
   });
   if(uyarilar.length){
@@ -870,30 +916,36 @@ function hcStokUyariGuncelle(){
 
 async function saveHamCikis(){
   stokInit();
+  var evrakNo=(document.getElementById('hc-evrak')||{}).value.trim();
   var tarih=(document.getElementById('hc-tarih')||{}).value;
   var katId=(document.getElementById('hc-kategori')||{}).value;
   var kitMiktar=parseInt((document.getElementById('hc-kit')||{}).value)||0;
   var aciklama=(document.getElementById('hc-aciklama')||{}).value.trim();
   var notlar=(document.getElementById('hc-notlar')||{}).value.trim();
 
+  if(!evrakNo) return toast('Evrak No zorunludur.','error');
   if(!tarih) return toast('Tarih zorunludur.','error');
   if(!katId) return toast('Kategori seçin.','error');
   if(kitMiktar<1) return toast('Kit miktarı geçerli olmalı.','error');
   if(!aciklama) return toast('Müşteri / Amaç zorunludur.','error');
-  if(!_hcSatirlar.length) return toast('En az bir parametre satırı ekleyin.','error');
+  if(!_hcSatirlar.length) return toast('En az bir parametre seçin.','error');
 
+  var toplam={};
   for(var i=0;i<_hcSatirlar.length;i++){
     var s=_hcSatirlar[i];
-    if(!s.paramKey) return toast((i+1)+'. satırda parametre seçilmedi.','error');
-    if(!s.lotId) return toast((i+1)+'. satırda LOT seçilmedi.','error');
+    if(!s.lotId) return toast(esc(s.paramKey)+' için LOT seçilmedi.','error');
+    if(!s.miktar||s.miktar<1) return toast(esc(s.paramKey)+' için miktar geçerli olmalı.','error');
     var lot=(state.hamStokLotlar||[]).find(function(l){return l.id===s.lotId;});
     if(!lot) return toast('Seçili LOT bulunamadı.','error');
-    if(kitMiktar>lot.mevcutStrip) return toast(esc(lot.parametreAd)+' için yeterli stok yok. Mevcut: '+stokFmtN(lot.mevcutStrip)+' strip.','error');
+    if(s.miktar>lot.mevcutStrip) return toast(esc(lot.parametreAd)+' ('+esc(lot.lotNo)+') için yeterli stok yok. Mevcut: '+stokFmtN(lot.mevcutStrip)+' strip.','error');
+    toplam[s.paramKey]=(toplam[s.paramKey]||0)+s.miktar;
   }
+  var uyusmayanParam=Object.keys(toplam).find(function(k){return toplam[k]!==kitMiktar;});
+  if(uyusmayanParam) return toast(esc(uyusmayanParam)+' için dağıtılan miktar ('+stokFmtN(toplam[uyusmayanParam])+') kit miktarına ('+stokFmtN(kitMiktar)+') eşit değil.','error');
 
   var res;
   try{
-    res=await apiPost('stok/ham-cikislar',{tarih:tarih,kategoriId:katId,kitMiktari:kitMiktar,aciklama:aciklama,notlar:notlar,satirlar:_hcSatirlar});
+    res=await apiPost('stok/ham-cikislar',{evrakNo:evrakNo,tarih:tarih,kategoriId:katId,kitMiktari:kitMiktar,aciklama:aciklama,notlar:notlar,satirlar:_hcSatirlar});
   }catch(e){
     toast(e.message||'Çıkış kaydedilemedi.','error');
     return;

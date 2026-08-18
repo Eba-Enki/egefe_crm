@@ -109,12 +109,19 @@ switch ($method) {
         }
 
         $lots = [];
+        $paramTotals = [];
         foreach ($satirlar as $i => $s) {
             $paramKey = strOrNull($s['paramKey'] ?? null);
             $lotId = strOrNull($s['lotId'] ?? null);
+            $miktar = (int)($s['miktar'] ?? 0);
             if (!$paramKey || !$lotId) {
                 http_response_code(400);
                 echo json_encode(['error' => (($i + 1)) . '. satırda parametre veya LOT seçilmedi']);
+                exit;
+            }
+            if ($miktar < 1) {
+                http_response_code(400);
+                echo json_encode(['error' => (($i + 1)) . '. satırda miktar geçersiz']);
                 exit;
             }
             $stmt = $pdo->prepare('SELECT * FROM raw_stock_lots WHERE id = ?');
@@ -125,12 +132,20 @@ switch ($method) {
                 echo json_encode(['error' => 'Seçili LOT bulunamadı']);
                 exit;
             }
-            if ($kitMiktari > (int)$lot['mevcut_strip']) {
+            if ($miktar > (int)$lot['mevcut_strip']) {
                 http_response_code(400);
-                echo json_encode(['error' => $lot['parametre_ad'] . ' için yeterli stok yok. Mevcut: ' . $lot['mevcut_strip'] . ' strip']);
+                echo json_encode(['error' => $lot['parametre_ad'] . ' (' . $lot['lot_no'] . ') için yeterli stok yok. Mevcut: ' . $lot['mevcut_strip'] . ' strip']);
                 exit;
             }
-            $lots[] = ['paramKey' => $paramKey, 'lot' => $lot];
+            $paramTotals[$paramKey] = ($paramTotals[$paramKey] ?? 0) + $miktar;
+            $lots[] = ['paramKey' => $paramKey, 'lot' => $lot, 'miktar' => $miktar];
+        }
+        foreach ($paramTotals as $paramKey => $total) {
+            if ($total !== $kitMiktari) {
+                http_response_code(400);
+                echo json_encode(['error' => $paramKey . ' için dağıtılan miktar (' . $total . ') kit miktarına (' . $kitMiktari . ') eşit değil']);
+                exit;
+            }
         }
 
         $evrakNo = strOrNull($input['evrakNo'] ?? null) ?? nextHamCikisEvrak($pdo);
@@ -144,8 +159,8 @@ switch ($method) {
             $itemStmt = $pdo->prepare('INSERT INTO raw_stock_exit_items (exit_id, lot_id, strip_cikis, parametre_ad) VALUES (?, ?, ?, ?)');
             $decStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip - ? WHERE id = ?');
             foreach ($lots as $l) {
-                $itemStmt->execute([$id, $l['lot']['id'], $kitMiktari, $l['paramKey']]);
-                $decStmt->execute([$kitMiktari, $l['lot']['id']]);
+                $itemStmt->execute([$id, $l['lot']['id'], $l['miktar'], $l['paramKey']]);
+                $decStmt->execute([$l['miktar'], $l['lot']['id']]);
             }
 
             $pdo->commit();

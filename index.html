@@ -1163,20 +1163,18 @@
     <!-- ═══ HAM STOK ÇIKIŞ FORMU ═══ -->
     <div id="page-ham-cikis" class="page stok-only">
       <div class="form-wrap"><div class="form-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <div class="form-section-title" style="margin:0">Stok Çıkışı / Kit Üretimi</div>
-          <div style="font-family:var(--font-mono);font-size:13px;color:var(--accent);font-weight:600" id="hc-evrak-display"></div>
-        </div>
-        <input type="hidden" id="hc-evrak">
+        <div class="form-section-title" style="margin-bottom:16px">Stok Çıkışı / Kit Üretimi</div>
         <div class="form-grid">
+          <div class="field"><label>Evrak No <span class="req">*</span></label><input type="text" id="hc-evrak"></div>
           <div class="field"><label>Çıkış Tarihi <span class="req">*</span></label><input type="date" id="hc-tarih"></div>
           <div class="field"><label>Kategori <span class="req">*</span></label><select id="hc-kategori" onchange="hcKategoriChange()"></select></div>
           <div class="field"><label>Kit Miktarı <span class="req">*</span></label><input type="number" id="hc-kit" min="1" placeholder="Adet" oninput="hcUpdateStrips()"></div>
           <div class="field"><label>Çıkış Nedeni <span class="req">*</span></label><select id="hc-aciklama"></select></div>
           <div class="field form-full"><label>Notlar</label><textarea id="hc-notlar" rows="2"></textarea></div>
         </div>
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin:18px 0 10px">Parametre Satırları</div>
-        <div id="hc-satirlar"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin:18px 0 8px">Parametreler <span style="font-weight:400;color:var(--text3)">— çıkışa dahil edilecekleri seçin</span></div>
+        <div id="hc-param-chips" class="chip-group"></div>
+        <div id="hc-satirlar" style="margin-top:12px"></div>
         <div id="hc-stok-uyari" style="display:none;margin-top:10px;padding:10px 14px;background:var(--red-soft);border:1px solid rgba(248,113,113,.3);border-radius:var(--radius-sm);font-size:12px;color:var(--red)"></div>
         <div style="display:flex;gap:10px;margin-top:18px">
           <button class="btn btn-primary" onclick="saveHamCikis()">Stoktan Düş</button>

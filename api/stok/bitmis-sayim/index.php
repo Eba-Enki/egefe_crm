@@ -168,13 +168,16 @@ switch ($method) {
         $evrakStmt->execute([$id]);
         $evrakNolar = array_column($evrakStmt->fetchAll(), 'duzeltme_evrak_no');
 
+        // Giriş ve çıkış evrak numaraları birbirinden bağımsız sıralandığı için
+        // (SD-00001 hem bir girişte hem ayrı bir çıkışta aynı anda var olabilir),
+        // her evrak no için iki tabloyu da ayrı ayrı kontrol etmek gerekir.
         $girisIds = [];
         $cikisIds = [];
         foreach ($evrakNolar as $evrakNo) {
             $g = $pdo->prepare('SELECT id FROM finished_stock_entries WHERE evrak_no = ?');
             $g->execute([$evrakNo]);
             $gRow = $g->fetch();
-            if ($gRow) { $girisIds[] = $gRow['id']; continue; }
+            if ($gRow) { $girisIds[] = $gRow['id']; }
             $c = $pdo->prepare('SELECT id FROM finished_stock_exits WHERE evrak_no = ?');
             $c->execute([$evrakNo]);
             $cRow = $c->fetch();

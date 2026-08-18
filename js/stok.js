@@ -2578,27 +2578,31 @@ function stokExportBitmisStokExcel(){
 }
 
 function stokExportHamSayimSablonuExcel(){
-  if(!_hsSatirlar||!_hsSatirlar.length){toast('Önce kategori seçip LOT listesinin gelmesini bekleyin.','error');return;}
-  var lotById={};
-  (state.hamStokLotlar||[]).forEach(function(l){lotById[l.id]=l;});
+  stokInit();
+  var lots=(state.hamStokLotlar||[]).filter(function(l){return l.mevcutStrip>0;}).slice().sort(function(a,b){
+    var c=(a.parametreAd||'').localeCompare(b.parametreAd||'','tr');
+    return c!==0?c:(a.lotNo||'').localeCompare(b.lotNo||'','tr');
+  });
+  if(!lots.length){toast('Sayılacak aktif LOT bulunamadı.','error');return;}
   var headers=['Parametre','Kategori','LOT No','Cut-off','Sistem Sheet','Sistem Strip','Sayılan Sheet','Sayılan Strip'];
-  var rows=_hsSatirlar.map(function(s){
-    var lot=lotById[s.lotId]||{};
-    var kat=(stokKatById(lot.kategoriId)||{}).ad||lot.kategoriId||'';
-    return [lot.parametreAd||'',kat,lot.lotNo||'',lot.cutoff||'',s.sistemSheet||0,s.sistemMiktar||0,'',''];
+  var rows=lots.map(function(l){
+    var kat=(stokKatById(l.kategoriId)||{}).ad||l.kategoriId||'';
+    return [l.parametreAd||'',kat,l.lotNo||'',l.cutoff||'',stokMevcutSheet(l),l.mevcutStrip||0,'',''];
   });
   _xlsxDownload(rows,headers,'Sayım Şablonu','sayim-sablonu-sheet-strip');
 }
 
 function stokExportBitmisSayimSablonuExcel(){
-  if(!_bsSatirlar||!_bsSatirlar.length){toast('Önce kategori seçip LOT listesinin gelmesini bekleyin.','error');return;}
-  var lotById={};
-  (state.bitmisStokLotlar||[]).forEach(function(l){lotById[l.id]=l;});
+  stokInit();
+  var lots=(state.bitmisStokLotlar||[]).filter(function(l){return l.mevcutMiktar>0;}).slice().sort(function(a,b){
+    var c=(a.urunAdi||'').localeCompare(b.urunAdi||'','tr');
+    return c!==0?c:(a.lotNo||'').localeCompare(b.lotNo||'','tr');
+  });
+  if(!lots.length){toast('Sayılacak aktif LOT bulunamadı.','error');return;}
   var headers=['Ürün Adı','Kategori','LOT No','Sistem Miktar','Sayılan Miktar'];
-  var rows=_bsSatirlar.map(function(s){
-    var lot=lotById[s.lotId]||{};
-    var kat=(stokTicariKatById(lot.kategoriId)||{}).ad||lot.kategoriId||'';
-    return [lot.urunAdi||'',kat,lot.lotNo||'',s.sistemMiktar||0,''];
+  var rows=lots.map(function(l){
+    var kat=(stokTicariKatById(l.kategoriId)||{}).ad||l.kategoriId||'';
+    return [l.urunAdi||'',kat,l.lotNo||'',l.mevcutMiktar||0,''];
   });
   _xlsxDownload(rows,headers,'Sayım Şablonu','sayim-sablonu-hazir-urun');
 }

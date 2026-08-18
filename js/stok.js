@@ -93,7 +93,10 @@ function nextTicariCikisEvrak(){
 }
 
 function stokKatList(){return (state.stokSettings&&state.stokSettings.kategoriler)||[];}
-function stokParamList(){return (state.stokSettings&&state.stokSettings.parametreler)||[];}
+function stokParamList(){
+  var list=(state.stokSettings&&state.stokSettings.parametreler)||[];
+  return list.slice().sort(function(a,b){return (a.kisaltma||a.ad||'').localeCompare(b.kisaltma||b.ad||'','tr');});
+}
 function stokKatById(id){return stokKatList().find(function(k){return k.id===id;});}
 function stokTicariKatList(){return (state.stokSettings&&state.stokSettings.ticariKategoriler)||[];}
 function stokTicariKatById(id){return stokTicariKatList().find(function(k){return k.id===id;});}
@@ -850,8 +853,14 @@ function hcRenderSatirlar(){
     var paramLabel=kisa+(paramDef&&paramDef.ad&&paramDef.ad!==kisa?' — '+paramDef.ad:'');
     var filtLots=lots.filter(function(l){return l.parametreAd===key;});
 
+    var toplam=idxs.reduce(function(sum,i){return sum+(parseInt(_hcSatirlar[i].miktar)||0);},0);
+    var eksik=kitMiktar-toplam;
+    var durumRengi=eksik!==0?'var(--red)':'var(--green)';
+    var durumMetin=stokFmtN(toplam)+' / '+stokFmtN(kitMiktar)+' dağıtıldı'+(eksik>0?' — '+stokFmtN(eksik)+' eksik':(eksik<0?' — '+stokFmtN(-eksik)+' fazla':' ✓'));
+
     idxs.forEach(function(i,rowInGroup){
       var s=_hcSatirlar[i];
+      var isLast=rowInGroup===idxs.length-1;
       var usedByOthers=idxs.filter(function(j){return j!==i;}).map(function(j){return _hcSatirlar[j].lotId;});
       var availLots=filtLots.filter(function(l){return l.id===s.lotId||usedByOthers.indexOf(l.id)===-1;});
       var lotOptions=availLots.map(function(l){
@@ -861,22 +870,20 @@ function hcRenderSatirlar(){
       }).join('');
       if(!lotOptions) lotOptions='<option value="">— Mevcut LOT yok —</option>';
 
+      var actionCell='<button type="button" class="btn-icon" style="color:var(--red)" onclick="hcRemoveSatir('+i+')"><i class="ti ti-trash"></i></button>';
+      if(isLast){
+        actionCell='<span style="font-size:11px;font-weight:500;color:'+durumRengi+';margin-right:8px">'+durumMetin+'</span>'
+          +'<button type="button" class="btn-icon" style="margin-right:4px" title="Bu parametre için LOT ekle" onclick="hcAddLot(\''+esc(key)+'\')"><i class="ti ti-plus"></i></button>'
+          +actionCell;
+      }
+
       rows+='<tr>'
-        +(rowInGroup===0?'<td class="col-name" rowspan="'+(idxs.length+1)+'" style="font-weight:500;white-space:nowrap;vertical-align:top;padding-top:10px">'+esc(paramLabel)+'</td>':'')
+        +(rowInGroup===0?'<td class="col-name" rowspan="'+idxs.length+'" style="font-weight:500;white-space:nowrap;vertical-align:top;padding-top:10px">'+esc(paramLabel)+'</td>':'')
         +'<td><select style="width:100%" onchange="hcLotChange('+i+',this.value)"><option value="">LOT Seçin...</option>'+lotOptions+'</select></td>'
         +'<td style="width:110px"><input type="number" min="1" value="'+(s.miktar||'')+'" style="width:100%" onchange="hcMiktarChange('+i+',this.value)"></td>'
-        +'<td style="width:36px;text-align:center"><button type="button" class="btn-icon" style="color:var(--red)" onclick="hcRemoveSatir('+i+')"><i class="ti ti-trash"></i></button></td>'
+        +'<td style="white-space:nowrap;text-align:right">'+actionCell+'</td>'
         +'</tr>';
     });
-
-    var toplam=idxs.reduce(function(sum,i){return sum+(parseInt(_hcSatirlar[i].miktar)||0);},0);
-    var eksik=kitMiktar-toplam;
-    var durumRengi=eksik!==0?'var(--red)':'var(--green)';
-    var durumMetin=stokFmtN(toplam)+' / '+stokFmtN(kitMiktar)+' strip dağıtıldı'+(eksik>0?' — '+stokFmtN(eksik)+' eksik':(eksik<0?' — '+stokFmtN(-eksik)+' fazla':' ✓'));
-    rows+='<tr style="background:var(--bg3)">'
-      +'<td colspan="2" style="font-size:11px;font-weight:500;color:'+durumRengi+'">'+durumMetin+'</td>'
-      +'<td style="text-align:center"><button type="button" class="btn-icon" title="Bu parametre için LOT ekle" onclick="hcAddLot(\''+esc(key)+'\')"><i class="ti ti-plus"></i></button></td>'
-      +'</tr>';
   });
 
   el.innerHTML='<div class="table-wrap"><table class="compact-table" style="width:100%"><thead><tr><th class="col-name">Parametre</th><th>LOT</th><th>Strip Miktarı</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
@@ -1910,14 +1917,14 @@ async function saveStokParam(){
     if(editIdx!==null&&editIdx>=0&&editIdx<stokParamList().length){
       var existing=stokParamList()[editIdx];
       var res=await apiPut('stok/parametreler',{id:existing.id,ad:ad,kisaltma:kisaltma,aktif:aktif});
-      state.stokSettings.parametreler[editIdx]=res.parametre;
+      var rawIdx=state.stokSettings.parametreler.findIndex(function(p){return p.id===existing.id;});
+      if(rawIdx>=0) state.stokSettings.parametreler[rawIdx]=res.parametre;
       toast('Parametre güncellendi.','success');
     } else {
       var res2=await apiPost('stok/parametreler',{ad:ad,kisaltma:kisaltma,aktif:aktif});
       state.stokSettings.parametreler.push(res2.parametre);
       toast('Parametre eklendi.','success');
     }
-    state.stokSettings.parametreler.sort(function(a,b){return (a.ad||a.kisaltma||'').localeCompare(b.ad||b.kisaltma||'','tr');});
   }catch(e){
     toast(e.message||'Kaydedilemedi.','error');
     return;
@@ -1968,7 +1975,8 @@ function stokParamSil(i){
       toast(e.message||'Silinemedi.','error');
       return;
     }
-    state.stokSettings.parametreler.splice(i,1);
+    var rawIdx=state.stokSettings.parametreler.findIndex(function(p){return p.id===param.id;});
+    if(rawIdx>=0) state.stokSettings.parametreler.splice(rawIdx,1);
     stokParamTabloRender(); stokRenderEsikler();
     toast('Parametre silindi.','info');
   });

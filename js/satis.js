@@ -685,7 +685,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
 
   // ── BAŞLIK (sağ) ──
   doc.setFontSize(14);doc.setFont('Arial','bold');doc.setTextColor(...C.textMid);
-  doc.text('SİPARİŞ FORMU',mm(194.556),mm(42.395)+11,{align:'right'});
+  doc.text('İŞ EMRİ',mm(194.556),mm(42.395)+11,{align:'right'});
 
   // ── SİPARİŞ BİLGİLERİ (sağ) ──
   const rx1=mm(141.66),rx2=mm(165.354),rx3=mm(171.249);
@@ -742,19 +742,15 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   const _sdivY=Math.max(mm(67.9),_scurY+mm(3));
   doc.line(mm(15.446),_sdivY,mm(194.63),_sdivY);
 
-  // ── TABLO ──
-  // 4 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
+  // ── TABLO (etiket/değer + parametre-lot ızgarası) ──
+  // 5 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
   const tableY=_sdivY+mm(2.517);
-  const colW={no:mm(9),urun:mm(127),miktar:mm(23),birim:mm(20.1)};
-  const _col1Inner=colW.urun-4;
-  const _infoLineH=mm(3);   // bilgi satırları arası (baseline-to-baseline)
-  const _infoGap=mm(3);     // ürün adından ilk bilgi satırına boşluk
-  const _paramRowH=mm(3.6); // parametre ızgarasında satır yüksekliği
-  const _paramGap=mm(1.8);  // bilgi satırlarından parametre ızgarasına boşluk
-  const _boxSize=mm(2.6);   // checkbox kare boyutu
+  const colW={no:mm(9),lbl1:mm(35),val1:mm(55),lbl2:mm(35),val2:mm(45.108)};
+  const lblStyle={fontStyle:'bold'};
+  const lotStyle={halign:'center'};
 
-  doc.setFontSize(7);doc.setFont('Arial','normal');
-  const bodyRows=(s.satirlar||[]).map((k,i)=>{
+  const tableBody=[];
+  (s.satirlar||[]).forEach((k,i)=>{
     const base=(k.seciliParametreler&&k.seciliParametreler.length)
       ?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())
       :(k.aciklama||'');
@@ -762,85 +758,53 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
     const urun=(state.urunler||[]).find(u=>u.urunAdi===(k._baseAciklama||k.aciklama));
     const kategori=urun?(urun.kategori||''):'';
     const paramList=params.map(p=>typeof p==='string'?p:(p.ad||'')).filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
+    const miktarStr=String(k.miktar)+' '+(k.birim||'Adet');
+    const paramPairRows=paramList.length?Math.ceil(paramList.length/2):0;
+    const rowsInGroup=4+paramPairRows;
 
-    // Hücre içinde alt alta gösterilecek bilgi satırları
-    const infoLines=[];
-    if(kategori) infoLines.push('Kategori: '+kategori);
-    if(paramList.length>0) infoLines.push('Parametre Sayısı: '+paramList.length);
-
-    const row=[i+1,base||'—',String(k.miktar),k.birim||'Adet'];
-    let extra=0;
-    if(infoLines.length) extra+=infoLines.length*_infoLineH+_infoGap;
-    if(paramList.length){
-      const gridRows=Math.ceil(paramList.length/2);
-      extra+=_paramGap+gridRows*_paramRowH;
+    tableBody.push([
+      {content:i+1,rowSpan:rowsInGroup,styles:{halign:'center',valign:'middle',fontStyle:'bold'}},
+      {content:'KATEGORİ',styles:lblStyle},
+      {content:kategori||'—',colSpan:3}
+    ]);
+    tableBody.push([
+      {content:'PARAMETRE SAYISI',styles:lblStyle},
+      {content:String(paramList.length),colSpan:3}
+    ]);
+    tableBody.push([
+      {content:'ÜRÜN ADI',styles:lblStyle},
+      {content:base||'—',colSpan:3}
+    ]);
+    tableBody.push([
+      {content:'SİPARİŞ MİKTARI',styles:lblStyle},
+      {content:miktarStr,colSpan:3}
+    ]);
+    for(let p=0;p<paramPairRows;p++){
+      const a=paramList[p*2],b=paramList[p*2+1];
+      tableBody.push([
+        a,
+        {content:'LOT NO YAZILACAK',styles:lotStyle},
+        b||'',
+        b?{content:'LOT NO YAZILACAK',styles:lotStyle}:''
+      ]);
     }
-    if(extra>0){
-      row._infoLines=infoLines;
-      row._paramList=paramList;
-      row._extraPad=extra+0.5;
-    }
-    return row;
   });
-  doc.setFontSize(8);doc.setFont('Arial','normal');
 
   let tableEndY=tableY;
   doc.autoTable({
     startY:tableY,
-    head:[['#','ÜRÜN ADI VE ÖZELLİKLERİ','MİKTAR','BİRİM']],
-    body:bodyRows,
-    theme:'plain',
-    styles:{font:'Arial',fontSize:8,cellPadding:{top:1.5,right:2,bottom:1.5,left:2},textColor:C.textDark,lineColor:C.tableBg,lineWidth:0.5},
-    headStyles:{fillColor:C.tableBg,textColor:C.primary,fontStyle:'bold',fontSize:8,halign:'center',cellPadding:{top:1.6,right:2,bottom:1.6,left:2}},
+    head:[],
+    body:tableBody,
+    theme:'grid',
+    styles:{font:'Arial',fontSize:8,cellPadding:{top:2,right:2,bottom:2,left:2},textColor:C.textDark,lineColor:C.border,lineWidth:0.5,valign:'middle'},
     columnStyles:{
-      0:{halign:'center',valign:'middle',cellWidth:colW.no},
-      1:{halign:'left',valign:'top',cellWidth:colW.urun},
-      2:{halign:'center',valign:'middle',cellWidth:colW.miktar},
-      3:{halign:'center',valign:'middle',cellWidth:colW.birim}
+      0:{cellWidth:colW.no},
+      1:{cellWidth:colW.lbl1},
+      2:{cellWidth:colW.val1},
+      3:{cellWidth:colW.lbl2},
+      4:{cellWidth:colW.val2}
     },
     margin:{left:mm(15.446),right:mm(15.446)},
-    didParseCell:(data)=>{
-      if(data.section==='head'&&data.column.index===1)data.cell.styles.halign='left';
-      if(data.section==='body'&&data.column.index===1){
-        const extra=data.row.raw._extraPad||0;
-        if(extra>0){
-          const p=data.cell.styles.cellPadding;
-          data.cell.styles.cellPadding=typeof p==='object'
-            ?Object.assign({},p,{bottom:(p.bottom||1.5)+extra})
-            :{top:1.5,right:2,bottom:1.5+extra,left:2};
-        }
-      }
-    },
-    didDrawCell:(data)=>{
-      if(data.section!=='body'||data.column.index!==1)return;
-      const lines=data.row.raw._infoLines||[];
-      const paramList=data.row.raw._paramList||[];
-      if(!lines.length&&!paramList.length)return;
-      const extra=data.row.raw._extraPad||0;
-      const pad=data.cell.styles.cellPadding;
-      const lpad=typeof pad==='object'?(pad.left||2):2;
-      const pt7asc=7*0.3528*0.82;
-      let curY=data.cell.y+data.cell.height-1.5-extra+_infoGap;
-      if(lines.length){
-        doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
-        lines.forEach((line,i)=>{doc.text(line,data.cell.x+lpad,curY+pt7asc+i*_infoLineH);});
-        curY+=lines.length*_infoLineH;
-      }
-      if(paramList.length){
-        curY+=_paramGap;
-        const colHalf=_col1Inner/2;
-        doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textMid);
-        paramList.forEach((kis,idx)=>{
-          const gRow=Math.floor(idx/2),gCol=idx%2;
-          const xx=data.cell.x+lpad+gCol*colHalf;
-          const yy=curY+pt7asc+gRow*_paramRowH;
-          doc.text(kis,xx,yy);
-          doc.setDrawColor(...C.border);doc.setLineWidth(0.6);
-          doc.rect(xx+mm(12),yy-_boxSize+mm(0.5),_boxSize,_boxSize);
-        });
-      }
-      doc.setFontSize(8);doc.setTextColor(...C.textDark);
-    },
     didDrawPage:(data)=>{tableEndY=data.cursor.y;}
   });
   doc.setCharSpace(0);doc.setFont('Arial','normal');

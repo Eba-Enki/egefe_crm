@@ -685,7 +685,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
 
   // ── BAŞLIK (sağ) ──
   doc.setFontSize(14);doc.setFont('Arial','bold');doc.setTextColor(...C.textMid);
-  doc.text('İŞ EMRİ',mm(194.556),mm(42.395)+11,{align:'right'});
+  doc.text('SİPARİŞ İŞ EMRİ',mm(194.556),mm(42.395)+11,{align:'right'});
 
   // ── SİPARİŞ BİLGİLERİ (sağ) ──
   const rx1=mm(141.66),rx2=mm(165.354),rx3=mm(171.249);
@@ -747,7 +747,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   const tableY=_sdivY+mm(2.517);
   const colW={no:mm(9),lbl1:mm(35),val1:mm(55),lbl2:mm(35),val2:mm(45.108)};
   const lblStyle={fontStyle:'bold'};
-  const lotStyle={halign:'center'};
+  const centerStyle={halign:'center'};
 
   const tableBody=[];
   (s.satirlar||[]).forEach((k,i)=>{
@@ -755,7 +755,9 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
       ?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())
       :(k.aciklama||'');
     const params=k.seciliParametreler||[];
-    const urun=(state.urunler||[]).find(u=>u.urunAdi===(k._baseAciklama||k.aciklama));
+    const urunKey=(k._baseAciklama||k.aciklama||'').trim();
+    const urun=(state.urunler||[]).find(u=>u.urunAdi===urunKey)
+      ||(state.urunler||[]).find(u=>(u.urunAdi||'').trim().toLowerCase()===urunKey.toLowerCase());
     const kategori=urun?(urun.kategori||''):'';
     const paramList=params.map(p=>typeof p==='string'?p:(p.ad||'')).filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
     const miktarStr=String(k.miktar)+' '+(k.birim||'Adet');
@@ -764,28 +766,28 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
 
     tableBody.push([
       {content:i+1,rowSpan:rowsInGroup,styles:{halign:'center',valign:'middle',fontStyle:'bold'}},
-      {content:'KATEGORİ',styles:lblStyle},
+      {content:'Kategori',styles:lblStyle},
       {content:kategori||'—',colSpan:3}
     ]);
     tableBody.push([
-      {content:'PARAMETRE SAYISI',styles:lblStyle},
+      {content:'Parametre Sayısı',styles:lblStyle},
       {content:String(paramList.length),colSpan:3}
     ]);
     tableBody.push([
-      {content:'ÜRÜN ADI',styles:lblStyle},
+      {content:'Ürün Adı',styles:lblStyle},
       {content:base||'—',colSpan:3}
     ]);
     tableBody.push([
-      {content:'SİPARİŞ MİKTARI',styles:lblStyle},
+      {content:'Sipariş Miktarı',styles:lblStyle},
       {content:miktarStr,colSpan:3}
     ]);
     for(let p=0;p<paramPairRows;p++){
       const a=paramList[p*2],b=paramList[p*2+1];
       tableBody.push([
-        a,
-        {content:'LOT NO YAZILACAK',styles:lotStyle},
-        b||'',
-        b?{content:'LOT NO YAZILACAK',styles:lotStyle}:''
+        {content:a,styles:centerStyle},
+        '',
+        b?{content:b,styles:centerStyle}:'',
+        ''
       ]);
     }
   });

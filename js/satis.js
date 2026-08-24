@@ -627,6 +627,14 @@ function deleteCurrentSiparis(){if(!_activeSiparisDetayId)return;closeModal('mod
 
 
 // ════ ÜRETİM SİPARİŞ FORMU PDF ════
+function _paramUzunAd(kisaltma){
+  const list=(state.settings&&state.settings.parametreler)||[];
+  for(let i=0;i<list.length;i++){
+    const parsed=parseParam(list[i]);
+    if(parsed.kisaltma===kisaltma)return parsed.ad||kisaltma;
+  }
+  return kisaltma;
+}
 function printSiparisUretimFormu(sipId){
   const s=(state.siparisler||[]).find(x=>x.id===sipId);
   if(!s)return;
@@ -746,7 +754,6 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   // 4 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
   const tableY=_sdivY+mm(2.517);
   const colW={no:mm(9),urun:mm(127),miktar:mm(23),birim:mm(20.1)};
-  const _col1Inner=colW.urun-4;
   const _infoLineH=mm(3);  // satırlar arası 3mm (baseline-to-baseline)
   const _infoGap=mm(3);    // ürün adından ilk bilgi satırına boşluk
 
@@ -764,8 +771,6 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
     if(kategori) infoLines.push('Kategori: '+kategori);
     if(params.length>0){
       infoLines.push('Parametre Sayısı: '+params.length);
-      const pLine='Parametreler: '+params.map(p=>typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad)).join(', ');
-      doc.splitTextToSize(pLine,_col1Inner).forEach(l=>infoLines.push(l));
     }
 
     const row=[i+1,base||'—',String(k.miktar),k.birim||'Adet'];
@@ -821,6 +826,47 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.setCharSpace(0);doc.setFont('Arial','normal');
 
   let y=tableEndY+mm(6);
+
+  // ── PARAMETRE LİSTESİ (ürün satırı başına, seçili parametre varsa) ──
+  (s.satirlar||[]).forEach(k=>{
+    const params=k.seciliParametreler||[];
+    if(!params.length)return;
+    const base=(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())||k.aciklama||'';
+    doc.setFontSize(9);doc.setFont('Arial','bold');doc.setTextColor(...C.primary);
+    doc.text('PARAMETRELER'+(base?' — '+base:''),mm(15.446),y);
+    y+=mm(3);
+    const rows=params.map(p=>{
+      const kisaltma=typeof p==='string'?p:(p.ad||'');
+      const deger=typeof p==='string'?'':(p.deger||'');
+      return [_paramUzunAd(kisaltma)||'—',kisaltma||'—',deger||'—'];
+    }).sort((a,b)=>a[1].localeCompare(b[1],'tr'));
+    doc.autoTable({
+      startY:y,
+      head:[['PARAMETRE ADI','KISA AD','MİKTAR','TOPLANDI']],
+      body:rows,
+      theme:'plain',
+      styles:{font:'Arial',fontSize:8,cellPadding:{top:1.8,right:2,bottom:1.8,left:2},textColor:C.textDark,lineColor:C.tableBg,lineWidth:0.5},
+      headStyles:{fillColor:C.tableBg,textColor:C.primary,fontStyle:'bold',fontSize:8,halign:'center',cellPadding:{top:1.8,right:2,bottom:1.8,left:2}},
+      columnStyles:{
+        0:{halign:'left',cellWidth:mm(85)},
+        1:{halign:'center',cellWidth:mm(30)},
+        2:{halign:'center',cellWidth:mm(24)},
+        3:{halign:'center',cellWidth:mm(40.108)}
+      },
+      margin:{left:mm(15.446),right:mm(15.446)},
+      didParseCell:(data)=>{if(data.section==='head'&&data.column.index===0)data.cell.styles.halign='left';},
+      didDrawCell:(data)=>{
+        if(data.section!=='body'||data.column.index!==3)return;
+        const boxSize=mm(3.2);
+        const cx=data.cell.x+data.cell.width/2-boxSize/2;
+        const cy=data.cell.y+data.cell.height/2-boxSize/2;
+        doc.setDrawColor(...C.border);doc.setLineWidth(0.75);
+        doc.rect(cx,cy,boxSize,boxSize);
+      },
+      didDrawPage:(data)=>{y=data.cursor.y;}
+    });
+    y+=mm(6);
+  });
 
   // ── NOTLAR ──
   if(s.notlar){

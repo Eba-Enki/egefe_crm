@@ -627,14 +627,6 @@ function deleteCurrentSiparis(){if(!_activeSiparisDetayId)return;closeModal('mod
 
 
 // ════ ÜRETİM SİPARİŞ FORMU PDF ════
-function _paramUzunAd(kisaltma){
-  const list=(state.settings&&state.settings.parametreler)||[];
-  for(let i=0;i<list.length;i++){
-    const parsed=parseParam(list[i]);
-    if(parsed.kisaltma===kisaltma)return parsed.ad||kisaltma;
-  }
-  return kisaltma;
-}
 function printSiparisUretimFormu(sipId){
   const s=(state.siparisler||[]).find(x=>x.id===sipId);
   if(!s)return;
@@ -751,52 +743,51 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.line(mm(15.446),_sdivY,mm(194.63),_sdivY);
 
   // ── TABLO ──
-  // 5 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
+  // 4 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
   const tableY=_sdivY+mm(2.517);
-  const colW={no:mm(9),urun:mm(92),kisaAd:mm(28),miktar:mm(25),toplandi:mm(25.108)};
-  const _infoLineH=mm(3);  // satırlar arası 3mm (baseline-to-baseline)
-  const _infoGap=mm(3);    // ürün adından ilk bilgi satırına boşluk
+  const colW={no:mm(9),urun:mm(127),miktar:mm(23),birim:mm(20.1)};
+  const _col1Inner=colW.urun-4;
+  const _infoLineH=mm(3);   // bilgi satırları arası (baseline-to-baseline)
+  const _infoGap=mm(3);     // ürün adından ilk bilgi satırına boşluk
+  const _paramRowH=mm(3.6); // parametre ızgarasında satır yüksekliği
+  const _paramGap=mm(1.8);  // bilgi satırlarından parametre ızgarasına boşluk
+  const _boxSize=mm(2.6);   // checkbox kare boyutu
 
   doc.setFontSize(7);doc.setFont('Arial','normal');
-  const bodyRows=[];
-  (s.satirlar||[]).forEach((k,i)=>{
+  const bodyRows=(s.satirlar||[]).map((k,i)=>{
     const base=(k.seciliParametreler&&k.seciliParametreler.length)
       ?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())
       :(k.aciklama||'');
     const params=k.seciliParametreler||[];
     const urun=(state.urunler||[]).find(u=>u.urunAdi===(k._baseAciklama||k.aciklama));
     const kategori=urun?(urun.kategori||''):'';
-    const miktarStr=String(k.miktar)+' '+(k.birim||'Adet');
+    const paramList=params.map(p=>typeof p==='string'?p:(p.ad||'')).filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
 
     // Hücre içinde alt alta gösterilecek bilgi satırları
     const infoLines=[];
     if(kategori) infoLines.push('Kategori: '+kategori);
-    if(params.length>0){
-      infoLines.push('Parametre Sayısı: '+params.length);
-    }
+    if(paramList.length>0) infoLines.push('Parametre Sayısı: '+paramList.length);
 
-    const urunRow=[i+1,base||'—','',miktarStr,''];
-    if(infoLines.length){
-      urunRow._infoLines=infoLines;
-      urunRow._extraPad=infoLines.length*_infoLineH+_infoGap+0.5;
+    const row=[i+1,base||'—',String(k.miktar),k.birim||'Adet'];
+    let extra=0;
+    if(infoLines.length) extra+=infoLines.length*_infoLineH+_infoGap;
+    if(paramList.length){
+      const gridRows=Math.ceil(paramList.length/2);
+      extra+=_paramGap+gridRows*_paramRowH;
     }
-    bodyRows.push(urunRow);
-
-    params.map(p=>{
-      const kisaltma=typeof p==='string'?p:(p.ad||'');
-      return {kisaltma,uzunAd:_paramUzunAd(kisaltma)};
-    }).sort((a,b)=>a.kisaltma.localeCompare(b.kisaltma,'tr')).forEach(p=>{
-      const paramRow=['',p.uzunAd||'—',p.kisaltma||'—',miktarStr,''];
-      paramRow._isParam=true;
-      bodyRows.push(paramRow);
-    });
+    if(extra>0){
+      row._infoLines=infoLines;
+      row._paramList=paramList;
+      row._extraPad=extra+0.5;
+    }
+    return row;
   });
   doc.setFontSize(8);doc.setFont('Arial','normal');
 
   let tableEndY=tableY;
   doc.autoTable({
     startY:tableY,
-    head:[['#','ÜRÜN / PARAMETRE ADI','KISA AD','MİKTAR','TOPLANDI']],
+    head:[['#','ÜRÜN ADI VE ÖZELLİKLERİ','MİKTAR','BİRİM']],
     body:bodyRows,
     theme:'plain',
     styles:{font:'Arial',fontSize:8,cellPadding:{top:1.5,right:2,bottom:1.5,left:2},textColor:C.textDark,lineColor:C.tableBg,lineWidth:0.5},
@@ -804,54 +795,51 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
     columnStyles:{
       0:{halign:'center',valign:'middle',cellWidth:colW.no},
       1:{halign:'left',valign:'top',cellWidth:colW.urun},
-      2:{halign:'center',valign:'middle',cellWidth:colW.kisaAd},
-      3:{halign:'center',valign:'middle',cellWidth:colW.miktar},
-      4:{halign:'center',valign:'middle',cellWidth:colW.toplandi}
+      2:{halign:'center',valign:'middle',cellWidth:colW.miktar},
+      3:{halign:'center',valign:'middle',cellWidth:colW.birim}
     },
     margin:{left:mm(15.446),right:mm(15.446)},
     didParseCell:(data)=>{
       if(data.section==='head'&&data.column.index===1)data.cell.styles.halign='left';
-      if(data.section!=='body')return;
-      const isParam=!!data.row.raw._isParam;
-      if(data.column.index===1){
-        if(isParam){
+      if(data.section==='body'&&data.column.index===1){
+        const extra=data.row.raw._extraPad||0;
+        if(extra>0){
           const p=data.cell.styles.cellPadding;
-          data.cell.styles.cellPadding=typeof p==='object'?Object.assign({},p,{left:(p.left||2)+4}):{top:1.5,right:2,bottom:1.5,left:6};
-          data.cell.styles.textColor=C.textMid;
-        }else{
-          const extra=data.row.raw._extraPad||0;
-          if(extra>0){
-            const p=data.cell.styles.cellPadding;
-            data.cell.styles.cellPadding=typeof p==='object'
-              ?Object.assign({},p,{bottom:(p.bottom||1.5)+extra})
-              :{top:1.5,right:2,bottom:1.5+extra,left:2};
-          }
+          data.cell.styles.cellPadding=typeof p==='object'
+            ?Object.assign({},p,{bottom:(p.bottom||1.5)+extra})
+            :{top:1.5,right:2,bottom:1.5+extra,left:2};
         }
       }
-      if(data.column.index===2&&isParam)data.cell.styles.textColor=C.textMid;
     },
     didDrawCell:(data)=>{
-      if(data.section!=='body')return;
-      if(data.column.index===1){
-        const lines=data.row.raw._infoLines;
-        if(lines&&lines.length){
-          const extra=data.row.raw._extraPad||0;
-          const pad=data.cell.styles.cellPadding;
-          const lpad=typeof pad==='object'?(pad.left||2):2;
-          const infoTop=data.cell.y+data.cell.height-1.5-extra+_infoGap;
-          const pt7asc=7*0.3528*0.82;
-          doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
-          lines.forEach((line,i)=>{doc.text(line,data.cell.x+lpad,infoTop+pt7asc+i*_infoLineH);});
-          doc.setFontSize(8);doc.setTextColor(...C.textDark);
-        }
+      if(data.section!=='body'||data.column.index!==1)return;
+      const lines=data.row.raw._infoLines||[];
+      const paramList=data.row.raw._paramList||[];
+      if(!lines.length&&!paramList.length)return;
+      const extra=data.row.raw._extraPad||0;
+      const pad=data.cell.styles.cellPadding;
+      const lpad=typeof pad==='object'?(pad.left||2):2;
+      const pt7asc=7*0.3528*0.82;
+      let curY=data.cell.y+data.cell.height-1.5-extra+_infoGap;
+      if(lines.length){
+        doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
+        lines.forEach((line,i)=>{doc.text(line,data.cell.x+lpad,curY+pt7asc+i*_infoLineH);});
+        curY+=lines.length*_infoLineH;
       }
-      if(data.column.index===4&&data.row.raw._isParam){
-        const boxSize=mm(3.2);
-        const cx=data.cell.x+data.cell.width/2-boxSize/2;
-        const cy=data.cell.y+data.cell.height/2-boxSize/2;
-        doc.setDrawColor(...C.border);doc.setLineWidth(0.75);
-        doc.rect(cx,cy,boxSize,boxSize);
+      if(paramList.length){
+        curY+=_paramGap;
+        const colHalf=_col1Inner/2;
+        doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textMid);
+        paramList.forEach((kis,idx)=>{
+          const gRow=Math.floor(idx/2),gCol=idx%2;
+          const xx=data.cell.x+lpad+gCol*colHalf;
+          const yy=curY+pt7asc+gRow*_paramRowH;
+          doc.text(kis,xx,yy);
+          doc.setDrawColor(...C.border);doc.setLineWidth(0.6);
+          doc.rect(xx+mm(12),yy-_boxSize+mm(0.5),_boxSize,_boxSize);
+        });
       }
+      doc.setFontSize(8);doc.setTextColor(...C.textDark);
     },
     didDrawPage:(data)=>{tableEndY=data.cursor.y;}
   });

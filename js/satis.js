@@ -751,14 +751,19 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
 
   const tableBody=[];
   (s.satirlar||[]).forEach((k,i)=>{
-    const base=(k.seciliParametreler&&k.seciliParametreler.length)
-      ?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())
-      :(k.aciklama||'');
+    // "ProductName (Kategori)" satış açıklaması: kategori doğrudan bu ekten okunur —
+    // ürün listesinde aynı isimde birden fazla kategori (İdrar/Ağız Sıvısı gibi) olabildiği
+    // için isimle yeniden eşleştirmek yanlış kategoriyi seçebilir.
+    const rawAciklama=(k._baseAciklama||k.aciklama||'').trim();
+    const parenMatch=rawAciklama.match(/\(([^()]+)\)\s*$/);
+    const base=(parenMatch?rawAciklama.slice(0,parenMatch.index):rawAciklama).trim();
     const params=k.seciliParametreler||[];
-    const urunKey=(k._baseAciklama||k.aciklama||'').trim();
-    const urun=(state.urunler||[]).find(u=>u.urunAdi===urunKey)
-      ||(state.urunler||[]).find(u=>(u.urunAdi||'').trim().toLowerCase()===urunKey.toLowerCase());
-    const kategori=urun?(urun.kategori||''):'';
+    let kategori=parenMatch?parenMatch[1].trim():'';
+    if(!kategori){
+      const urun=(state.urunler||[]).find(u=>u.urunAdi===base)
+        ||(state.urunler||[]).find(u=>(u.urunAdi||'').trim().toLowerCase()===base.toLowerCase());
+      kategori=urun?(urun.kategori||''):'';
+    }
     const paramList=params.map(p=>typeof p==='string'?p:(p.ad||'')).filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
     const miktarStr=String(k.miktar)+' '+(k.birim||'Adet');
     const paramPairRows=paramList.length?Math.ceil(paramList.length/2):0;
@@ -854,7 +859,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.text('Bu form üretim birimi için düzenlenmiştir. Ticari bilgi içermez.',mm(15.446),pageH-mm(10));
   doc.text(st.firma||'Egefe Bilişim Sağlık San. ve Tic. A.Ş.',pageW-mm(15.446),pageH-mm(10),{align:'right'});
 
-  doc.save('siparis-formu-'+(s.siparisNo||'siparis')+'.pdf');
+  doc.save('is-emri-'+(s.siparisNo||'siparis')+'.pdf');
 }
 
 // ════ RED / İPTAL NEDENİ ════

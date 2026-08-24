@@ -751,20 +751,22 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.line(mm(15.446),_sdivY,mm(194.63),_sdivY);
 
   // ── TABLO ──
-  // 4 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
+  // 5 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
   const tableY=_sdivY+mm(2.517);
-  const colW={no:mm(9),urun:mm(127),miktar:mm(23),birim:mm(20.1)};
+  const colW={no:mm(9),urun:mm(92),kisaAd:mm(28),miktar:mm(25),toplandi:mm(25.108)};
   const _infoLineH=mm(3);  // satırlar arası 3mm (baseline-to-baseline)
   const _infoGap=mm(3);    // ürün adından ilk bilgi satırına boşluk
 
   doc.setFontSize(7);doc.setFont('Arial','normal');
-  const bodyRows=(s.satirlar||[]).map((k,i)=>{
+  const bodyRows=[];
+  (s.satirlar||[]).forEach((k,i)=>{
     const base=(k.seciliParametreler&&k.seciliParametreler.length)
       ?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())
       :(k.aciklama||'');
     const params=k.seciliParametreler||[];
     const urun=(state.urunler||[]).find(u=>u.urunAdi===(k._baseAciklama||k.aciklama));
     const kategori=urun?(urun.kategori||''):'';
+    const miktarStr=String(k.miktar)+' '+(k.birim||'Adet');
 
     // Hücre içinde alt alta gösterilecek bilgi satırları
     const infoLines=[];
@@ -773,19 +775,28 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
       infoLines.push('Parametre Sayısı: '+params.length);
     }
 
-    const row=[i+1,base||'—',String(k.miktar),k.birim||'Adet'];
+    const urunRow=[i+1,base||'—','',miktarStr,''];
     if(infoLines.length){
-      row._infoLines=infoLines;
-      row._extraPad=infoLines.length*_infoLineH+_infoGap+0.5;
+      urunRow._infoLines=infoLines;
+      urunRow._extraPad=infoLines.length*_infoLineH+_infoGap+0.5;
     }
-    return row;
+    bodyRows.push(urunRow);
+
+    params.map(p=>{
+      const kisaltma=typeof p==='string'?p:(p.ad||'');
+      return {kisaltma,uzunAd:_paramUzunAd(kisaltma)};
+    }).sort((a,b)=>a.kisaltma.localeCompare(b.kisaltma,'tr')).forEach(p=>{
+      const paramRow=['',p.uzunAd||'—',p.kisaltma||'—',miktarStr,''];
+      paramRow._isParam=true;
+      bodyRows.push(paramRow);
+    });
   });
   doc.setFontSize(8);doc.setFont('Arial','normal');
 
   let tableEndY=tableY;
   doc.autoTable({
     startY:tableY,
-    head:[['#','ÜRÜN ADI VE ÖZELLİKLERİ','MİKTAR','BİRİM']],
+    head:[['#','ÜRÜN / PARAMETRE ADI','KISA AD','MİKTAR','TOPLANDI']],
     body:bodyRows,
     theme:'plain',
     styles:{font:'Arial',fontSize:8,cellPadding:{top:1.5,right:2,bottom:1.5,left:2},textColor:C.textDark,lineColor:C.tableBg,lineWidth:0.5},
@@ -793,80 +804,60 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
     columnStyles:{
       0:{halign:'center',valign:'middle',cellWidth:colW.no},
       1:{halign:'left',valign:'top',cellWidth:colW.urun},
-      2:{halign:'center',valign:'middle',cellWidth:colW.miktar},
-      3:{halign:'center',valign:'middle',cellWidth:colW.birim}
+      2:{halign:'center',valign:'middle',cellWidth:colW.kisaAd},
+      3:{halign:'center',valign:'middle',cellWidth:colW.miktar},
+      4:{halign:'center',valign:'middle',cellWidth:colW.toplandi}
     },
     margin:{left:mm(15.446),right:mm(15.446)},
     didParseCell:(data)=>{
       if(data.section==='head'&&data.column.index===1)data.cell.styles.halign='left';
-      if(data.section==='body'&&data.column.index===1){
-        const extra=data.row.raw._extraPad||0;
-        if(extra>0){
+      if(data.section!=='body')return;
+      const isParam=!!data.row.raw._isParam;
+      if(data.column.index===1){
+        if(isParam){
           const p=data.cell.styles.cellPadding;
-          data.cell.styles.cellPadding=typeof p==='object'
-            ?Object.assign({},p,{bottom:(p.bottom||1.5)+extra})
-            :{top:1.5,right:2,bottom:1.5+extra,left:2};
+          data.cell.styles.cellPadding=typeof p==='object'?Object.assign({},p,{left:(p.left||2)+4}):{top:1.5,right:2,bottom:1.5,left:6};
+          data.cell.styles.textColor=C.textMid;
+        }else{
+          const extra=data.row.raw._extraPad||0;
+          if(extra>0){
+            const p=data.cell.styles.cellPadding;
+            data.cell.styles.cellPadding=typeof p==='object'
+              ?Object.assign({},p,{bottom:(p.bottom||1.5)+extra})
+              :{top:1.5,right:2,bottom:1.5+extra,left:2};
+          }
         }
       }
+      if(data.column.index===2&&isParam)data.cell.styles.textColor=C.textMid;
     },
     didDrawCell:(data)=>{
-      if(data.section!=='body'||data.column.index!==1)return;
-      const lines=data.row.raw._infoLines;if(!lines||!lines.length)return;
-      const extra=data.row.raw._extraPad||0;
-      const pad=data.cell.styles.cellPadding;
-      const lpad=typeof pad==='object'?(pad.left||2):2;
-      const infoTop=data.cell.y+data.cell.height-1.5-extra+_infoGap;
-      const pt7asc=7*0.3528*0.82;
-      doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
-      lines.forEach((line,i)=>{doc.text(line,data.cell.x+lpad,infoTop+pt7asc+i*_infoLineH);});
-      doc.setFontSize(8);doc.setTextColor(...C.textDark);
+      if(data.section!=='body')return;
+      if(data.column.index===1){
+        const lines=data.row.raw._infoLines;
+        if(lines&&lines.length){
+          const extra=data.row.raw._extraPad||0;
+          const pad=data.cell.styles.cellPadding;
+          const lpad=typeof pad==='object'?(pad.left||2):2;
+          const infoTop=data.cell.y+data.cell.height-1.5-extra+_infoGap;
+          const pt7asc=7*0.3528*0.82;
+          doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
+          lines.forEach((line,i)=>{doc.text(line,data.cell.x+lpad,infoTop+pt7asc+i*_infoLineH);});
+          doc.setFontSize(8);doc.setTextColor(...C.textDark);
+        }
+      }
+      if(data.column.index===4&&data.row.raw._isParam){
+        const boxSize=mm(3.2);
+        const cx=data.cell.x+data.cell.width/2-boxSize/2;
+        const cy=data.cell.y+data.cell.height/2-boxSize/2;
+        doc.setDrawColor(...C.border);doc.setLineWidth(0.75);
+        doc.rect(cx,cy,boxSize,boxSize);
+      }
     },
     didDrawPage:(data)=>{tableEndY=data.cursor.y;}
   });
   doc.setCharSpace(0);doc.setFont('Arial','normal');
 
   let y=tableEndY+mm(6);
-
-  // ── PARAMETRE LİSTESİ (ürün satırı başına, seçili parametre varsa) ──
-  (s.satirlar||[]).forEach(k=>{
-    const params=k.seciliParametreler||[];
-    if(!params.length)return;
-    const base=(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())||k.aciklama||'';
-    doc.setFontSize(9);doc.setFont('Arial','bold');doc.setTextColor(...C.primary);
-    doc.text('PARAMETRELER'+(base?' — '+base:''),mm(15.446),y);
-    y+=mm(3);
-    const rows=params.map(p=>{
-      const kisaltma=typeof p==='string'?p:(p.ad||'');
-      const deger=typeof p==='string'?'':(p.deger||'');
-      return [_paramUzunAd(kisaltma)||'—',kisaltma||'—',deger||'—'];
-    }).sort((a,b)=>a[1].localeCompare(b[1],'tr'));
-    doc.autoTable({
-      startY:y,
-      head:[['PARAMETRE ADI','KISA AD','MİKTAR','TOPLANDI']],
-      body:rows,
-      theme:'plain',
-      styles:{font:'Arial',fontSize:8,cellPadding:{top:1.8,right:2,bottom:1.8,left:2},textColor:C.textDark,lineColor:C.tableBg,lineWidth:0.5},
-      headStyles:{fillColor:C.tableBg,textColor:C.primary,fontStyle:'bold',fontSize:8,halign:'center',cellPadding:{top:1.8,right:2,bottom:1.8,left:2}},
-      columnStyles:{
-        0:{halign:'left',cellWidth:mm(85)},
-        1:{halign:'center',cellWidth:mm(30)},
-        2:{halign:'center',cellWidth:mm(24)},
-        3:{halign:'center',cellWidth:mm(40.108)}
-      },
-      margin:{left:mm(15.446),right:mm(15.446)},
-      didParseCell:(data)=>{if(data.section==='head'&&data.column.index===0)data.cell.styles.halign='left';},
-      didDrawCell:(data)=>{
-        if(data.section!=='body'||data.column.index!==3)return;
-        const boxSize=mm(3.2);
-        const cx=data.cell.x+data.cell.width/2-boxSize/2;
-        const cy=data.cell.y+data.cell.height/2-boxSize/2;
-        doc.setDrawColor(...C.border);doc.setLineWidth(0.75);
-        doc.rect(cx,cy,boxSize,boxSize);
-      },
-      didDrawPage:(data)=>{y=data.cursor.y;}
-    });
-    y+=mm(6);
-  });
 
   // ── NOTLAR ──
   if(s.notlar){

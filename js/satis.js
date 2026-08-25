@@ -576,7 +576,15 @@ function openSiparisDetay(sipId){
     var gonderilen=k.gonderilen||0;var kalan=k.miktar-gonderilen;
     var satir=k.miktar*(k.birimFiyat||0);toplam+=satir;
     var rsp=k.seciliParametreler||[];
-    var rBase=rsp.length?(k._baseAciklama||(k.aciklama||'').replace(/\s*\([^)]*\)/g,'').trim())||'—':k.aciklama||'—';
+    var rRaw=(k._baseAciklama||k.aciklama||'').trim();
+    var rParenMatch=rRaw.match(/\(([^()]+)\)\s*$/);
+    var rBaseName=(rParenMatch?rRaw.slice(0,rParenMatch.index):rRaw).trim();
+    var rKategori=rParenMatch?rParenMatch[1].trim():'';
+    if(!rKategori&&rBaseName){
+      var rUrun=(state.urunler||[]).find(function(u){return u.urunAdi===rBaseName;})||(state.urunler||[]).find(function(u){return (u.urunAdi||'').trim().toLowerCase()===rBaseName.toLowerCase();});
+      rKategori=rUrun?(rUrun.kategori||''):'';
+    }
+    var rBase=(rBaseName||'—')+(rKategori?' ('+rKategori+')':'');
     var rpHtml=rsp.length?'<div style="font-size:11px;color:rgb(143,164,176);margin-top:2px;line-height:1.4">('+rsp.map(function(p){return esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad));}).join(', ')+')</div>':'';
     return '<tr>'
       +'<td>'+esc(rBase)+rpHtml+'</td>'

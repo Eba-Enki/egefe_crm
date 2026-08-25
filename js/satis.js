@@ -563,7 +563,7 @@ function openSiparisDetay(sipId){
   if(!s)return;
   _activeSiparisDetayId=sipId;
   var _pb=document.getElementById('sp-detay-print-btn');
-  if(_pb)_pb.style.display=ARSIV_SIPARISLER.indexOf(s.durum)>=0?'none':'';
+  if(_pb)_pb.style.display='';
   var _db=document.getElementById('sp-detay-delete-btn');
   if(_db)_db.style.display=(state.currentUser&&state.currentUser.rol!=='izleyici')?'':'none';
   document.getElementById('sp-detay-siparisno').textContent=s.siparisNo;

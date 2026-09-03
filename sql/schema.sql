@@ -267,6 +267,7 @@ CREATE TABLE raw_stock_lots (
   tarih               DATE NULL,
   parametre_ad        VARCHAR(150) NULL,
   cutoff              VARCHAR(50) NULL,
+  ek_ozellik          VARCHAR(150) NULL,
   kategori_id         VARCHAR(40) NULL,
   sheet_giren         INT NOT NULL DEFAULT 0,
   strip_giren         INT NOT NULL DEFAULT 0,

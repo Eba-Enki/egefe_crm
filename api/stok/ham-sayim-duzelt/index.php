@@ -47,7 +47,7 @@ if (!$count) {
     exit;
 }
 
-$itemStmt = $pdo->prepare('SELECT i.*, l.lot_no, l.cutoff, l.kategori_id AS lot_kategori_id, l.skt_tarih AS lot_skt_tarih FROM raw_stock_count_items i LEFT JOIN raw_stock_lots l ON l.id = i.lot_id WHERE i.count_id = ? AND i.duzeltme_evrak_no IS NULL AND i.sayilan_miktar <> i.sistem_miktar ORDER BY i.id ASC');
+$itemStmt = $pdo->prepare('SELECT i.*, l.lot_no, l.cutoff, l.ek_ozellik AS lot_ek_ozellik, l.kategori_id AS lot_kategori_id, l.skt_tarih AS lot_skt_tarih FROM raw_stock_count_items i LEFT JOIN raw_stock_lots l ON l.id = i.lot_id WHERE i.count_id = ? AND i.duzeltme_evrak_no IS NULL AND i.sayilan_miktar <> i.sistem_miktar ORDER BY i.id ASC');
 $itemStmt->execute([$countId]);
 $items = $itemStmt->fetchAll();
 
@@ -83,7 +83,7 @@ try {
         $stmt = $pdo->prepare('INSERT INTO raw_stock_entries (id, evrak_no, tarih, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?)');
         $stmt->execute([$girisId, $girisEvrakNo, $tarih, $notlarFull, $user['id']]);
 
-        $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, kategori_id, sheet_giren, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, ek_ozellik, kategori_id, sheet_giren, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         foreach ($fazlalar as $i => $it) {
             $fark = (int)((float)$it['sayilan_miktar'] - (float)$it['sistem_miktar']);
             $sps = stokSPS($pdo, (string)$it['lot_kategori_id']);
@@ -91,7 +91,7 @@ try {
             $newLotId = 'hl' . (string)(int)round(microtime(true) * 1000) . 'd' . $i;
             $lotStmt->execute([
                 $newLotId, $girisId, $girisEvrakNo,
-                $it['lot_no'], $tarih, $it['parametre_ad'], $it['cutoff'], $it['lot_kategori_id'],
+                $it['lot_no'], $tarih, $it['parametre_ad'], $it['cutoff'], $it['lot_ek_ozellik'] ?? 'Standart', $it['lot_kategori_id'],
                 $sheetEs, $fark, $fark, $it['lot_skt_tarih'], $user['id'],
             ]);
             $duzeltmeMap[$it['id']] = $girisEvrakNo;

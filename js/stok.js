@@ -427,7 +427,7 @@ function renderHamStok(){
       var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-ham-durum-detay'+(canBulk?'-bulk':'')+'">'
         +'<thead><tr style="background:var(--bg4)">'
         +(canBulk?'<th style="width:24px"></th>':'')
-        +'<th>Kategori</th><th>Cut-off</th><th>LOT No</th>'
+        +'<th>Kategori</th><th>Cut-off</th><th>Ek Özellik</th><th>LOT No</th>'
         +'<th>Mevcut Sheet</th><th>Mevcut Strip</th>'
         +'<th>SKT</th><th>Giriş Tarihi</th><th>Durum</th><th></th>'
         +'</tr></thead><tbody>';
@@ -457,6 +457,7 @@ function renderHamStok(){
             katFirstRow=false;
           }
           subHtml+='<td style="font-family:var(--font-mono)">'+esc(lot.cutoff||'—')+'</td>'
+            +'<td style="font-size:11px">'+esc(lot.ekOzellik||'Standart')+'</td>'
             +'<td><span class="kn-badge">'+esc(lot.lotNo)+'</span></td>'
             +'<td style="font-family:var(--font-mono)">'+stokFmtN(ms)+'</td>'
             +'<td style="font-family:var(--font-mono)">'+stokFmtN(lot.mevcutStrip)+'</td>'
@@ -496,7 +497,7 @@ function renderHamGirisler(){
   var girisler=(state.hamStokGirisler||[]).filter(function(g){
     if(fTs&&(g.tarih||'')<fTs) return false;
     if(fTe&&(g.tarih||'')>fTe) return false;
-    if(fAra){var hay=(g.evrakNo+g.tarih+(g.notlar||'')+(g.kalemler||[]).map(function(k){return k.lotNo+k.parametreAd+k.cutoff;}).join(' ')).toLowerCase();if(!hay.includes(fAra))return false;}
+    if(fAra){var hay=(g.evrakNo+g.tarih+(g.notlar||'')+(g.kalemler||[]).map(function(k){return k.lotNo+k.parametreAd+k.cutoff+(k.ekOzellik||'');}).join(' ')).toLowerCase();if(!hay.includes(fAra))return false;}
     return true;
   }).sort(function(a,b){return (b.tarih||'').localeCompare(a.tarih||'');});
   var wrap=document.getElementById('ham-girisler-wrap'); if(!wrap) return;
@@ -530,7 +531,7 @@ function renderHamGirisler(){
     // Accordion detay
     if(expanded){
       var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-ham-girisler-detay"><thead><tr style="background:var(--bg4)">'
-        +'<th>Kategori</th><th class="col-name">Parametre</th><th>Cut-off</th><th>LOT No</th>'
+        +'<th>Kategori</th><th class="col-name">Parametre</th><th>Cut-off</th><th>Ek Özellik</th><th>LOT No</th>'
         +'<th>Sheet</th><th>Strip</th><th>SKT</th>'
         +'</tr></thead><tbody>';
       (g.kalemler||[]).forEach(function(k){
@@ -540,6 +541,7 @@ function renderHamGirisler(){
           +'<td style="font-size:11px">'+esc(kat)+'</td>'
           +'<td class="col-name" style="font-weight:500">'+esc(k.parametreAd)+'</td>'
           +'<td style="font-family:var(--font-mono)">'+esc(k.cutoff||'—')+'</td>'
+          +'<td style="font-size:11px">'+esc(k.ekOzellik||'Standart')+'</td>'
           +'<td><span class="kn-badge">'+esc(k.lotNo)+'</span></td>'
           +'<td style="font-family:var(--font-mono)">'+stokFmtN(k.sheetGiren)+'</td>'
           +'<td style="font-family:var(--font-mono)">'+stokFmtN(k.stripGiren)+'</td>'
@@ -614,7 +616,7 @@ function renderHamGirisForm(){
       return;
     }
   }
-  _hgKalemler=[{kategoriId:'',parametreAd:'',cutoff:'',lotNo:'',sheetMiktar:0,sktTarih:''}];
+  _hgKalemler=[{kategoriId:'',parametreAd:'',cutoff:'',ekOzellik:'',lotNo:'',sheetMiktar:0,sktTarih:''}];
   if(document.getElementById('hg-evrak')) document.getElementById('hg-evrak').value='';
   var tarihEl=document.getElementById('hg-tarih');
   if(tarihEl) tarihEl.value=stokToday();
@@ -623,7 +625,7 @@ function renderHamGirisForm(){
 }
 
 function hgAddKalem(){
-  _hgKalemler.push({kategoriId:'',parametreAd:'',cutoff:'',lotNo:'',sheetMiktar:0,sktTarih:''});
+  _hgKalemler.push({kategoriId:'',parametreAd:'',cutoff:'',ekOzellik:'',lotNo:'',sheetMiktar:0,sktTarih:''});
   hgRenderKalemler();
   var el=document.getElementById('hg-kat-'+(_hgKalemler.length-1));
   if(el) el.focus();
@@ -651,10 +653,11 @@ function hgRenderKalemler(){
     var katOpts=stokKatList().map(function(kat){return '<option value="'+kat.id+'"'+(k.kategoriId===kat.id?' selected':'')+'>'+kat.ad+'</option>';}).join('');
     var paramOpts=stokParamList().filter(function(p){return p.aktif!==false;}).map(function(p){var kk=p.kisaltma||p.ad;return '<option value="'+esc(kk)+'"'+(k.parametreAd===kk?' selected':'')+'>'+esc(kk+(p.ad&&p.ad!==kk?' — '+p.ad:''))+'</option>';}).join('');
     var sktDisp=k.sktTarih?(k.sktTarih.split('-')[1]+'.'+k.sktTarih.split('-')[0]):'';
-    return '<div style="display:grid;grid-template-columns:130px 150px 100px 130px 80px 110px 1fr auto;gap:8px;align-items:end;padding:10px 12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:8px">'
+    return '<div style="display:grid;grid-template-columns:130px 150px 100px 120px 130px 80px 110px 1fr auto;gap:8px;align-items:end;padding:10px 12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:8px">'
       +'<div class="field" style="margin:0"><label style="font-size:10px">Kategori *</label><select id="hg-kat-'+i+'" onchange="_hgKalemler['+i+'].kategoriId=this.value;hgRenderKalemler()"><option value="">Seçin...</option>'+katOpts+'</select></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">Parametre *</label><select onchange="_hgKalemler['+i+'].parametreAd=this.value"><option value="">Seçin...</option>'+paramOpts+'</select></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">Cut-off</label><input type="text" value="'+esc(k.cutoff||'')+'" placeholder="ör. 500" onchange="_hgKalemler['+i+'].cutoff=this.value.trim()"></div>'
+      +'<div class="field" style="margin:0"><label style="font-size:10px">Ek Özellik</label><input type="text" value="'+esc(k.ekOzellik||'')+'" placeholder="Standart" onchange="_hgKalemler['+i+'].ekOzellik=this.value.trim()"></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">LOT No *</label><input type="text" value="'+esc(k.lotNo||'')+'" placeholder="ör. LOT-001" onchange="_hgKalemler['+i+'].lotNo=this.value.trim()"></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">Sheet *</label><input type="number" min="1" value="'+(k.sheetMiktar||'')+'" onchange="_hgKalemler['+i+'].sheetMiktar=parseInt(this.value)||0;hgRenderKalemler()"></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY)</label><input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" onchange="hgSktChange('+i+',this.value)" onkeydown="hgSktKeydown('+i+',event)"></div>'
@@ -683,7 +686,7 @@ async function saveHamGiris(){
   var payload={
     evrakNo:evrakNo,tarih:tarih,notlar:notlar,
     kalemler:_hgKalemler.map(function(k){
-      return {lotId:k.lotId||null,kategoriId:k.kategoriId,parametreAd:k.parametreAd,cutoff:k.cutoff||'',lotNo:k.lotNo,sheetMiktar:k.sheetMiktar,sktTarih:k.sktTarih||''};
+      return {lotId:k.lotId||null,kategoriId:k.kategoriId,parametreAd:k.parametreAd,cutoff:k.cutoff||'',ekOzellik:k.ekOzellik||'',lotNo:k.lotNo,sheetMiktar:k.sheetMiktar,sktTarih:k.sktTarih||''};
     })
   };
   try{
@@ -717,7 +720,7 @@ function renderHamCikislar(){
   var cikislar=(state.hamStokCikislar||[]).filter(function(c){
     if(fTs&&(c.tarih||'')<fTs) return false;
     if(fTe&&(c.tarih||'')>fTe) return false;
-    if(fAra&&!((c.evrakNo||'').toLowerCase()+' '+(c.aciklama||'').toLowerCase()+(c.satirlar||[]).map(function(s){return s.parametreAd;}).join(' ').toLowerCase()).includes(fAra)) return false;
+    if(fAra&&!((c.evrakNo||'').toLowerCase()+' '+(c.aciklama||'').toLowerCase()+(c.satirlar||[]).map(function(s){return s.parametreAd+' '+(s.ekOzellik||'');}).join(' ').toLowerCase()).includes(fAra)) return false;
     return true;
   }).sort(function(a,b){return (b.tarih||'').localeCompare(a.tarih||'');});
   var wrap=document.getElementById('ham-cikislar-wrap'); if(!wrap) return;
@@ -748,12 +751,13 @@ function renderHamCikislar(){
       +'</tr>';
     if(expanded){
       var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-ham-cikislar-detay"><thead><tr style="background:var(--bg4)">'
-        +'<th class="col-name">Parametre</th><th>Cut-off</th><th>LOT No</th><th>Strip Çıkış</th>'
+        +'<th class="col-name">Parametre</th><th>Cut-off</th><th>Ek Özellik</th><th>LOT No</th><th>Strip Çıkış</th>'
         +'</tr></thead><tbody>';
       (c.satirlar||[]).forEach(function(s){
         subHtml+='<tr>'
           +'<td class="col-name" style="font-weight:500">'+esc(s.parametreAd)+'</td>'
           +'<td style="font-family:var(--font-mono)">'+esc(s.cutoff||'—')+'</td>'
+          +'<td style="font-size:11px">'+esc(s.ekOzellik||'Standart')+'</td>'
           +'<td><span class="kn-badge">'+esc(s.lotNo)+'</span></td>'
           +'<td style="font-family:var(--font-mono)">'+stokFmtN(s.stripCikis)+'</td>'
           +'</tr>';
@@ -893,6 +897,8 @@ function hcRenderSatirlar(){
         return '<option value="'+esc(l.id)+'"'+(s.lotId===l.id?' selected':'')+'>'+esc(l.lotNo+cutoffInfo)+' — '+stokFmtN(l.mevcutStrip)+' strip ('+ms+' sh)</option>';
       }).join('');
       if(!lotOptions) lotOptions='<option value="">— Mevcut LOT yok —</option>';
+      var selLot=(state.hamStokLotlar||[]).find(function(l){return l.id===s.lotId;});
+      var ekOzellikDisp=selLot&&selLot.ekOzellik?esc(selLot.ekOzellik):'<span style="color:var(--text3)">—</span>';
 
       var actionCell='<button type="button" class="btn-icon" style="color:var(--red)" onclick="hcRemoveSatir('+i+')"><i class="ti ti-trash"></i></button>';
       if(isLast){
@@ -904,13 +910,14 @@ function hcRenderSatirlar(){
       rows+='<tr>'
         +(rowInGroup===0?'<td class="col-name" rowspan="'+idxs.length+'" style="font-weight:500;white-space:nowrap;vertical-align:top;padding-top:10px">'+esc(paramLabel)+'</td>':'')
         +'<td><select style="width:100%" onchange="hcLotChange('+i+',this.value)"><option value="">LOT Seçin...</option>'+lotOptions+'</select></td>'
+        +'<td style="font-size:11px">'+ekOzellikDisp+'</td>'
         +'<td style="width:110px"><input type="number" min="1" value="'+(s.miktar||'')+'" style="width:100%" onchange="hcMiktarChange('+i+',this.value)"></td>'
         +'<td style="white-space:nowrap;text-align:right">'+actionCell+'</td>'
         +'</tr>';
     });
   });
 
-  el.innerHTML='<div class="table-wrap"><table class="compact-table" style="width:100%"><thead><tr><th class="col-name">Parametre</th><th>LOT</th><th>Strip Miktarı</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  el.innerHTML='<div class="table-wrap"><table class="compact-table" style="width:100%"><thead><tr><th class="col-name">Parametre</th><th>LOT</th><th>Ek Özellik</th><th>Strip Miktarı</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 
   hcStokUyariGuncelle();
 }
@@ -2531,24 +2538,24 @@ function _xlsxDownload(rows,headers,sheetName,fileName){
 function stokExportHamStokExcel(){
   stokInit();
   var lots=state.hamStokLotlar||[];
-  var headers=['LOT No','Parametre','Cut-off','Kategori','Giriş Tarihi','Sheet Girdi','Strip Girdi','Mevcut Strip','Mevcut Sheet','SKT','Evrak No','Durum'];
+  var headers=['LOT No','Parametre','Cut-off','Ek Özellik','Kategori','Giriş Tarihi','Sheet Girdi','Strip Girdi','Mevcut Strip','Mevcut Sheet','SKT','Evrak No','Durum'];
   var rows=lots.map(function(l){
     var kat=(stokKatById(l.kategoriId)||{}).ad||l.kategoriId;
     var sps=stokSPS(l.kategoriId);
     var ms=sps>0?Math.floor(l.mevcutStrip/sps):0;
-    return [l.lotNo,l.parametreAd,l.cutoff||'',kat,l.tarih||'',l.sheetGiren||0,l.stripGiren||0,l.mevcutStrip||0,ms,stokFmtSkt(l.sktTarih),l.evrakNo||'',l.mevcutStrip===0?'Tükendi':'Mevcut'];
+    return [l.lotNo,l.parametreAd,l.cutoff||'',l.ekOzellik||'Standart',kat,l.tarih||'',l.sheetGiren||0,l.stripGiren||0,l.mevcutStrip||0,ms,stokFmtSkt(l.sktTarih),l.evrakNo||'',l.mevcutStrip===0?'Tükendi':'Mevcut'];
   });
   _xlsxDownload(rows,headers,'Yarı Mamul Stok','yari-mamul-stok-listesi');
 }
 
 function stokExportHamGirislerExcel(){
   stokInit();
-  var headers=['Evrak No','Tarih','LOT No','Parametre','Cut-off','Kategori','Sheet','Strip','SKT','Notlar'];
+  var headers=['Evrak No','Tarih','LOT No','Parametre','Cut-off','Ek Özellik','Kategori','Sheet','Strip','SKT','Notlar'];
   var rows=[];
   (state.hamStokGirisler||[]).forEach(function(g){
     (g.kalemler||[]).forEach(function(k){
       var kat=(stokKatById(k.kategoriId)||{}).ad||k.kategoriId;
-      rows.push([g.evrakNo,g.tarih||'',k.lotNo,k.parametreAd,k.cutoff||'',kat,k.sheetGiren||0,k.stripGiren||0,stokFmtSkt(k.sktTarih),g.notlar||'']);
+      rows.push([g.evrakNo,g.tarih||'',k.lotNo,k.parametreAd,k.cutoff||'',k.ekOzellik||'Standart',kat,k.sheetGiren||0,k.stripGiren||0,stokFmtSkt(k.sktTarih),g.notlar||'']);
     });
   });
   _xlsxDownload(rows,headers,'Yarı Mamul Girişler','yari-mamul-girisler');
@@ -2556,12 +2563,12 @@ function stokExportHamGirislerExcel(){
 
 function stokExportHamCikislarExcel(){
   stokInit();
-  var headers=['Evrak No','Tarih','Kategori','Çıkış Nedeni','Kit Miktar','Parametre','Cut-off','LOT No','Strip Çıkış','Notlar'];
+  var headers=['Evrak No','Tarih','Kategori','Çıkış Nedeni','Kit Miktar','Parametre','Cut-off','Ek Özellik','LOT No','Strip Çıkış','Notlar'];
   var rows=[];
   (state.hamStokCikislar||[]).forEach(function(c){
     var kat=(stokKatById(c.kategoriId)||{}).ad||c.kategoriId;
     (c.satirlar||[]).forEach(function(s){
-      rows.push([c.evrakNo||'',c.tarih||'',kat,c.aciklama||'',c.kitMiktari||0,s.parametreAd,s.cutoff||'',s.lotNo,s.stripCikis||0,c.notlar||'']);
+      rows.push([c.evrakNo||'',c.tarih||'',kat,c.aciklama||'',c.kitMiktari||0,s.parametreAd,s.cutoff||'',s.ekOzellik||'Standart',s.lotNo,s.stripCikis||0,c.notlar||'']);
     });
   });
   _xlsxDownload(rows,headers,'Yarı Mamul Çıkışlar','yari-mamul-cikislar');

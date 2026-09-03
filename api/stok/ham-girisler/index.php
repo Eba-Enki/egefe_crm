@@ -20,6 +20,7 @@ function kalemResponse(array $row): array {
         'lotNo'       => $row['lot_no'],
         'parametreAd' => $row['parametre_ad'],
         'cutoff'      => $row['cutoff'],
+        'ekOzellik'   => $row['ek_ozellik'],
         'kategoriId'  => $row['kategori_id'],
         'sheetGiren'  => (int)$row['sheet_giren'],
         'stripGiren'  => (int)$row['strip_giren'],
@@ -104,17 +105,18 @@ switch ($method) {
             $stmt = $pdo->prepare('INSERT INTO raw_stock_entries (id, evrak_no, tarih, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?)');
             $stmt->execute([$girisId, $evrakNo, $tarih, $notlar, $user['id']]);
 
-            $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, kategori_id, sheet_giren, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, ek_ozellik, kategori_id, sheet_giren, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             foreach ($kalemler as $i => $k) {
                 $kategoriId = (string)$k['kategoriId'];
                 $sheetGiren = (int)$k['sheetMiktar'];
                 $sps = stokSPS($pdo, $kategoriId);
                 $stripGiren = $sheetGiren * $sps;
                 $lotId = 'hl' . (string)(int)round(microtime(true) * 1000) . $i;
+                $ekOzellik = strOrNull($k['ekOzellik'] ?? null) ?? 'Standart';
                 $lotStmt->execute([
                     $lotId, $girisId, $evrakNo,
                     (string)$k['lotNo'], $tarih, (string)$k['parametreAd'],
-                    strOrNull($k['cutoff'] ?? null), $kategoriId,
+                    strOrNull($k['cutoff'] ?? null), $ekOzellik, $kategoriId,
                     $sheetGiren, $stripGiren, $stripGiren,
                     strOrNull($k['sktTarih'] ?? null), $user['id'],
                 ]);
@@ -185,7 +187,8 @@ switch ($method) {
             $lotId = strOrNull($k['lotId'] ?? null);
             $kalemData = [
                 'lotNo' => (string)$k['lotNo'], 'parametreAd' => (string)$k['parametreAd'],
-                'cutoff' => strOrNull($k['cutoff'] ?? null), 'kategoriId' => $kategoriId,
+                'cutoff' => strOrNull($k['cutoff'] ?? null), 'ekOzellik' => strOrNull($k['ekOzellik'] ?? null) ?? 'Standart',
+                'kategoriId' => $kategoriId,
                 'sheetGiren' => $sheetGiren, 'stripGiren' => $stripGiren,
                 'sktTarih' => strOrNull($k['sktTarih'] ?? null),
             ];
@@ -222,15 +225,15 @@ switch ($method) {
             $pdo->prepare('UPDATE raw_stock_entries SET evrak_no=?, tarih=?, notlar=? WHERE id=?')
                 ->execute([$evrakNo, $tarih, $notlar, $id]);
 
-            $updStmt = $pdo->prepare('UPDATE raw_stock_lots SET evrak_no=?, lot_no=?, tarih=?, parametre_ad=?, cutoff=?, kategori_id=?, sheet_giren=?, strip_giren=?, mevcut_strip=?, skt_tarih=? WHERE id=?');
+            $updStmt = $pdo->prepare('UPDATE raw_stock_lots SET evrak_no=?, lot_no=?, tarih=?, parametre_ad=?, cutoff=?, ek_ozellik=?, kategori_id=?, sheet_giren=?, strip_giren=?, mevcut_strip=?, skt_tarih=? WHERE id=?');
             foreach ($updates as $lotId => $u) {
-                $updStmt->execute([$evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['cutoff'], $u['kategoriId'], $u['sheetGiren'], $u['stripGiren'], $u['mevcutStrip'], $u['sktTarih'], $lotId]);
+                $updStmt->execute([$evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['cutoff'], $u['ekOzellik'], $u['kategoriId'], $u['sheetGiren'], $u['stripGiren'], $u['mevcutStrip'], $u['sktTarih'], $lotId]);
             }
 
-            $insStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, kategori_id, sheet_giren, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $insStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, ek_ozellik, kategori_id, sheet_giren, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             foreach ($inserts as $i => $u) {
                 $newLotId = 'hl' . (string)(int)round(microtime(true) * 1000) . $i;
-                $insStmt->execute([$newLotId, $id, $evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['cutoff'], $u['kategoriId'], $u['sheetGiren'], $u['stripGiren'], $u['stripGiren'], $u['sktTarih'], $user['id']]);
+                $insStmt->execute([$newLotId, $id, $evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['cutoff'], $u['ekOzellik'], $u['kategoriId'], $u['sheetGiren'], $u['stripGiren'], $u['stripGiren'], $u['sktTarih'], $user['id']]);
             }
 
             if ($removals) {

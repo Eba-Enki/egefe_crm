@@ -6,15 +6,28 @@ $user = requireAuth($pdo);
 requirePortalAccess($user, 'stok');
 
 
+function stokSPS(PDO $pdo, string $kategoriId): int {
+    $stmt = $pdo->prepare('SELECT sheet_boyu, kesim_boleni, fire_pct FROM stock_categories WHERE id = ?');
+    $stmt->execute([$kategoriId]);
+    $k = $stmt->fetch();
+    if (!$k || !$k['sheet_boyu'] || !$k['kesim_boleni']) return 90;
+    return (int)round(((float)$k['sheet_boyu'] / (float)$k['kesim_boleni']) * (1 - (float)($k['fire_pct'] ?? 0) / 100));
+}
+
 function mapSatirRow(array $row): array {
+    $stripCikis = (int)$row['strip_cikis'];
+    $fireStrip = (int)$row['fire_strip'];
     return [
-        'lotId'       => $row['lot_id'],
-        'lotNo'       => $row['lot_no'],
-        'parametreAd' => $row['parametre_ad'],
-        'cutoff'      => $row['cutoff'],
-        'ekOzellik'   => $row['ek_ozellik'],
-        'kategoriId'  => $row['lot_kategori_id'],
-        'stripCikis'  => (int)$row['strip_cikis'],
+        'lotId'              => $row['lot_id'],
+        'lotNo'              => $row['lot_no'],
+        'parametreAd'        => $row['parametre_ad'],
+        'cutoff'             => $row['cutoff'],
+        'ekOzellik'          => $row['ek_ozellik'],
+        'kategoriId'         => $row['lot_kategori_id'],
+        'sheetCikis'         => (float)$row['sheet_cikis'],
+        'stripCikis'         => $stripCikis,
+        'fireStrip'          => $fireStrip,
+        'kullanilabilirStrip'=> $stripCikis - $fireStrip,
     ];
 }
 
@@ -110,19 +123,24 @@ switch ($method) {
         }
 
         $lots = [];
-        $paramTotals = [];
         foreach ($satirlar as $i => $s) {
             $paramKey = strOrNull($s['paramKey'] ?? null);
             $lotId = strOrNull($s['lotId'] ?? null);
-            $miktar = (int)($s['miktar'] ?? 0);
+            $sheetMiktar = (float)($s['sheetMiktar'] ?? 0);
+            $fireStrip = (int)($s['fireStrip'] ?? 0);
             if (!$paramKey || !$lotId) {
                 http_response_code(400);
                 echo json_encode(['error' => (($i + 1)) . '. satırda parametre veya LOT seçilmedi']);
                 exit;
             }
-            if ($miktar < 1) {
+            if ($sheetMiktar <= 0) {
                 http_response_code(400);
-                echo json_encode(['error' => (($i + 1)) . '. satırda miktar geçersiz']);
+                echo json_encode(['error' => (($i + 1)) . '. satırda sheet miktarı geçersiz']);
+                exit;
+            }
+            if ($fireStrip < 0) {
+                http_response_code(400);
+                echo json_encode(['error' => (($i + 1)) . '. satırda fire miktarı geçersiz']);
                 exit;
             }
             $stmt = $pdo->prepare('SELECT * FROM raw_stock_lots WHERE id = ?');
@@ -133,20 +151,19 @@ switch ($method) {
                 echo json_encode(['error' => 'Seçili LOT bulunamadı']);
                 exit;
             }
-            if ($miktar > (int)$lot['mevcut_strip']) {
+            $sps = stokSPS($pdo, (string)$lot['kategori_id']);
+            $stripCikis = (int)round($sheetMiktar * $sps);
+            if ($fireStrip > $stripCikis) {
                 http_response_code(400);
-                echo json_encode(['error' => $lot['parametre_ad'] . ' (' . $lot['lot_no'] . ') için yeterli stok yok. Mevcut: ' . $lot['mevcut_strip'] . ' strip']);
+                echo json_encode(['error' => (($i + 1)) . '. satırda fire, beklenen strip miktarından (' . $stripCikis . ') fazla olamaz']);
                 exit;
             }
-            $paramTotals[$paramKey] = ($paramTotals[$paramKey] ?? 0) + $miktar;
-            $lots[] = ['paramKey' => $paramKey, 'lot' => $lot, 'miktar' => $miktar];
-        }
-        foreach ($paramTotals as $paramKey => $total) {
-            if ($total !== $kitMiktari) {
+            if ($stripCikis > (int)$lot['mevcut_strip']) {
                 http_response_code(400);
-                echo json_encode(['error' => $paramKey . ' için dağıtılan miktar (' . $total . ') kit miktarına (' . $kitMiktari . ') eşit değil']);
+                echo json_encode(['error' => $lot['parametre_ad'] . ' (' . $lot['lot_no'] . ') için yeterli stok yok. Mevcut: ' . $lot['mevcut_strip'] . ' strip, istenen: ' . $stripCikis . ' strip']);
                 exit;
             }
+            $lots[] = ['paramKey' => $paramKey, 'lot' => $lot, 'sheetMiktar' => $sheetMiktar, 'stripCikis' => $stripCikis, 'fireStrip' => $fireStrip];
         }
 
         $evrakNo = strOrNull($input['evrakNo'] ?? null) ?? nextHamCikisEvrak($pdo);
@@ -157,11 +174,11 @@ switch ($method) {
             $stmt = $pdo->prepare('INSERT INTO raw_stock_exits (id, evrak_no, tarih, kategori_id, aciklama, notlar, kit_miktari, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([$id, $evrakNo, $tarih, $kategoriId, $aciklama, strOrNull($input['notlar'] ?? null), $kitMiktari, $user['id']]);
 
-            $itemStmt = $pdo->prepare('INSERT INTO raw_stock_exit_items (exit_id, lot_id, strip_cikis, parametre_ad) VALUES (?, ?, ?, ?)');
+            $itemStmt = $pdo->prepare('INSERT INTO raw_stock_exit_items (exit_id, lot_id, sheet_cikis, strip_cikis, fire_strip, parametre_ad) VALUES (?, ?, ?, ?, ?, ?)');
             $decStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip - ? WHERE id = ?');
             foreach ($lots as $l) {
-                $itemStmt->execute([$id, $l['lot']['id'], $l['miktar'], $l['paramKey']]);
-                $decStmt->execute([$l['miktar'], $l['lot']['id']]);
+                $itemStmt->execute([$id, $l['lot']['id'], $l['sheetMiktar'], $l['stripCikis'], $l['fireStrip'], $l['paramKey']]);
+                $decStmt->execute([$l['stripCikis'], $l['lot']['id']]);
             }
 
             $pdo->commit();

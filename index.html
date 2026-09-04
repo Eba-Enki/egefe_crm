@@ -1174,11 +1174,14 @@
           <div class="field"><label>Evrak No <span class="req">*</span></label><input type="text" id="hc-evrak"></div>
           <div class="field"><label>Çıkış Tarihi <span class="req">*</span></label><input type="date" id="hc-tarih"></div>
           <div class="field"><label>Kategori <span class="req">*</span></label><select id="hc-kategori" onchange="hcKategoriChange()"></select></div>
-          <div class="field"><label>Kit Miktarı <span class="req">*</span></label><input type="number" id="hc-kit" min="1" placeholder="Adet" oninput="hcUpdateStrips()"></div>
+          <div class="field"><label>Kit Miktarı (Hedef) <span class="req">*</span></label><input type="number" id="hc-kit" min="1" placeholder="Adet" oninput="hcRenderSatirlar()"></div>
           <div class="field"><label>Çıkış Nedeni <span class="req">*</span></label><select id="hc-aciklama"></select></div>
           <div class="field form-full"><label>Notlar</label><textarea id="hc-notlar" rows="2"></textarea></div>
         </div>
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin:18px 0 8px">Parametreler <span style="font-weight:400;color:var(--text3)">— çıkışa dahil edilecekleri seçin</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 8px;gap:12px">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Parametreler <span style="font-weight:400;color:var(--text3)">— çıkışa dahil edilecekleri seçin, her satır için sheet miktarını ayrı girin</span></div>
+          <button type="button" class="btn btn-ghost" style="white-space:nowrap" title="Hedef kit miktarını tek LOT'lu satırlara sheet olarak uygular" onclick="hcApplyKitToAll()"><i class="ti ti-wand"></i> Tümüne Uygula</button>
+        </div>
         <div id="hc-param-chips" class="chip-group"></div>
         <div id="hc-satirlar" style="margin-top:12px"></div>
         <div id="hc-stok-uyari" style="display:none;margin-top:10px;padding:10px 14px;background:var(--red-soft);border:1px solid rgba(248,113,113,.3);border-radius:var(--radius-sm);font-size:12px;color:var(--red)"></div>

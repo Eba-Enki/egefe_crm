@@ -762,14 +762,16 @@ function renderHamCikislar(){
       +'</tr>';
     if(expanded){
       var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-ham-cikislar-detay"><thead><tr style="background:var(--bg4)">'
-        +'<th class="col-name">Parametre</th><th>Cut-off</th><th>LOT No</th><th>Strip Çıkış</th><th>Ek Özellik</th>'
+        +'<th class="col-name">Parametre</th><th>Cut-off</th><th>LOT No</th><th>Sheet Çıkış</th><th>Strip Çıkış</th><th>Fire</th><th>Ek Özellik</th>'
         +'</tr></thead><tbody>';
       (c.satirlar||[]).forEach(function(s){
         subHtml+='<tr>'
           +'<td class="col-name" style="font-weight:500">'+esc(s.parametreAd)+'</td>'
           +'<td style="font-family:var(--font-mono)">'+esc(s.cutoff||'—')+'</td>'
           +'<td><span class="kn-badge">'+esc(s.lotNo)+'</span></td>'
+          +'<td style="font-family:var(--font-mono)">'+stokFmtN(s.sheetCikis)+'</td>'
           +'<td style="font-family:var(--font-mono)">'+stokFmtN(s.stripCikis)+'</td>'
+          +'<td style="font-family:var(--font-mono)'+(s.fireStrip?';color:var(--red)':'')+'">'+(s.fireStrip?stokFmtN(s.fireStrip):'—')+'</td>'
           +'<td style="font-size:11px">'+esc(s.ekOzellik||'Standart')+'</td>'
           +'</tr>';
       });
@@ -831,15 +833,30 @@ function hcToggleParam(key){
   if(idx>=0){
     _hcSatirlar=_hcSatirlar.filter(function(s){return s.paramKey!==key;});
   } else {
-    var kitMiktar=parseInt((document.getElementById('hc-kit')||{}).value)||0;
-    _hcSatirlar.push({paramKey:key,lotId:'',miktar:kitMiktar});
+    _hcSatirlar.push({paramKey:key,lotId:'',sheetMiktar:0,fireStrip:0,fireOpen:false});
   }
   hcRenderParamChips();
   hcRenderSatirlar();
 }
 
 function hcAddLot(key){
-  _hcSatirlar.push({paramKey:key,lotId:'',miktar:0});
+  _hcSatirlar.push({paramKey:key,lotId:'',sheetMiktar:0,fireStrip:0,fireOpen:false});
+  hcRenderSatirlar();
+}
+
+// Hedef Kit Miktarı'nı, tek LOT'lu her parametre satırına o kategorinin
+// sheet/strip oranına göre sheet miktarına çevirerek uygular (elle ayarlanabilir kalır).
+function hcApplyKitToAll(){
+  var katId=(document.getElementById('hc-kategori')||{}).value||'';
+  var kitMiktar=parseInt((document.getElementById('hc-kit')||{}).value)||0;
+  if(!katId) return toast('Önce kategori seçin.','error');
+  if(kitMiktar<1) return toast('Önce kit miktarı girin.','error');
+  var sps=stokSPS(katId)||1;
+  var counts={};
+  _hcSatirlar.forEach(function(s){counts[s.paramKey]=(counts[s.paramKey]||0)+1;});
+  _hcSatirlar.forEach(function(s){
+    if(counts[s.paramKey]===1) s.sheetMiktar=Math.round((kitMiktar/sps)*100)/100;
+  });
   hcRenderSatirlar();
 }
 
@@ -867,6 +884,7 @@ function hcRenderParamChips(){
 function hcRenderSatirlar(){
   var katId=(document.getElementById('hc-kategori')||{}).value||'';
   var kitMiktar=parseInt((document.getElementById('hc-kit')||{}).value)||0;
+  var sps=katId?stokSPS(katId):0;
   var el=document.getElementById('hc-satirlar'); if(!el) return;
 
   if(!_hcSatirlar.length){
@@ -892,10 +910,14 @@ function hcRenderSatirlar(){
     var paramLabel=kisa+(paramDef&&paramDef.ad&&paramDef.ad!==kisa?' — '+paramDef.ad:'');
     var filtLots=lots.filter(function(l){return l.parametreAd===key;});
 
-    var toplam=idxs.reduce(function(sum,i){return sum+(parseInt(_hcSatirlar[i].miktar)||0);},0);
+    var toplam=idxs.reduce(function(sum,i){
+      var s=_hcSatirlar[i];
+      var beklenen=Math.round((parseFloat(s.sheetMiktar)||0)*sps);
+      return sum+Math.max(0,beklenen-(parseInt(s.fireStrip)||0));
+    },0);
     var eksik=kitMiktar-toplam;
     var durumRengi=eksik!==0?'var(--red)':'var(--green)';
-    var durumMetin=stokFmtN(toplam)+' / '+stokFmtN(kitMiktar)+' dağıtıldı'+(eksik>0?' — '+stokFmtN(eksik)+' eksik':(eksik<0?' — '+stokFmtN(-eksik)+' fazla':' ✓'));
+    var durumMetin='Kullanılabilir: '+stokFmtN(toplam)+' / Hedef: '+stokFmtN(kitMiktar)+(eksik>0?' — '+stokFmtN(eksik)+' eksik':(eksik<0?' — '+stokFmtN(-eksik)+' fazla':' ✓'));
 
     idxs.forEach(function(i,rowInGroup){
       var s=_hcSatirlar[i];
@@ -905,11 +927,25 @@ function hcRenderSatirlar(){
       var lotOptions=availLots.map(function(l){
         var ms=stokMevcutSheet(l);
         var cutoffInfo=l.cutoff?' (cut-off: '+l.cutoff+')':'';
-        return '<option value="'+esc(l.id)+'"'+(s.lotId===l.id?' selected':'')+'>'+esc(l.lotNo+cutoffInfo)+' — '+stokFmtN(l.mevcutStrip)+' strip ('+ms+' sh)</option>';
+        return '<option value="'+esc(l.id)+'"'+(s.lotId===l.id?' selected':'')+'>'+esc(l.lotNo+cutoffInfo)+' — '+ms+' sh ('+stokFmtN(l.mevcutStrip)+' strip)</option>';
       }).join('');
       if(!lotOptions) lotOptions='<option value="">— Mevcut LOT yok —</option>';
       var selLot=(state.hamStokLotlar||[]).find(function(l){return l.id===s.lotId;});
       var ekOzellikDisp=selLot&&selLot.ekOzellik?esc(selLot.ekOzellik):'<span style="color:var(--text3)">—</span>';
+
+      var beklenenStrip=Math.round((parseFloat(s.sheetMiktar)||0)*sps);
+      var fireStrip=parseInt(s.fireStrip)||0;
+      var kullanilabilir=beklenenStrip-fireStrip;
+      var stripCell='<div style="font-family:var(--font-mono);font-size:12px;color:var(--teal)">≈ '+stokFmtN(beklenenStrip)+' strip</div>';
+      if(s.fireOpen||fireStrip>0){
+        stripCell+='<div style="display:flex;align-items:center;gap:4px;margin-top:3px">'
+          +'<input type="number" min="0" max="'+beklenenStrip+'" value="'+(fireStrip||'')+'" placeholder="0" style="width:56px" title="Kesim sırasında deforme olan strip sayısı" onchange="hcFireChange('+i+',this.value)">'
+          +'<span style="font-size:10px;color:var(--text3)">fire</span>'
+          +'</div>'
+          +'<div style="font-size:10px;color:var(--text3);margin-top:2px">Kullanılabilir: '+stokFmtN(Math.max(0,kullanilabilir))+'</div>';
+      } else {
+        stripCell+='<button type="button" style="background:none;border:none;padding:0;font-size:10px;color:var(--text3);text-decoration:underline;cursor:pointer" title="Kesimde beklenmedik fire oluştuysa girin" onclick="hcToggleFire('+i+')">+ Fire ekle</button>';
+      }
 
       var actionCell='<button type="button" class="btn-icon" style="color:var(--red)" onclick="hcRemoveSatir('+i+')"><i class="ti ti-trash"></i></button>';
       if(isLast){
@@ -921,38 +957,34 @@ function hcRenderSatirlar(){
       rows+='<tr>'
         +(rowInGroup===0?'<td class="col-name" rowspan="'+idxs.length+'" style="font-weight:500;white-space:nowrap;vertical-align:top;padding-top:10px">'+esc(paramLabel)+'</td>':'')
         +'<td><select style="width:100%" onchange="hcLotChange('+i+',this.value)"><option value="">LOT Seçin...</option>'+lotOptions+'</select></td>'
-        +'<td style="width:110px"><input type="number" min="1" value="'+(s.miktar||'')+'" style="width:100%" onchange="hcMiktarChange('+i+',this.value)"></td>'
+        +'<td style="width:100px"><input type="number" min="0.01" step="0.01" value="'+(s.sheetMiktar||'')+'" style="width:100%" onchange="hcSheetChange('+i+',this.value)"></td>'
+        +'<td style="width:120px;vertical-align:top;padding-top:8px">'+stripCell+'</td>'
         +'<td style="font-size:11px">'+ekOzellikDisp+'</td>'
         +'<td style="white-space:nowrap;text-align:right">'+actionCell+'</td>'
         +'</tr>';
     });
   });
 
-  el.innerHTML='<div class="table-wrap"><table class="compact-table" style="width:100%"><thead><tr><th class="col-name">Parametre</th><th>LOT</th><th>Strip Miktarı</th><th>Ek Özellik</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  el.innerHTML='<div class="table-wrap"><table class="compact-table" style="width:100%"><thead><tr><th class="col-name">Parametre</th><th>LOT</th><th>Sheet Miktarı</th><th>Strip (otomatik)</th><th>Ek Özellik</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 
   hcStokUyariGuncelle();
 }
 function hcLotChange(idx,val){_hcSatirlar[idx].lotId=val;hcRenderSatirlar();}
-function hcMiktarChange(idx,val){_hcSatirlar[idx].miktar=parseInt(val)||0;hcRenderSatirlar();}
-
-function hcUpdateStrips(){
-  var kitMiktar=parseInt((document.getElementById('hc-kit')||{}).value)||0;
-  var counts={};
-  _hcSatirlar.forEach(function(s){counts[s.paramKey]=(counts[s.paramKey]||0)+1;});
-  _hcSatirlar.forEach(function(s){
-    if(counts[s.paramKey]===1) s.miktar=kitMiktar;
-  });
-  hcRenderSatirlar();
-}
+function hcSheetChange(idx,val){_hcSatirlar[idx].sheetMiktar=parseFloat(val)||0;hcRenderSatirlar();}
+function hcFireChange(idx,val){_hcSatirlar[idx].fireStrip=Math.max(0,parseInt(val)||0);hcRenderSatirlar();}
+function hcToggleFire(idx){_hcSatirlar[idx].fireOpen=true;hcRenderSatirlar();}
 
 function hcStokUyariGuncelle(){
   var uyariEl=document.getElementById('hc-stok-uyari'); if(!uyariEl) return;
+  var katId=(document.getElementById('hc-kategori')||{}).value||'';
+  var sps=katId?stokSPS(katId):0;
   var uyarilar=[];
   _hcSatirlar.forEach(function(s){
     if(!s.lotId) return;
     var lot=(state.hamStokLotlar||[]).find(function(l){return l.id===s.lotId;});
-    if(lot&&(parseInt(s.miktar)||0)>lot.mevcutStrip){
-      uyarilar.push(esc(lot.parametreAd)+(lot.cutoff?' ('+esc(lot.cutoff)+')':'')+' — '+esc(lot.lotNo)+': '+stokFmtN(lot.mevcutStrip)+' strip mevcut, '+stokFmtN(s.miktar)+' isteniyor');
+    var beklenenStrip=Math.round((parseFloat(s.sheetMiktar)||0)*sps);
+    if(lot&&beklenenStrip>lot.mevcutStrip){
+      uyarilar.push(esc(lot.parametreAd)+(lot.cutoff?' ('+esc(lot.cutoff)+')':'')+' — '+esc(lot.lotNo)+': '+stokFmtN(lot.mevcutStrip)+' strip mevcut, '+stokFmtN(beklenenStrip)+' isteniyor');
     }
   });
   if(uyarilar.length){
@@ -979,22 +1011,26 @@ async function saveHamCikis(){
   if(!aciklama) return toast('Müşteri / Amaç zorunludur.','error');
   if(!_hcSatirlar.length) return toast('En az bir parametre seçin.','error');
 
-  var toplam={};
+  var sps=stokSPS(katId)||1;
   for(var i=0;i<_hcSatirlar.length;i++){
     var s=_hcSatirlar[i];
     if(!s.lotId) return toast(esc(s.paramKey)+' için LOT seçilmedi.','error');
-    if(!s.miktar||s.miktar<1) return toast(esc(s.paramKey)+' için miktar geçerli olmalı.','error');
+    if(!s.sheetMiktar||s.sheetMiktar<=0) return toast(esc(s.paramKey)+' için sheet miktarı geçerli olmalı.','error');
     var lot=(state.hamStokLotlar||[]).find(function(l){return l.id===s.lotId;});
     if(!lot) return toast('Seçili LOT bulunamadı.','error');
-    if(s.miktar>lot.mevcutStrip) return toast(esc(lot.parametreAd)+' ('+esc(lot.lotNo)+') için yeterli stok yok. Mevcut: '+stokFmtN(lot.mevcutStrip)+' strip.','error');
-    toplam[s.paramKey]=(toplam[s.paramKey]||0)+s.miktar;
+    var beklenenStrip=Math.round((parseFloat(s.sheetMiktar)||0)*sps);
+    var fireStrip=parseInt(s.fireStrip)||0;
+    if(fireStrip>beklenenStrip) return toast(esc(lot.parametreAd)+' ('+esc(lot.lotNo)+') için fire, beklenen strip miktarından fazla olamaz.','error');
+    if(beklenenStrip>lot.mevcutStrip) return toast(esc(lot.parametreAd)+' ('+esc(lot.lotNo)+') için yeterli stok yok. Mevcut: '+stokFmtN(lot.mevcutStrip)+' strip, istenen: '+stokFmtN(beklenenStrip)+' strip.','error');
   }
-  var uyusmayanParam=Object.keys(toplam).find(function(k){return toplam[k]!==kitMiktar;});
-  if(uyusmayanParam) return toast(esc(uyusmayanParam)+' için dağıtılan miktar ('+stokFmtN(toplam[uyusmayanParam])+') kit miktarına ('+stokFmtN(kitMiktar)+') eşit değil.','error');
+
+  var satirlar=_hcSatirlar.map(function(s){
+    return {paramKey:s.paramKey,lotId:s.lotId,sheetMiktar:s.sheetMiktar,fireStrip:parseInt(s.fireStrip)||0};
+  });
 
   var res;
   try{
-    res=await apiPost('stok/ham-cikislar',{evrakNo:evrakNo,tarih:tarih,kategoriId:katId,kitMiktari:kitMiktar,aciklama:aciklama,notlar:notlar,satirlar:_hcSatirlar});
+    res=await apiPost('stok/ham-cikislar',{evrakNo:evrakNo,tarih:tarih,kategoriId:katId,kitMiktari:kitMiktar,aciklama:aciklama,notlar:notlar,satirlar:satirlar});
   }catch(e){
     toast(e.message||'Çıkış kaydedilemedi.','error');
     return;
@@ -2574,12 +2610,12 @@ function stokExportHamGirislerExcel(){
 
 function stokExportHamCikislarExcel(){
   stokInit();
-  var headers=['Evrak No','Tarih','Kategori','Çıkış Nedeni','Kit Miktar','Parametre','Cut-off','LOT No','Strip Çıkış','Notlar','Ek Özellik'];
+  var headers=['Evrak No','Tarih','Kategori','Çıkış Nedeni','Kit Miktar','Parametre','Cut-off','LOT No','Sheet Çıkış','Strip Çıkış','Fire','Notlar','Ek Özellik'];
   var rows=[];
   (state.hamStokCikislar||[]).forEach(function(c){
     var kat=(stokKatById(c.kategoriId)||{}).ad||c.kategoriId;
     (c.satirlar||[]).forEach(function(s){
-      rows.push([c.evrakNo||'',c.tarih||'',kat,c.aciklama||'',c.kitMiktari||0,s.parametreAd,s.cutoff||'',s.lotNo,s.stripCikis||0,c.notlar||'',s.ekOzellik||'Standart']);
+      rows.push([c.evrakNo||'',c.tarih||'',kat,c.aciklama||'',c.kitMiktari||0,s.parametreAd,s.cutoff||'',s.lotNo,s.sheetCikis||0,s.stripCikis||0,s.fireStrip||0,c.notlar||'',s.ekOzellik||'Standart']);
     });
   });
   _xlsxDownload(rows,headers,'Yarı Mamul Çıkışlar','yari-mamul-cikislar');

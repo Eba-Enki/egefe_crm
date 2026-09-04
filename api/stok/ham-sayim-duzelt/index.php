@@ -87,7 +87,7 @@ try {
         foreach ($fazlalar as $i => $it) {
             $fark = (int)((float)$it['sayilan_miktar'] - (float)$it['sistem_miktar']);
             $sps = stokSPS($pdo, (string)$it['lot_kategori_id']);
-            $sheetEs = $sps > 0 ? intdiv($fark, $sps) : 0;
+            $sheetEs = $sps > 0 ? round($fark / $sps, 2) : 0;
             $newLotId = 'hl' . (string)(int)round(microtime(true) * 1000) . 'd' . $i;
             $lotStmt->execute([
                 $newLotId, $girisId, $girisEvrakNo,

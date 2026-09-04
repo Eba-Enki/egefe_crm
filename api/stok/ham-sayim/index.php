@@ -22,7 +22,7 @@ function kalemResponse(array $row): array {
         'cutoff'          => $row['cutoff'],
         'kategoriId'      => $row['lot_kategori_id'],
         'sistemMiktar'    => (int)$row['sistem_miktar'],
-        'sayilanSheet'    => (int)$row['sayilan_sheet'],
+        'sayilanSheet'    => (float)$row['sayilan_sheet'],
         'sayilanStrip'    => (int)$row['sayilan_strip'],
         'sayilanMiktar'   => (int)$row['sayilan_miktar'],
         'duzeltmeEvrakNo' => $row['duzeltme_evrak_no'],
@@ -115,7 +115,7 @@ switch ($method) {
                 echo json_encode(['error' => (($i + 1)) . '. kalemde LOT eksik']);
                 exit;
             }
-            $sayilanSheet = (int)($k['sayilanSheet'] ?? 0);
+            $sayilanSheet = (float)($k['sayilanSheet'] ?? 0);
             $sayilanStrip = (int)($k['sayilanStrip'] ?? 0);
             if ($sayilanSheet < 0 || $sayilanStrip < 0) {
                 http_response_code(400);
@@ -137,7 +137,7 @@ switch ($method) {
                 'sistemMiktar' => (int)$lot['mevcut_strip'],
                 'sayilanSheet' => $sayilanSheet,
                 'sayilanStrip' => $sayilanStrip,
-                'sayilanMiktar' => $sayilanSheet * $sps + $sayilanStrip,
+                'sayilanMiktar' => (int)round($sayilanSheet * $sps + $sayilanStrip),
             ];
         }
 

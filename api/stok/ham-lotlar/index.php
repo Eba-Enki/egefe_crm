@@ -16,7 +16,7 @@ function lotResponse(array $row): array {
         'cutoff'      => $row['cutoff'],
         'ekOzellik'   => $row['ek_ozellik'],
         'kategoriId'  => $row['kategori_id'],
-        'sheetGiren'  => (int)$row['sheet_giren'],
+        'sheetGiren'  => (float)$row['sheet_giren'],
         'stripGiren'  => (int)$row['strip_giren'],
         'mevcutStrip' => (int)$row['mevcut_strip'],
         'sktTarih'    => $row['skt_tarih'],

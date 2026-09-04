@@ -22,7 +22,7 @@ function kalemResponse(array $row): array {
         'cutoff'      => $row['cutoff'],
         'ekOzellik'   => $row['ek_ozellik'],
         'kategoriId'  => $row['kategori_id'],
-        'sheetGiren'  => (int)$row['sheet_giren'],
+        'sheetGiren'  => (float)$row['sheet_giren'],
         'stripGiren'  => (int)$row['strip_giren'],
         'sktTarih'    => $row['skt_tarih'],
     ];
@@ -90,7 +90,7 @@ switch ($method) {
                 echo json_encode(['error' => (($i + 1)) . '. kalemde kategori, parametre ve LOT No zorunludur']);
                 exit;
             }
-            if ((int)($k['sheetMiktar'] ?? 0) < 1) {
+            if ((float)($k['sheetMiktar'] ?? 0) <= 0) {
                 http_response_code(400);
                 echo json_encode(['error' => (($i + 1)) . '. kalemde sheet miktarı geçersiz']);
                 exit;
@@ -108,9 +108,9 @@ switch ($method) {
             $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, ek_ozellik, kategori_id, sheet_giren, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             foreach ($kalemler as $i => $k) {
                 $kategoriId = (string)$k['kategoriId'];
-                $sheetGiren = (int)$k['sheetMiktar'];
+                $sheetGiren = (float)$k['sheetMiktar'];
                 $sps = stokSPS($pdo, $kategoriId);
-                $stripGiren = $sheetGiren * $sps;
+                $stripGiren = (int)round($sheetGiren * $sps);
                 $lotId = 'hl' . (string)(int)round(microtime(true) * 1000) . $i;
                 $ekOzellik = strOrNull($k['ekOzellik'] ?? null) ?? 'Standart';
                 $lotStmt->execute([
@@ -156,7 +156,7 @@ switch ($method) {
                 echo json_encode(['error' => (($i + 1)) . '. kalemde kategori, parametre ve LOT No zorunludur']);
                 exit;
             }
-            if ((int)($k['sheetMiktar'] ?? 0) < 1) {
+            if ((float)($k['sheetMiktar'] ?? 0) <= 0) {
                 http_response_code(400);
                 echo json_encode(['error' => (($i + 1)) . '. kalemde sheet miktarı geçersiz']);
                 exit;
@@ -181,9 +181,9 @@ switch ($method) {
         $keptIds = [];
         foreach ($kalemler as $i => $k) {
             $kategoriId = (string)$k['kategoriId'];
-            $sheetGiren = (int)$k['sheetMiktar'];
+            $sheetGiren = (float)$k['sheetMiktar'];
             $sps = stokSPS($pdo, $kategoriId);
-            $stripGiren = $sheetGiren * $sps;
+            $stripGiren = (int)round($sheetGiren * $sps);
             $lotId = strOrNull($k['lotId'] ?? null);
             $kalemData = [
                 'lotNo' => (string)$k['lotNo'], 'parametreAd' => (string)$k['parametreAd'],

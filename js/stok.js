@@ -642,14 +642,25 @@ function hgSktChange(i,val){
 }
 
 function hgSktKeydown(i,e){
-  if(e.key==='Enter'){e.preventDefault();hgAddKalem();}
+  if(e.key==='Enter'||(e.key==='Tab'&&!e.shiftKey)){
+    e.preventDefault();
+    hgSktChange(i,e.target.value);
+    hgAddKalem();
+  }
+}
+
+function hgFocusSkt(i){
+  setTimeout(function(){
+    var el=document.getElementById('hg-skt-'+i);
+    if(el) el.focus();
+  },0);
 }
 
 function hgRenderKalemler(){
   var el=document.getElementById('hg-kalemler'); if(!el) return;
   var rows=_hgKalemler.map(function(k,i){
     var sps=k.kategoriId?stokSPS(k.kategoriId):0;
-    var prevTxt=k.sheetMiktar&&sps?(k.sheetMiktar+' × '+sps+' = '+stokFmtN(k.sheetMiktar*sps)+' strip'):'—';
+    var prevTxt=k.sheetMiktar&&sps?(stokFmtN(k.sheetMiktar)+' × '+sps+' = '+stokFmtN(Math.round(k.sheetMiktar*sps))+' strip'):'—';
     var katOpts=stokKatList().map(function(kat){return '<option value="'+kat.id+'"'+(k.kategoriId===kat.id?' selected':'')+'>'+kat.ad+'</option>';}).join('');
     var paramOpts=stokParamList().filter(function(p){return p.aktif!==false;}).map(function(p){var kk=p.kisaltma||p.ad;return '<option value="'+esc(kk)+'"'+(k.parametreAd===kk?' selected':'')+'>'+esc(kk+(p.ad&&p.ad!==kk?' — '+p.ad:''))+'</option>';}).join('');
     var sktDisp=k.sktTarih?(k.sktTarih.split('-')[1]+'.'+k.sktTarih.split('-')[0]):'';
@@ -658,8 +669,8 @@ function hgRenderKalemler(){
       +'<div class="field" style="margin:0"><label style="font-size:10px">Parametre *</label><select onchange="_hgKalemler['+i+'].parametreAd=this.value"><option value="">Seçin...</option>'+paramOpts+'</select></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">Cut-off</label><input type="text" value="'+esc(k.cutoff||'')+'" placeholder="ör. 500" onchange="_hgKalemler['+i+'].cutoff=this.value.trim()"></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">LOT No *</label><input type="text" value="'+esc(k.lotNo||'')+'" placeholder="ör. LOT-001" onchange="_hgKalemler['+i+'].lotNo=this.value.trim()"></div>'
-      +'<div class="field" style="margin:0"><label style="font-size:10px">Sheet *</label><input type="number" min="1" value="'+(k.sheetMiktar||'')+'" onchange="_hgKalemler['+i+'].sheetMiktar=parseInt(this.value)||0;hgRenderKalemler()"></div>'
-      +'<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY)</label><input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" onchange="hgSktChange('+i+',this.value)" onkeydown="hgSktKeydown('+i+',event)"></div>'
+      +'<div class="field" style="margin:0"><label style="font-size:10px">Sheet *</label><input type="number" min="0.01" step="0.01" value="'+(k.sheetMiktar||'')+'" onchange="_hgKalemler['+i+'].sheetMiktar=parseFloat(this.value)||0;hgRenderKalemler();hgFocusSkt('+i+')"></div>'
+      +'<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY)</label><input id="hg-skt-'+i+'" type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" onchange="hgSktChange('+i+',this.value)" onkeydown="hgSktKeydown('+i+',event)"></div>'
       +'<div class="field" style="margin:0"><label style="font-size:10px">Ek Özellik</label><input type="text" value="'+esc(k.ekOzellik||'')+'" placeholder="Standart" onchange="_hgKalemler['+i+'].ekOzellik=this.value.trim()"></div>'
       +'<div style="font-family:var(--font-mono);font-size:11px;color:var(--teal);padding-bottom:4px;white-space:nowrap">'+prevTxt+'</div>'
       +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="hgRemoveKalem('+i+')"><i class="ti ti-trash"></i></button>'
@@ -681,7 +692,7 @@ async function saveHamGiris(){
     if(!k.kategoriId) return toast((i+1)+'. kalemde kategori seçilmedi.','error');
     if(!k.parametreAd) return toast((i+1)+'. kalemde parametre seçilmedi.','error');
     if(!k.lotNo) return toast((i+1)+'. kalemde LOT No girilmedi.','error');
-    if(!k.sheetMiktar||k.sheetMiktar<1) return toast((i+1)+'. kalemde sheet miktarı geçersiz.','error');
+    if(!k.sheetMiktar||k.sheetMiktar<=0) return toast((i+1)+'. kalemde sheet miktarı geçersiz.','error');
   }
   var payload={
     evrakNo:evrakNo,tarih:tarih,notlar:notlar,
@@ -1180,7 +1191,7 @@ function hsBuildSatirlar(){
 }
 
 function hsSheetChange(idx,val){
-  _hsSatirlar[idx].sayilanSheet=val===''?'':(parseInt(val)||0);
+  _hsSatirlar[idx].sayilanSheet=val===''?'':(parseFloat(val)||0);
   hsRenderSatirlar();
 }
 function hsStripChange(idx,val){
@@ -1199,7 +1210,7 @@ function hsRenderSatirlar(){
   var rows=_hsSatirlar.map(function(s,i){
     var lot=lotById[s.lotId]||{};
     var girildi=s.sayilanSheet!==''||s.sayilanStrip!=='';
-    var toplamStrip=(parseInt(s.sayilanSheet)||0)*s.sps+(parseInt(s.sayilanStrip)||0);
+    var toplamStrip=Math.round((parseFloat(s.sayilanSheet)||0)*s.sps+(parseInt(s.sayilanStrip)||0));
     var fark=girildi?toplamStrip-s.sistemMiktar:null;
     var farkDisp=!girildi?'<span style="color:var(--text3)">—</span>':(fark===0?'<span style="color:var(--green)">0</span>':'<span style="color:var(--red);font-weight:600">'+(fark>0?'+':'')+stokFmtN(fark)+'</span>');
     return '<tr>'
@@ -1208,7 +1219,7 @@ function hsRenderSatirlar(){
       +'<td style="font-family:var(--font-mono)">'+esc(lot.cutoff||'—')+'</td>'
       +'<td style="font-family:var(--font-mono);color:var(--text3)">'+stokFmtN(s.sistemSheet)+'</td>'
       +'<td style="font-family:var(--font-mono);color:var(--text3)">'+stokFmtN(s.sistemMiktar)+'</td>'
-      +'<td style="width:100px"><input type="number" min="0" placeholder="Sheet" value="'+esc(String(s.sayilanSheet))+'" style="width:100%" onchange="hsSheetChange('+i+',this.value)"></td>'
+      +'<td style="width:100px"><input type="number" min="0" step="0.01" placeholder="Sheet" value="'+esc(String(s.sayilanSheet))+'" style="width:100%" onchange="hsSheetChange('+i+',this.value)"></td>'
       +'<td style="width:100px"><input type="number" min="0" placeholder="Strip" value="'+esc(String(s.sayilanStrip))+'" style="width:100%" onchange="hsStripChange('+i+',this.value)"></td>'
       +'<td style="font-family:var(--font-mono)">'+farkDisp+'</td>'
       +'</tr>';
@@ -1229,7 +1240,7 @@ async function saveHamSayim(){
   if(!tarih) return toast('Sayım tarihi zorunludur.','error');
 
   var kalemler=_hsSatirlar.filter(function(s){return s.sayilanSheet!==''||s.sayilanStrip!=='';}).map(function(s){
-    return {lotId:s.lotId,sayilanSheet:parseInt(s.sayilanSheet)||0,sayilanStrip:parseInt(s.sayilanStrip)||0};
+    return {lotId:s.lotId,sayilanSheet:parseFloat(s.sayilanSheet)||0,sayilanStrip:parseInt(s.sayilanStrip)||0};
   });
   if(!kalemler.length) return toast('En az bir LOT için sayılan miktar girin.','error');
 
@@ -2591,10 +2602,10 @@ function stokExportHamSayimSablonuExcel(){
     return c!==0?c:(a.lotNo||'').localeCompare(b.lotNo||'','tr');
   });
   if(!lots.length){toast('Sayılacak aktif LOT bulunamadı.','error');return;}
-  var headers=['Parametre','Kategori','LOT No','Cut-off','Sistem Sheet','Sistem Strip','Sayılan Sheet','Sayılan Strip'];
+  var headers=['Parametre','Kategori','LOT No','Cut-off','Sistem Sheet','Sistem Strip','Sayılan Sheet','Sayılan Strip','SKT','Ek Özellik'];
   var rows=lots.map(function(l){
     var kat=(stokKatById(l.kategoriId)||{}).ad||l.kategoriId||'';
-    return [l.parametreAd||'',kat,l.lotNo||'',l.cutoff||'',stokMevcutSheet(l),l.mevcutStrip||0,'',''];
+    return [l.parametreAd||'',kat,l.lotNo||'',l.cutoff||'',stokMevcutSheet(l),l.mevcutStrip||0,'','',stokFmtSkt(l.sktTarih),l.ekOzellik||'Standart'];
   });
   _xlsxDownload(rows,headers,'Sayım Şablonu','sayim-sablonu-sheet-strip');
 }

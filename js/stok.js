@@ -879,37 +879,32 @@ function hcRenderSatirlar(){
       +(fireStrip>0?'<div style="font-size:10px;color:var(--text3)">kesim: '+stokFmtN(beklenenStrip)+' − fire: '+stokFmtN(fireStrip)+'</div>':'');
 
     var fireBtnActive=!!s.fireOpen;
-    var fireBtn='<button type="button" class="btn-icon" style="width:auto;padding:5px 8px;font-size:11px;gap:4px'+(fireBtnActive?';color:var(--amber);border-color:var(--amber);background:var(--amber-soft)':'')+'" title="Kesimde beklenmedik fire oluştuysa girin" onclick="hcToggleFire('+i+')"><i class="ti ti-alert-triangle"></i> Fire Ekle</button>';
+    var fireCell;
+    if(fireBtnActive){
+      fireCell='<div style="display:flex;align-items:center;gap:3px">'
+        +'<input type="number" min="0" step="0.01" value="'+(s.fireSheet||'')+'" placeholder="0.00" style="width:64px" title="Fire (Sheet, kesimde deforme olan)" onkeydown="hcFireKeydown('+i+',event)" onchange="hcFireChange('+i+',this.value)">'
+        +'<button type="button" class="btn-icon" style="padding:3px;color:var(--text3)" title="Fire\'ı kaldır" onclick="hcToggleFire('+i+')"><i class="ti ti-x"></i></button>'
+        +'</div>';
+    } else {
+      fireCell='<button type="button" class="btn-icon" title="Kesimde beklenmedik fire oluştuysa girin" onclick="hcToggleFire('+i+')"><i class="ti ti-alert-triangle"></i></button>';
+    }
     var silBtn='<button type="button" class="btn-icon" style="color:var(--red)" onclick="hcRemoveSatir('+i+')"><i class="ti ti-trash"></i></button>';
 
-    var mainRow='<tr>'
+    return '<tr>'
       +'<td><select id="hc-param-'+i+'" style="width:100%" onchange="hcParamChange('+i+',this.value)">'+paramOptions(s.parametreAd)+'</select></td>'
       +'<td><select style="width:100%" onchange="hcLotChange('+i+',this.value)">'+lotOptions+'</select></td>'
       +'<td style="text-align:center;font-family:var(--font-mono);font-size:12px">'+mevcutSheetDisp+'</td>'
       +'<td style="text-align:center;font-family:var(--font-mono);font-size:12px">'+mevcutStripDisp+'</td>'
-      +'<td style="width:100px"><input type="number" min="0.01" step="0.01" value="'+(s.kesilenSheet||'')+'" style="width:100%" onchange="hcSheetChange('+i+',this.value)"></td>'
+      +'<td style="width:100px"><input type="number" min="0.01" step="0.01" value="'+(s.kesilenSheet||'')+'" style="width:100%" onkeydown="hcSheetKeydown('+i+',event)" onchange="hcSheetChange('+i+',this.value)"></td>'
       +'<td style="width:130px">'+stripDisp+'</td>'
       +'<td style="font-size:11px">'+ekOzellikDisp+'</td>'
-      +'<td style="white-space:nowrap;text-align:right">'+fireBtn+silBtn+'</td>'
+      +'<td style="width:100px">'+fireCell+'</td>'
+      +'<td style="white-space:nowrap;text-align:right">'+silBtn+'</td>'
       +'</tr>';
-
-    var fireRow='';
-    if(fireBtnActive){
-      fireRow='<tr style="background:var(--amber-soft)"><td colspan="8" style="padding:6px 10px">'
-        +'<div style="display:flex;align-items:center;gap:8px;font-size:11px;flex-wrap:wrap">'
-        +'<i class="ti ti-alert-triangle" style="color:var(--amber)"></i>'
-        +'<span>Fire (Sheet, kesimde deforme olan):</span>'
-        +'<input type="number" min="0" step="0.01" value="'+(s.fireSheet||'')+'" placeholder="0.00" style="width:80px" onchange="hcFireChange('+i+',this.value)">'
-        +(fireStrip>0?'<span style="color:var(--text2)">≈ '+stokFmtN(fireStrip)+' strip düşülecek</span>':'')
-        +'<button type="button" style="margin-left:auto;background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;text-decoration:underline" onclick="hcToggleFire('+i+')">Kapat</button>'
-        +'</div></td></tr>';
-    }
-
-    return mainRow+fireRow;
   }).join('');
 
   el.innerHTML='<div class="table-wrap"><table class="compact-table" style="width:100%"><thead><tr>'
-    +'<th>Parametre</th><th>LOT</th><th style="text-align:center">Mevcut Sheet</th><th style="text-align:center">Mevcut Strip</th><th>Kesilen Sheet</th><th>Strip</th><th>Ek Özellik</th><th></th>'
+    +'<th>Parametre</th><th>LOT</th><th style="text-align:center">Mevcut Sheet</th><th style="text-align:center">Mevcut Strip</th><th>Kesilen Sheet</th><th>Strip</th><th>Ek Özellik</th><th>Fire</th><th></th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
     +'<div style="margin-top:8px"><button type="button" class="btn btn-ghost btn-sm" onclick="hcAddSatir()"><i class="ti ti-plus"></i> Satır Ekle</button></div>';
 
@@ -918,6 +913,20 @@ function hcRenderSatirlar(){
 function hcLotChange(idx,val){_hcSatirlar[idx].lotId=val;hcRenderSatirlar();}
 function hcSheetChange(idx,val){_hcSatirlar[idx].kesilenSheet=parseFloat(val)||0;hcRenderSatirlar();}
 function hcFireChange(idx,val){_hcSatirlar[idx].fireSheet=Math.max(0,parseFloat(val)||0);hcRenderSatirlar();}
+function hcSheetKeydown(idx,e){
+  if(e.key==='Enter'||(e.key==='Tab'&&!e.shiftKey)){
+    e.preventDefault();
+    _hcSatirlar[idx].kesilenSheet=parseFloat(e.target.value)||0;
+    hcAddSatir();
+  }
+}
+function hcFireKeydown(idx,e){
+  if(e.key==='Enter'||(e.key==='Tab'&&!e.shiftKey)){
+    e.preventDefault();
+    _hcSatirlar[idx].fireSheet=Math.max(0,parseFloat(e.target.value)||0);
+    hcAddSatir();
+  }
+}
 function hcToggleFire(idx){
   var s=_hcSatirlar[idx];
   if(s.fireOpen){s.fireOpen=false;s.fireSheet=0;} else {s.fireOpen=true;}

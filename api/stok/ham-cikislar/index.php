@@ -15,8 +15,8 @@ function stokSPS(PDO $pdo, string $kategoriId): int {
 }
 
 function mapSatirRow(array $row): array {
+    // fire, kesilen sheete EK tüketimdir; kullanılabilir (kit'e sayılan) miktar kesilenden düşülmez.
     $stripCikis = (int)$row['strip_cikis'];
-    $fireStrip = (int)$row['fire_strip'];
     return [
         'lotId'              => $row['lot_id'],
         'lotNo'              => $row['lot_no'],
@@ -27,8 +27,8 @@ function mapSatirRow(array $row): array {
         'sheetCikis'         => (float)$row['sheet_cikis'],
         'stripCikis'         => $stripCikis,
         'fireSheet'          => (float)$row['fire_sheet'],
-        'fireStrip'          => $fireStrip,
-        'kullanilabilirStrip'=> $stripCikis - $fireStrip,
+        'fireStrip'          => (int)$row['fire_strip'],
+        'kullanilabilirStrip'=> $stripCikis,
     ];
 }
 
@@ -146,19 +146,19 @@ switch ($method) {
                 exit;
             }
             $sps = stokSPS($pdo, (string)$lot['kategori_id']);
-            $stripCikis = (int)round($sheetMiktar * $sps);
-            $fireStrip = (int)round($fireSheet * $sps);
-            if ($fireStrip > $stripCikis) {
+            // Fire, kesilen sheete EK olarak tüketilen malzemedir (kesilen + fire = stoktan
+            // düşülecek toplam). Strip'i tek seferde toplam sheet üzerinden yuvarlıyoruz ki
+            // ayrı ayrı yuvarlanan parçaların toplamı gerçek toplamdan fazla çıkmasın.
+            $totalSheet = $sheetMiktar + $fireSheet;
+            $totalStrip = (int)round($totalSheet * $sps);
+            $usableStrip = min((int)round($sheetMiktar * $sps), $totalStrip);
+            $fireStrip = $totalStrip - $usableStrip;
+            if ($totalStrip > (int)$lot['mevcut_strip']) {
                 http_response_code(400);
-                echo json_encode(['error' => (($i + 1)) . '. satırda fire, kesilen sheetten hesaplanan strip miktarından (' . $stripCikis . ') fazla olamaz']);
+                echo json_encode(['error' => $lot['parametre_ad'] . ' (' . $lot['lot_no'] . ') için yeterli stok yok. Mevcut: ' . $lot['mevcut_strip'] . ' strip, istenen: ' . $totalStrip . ' strip']);
                 exit;
             }
-            if ($stripCikis > (int)$lot['mevcut_strip']) {
-                http_response_code(400);
-                echo json_encode(['error' => $lot['parametre_ad'] . ' (' . $lot['lot_no'] . ') için yeterli stok yok. Mevcut: ' . $lot['mevcut_strip'] . ' strip, istenen: ' . $stripCikis . ' strip']);
-                exit;
-            }
-            $lots[] = ['paramKey' => $paramKey, 'lot' => $lot, 'sheetMiktar' => $sheetMiktar, 'stripCikis' => $stripCikis, 'fireSheet' => $fireSheet, 'fireStrip' => $fireStrip];
+            $lots[] = ['paramKey' => $paramKey, 'lot' => $lot, 'sheetMiktar' => $sheetMiktar, 'stripCikis' => $usableStrip, 'fireSheet' => $fireSheet, 'fireStrip' => $fireStrip, 'totalSheet' => $totalSheet, 'totalStrip' => $totalStrip];
         }
 
         $evrakNo = strOrNull($input['evrakNo'] ?? null) ?? nextHamCikisEvrak($pdo);
@@ -173,7 +173,7 @@ switch ($method) {
             $decStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip - ?, mevcut_sheet = GREATEST(0, mevcut_sheet - ?) WHERE id = ?');
             foreach ($lots as $l) {
                 $itemStmt->execute([$id, $l['lot']['id'], $l['sheetMiktar'], $l['stripCikis'], $l['fireSheet'], $l['fireStrip'], $l['paramKey']]);
-                $decStmt->execute([$l['stripCikis'], $l['sheetMiktar'], $l['lot']['id']]);
+                $decStmt->execute([$l['totalStrip'], $l['totalSheet'], $l['lot']['id']]);
             }
 
             $pdo->commit();
@@ -231,11 +231,12 @@ switch ($method) {
         $pdo->beginTransaction();
         try {
             // Eski satırların stok etkisini geri al, sonra POST ile aynı mantıkla yeniden uygula.
-            $oldItems = $pdo->prepare('SELECT lot_id, sheet_cikis, strip_cikis FROM raw_stock_exit_items WHERE exit_id = ?');
+            // Fire, kesilene EK olduğu için geri iadede de sheet_cikis+fire_sheet ve strip_cikis+fire_strip toplanır.
+            $oldItems = $pdo->prepare('SELECT lot_id, sheet_cikis, strip_cikis, fire_sheet, fire_strip FROM raw_stock_exit_items WHERE exit_id = ?');
             $oldItems->execute([$id]);
             $revertStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip + ?, mevcut_sheet = mevcut_sheet + ? WHERE id = ?');
             foreach ($oldItems->fetchAll() as $oi) {
-                if ($oi['lot_id']) $revertStmt->execute([$oi['strip_cikis'], $oi['sheet_cikis'], $oi['lot_id']]);
+                if ($oi['lot_id']) $revertStmt->execute([(float)$oi['strip_cikis'] + (float)$oi['fire_strip'], (float)$oi['sheet_cikis'] + (float)$oi['fire_sheet'], $oi['lot_id']]);
             }
             $pdo->prepare('DELETE FROM raw_stock_exit_items WHERE exit_id = ?')->execute([$id]);
 
@@ -261,15 +262,14 @@ switch ($method) {
                     throw new RuntimeException('Seçili LOT bulunamadı');
                 }
                 $sps = stokSPS($pdo, (string)$lot['kategori_id']);
-                $stripCikis = (int)round($sheetMiktar * $sps);
-                $fireStrip = (int)round($fireSheet * $sps);
-                if ($fireStrip > $stripCikis) {
-                    throw new RuntimeException((($i + 1)) . '. satırda fire, kesilen sheetten hesaplanan strip miktarından (' . $stripCikis . ') fazla olamaz');
+                $totalSheet = $sheetMiktar + $fireSheet;
+                $totalStrip = (int)round($totalSheet * $sps);
+                $usableStrip = min((int)round($sheetMiktar * $sps), $totalStrip);
+                $fireStrip = $totalStrip - $usableStrip;
+                if ($totalStrip > (int)$lot['mevcut_strip']) {
+                    throw new RuntimeException($lot['parametre_ad'] . ' (' . $lot['lot_no'] . ') için yeterli stok yok. Mevcut: ' . $lot['mevcut_strip'] . ' strip, istenen: ' . $totalStrip . ' strip');
                 }
-                if ($stripCikis > (int)$lot['mevcut_strip']) {
-                    throw new RuntimeException($lot['parametre_ad'] . ' (' . $lot['lot_no'] . ') için yeterli stok yok. Mevcut: ' . $lot['mevcut_strip'] . ' strip, istenen: ' . $stripCikis . ' strip');
-                }
-                $lots[] = ['paramKey' => $paramKey, 'lot' => $lot, 'sheetMiktar' => $sheetMiktar, 'stripCikis' => $stripCikis, 'fireSheet' => $fireSheet, 'fireStrip' => $fireStrip];
+                $lots[] = ['paramKey' => $paramKey, 'lot' => $lot, 'sheetMiktar' => $sheetMiktar, 'stripCikis' => $usableStrip, 'fireSheet' => $fireSheet, 'fireStrip' => $fireStrip, 'totalSheet' => $totalSheet, 'totalStrip' => $totalStrip];
             }
 
             $pdo->prepare('UPDATE raw_stock_exits SET evrak_no=?, tarih=?, kategori_id=?, aciklama=?, notlar=? WHERE id=?')
@@ -279,7 +279,7 @@ switch ($method) {
             $decStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip - ?, mevcut_sheet = GREATEST(0, mevcut_sheet - ?) WHERE id = ?');
             foreach ($lots as $l) {
                 $itemStmt->execute([$id, $l['lot']['id'], $l['sheetMiktar'], $l['stripCikis'], $l['fireSheet'], $l['fireStrip'], $l['paramKey']]);
-                $decStmt->execute([$l['stripCikis'], $l['sheetMiktar'], $l['lot']['id']]);
+                $decStmt->execute([$l['totalStrip'], $l['totalSheet'], $l['lot']['id']]);
             }
 
             $pdo->commit();
@@ -313,12 +313,12 @@ switch ($method) {
 
         $pdo->beginTransaction();
         try {
-            $items = $pdo->prepare('SELECT lot_id, sheet_cikis, strip_cikis FROM raw_stock_exit_items WHERE exit_id = ?');
+            $items = $pdo->prepare('SELECT lot_id, sheet_cikis, strip_cikis, fire_sheet, fire_strip FROM raw_stock_exit_items WHERE exit_id = ?');
             $items->execute([$id]);
             $incStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip + ?, mevcut_sheet = mevcut_sheet + ? WHERE id = ?');
             foreach ($items->fetchAll() as $item) {
                 if ($item['lot_id']) {
-                    $incStmt->execute([$item['strip_cikis'], $item['sheet_cikis'], $item['lot_id']]);
+                    $incStmt->execute([(float)$item['strip_cikis'] + (float)$item['fire_strip'], (float)$item['sheet_cikis'] + (float)$item['fire_sheet'], $item['lot_id']]);
                 }
             }
             $pdo->prepare('DELETE FROM raw_stock_exits WHERE id = ?')->execute([$id]);

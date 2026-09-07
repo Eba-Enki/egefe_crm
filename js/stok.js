@@ -920,11 +920,16 @@ function hcRenderSatirlar(){
     var mevcutStripDisp=selLot?stokFmtN(selLot.mevcutStrip):'—';
     var ekOzellikDisp=selLot&&selLot.ekOzellik?esc(selLot.ekOzellik):'<span style="color:var(--text3)">—</span>';
 
-    var beklenenStrip=Math.round((parseFloat(s.kesilenSheet)||0)*sps);
-    var fireStrip=Math.round((parseFloat(s.fireSheet)||0)*sps);
-    var netStrip=Math.max(0,beklenenStrip-fireStrip);
-    var stripDisp='<div style="font-family:var(--font-mono);font-size:12px;color:var(--teal)">≈ '+stokFmtN(netStrip)+' strip</div>'
-      +(fireStrip>0?'<div style="font-size:10px;color:var(--text3)">kesim: '+stokFmtN(beklenenStrip)+' − fire: '+stokFmtN(fireStrip)+'</div>':'');
+    // Fire, kesilen sheete EK tüketimdir: toplam (kesilen+fire) tek seferde stripe
+    // yuvarlanır, kullanılabilir (kesilen) strip bundan ayrılır — ayrı ayrı
+    // yuvarlanan parçaların toplamı gerçek toplamı aşmasın diye.
+    var kesilenSheet=parseFloat(s.kesilenSheet)||0;
+    var fireSheetVal=parseFloat(s.fireSheet)||0;
+    var totalStripCalc=Math.round((kesilenSheet+fireSheetVal)*sps);
+    var usableStrip=Math.min(Math.round(kesilenSheet*sps),totalStripCalc);
+    var fireStrip=totalStripCalc-usableStrip;
+    var stripDisp='<div style="font-family:var(--font-mono);font-size:12px;color:var(--teal)">≈ '+stokFmtN(usableStrip)+' strip</div>'
+      +(fireStrip>0?'<div style="font-size:10px;color:var(--text3)">+ '+stokFmtN(fireStrip)+' fire → toplam '+stokFmtN(totalStripCalc)+' strip düşülecek</div>':'');
 
     var fireBtnActive=!!s.fireOpen;
     var fireCell;
@@ -989,9 +994,9 @@ function hcStokUyariGuncelle(){
   _hcSatirlar.forEach(function(s){
     if(!s.lotId) return;
     var lot=hcEffectiveLot((state.hamStokLotlar||[]).find(function(l){return l.id===s.lotId;}));
-    var beklenenStrip=Math.round((parseFloat(s.kesilenSheet)||0)*sps);
-    if(lot&&beklenenStrip>lot.mevcutStrip){
-      uyarilar.push(esc(lot.parametreAd)+(lot.cutoff?' ('+esc(lot.cutoff)+')':'')+' — '+esc(lot.lotNo)+': '+stokFmtN(lot.mevcutStrip)+' strip mevcut, '+stokFmtN(beklenenStrip)+' isteniyor');
+    var totalStrip=Math.round(((parseFloat(s.kesilenSheet)||0)+(parseFloat(s.fireSheet)||0))*sps);
+    if(lot&&totalStrip>lot.mevcutStrip){
+      uyarilar.push(esc(lot.parametreAd)+(lot.cutoff?' ('+esc(lot.cutoff)+')':'')+' — '+esc(lot.lotNo)+': '+stokFmtN(lot.mevcutStrip)+' strip mevcut, '+stokFmtN(totalStrip)+' isteniyor');
     }
   });
   if(uyarilar.length){
@@ -1024,10 +1029,8 @@ async function saveHamCikis(){
     if(!s.kesilenSheet||s.kesilenSheet<=0) return toast((i+1)+'. satırda kesilen sheet miktarı geçerli olmalı.','error');
     var lot=hcEffectiveLot((state.hamStokLotlar||[]).find(function(l){return l.id===s.lotId;}));
     if(!lot) return toast((i+1)+'. satırda seçili LOT bulunamadı.','error');
-    var beklenenStrip=Math.round((parseFloat(s.kesilenSheet)||0)*sps);
-    var fireStrip=Math.round((parseFloat(s.fireSheet)||0)*sps);
-    if(fireStrip>beklenenStrip) return toast((i+1)+'. satırda fire, kesilen sheetten hesaplanan strip miktarından fazla olamaz.','error');
-    if(beklenenStrip>lot.mevcutStrip) return toast(esc(lot.parametreAd)+' ('+esc(lot.lotNo)+') için yeterli stok yok. Mevcut: '+stokFmtN(lot.mevcutStrip)+' strip, istenen: '+stokFmtN(beklenenStrip)+' strip.','error');
+    var totalStrip=Math.round(((parseFloat(s.kesilenSheet)||0)+(parseFloat(s.fireSheet)||0))*sps);
+    if(totalStrip>lot.mevcutStrip) return toast(esc(lot.parametreAd)+' ('+esc(lot.lotNo)+') için yeterli stok yok. Mevcut: '+stokFmtN(lot.mevcutStrip)+' strip, istenen: '+stokFmtN(totalStrip)+' strip.','error');
   }
 
   var satirlar=_hcSatirlar.map(function(s){

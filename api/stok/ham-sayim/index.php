@@ -223,11 +223,11 @@ switch ($method) {
                 $pdo->prepare('DELETE FROM raw_stock_entries WHERE id = ?')->execute([$girisId]);
             }
             foreach ($cikisIds as $cikisId) {
-                $items = $pdo->prepare('SELECT lot_id, sheet_cikis, strip_cikis FROM raw_stock_exit_items WHERE exit_id = ?');
+                $items = $pdo->prepare('SELECT lot_id, sheet_cikis, strip_cikis, fire_sheet, fire_strip FROM raw_stock_exit_items WHERE exit_id = ?');
                 $items->execute([$cikisId]);
                 $incStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip + ?, mevcut_sheet = mevcut_sheet + ? WHERE id = ?');
                 foreach ($items->fetchAll() as $item) {
-                    if ($item['lot_id']) $incStmt->execute([$item['strip_cikis'], $item['sheet_cikis'], $item['lot_id']]);
+                    if ($item['lot_id']) $incStmt->execute([(float)$item['strip_cikis'] + (float)$item['fire_strip'], (float)$item['sheet_cikis'] + (float)$item['fire_sheet'], $item['lot_id']]);
                 }
                 $pdo->prepare('DELETE FROM raw_stock_exits WHERE id = ?')->execute([$cikisId]);
             }

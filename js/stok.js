@@ -848,8 +848,10 @@ function renderHamCikisForm(){
       (c.satirlar||[]).forEach(function(s){
         if(!s.lotId) return;
         if(!_hcEditRevert[s.lotId]) _hcEditRevert[s.lotId]={strip:0,sheet:0};
-        _hcEditRevert[s.lotId].strip+=s.stripCikis||0;
-        _hcEditRevert[s.lotId].sheet+=parseFloat(s.sheetCikis)||0;
+        // Fire, kesilene ek tüketim olduğu için geri iade edilecek miktar da
+        // kesilen+fire toplamı olmalı (backend'deki revert mantığıyla aynı).
+        _hcEditRevert[s.lotId].strip+=(s.stripCikis||0)+(s.fireStrip||0);
+        _hcEditRevert[s.lotId].sheet+=(parseFloat(s.sheetCikis)||0)+(parseFloat(s.fireSheet)||0);
       });
       _hcSatirlar=(c.satirlar||[]).map(function(s){
         return {parametreAd:s.parametreAd||'',lotId:s.lotId||'',kesilenSheet:parseFloat(s.sheetCikis)||0,fireSheet:parseFloat(s.fireSheet)||0,fireOpen:(parseFloat(s.fireSheet)||0)>0};

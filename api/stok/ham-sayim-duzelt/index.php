@@ -83,7 +83,7 @@ try {
         $stmt = $pdo->prepare('INSERT INTO raw_stock_entries (id, evrak_no, tarih, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?)');
         $stmt->execute([$girisId, $girisEvrakNo, $tarih, $notlarFull, $user['id']]);
 
-        $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, ek_ozellik, kategori_id, sheet_giren, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, ek_ozellik, kategori_id, sheet_giren, mevcut_sheet, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         foreach ($fazlalar as $i => $it) {
             $fark = (int)((float)$it['sayilan_miktar'] - (float)$it['sistem_miktar']);
             $sps = stokSPS($pdo, (string)$it['lot_kategori_id']);
@@ -92,7 +92,7 @@ try {
             $lotStmt->execute([
                 $newLotId, $girisId, $girisEvrakNo,
                 $it['lot_no'], $tarih, $it['parametre_ad'], $it['cutoff'], $it['lot_ek_ozellik'] ?? 'Standart', $it['lot_kategori_id'],
-                $sheetEs, $fark, $fark, $it['lot_skt_tarih'], $user['id'],
+                $sheetEs, $sheetEs, $fark, $fark, $it['lot_skt_tarih'], $user['id'],
             ]);
             $duzeltmeMap[$it['id']] = $girisEvrakNo;
         }
@@ -110,12 +110,14 @@ try {
             $stmt = $pdo->prepare('INSERT INTO raw_stock_exits (id, evrak_no, tarih, kategori_id, aciklama, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([$cikisId, $cikisEvrakNo, $tarih, $kategoriId !== '' ? $kategoriId : null, 'Stok Sayım Eksiği', $notlarFull, $user['id']]);
 
-            $itemStmt2 = $pdo->prepare('INSERT INTO raw_stock_exit_items (exit_id, lot_id, strip_cikis, parametre_ad) VALUES (?, ?, ?, ?)');
-            $decStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip - ? WHERE id = ? AND mevcut_strip >= ?');
+            $itemStmt2 = $pdo->prepare('INSERT INTO raw_stock_exit_items (exit_id, lot_id, sheet_cikis, strip_cikis, parametre_ad) VALUES (?, ?, ?, ?, ?)');
+            $decStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip - ?, mevcut_sheet = GREATEST(0, mevcut_sheet - ?) WHERE id = ? AND mevcut_strip >= ?');
             foreach ($grupItems as $it) {
                 $fark = (int)((float)$it['sistem_miktar'] - (float)$it['sayilan_miktar']);
-                $itemStmt2->execute([$cikisId, $it['lot_id'], $fark, $it['parametre_ad']]);
-                $decStmt->execute([$fark, $it['lot_id'], $fark]);
+                $sps = stokSPS($pdo, (string)$it['lot_kategori_id']);
+                $sheetEs = $sps > 0 ? round($fark / $sps, 2) : 0;
+                $itemStmt2->execute([$cikisId, $it['lot_id'], $sheetEs, $fark, $it['parametre_ad']]);
+                $decStmt->execute([$fark, $sheetEs, $it['lot_id'], $fark]);
                 if ($decStmt->rowCount() === 0) {
                     throw new RuntimeException(($it['parametre_ad'] ?? 'Bir kalem') . ' (' . $it['lot_no'] . '): mevcut stok, sayım eksiğinden az olduğu için düzeltilemedi.');
                 }

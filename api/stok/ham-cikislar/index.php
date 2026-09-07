@@ -170,10 +170,10 @@ switch ($method) {
             $stmt->execute([$id, $evrakNo, $tarih, $kategoriId, $aciklama, strOrNull($input['notlar'] ?? null), $user['id']]);
 
             $itemStmt = $pdo->prepare('INSERT INTO raw_stock_exit_items (exit_id, lot_id, sheet_cikis, strip_cikis, fire_sheet, fire_strip, parametre_ad) VALUES (?, ?, ?, ?, ?, ?, ?)');
-            $decStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip - ? WHERE id = ?');
+            $decStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip - ?, mevcut_sheet = GREATEST(0, mevcut_sheet - ?) WHERE id = ?');
             foreach ($lots as $l) {
                 $itemStmt->execute([$id, $l['lot']['id'], $l['sheetMiktar'], $l['stripCikis'], $l['fireSheet'], $l['fireStrip'], $l['paramKey']]);
-                $decStmt->execute([$l['stripCikis'], $l['lot']['id']]);
+                $decStmt->execute([$l['stripCikis'], $l['sheetMiktar'], $l['lot']['id']]);
             }
 
             $pdo->commit();
@@ -206,12 +206,12 @@ switch ($method) {
 
         $pdo->beginTransaction();
         try {
-            $items = $pdo->prepare('SELECT lot_id, strip_cikis FROM raw_stock_exit_items WHERE exit_id = ?');
+            $items = $pdo->prepare('SELECT lot_id, sheet_cikis, strip_cikis FROM raw_stock_exit_items WHERE exit_id = ?');
             $items->execute([$id]);
-            $incStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip + ? WHERE id = ?');
+            $incStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip + ?, mevcut_sheet = mevcut_sheet + ? WHERE id = ?');
             foreach ($items->fetchAll() as $item) {
                 if ($item['lot_id']) {
-                    $incStmt->execute([$item['strip_cikis'], $item['lot_id']]);
+                    $incStmt->execute([$item['strip_cikis'], $item['sheet_cikis'], $item['lot_id']]);
                 }
             }
             $pdo->prepare('DELETE FROM raw_stock_exits WHERE id = ?')->execute([$id]);

@@ -17,6 +17,7 @@ function lotResponse(array $row): array {
         'ekOzellik'   => $row['ek_ozellik'],
         'kategoriId'  => $row['kategori_id'],
         'sheetGiren'  => (float)$row['sheet_giren'],
+        'mevcutSheet' => (float)$row['mevcut_sheet'],
         'stripGiren'  => (int)$row['strip_giren'],
         'mevcutStrip' => (int)$row['mevcut_strip'],
         'sktTarih'    => $row['skt_tarih'],

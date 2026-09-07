@@ -133,6 +133,7 @@ function stokSPS(kategoriId){
 }
 
 function stokMevcutSheet(lot){
+  if(lot.mevcutSheet!==undefined&&lot.mevcutSheet!==null) return lot.mevcutSheet;
   var sps=stokSPS(lot.kategoriId);
   return sps>0?Math.round((lot.mevcutStrip/sps)*100)/100:0;
 }
@@ -149,7 +150,7 @@ function stokKritikler(){
       if(!lots.length) return;
       var toplamStrip=lots.reduce(function(a,l){return a+l.mevcutStrip;},0);
       var sps=stokSPS(kat.id);
-      var sheetEq=sps>0?toplamStrip/sps:0;
+      var sheetEq=lots.reduce(function(a,l){return a+stokMevcutSheet(l);},0);
       var esik=state.stokSettings.globalEsik||1;
       if(sheetEq<=esik){
         sonuc.push({ad:ad,kat:kat,toplamStrip:toplamStrip,sps:sps,sheetEq:sheetEq,esik:esik});
@@ -169,8 +170,7 @@ function stokKatSelect(elId, selectedId){
   }).join('');
 }
 
-function stokBadge(toplamStrip, sps, esik){
-  var sheetEq=sps>0?toplamStrip/sps:0;
+function stokBadge(sheetEq, esik){
   if(sheetEq<=esik) return '<span class="badge badge-reddedildi">Kritik</span>';
   if(sheetEq<=esik*3) return '<span class="badge badge-sf">Düşük</span>';
   return '<span class="badge badge-teslim">Yeterli</span>';
@@ -391,20 +391,20 @@ function renderHamStok(){
 
     // Kategori özeti: "İdrar: 2160 str • Ağız: 225 str"
     var ozetParts=kats.map(function(kat){
-      var topStrip=(katMap[kat.id]||[]).reduce(function(a,l){return a+l.mevcutStrip;},0);
-      var sps=stokSPS(kat.id);
-      return esc(kat.ad)+': <b>'+stokFmtN(Math.floor(topStrip/sps))+'</b> Sheet / <b>'+stokFmtN(topStrip)+'</b> Strip';
+      var katLots=katMap[kat.id]||[];
+      var topStrip=katLots.reduce(function(a,l){return a+l.mevcutStrip;},0);
+      var topSheet=katLots.reduce(function(a,l){return a+stokMevcutSheet(l);},0);
+      return esc(kat.ad)+': <b>'+stokFmtN(topSheet)+'</b> Sheet / <b>'+stokFmtN(topStrip)+'</b> Strip';
     });
 
     // Genel durum = en kötü kategori durumu
     var enKotu='teslim'; // green = yeterli
     kats.forEach(function(kat){
-      var topStrip=(katMap[kat.id]||[]).reduce(function(a,l){return a+l.mevcutStrip;},0);
-      var sps=stokSPS(kat.id);
+      var katLots=katMap[kat.id]||[];
+      var topSheet=katLots.reduce(function(a,l){return a+stokMevcutSheet(l);},0);
       var esik=state.stokSettings.globalEsik||1;
-      var sheetEq=sps>0?topStrip/sps:0;
-      if(sheetEq<=esik) enKotu='reddedildi';
-      else if(sheetEq<=esik*3&&enKotu!=='reddedildi') enKotu='sf';
+      if(topSheet<=esik) enKotu='reddedildi';
+      else if(topSheet<=esik*3&&enKotu!=='reddedildi') enKotu='sf';
     });
     var durumBadgeHtml={
       'reddedildi':'<span class="badge badge-reddedildi">Kritik</span>',
@@ -441,12 +441,11 @@ function renderHamStok(){
         katLots.forEach(function(lot){
           var ms=stokMevcutSheet(lot);
           var skt=stokSktInfo(lot.sktTarih);
-          var sps=stokSPS(lot.kategoriId);
           var esik=state.stokSettings.globalEsik||1;
           var durum=lot.mevcutStrip===0
             ?'<span class="badge" style="background:var(--bg4);color:var(--text3)">Tükendi</span>'
             :skt.doldu?'<span class="badge badge-reddedildi">SKT Geçti</span>'
-            :stokBadge(lot.mevcutStrip,sps,esik);
+            :stokBadge(ms,esik);
 
           subHtml+='<tr style="opacity:'+(lot.mevcutStrip===0?'.5':'1')+'">';
           if(canBulk){
@@ -2546,8 +2545,7 @@ function stokExportHamStokExcel(){
   var headers=['LOT No','Parametre','Cut-off','Kategori','Giriş Tarihi','Sheet Girdi','Strip Girdi','Mevcut Strip','Mevcut Sheet','SKT','Evrak No','Durum','Ek Özellik'];
   var rows=lots.map(function(l){
     var kat=(stokKatById(l.kategoriId)||{}).ad||l.kategoriId;
-    var sps=stokSPS(l.kategoriId);
-    var ms=sps>0?Math.floor(l.mevcutStrip/sps):0;
+    var ms=stokMevcutSheet(l);
     return [l.lotNo,l.parametreAd,l.cutoff||'',kat,l.tarih||'',l.sheetGiren||0,l.stripGiren||0,l.mevcutStrip||0,ms,stokFmtSkt(l.sktTarih),l.evrakNo||'',l.mevcutStrip===0?'Tükendi':'Mevcut',l.ekOzellik||'Standart'];
   });
   _xlsxDownload(rows,headers,'Yarı Mamul Stok','yari-mamul-stok-listesi');

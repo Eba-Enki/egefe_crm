@@ -18,7 +18,16 @@ async function apiRequest(method, path, body){
   }
   path = base + query;
 
-  var opts = {method: method, credentials: 'same-origin', headers: {}};
+  // Bazı hosting ortamları PUT/DELETE metotlarını 405 ile engelliyor.
+  // Bu yüzden bu metotları POST + ?_method= override olarak gönderiyoruz;
+  // sunucu tarafı (_bootstrap.php) bunu gerçek metoda çeviriyor.
+  var wireMethod = method;
+  if(method === 'PUT' || method === 'DELETE'){
+    path += (path.indexOf('?') === -1 ? '?' : '&') + '_method=' + method;
+    wireMethod = 'POST';
+  }
+
+  var opts = {method: wireMethod, credentials: 'same-origin', headers: {}};
   if(body !== undefined){
     opts.headers['Content-Type'] = 'application/json';
     opts.body = JSON.stringify(body);

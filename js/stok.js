@@ -134,7 +134,7 @@ function stokSPS(kategoriId){
 
 function stokMevcutSheet(lot){
   var sps=stokSPS(lot.kategoriId);
-  return sps>0?Math.floor(lot.mevcutStrip/sps):0;
+  return sps>0?Math.round((lot.mevcutStrip/sps)*100)/100:0;
 }
 
 function stokKritikler(){
@@ -1051,7 +1051,7 @@ function renderHamSayimlar(){
         +'</tr></thead><tbody>';
       kalemler.forEach(function(k){
         var sps=stokSPS(k.kategoriId);
-        var sistemSheet=sps>0?Math.floor(k.sistemMiktar/sps):0;
+        var sistemSheet=sps>0?Math.round((k.sistemMiktar/sps)*100)/100:0;
         var fark=k.sayilanMiktar-k.sistemMiktar;
         var farkDisp=fark===0?'<span style="color:var(--green)">0</span>':'<span style="color:var(--red);font-weight:600">'+(fark>0?'+':'')+stokFmtN(fark)+'</span>';
         var durumDisp=fark===0?'<span style="color:var(--text3)">—</span>'

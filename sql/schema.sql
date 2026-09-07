@@ -304,6 +304,7 @@ CREATE TABLE raw_stock_exit_items (
   lot_id        VARCHAR(40) NULL,
   sheet_cikis   DECIMAL(10,2) NOT NULL DEFAULT 0,
   strip_cikis   INT NOT NULL DEFAULT 0,
+  fire_sheet    DECIMAL(10,2) NOT NULL DEFAULT 0,
   fire_strip    INT NOT NULL DEFAULT 0,
   parametre_ad  VARCHAR(150) NULL,
   CONSTRAINT fk_rsxi_exit FOREIGN KEY (exit_id) REFERENCES raw_stock_exits(id) ON DELETE CASCADE,

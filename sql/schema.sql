@@ -234,10 +234,14 @@ CREATE TABLE delivery_protocol_items (
 CREATE TABLE stock_categories (
   id              VARCHAR(40) PRIMARY KEY,
   tip             ENUM('ham','ticari') NOT NULL,
+  parent_id       VARCHAR(40) NULL,
+  grup_tipi       ENUM('test_kiti','cihaz','sarf') NULL,
   ad              VARCHAR(150) NOT NULL,
   sheet_boyu      INT NULL,
   kesim_boleni    INT NULL,
-  fire_pct        DECIMAL(5,2) NULL
+  fire_pct        DECIMAL(5,2) NULL,
+  KEY idx_sc_parent (parent_id),
+  CONSTRAINT fk_sc_parent FOREIGN KEY (parent_id) REFERENCES stock_categories(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci;
 
 CREATE TABLE stock_parameters (
@@ -358,6 +362,9 @@ CREATE TABLE finished_stock_lots (
   lot_no              VARCHAR(100) NULL,
   tarih               DATE NULL,
   urun_adi            VARCHAR(255) NULL,
+  marka               VARCHAR(150) NULL,
+  model               VARCHAR(150) NULL,
+  seri_no             VARCHAR(150) NULL,
   kategori_id         VARCHAR(40) NULL,
   parametreler        JSON NULL,
   miktar              DECIMAL(15,3) NOT NULL DEFAULT 0,

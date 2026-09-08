@@ -11,11 +11,47 @@ function kalemResponse(array $row): array {
         'lotId'        => $row['id'],
         'lotNo'        => $row['lot_no'],
         'urunAdi'      => $row['urun_adi'],
+        'marka'        => $row['marka'],
+        'model'        => $row['model'],
+        'seriNo'       => $row['seri_no'],
         'kategoriId'   => $row['kategori_id'],
         'parametreler' => $row['parametreler'] ? json_decode($row['parametreler'], true) : [],
         'miktar'       => (float)$row['miktar'],
         'sktTarih'     => $row['skt_tarih'],
     ];
+}
+
+// Kalem kategorisinin grup_tipi'ne (test_kiti/cihaz/sarf) göre zorunlu alanları doğrular.
+function bitmisKalemValidate(PDO $pdo, array $k, int $sira): ?string {
+    $kategoriId = strOrNull($k['kategoriId'] ?? null);
+    $urunAdi = strOrNull($k['urunAdi'] ?? null);
+    if ($kategoriId === null || $urunAdi === null) {
+        return $sira . '. kalemde kategori ve ürün adı zorunludur';
+    }
+    if ((float)($k['miktar'] ?? 0) < 1) {
+        return $sira . '. kalemde miktar geçersiz';
+    }
+    $stmt = $pdo->prepare('SELECT grup_tipi FROM stock_categories WHERE id = ?');
+    $stmt->execute([$kategoriId]);
+    $grupTipi = $stmt->fetchColumn();
+
+    if ($grupTipi === 'cihaz') {
+        if (strOrNull($k['marka'] ?? null) === null || strOrNull($k['model'] ?? null) === null || strOrNull($k['seriNo'] ?? null) === null) {
+            return $sira . '. kalemde marka, model ve seri no zorunludur';
+        }
+    } elseif ($grupTipi === 'sarf') {
+        // lot no / SKT opsiyonel, başka zorunlu alan yok
+    } elseif ($grupTipi === 'test_kiti') {
+        if (strOrNull($k['lotNo'] ?? null) === null || strOrNull($k['sktTarih'] ?? null) === null) {
+            return $sira . '. kalemde LOT No ve SKT zorunludur';
+        }
+    } else {
+        // eski (grup_tipi tanımsız) kategoriler: geriye dönük uyumluluk için LOT No zorunlu
+        if (strOrNull($k['lotNo'] ?? null) === null) {
+            return $sira . '. kalemde LOT No zorunludur';
+        }
+    }
+    return null;
 }
 
 function girisResponse(PDO $pdo, array $row, ?array $kalemler = null): array {
@@ -75,14 +111,10 @@ switch ($method) {
             exit;
         }
         foreach ($kalemler as $i => $k) {
-            if (strOrNull($k['kategoriId'] ?? null) === null || strOrNull($k['urunAdi'] ?? null) === null || strOrNull($k['lotNo'] ?? null) === null) {
+            $hata = bitmisKalemValidate($pdo, $k, $i + 1);
+            if ($hata !== null) {
                 http_response_code(400);
-                echo json_encode(['error' => (($i + 1)) . '. kalemde kategori, ürün adı ve LOT No zorunludur']);
-                exit;
-            }
-            if ((float)($k['miktar'] ?? 0) < 1) {
-                http_response_code(400);
-                echo json_encode(['error' => (($i + 1)) . '. kalemde miktar geçersiz']);
+                echo json_encode(['error' => $hata]);
                 exit;
             }
         }
@@ -95,13 +127,15 @@ switch ($method) {
             $stmt = $pdo->prepare('INSERT INTO finished_stock_entries (id, evrak_no, tarih, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?)');
             $stmt->execute([$girisId, $evrakNo, $tarih, $notlar, $user['id']]);
 
-            $lotStmt = $pdo->prepare('INSERT INTO finished_stock_lots (id, giris_id, evrak_no, lot_no, tarih, urun_adi, kategori_id, parametreler, miktar, mevcut_miktar, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $lotStmt = $pdo->prepare('INSERT INTO finished_stock_lots (id, giris_id, evrak_no, lot_no, tarih, urun_adi, marka, model, seri_no, kategori_id, parametreler, miktar, mevcut_miktar, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             foreach ($kalemler as $i => $k) {
                 $miktar = (float)$k['miktar'];
                 $lotId = 'bl' . (string)(int)round(microtime(true) * 1000) . $i;
                 $lotStmt->execute([
                     $lotId, $girisId, $evrakNo,
-                    (string)$k['lotNo'], $tarih, (string)$k['urunAdi'], (string)$k['kategoriId'],
+                    strOrNull($k['lotNo'] ?? null), $tarih, (string)$k['urunAdi'],
+                    strOrNull($k['marka'] ?? null), strOrNull($k['model'] ?? null), strOrNull($k['seriNo'] ?? null),
+                    (string)$k['kategoriId'],
                     json_encode($k['parametreler'] ?? [], JSON_UNESCAPED_UNICODE),
                     $miktar, $miktar,
                     strOrNull($k['sktTarih'] ?? null), $user['id'],
@@ -137,14 +171,10 @@ switch ($method) {
             exit;
         }
         foreach ($kalemler as $i => $k) {
-            if (strOrNull($k['kategoriId'] ?? null) === null || strOrNull($k['urunAdi'] ?? null) === null || strOrNull($k['lotNo'] ?? null) === null) {
+            $hata = bitmisKalemValidate($pdo, $k, $i + 1);
+            if ($hata !== null) {
                 http_response_code(400);
-                echo json_encode(['error' => (($i + 1)) . '. kalemde kategori, ürün adı ve LOT No zorunludur']);
-                exit;
-            }
-            if ((float)($k['miktar'] ?? 0) < 1) {
-                http_response_code(400);
-                echo json_encode(['error' => (($i + 1)) . '. kalemde miktar geçersiz']);
+                echo json_encode(['error' => $hata]);
                 exit;
             }
         }
@@ -169,7 +199,8 @@ switch ($method) {
             $miktar = (float)$k['miktar'];
             $lotId = strOrNull($k['lotId'] ?? null);
             $kalemData = [
-                'lotNo' => (string)$k['lotNo'], 'urunAdi' => (string)$k['urunAdi'],
+                'lotNo' => strOrNull($k['lotNo'] ?? null), 'urunAdi' => (string)$k['urunAdi'],
+                'marka' => strOrNull($k['marka'] ?? null), 'model' => strOrNull($k['model'] ?? null), 'seriNo' => strOrNull($k['seriNo'] ?? null),
                 'kategoriId' => (string)$k['kategoriId'], 'parametreler' => $k['parametreler'] ?? [],
                 'miktar' => $miktar, 'sktTarih' => strOrNull($k['sktTarih'] ?? null),
             ];
@@ -206,15 +237,15 @@ switch ($method) {
             $pdo->prepare('UPDATE finished_stock_entries SET evrak_no=?, tarih=?, notlar=? WHERE id=?')
                 ->execute([$evrakNo, $tarih, $notlar, $id]);
 
-            $updStmt = $pdo->prepare('UPDATE finished_stock_lots SET evrak_no=?, lot_no=?, tarih=?, urun_adi=?, kategori_id=?, parametreler=?, miktar=?, mevcut_miktar=?, skt_tarih=? WHERE id=?');
+            $updStmt = $pdo->prepare('UPDATE finished_stock_lots SET evrak_no=?, lot_no=?, tarih=?, urun_adi=?, marka=?, model=?, seri_no=?, kategori_id=?, parametreler=?, miktar=?, mevcut_miktar=?, skt_tarih=? WHERE id=?');
             foreach ($updates as $lotId => $u) {
-                $updStmt->execute([$evrakNo, $u['lotNo'], $tarih, $u['urunAdi'], $u['kategoriId'], json_encode($u['parametreler'], JSON_UNESCAPED_UNICODE), $u['miktar'], $u['mevcutMiktar'], $u['sktTarih'], $lotId]);
+                $updStmt->execute([$evrakNo, $u['lotNo'], $tarih, $u['urunAdi'], $u['marka'], $u['model'], $u['seriNo'], $u['kategoriId'], json_encode($u['parametreler'], JSON_UNESCAPED_UNICODE), $u['miktar'], $u['mevcutMiktar'], $u['sktTarih'], $lotId]);
             }
 
-            $insStmt = $pdo->prepare('INSERT INTO finished_stock_lots (id, giris_id, evrak_no, lot_no, tarih, urun_adi, kategori_id, parametreler, miktar, mevcut_miktar, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $insStmt = $pdo->prepare('INSERT INTO finished_stock_lots (id, giris_id, evrak_no, lot_no, tarih, urun_adi, marka, model, seri_no, kategori_id, parametreler, miktar, mevcut_miktar, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             foreach ($inserts as $i => $u) {
                 $newLotId = 'bl' . (string)(int)round(microtime(true) * 1000) . $i;
-                $insStmt->execute([$newLotId, $id, $evrakNo, $u['lotNo'], $tarih, $u['urunAdi'], $u['kategoriId'], json_encode($u['parametreler'], JSON_UNESCAPED_UNICODE), $u['miktar'], $u['miktar'], $u['sktTarih'], $user['id']]);
+                $insStmt->execute([$newLotId, $id, $evrakNo, $u['lotNo'], $tarih, $u['urunAdi'], $u['marka'], $u['model'], $u['seriNo'], $u['kategoriId'], json_encode($u['parametreler'], JSON_UNESCAPED_UNICODE), $u['miktar'], $u['miktar'], $u['sktTarih'], $user['id']]);
             }
 
             if ($removals) {

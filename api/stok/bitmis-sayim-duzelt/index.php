@@ -39,7 +39,7 @@ if (!$count) {
     exit;
 }
 
-$itemStmt = $pdo->prepare('SELECT i.*, l.lot_no, l.kategori_id AS lot_kategori_id, l.parametreler AS lot_parametreler, l.skt_tarih AS lot_skt_tarih FROM finished_stock_count_items i LEFT JOIN finished_stock_lots l ON l.id = i.lot_id WHERE i.count_id = ? AND i.duzeltme_evrak_no IS NULL AND i.sayilan_miktar <> i.sistem_miktar ORDER BY i.id ASC');
+$itemStmt = $pdo->prepare('SELECT i.*, l.id AS lot_exists_check, l.lot_no, l.marka AS lot_marka, l.model AS lot_model, l.seri_no AS lot_seri_no, l.kategori_id AS lot_kategori_id, l.parametreler AS lot_parametreler, l.skt_tarih AS lot_skt_tarih FROM finished_stock_count_items i LEFT JOIN finished_stock_lots l ON l.id = i.lot_id WHERE i.count_id = ? AND i.duzeltme_evrak_no IS NULL AND i.sayilan_miktar <> i.sistem_miktar ORDER BY i.id ASC');
 $itemStmt->execute([$countId]);
 $items = $itemStmt->fetchAll();
 
@@ -50,7 +50,7 @@ if (!$items) {
 }
 
 foreach ($items as $it) {
-    if (!$it['lot_id'] || !$it['lot_no']) {
+    if (!$it['lot_id'] || !$it['lot_exists_check']) {
         http_response_code(400);
         echo json_encode(['error' => ($it['urun_adi'] ?? 'Bir kalem') . ' için kaynak LOT artık mevcut değil, bu kalem otomatik düzeltilemez.']);
         exit;
@@ -75,13 +75,13 @@ try {
         $stmt = $pdo->prepare('INSERT INTO finished_stock_entries (id, evrak_no, tarih, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?)');
         $stmt->execute([$girisId, $girisEvrakNo, $tarih, $notlarFull, $user['id']]);
 
-        $lotStmt = $pdo->prepare('INSERT INTO finished_stock_lots (id, giris_id, evrak_no, lot_no, tarih, urun_adi, kategori_id, parametreler, miktar, mevcut_miktar, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $lotStmt = $pdo->prepare('INSERT INTO finished_stock_lots (id, giris_id, evrak_no, lot_no, tarih, urun_adi, marka, model, seri_no, kategori_id, parametreler, miktar, mevcut_miktar, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         foreach ($fazlalar as $i => $it) {
             $fark = (float)$it['sayilan_miktar'] - (float)$it['sistem_miktar'];
             $newLotId = 'bl' . (string)(int)round(microtime(true) * 1000) . 'd' . $i;
             $lotStmt->execute([
                 $newLotId, $girisId, $girisEvrakNo,
-                $it['lot_no'], $tarih, $it['urun_adi'], $it['lot_kategori_id'], $it['lot_parametreler'],
+                $it['lot_no'], $tarih, $it['urun_adi'], $it['lot_marka'], $it['lot_model'], $it['lot_seri_no'], $it['lot_kategori_id'], $it['lot_parametreler'],
                 $fark, $fark, $it['lot_skt_tarih'], $user['id'],
             ]);
             $duzeltmeMap[$it['id']] = $girisEvrakNo;

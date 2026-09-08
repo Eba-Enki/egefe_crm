@@ -1465,15 +1465,11 @@
               </div>
               <div>
                 <div class="settings-panel-title">Hazır Ürün Kategorileri</div>
-                <div class="settings-panel-sub">Hazır ürün stok grubunda kullanılan kategori listesi</div>
+                <div class="settings-panel-sub">Test Kitleri, Cihazlar ve Sarflar ana grupları altında serbestçe eklenip silinebilen alt tipler</div>
               </div>
             </div>
             <div class="settings-section">
-              <div id="stok-ticarikat-list" style="margin-bottom:16px"></div>
-              <div style="display:flex;gap:8px">
-                <input type="text" id="tkat-yeni-ad" placeholder="ör. İlaç, Cihaz, Sarf Malzeme" style="flex:1">
-                <button class="btn btn-primary" onclick="stokTicariKatEkle()">Ekle</button>
-              </div>
+              <div id="stok-ticarikat-list"></div>
             </div>
           </div>
 
@@ -1871,6 +1867,24 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-parametre-sec')">İptal</button>
       <button class="btn btn-primary" onclick="confirmParamSec()">Tamam</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: HAZIR ÜRÜN PARAMETRE + CUT-OFF SEÇİM ── -->
+<div class="modal-overlay" id="modal-bitmis-parametre-sec">
+  <div class="modal" style="max-width:520px;width:90%">
+    <div class="modal-header">
+      <span class="modal-title">Parametre Ekle</span>
+      <span id="bg-parametre-sec-counter" style="font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:3px 10px;border-radius:20px;margin-left:8px">0 parametre seçildi</span>
+      <button class="close-btn" onclick="closeModal('modal-bitmis-parametre-sec')" style="margin-left:auto">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:380px;overflow-y:auto">
+      <div id="bg-parametre-sec-list" style="display:flex;flex-direction:column;gap:7px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-bitmis-parametre-sec')">İptal</button>
+      <button class="btn btn-primary" onclick="confirmBgParamSec()">Tamam</button>
     </div>
   </div>
 </div>

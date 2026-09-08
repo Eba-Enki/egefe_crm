@@ -6,12 +6,15 @@ $user = requireAuth($pdo);
 requirePortalAccess($user, 'stok');
 
 const TIP_DEGERLERI = ['ham','ticari'];
+const GRUP_TIPI_DEGERLERI = ['test_kiti','cihaz','sarf'];
 
 
 function kategoriResponse(array $row): array {
     return [
         'id'           => $row['id'],
         'tip'          => $row['tip'],
+        'parentId'     => $row['parent_id'],
+        'grupTipi'     => $row['grup_tipi'],
         'ad'           => $row['ad'],
         'sheetBoyu'    => $row['sheet_boyu'] !== null ? (int)$row['sheet_boyu'] : null,
         'kesimBoleni'  => $row['kesim_boleni'] !== null ? (int)$row['kesim_boleni'] : null,
@@ -44,11 +47,40 @@ switch ($method) {
             exit;
         }
 
+        $parentId = null;
+        $grupTipi = null;
+        if ($tip === 'ticari') {
+            $parentId = strOrNull($input['parentId'] ?? null);
+            if ($parentId !== null) {
+                $pStmt = $pdo->prepare('SELECT * FROM stock_categories WHERE id = ? AND tip = ?');
+                $pStmt->execute([$parentId, 'ticari']);
+                $parent = $pStmt->fetch();
+                if (!$parent) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Üst kategori (ana grup) bulunamadı']);
+                    exit;
+                }
+                if ($parent['parent_id'] !== null) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Alt tip başka bir alt tipin altına eklenemez']);
+                    exit;
+                }
+                $grupTipi = $parent['grup_tipi'];
+            } else {
+                $grupTipi = (string)($input['grupTipi'] ?? '');
+                if (!in_array($grupTipi, GRUP_TIPI_DEGERLERI, true)) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'grupTipi (test_kiti/cihaz/sarf) zorunlu']);
+                    exit;
+                }
+            }
+        }
+
         $id = ($tip === 'ham' ? 'kat' : 'tkat') . (string)(int)round(microtime(true) * 1000);
 
-        $stmt = $pdo->prepare('INSERT INTO stock_categories (id, tip, ad, sheet_boyu, kesim_boleni, fire_pct) VALUES (?, ?, ?, ?, ?, ?)');
+        $stmt = $pdo->prepare('INSERT INTO stock_categories (id, tip, parent_id, grup_tipi, ad, sheet_boyu, kesim_boleni, fire_pct) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([
-            $id, $tip, $ad,
+            $id, $tip, $parentId, $grupTipi, $ad,
             $tip === 'ham' ? (int)($input['sheetBoyu'] ?? 0) : null,
             $tip === 'ham' ? (int)($input['kesimBoleni'] ?? 0) : null,
             $tip === 'ham' ? (float)($input['firePct'] ?? 0) : null,

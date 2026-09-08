@@ -2436,12 +2436,19 @@ async function stokHamKatKaydet(i){
 }
 
 var GRUP_TIPI_ALTTIP_PLACEHOLDER={test_kiti:'ör. Ağız Sıvısı, Alkol, Saç, Ter, Kan, İdrar, Powder',cihaz:'ör. Alkolmetre, Okuyucu',sarf:'ör. İdrar Kabı, Etiket, Silikajel'};
+var GRUP_TIPI_LABEL={test_kiti:'Test Kiti',cihaz:'Cihaz',sarf:'Sarf'};
+var _anaGrupEditId=null;
 
 function stokRenderTicariKatAyar(){
   var el=document.getElementById('stok-ticarikat-list'); if(!el) return;
   var anaGruplar=stokTicariAnaGruplar();
+  var yeniAnaGrupForm='<div style="display:flex;gap:8px;margin-bottom:14px;padding:10px;background:var(--bg4);border:1px dashed var(--border);border-radius:8px">'
+    +'<input type="text" id="anagrup-yeni-ad" placeholder="Yeni ana grup adı" style="flex:1">'
+    +'<select id="anagrup-yeni-tip" style="width:140px">'+Object.keys(GRUP_TIPI_LABEL).map(function(t){return '<option value="'+t+'">'+GRUP_TIPI_LABEL[t]+'</option>';}).join('')+'</select>'
+    +'<button class="btn btn-primary btn-sm" onclick="stokAnaGrupEkle()">Ana Grup Ekle</button>'
+    +'</div>';
   if(!anaGruplar.length){
-    el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">Ana gruplar bulunamadı. Veritabanı migration\'ının (023) çalıştırıldığından emin olun.</div>';
+    el.innerHTML=yeniAnaGrupForm+'<div style="font-size:12px;color:var(--text3);padding:6px 0">Henüz ana grup eklenmedi.</div>';
     return;
   }
   el.innerHTML=anaGruplar.map(function(ana){
@@ -2454,15 +2461,83 @@ function stokRenderTicariKatAyar(){
             +'</div>';
         }).join('')
       : '<div style="font-size:12px;color:var(--text3);padding:2px 0 8px">Henüz alt tip eklenmedi.</div>';
+    var headerHtml=_anaGrupEditId===ana.id
+      ? '<div style="display:flex;gap:8px;align-items:center;margin-bottom:9px">'
+          +'<input type="text" id="anagrup-edit-ad" value="'+esc(ana.ad)+'" style="flex:1;font-size:13px" onkeydown="if(event.key===\'Enter\'){event.preventDefault();stokAnaGrupKaydet(\''+ana.id+'\')}">'
+          +'<button class="btn btn-ghost btn-sm" onclick="stokAnaGrupEditIptal()">Vazgeç</button>'
+          +'<button class="btn btn-primary btn-sm" onclick="stokAnaGrupKaydet(\''+ana.id+'\')">Kaydet</button>'
+        +'</div>'
+      : '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">'
+          +'<div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em">'+esc(ana.ad)+'</div>'
+          +'<div class="action-row">'
+            +'<button class="btn-icon" title="Düzenle" onclick="stokAnaGrupDuzenle(\''+ana.id+'\')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>'
+            +'<button class="btn-icon" style="color:var(--red)" title="Sil" onclick="stokAnaGrupSil(\''+ana.id+'\')"><i class="ti ti-trash"></i></button>'
+          +'</div>'
+        +'</div>';
     return '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px">'+esc(ana.ad)+'</div>'
+      +headerHtml
       +altHtml
       +'<div style="display:flex;gap:8px;margin-top:4px">'
         +'<input type="text" id="alttip-yeni-'+ana.id+'" placeholder="'+esc(GRUP_TIPI_ALTTIP_PLACEHOLDER[ana.grupTipi]||'Alt tip adı')+'" style="flex:1" onkeydown="if(event.key===\'Enter\'){event.preventDefault();stokAltTipEkle(\''+ana.id+'\')}">'
         +'<button class="btn btn-primary btn-sm" onclick="stokAltTipEkle(\''+ana.id+'\')">Ekle</button>'
       +'</div>'
       +'</div>';
-  }).join('');
+  }).join('')+yeniAnaGrupForm;
+}
+
+function stokAnaGrupDuzenle(id){_anaGrupEditId=id;stokRenderTicariKatAyar();}
+function stokAnaGrupEditIptal(){_anaGrupEditId=null;stokRenderTicariKatAyar();}
+
+async function stokAnaGrupKaydet(id){
+  var ad=toTitleCase(((document.getElementById('anagrup-edit-ad')||{}).value||'').trim());
+  if(!ad) return toast('Ana grup adı zorunludur.','error');
+  try{
+    var res=await apiPut('stok/kategoriler',{id:id,ad:ad});
+    var idx=state.stokSettings.ticariKategoriler.findIndex(function(k){return k.id===id;});
+    if(idx>=0) state.stokSettings.ticariKategoriler[idx]=res.kategori;
+  }catch(e){
+    toast(e.message||'Kaydedilemedi.','error');
+    return;
+  }
+  _anaGrupEditId=null;
+  toast('Ana grup güncellendi.','success');
+  stokRenderTicariKatAyar();
+}
+
+function stokAnaGrupSil(id){
+  var ana=stokTicariKatById(id);
+  if(!ana) return;
+  var altSayisi=stokTicariAltTipler(id).length;
+  var mesaj='"'+ana.ad+'" ana grubunu silmek istiyor musunuz?'+(altSayisi?' Altındaki '+altSayisi+' alt tip de birlikte silinecek.':'');
+  showConfirm(mesaj,async function(){
+    try{
+      await apiDelete('stok/kategoriler?id='+encodeURIComponent(id));
+    }catch(e){
+      toast(e.message||'Silinemedi.','error');
+      return;
+    }
+    var altIds=stokTicariAltTipler(id).map(function(k){return k.id;});
+    state.stokSettings.ticariKategoriler=state.stokSettings.ticariKategoriler.filter(function(k){return k.id!==id&&altIds.indexOf(k.id)<0;});
+    toast('Ana grup silindi.','info'); stokRenderTicariKatAyar();
+  },{okText:'Sil',okClass:'btn-danger'});
+}
+
+async function stokAnaGrupEkle(){
+  stokInit();
+  var adEl=document.getElementById('anagrup-yeni-ad');
+  var tipEl=document.getElementById('anagrup-yeni-tip');
+  var ad=toTitleCase(((adEl||{}).value||'').trim());
+  var grupTipi=(tipEl||{}).value||'';
+  if(!ad) return toast('Ana grup adı zorunludur.','error');
+  try{
+    var res=await apiPost('stok/kategoriler',{tip:'ticari',grupTipi:grupTipi,ad:ad});
+    state.stokSettings.ticariKategoriler.push(res.kategori);
+  }catch(e){
+    toast(e.message||'Eklenemedi.','error');
+    return;
+  }
+  if(adEl) adEl.value='';
+  toast('Ana grup eklendi.','success'); stokRenderTicariKatAyar();
 }
 
 async function stokKatEkle(){

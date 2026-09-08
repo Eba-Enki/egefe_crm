@@ -1622,45 +1622,62 @@ function bgRenderKalemler(){
     var anaGrupId=bgKalemAnaGrupId(k);
     var grupTipi=anaGrupId?stokGrupTipiOf(anaGrupId):'';
     var sktDisp=k.sktTarih?(k.sktTarih.split('-')[1]+'.'+k.sktTarih.split('-')[0]):'';
+    var isTestKiti=!!anaGrupId&&grupTipi!=='cihaz'&&grupTipi!=='sarf';
 
-    var baseRow='<div style="display:grid;grid-template-columns:150px 170px minmax(150px,1fr) 80px auto;gap:8px;align-items:end;margin-bottom:8px">'
-      +'<div class="field" style="margin:0"><label style="font-size:10px">Ana Grup *</label><select onchange="bgAnaGrupChange('+i+',this.value)"><option value="">Seçin...</option>'+bgAnaGrupOptions(anaGrupId)+'</select></div>'
-      +(anaGrupId?'<div class="field" style="margin:0"><label style="font-size:10px">Alt Tip</label><select onchange="bgAltTipChange('+i+',this.value)">'+bgAltTipOptions(anaGrupId,k.kategoriId)+'</select></div>':'<div></div>')
-      +'<div class="field" style="margin:0"><label style="font-size:10px">Ürün Adı *</label><input type="text" value="'+esc(k.urunAdi||'')+'" placeholder="ör. 4\'lü İdrar Test Kiti" onchange="_bgKalemler['+i+'].urunAdi=this.value.trim()"></div>'
-      +'<div class="field" style="margin:0"><label style="font-size:10px">Miktar *</label><input type="number" min="1" value="'+(k.miktar||'')+'" onchange="_bgKalemler['+i+'].miktar=parseInt(this.value)||0"></div>'
-      +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="bgRemoveKalem('+i+')"><i class="ti ti-trash"></i></button>'
-      +'</div>';
+    var cols=['130px','150px','minmax(160px,1fr)'];
+    var fields=[
+      '<div class="field" style="margin:0"><label style="font-size:10px">Ana Grup *</label><select onchange="bgAnaGrupChange('+i+',this.value)"><option value="">Seçin...</option>'+bgAnaGrupOptions(anaGrupId)+'</select></div>',
+      anaGrupId?('<div class="field" style="margin:0"><label style="font-size:10px">Alt Tip</label><select onchange="bgAltTipChange('+i+',this.value)">'+bgAltTipOptions(anaGrupId,k.kategoriId)+'</select></div>'):'<div></div>',
+      '<div class="field" style="margin:0"><label style="font-size:10px">Ürün Adı *</label><input type="text" value="'+esc(k.urunAdi||'')+'" placeholder="ör. 4\'lü İdrar Test Kiti" onchange="_bgKalemler['+i+'].urunAdi=this.value.trim()"></div>'
+    ];
 
-    var extraRow='';
     if(grupTipi==='cihaz'){
-      extraRow='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'
-        +'<div class="field" style="margin:0"><label style="font-size:10px">Marka *</label><input type="text" value="'+esc(k.marka||'')+'" onchange="_bgKalemler['+i+'].marka=this.value.trim()"></div>'
-        +'<div class="field" style="margin:0"><label style="font-size:10px">Model *</label><input type="text" value="'+esc(k.model||'')+'" onchange="_bgKalemler['+i+'].model=this.value.trim()"></div>'
-        +'<div class="field" style="margin:0"><label style="font-size:10px">Seri No *</label><input type="text" value="'+esc(k.seriNo||'')+'" onchange="_bgKalemler['+i+'].seriNo=this.value.trim()"></div>'
-        +'</div>';
+      cols.push('110px','110px','120px');
+      fields.push(
+        '<div class="field" style="margin:0"><label style="font-size:10px">Marka *</label><input type="text" value="'+esc(k.marka||'')+'" onchange="_bgKalemler['+i+'].marka=this.value.trim()"></div>',
+        '<div class="field" style="margin:0"><label style="font-size:10px">Model *</label><input type="text" value="'+esc(k.model||'')+'" onchange="_bgKalemler['+i+'].model=this.value.trim()"></div>',
+        '<div class="field" style="margin:0"><label style="font-size:10px">Seri No *</label><input type="text" value="'+esc(k.seriNo||'')+'" onchange="_bgKalemler['+i+'].seriNo=this.value.trim()"></div>'
+      );
     } else if(grupTipi==='sarf'){
-      extraRow='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
-        +'<div class="field" style="margin:0"><label style="font-size:10px">LOT No</label><input type="text" value="'+esc(k.lotNo||'')+'" onchange="_bgKalemler['+i+'].lotNo=this.value.trim()"></div>'
-        +'<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY)</label><input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" onchange="bgSktChange('+i+',this.value)" onkeydown="bgSktKeydown('+i+',event)"></div>'
-        +'</div>';
+      cols.push('120px','90px');
+      fields.push(
+        '<div class="field" style="margin:0"><label style="font-size:10px">LOT No</label><input type="text" value="'+esc(k.lotNo||'')+'" onchange="_bgKalemler['+i+'].lotNo=this.value.trim()"></div>',
+        '<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY)</label><input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" onchange="bgSktChange('+i+',this.value)" onkeydown="bgSktKeydown('+i+',event)"></div>'
+      );
     } else if(anaGrupId){ // test_kiti (ya da grup_tipi tanımsız eski kategori)
-      var params=k.parametreler||[];
-      var paramChips=params.map(function(p,pi){
+      cols.push('120px','90px');
+      fields.push(
+        '<div class="field" style="margin:0"><label style="font-size:10px">LOT No *</label><input type="text" value="'+esc(k.lotNo||'')+'" placeholder="ör. KLOT-001" onchange="_bgKalemler['+i+'].lotNo=this.value.trim()"></div>',
+        '<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY) *</label><input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" onchange="bgSktChange('+i+',this.value)" onkeydown="bgSktKeydown('+i+',event)"></div>'
+      );
+    }
+
+    cols.push('80px');
+    fields.push('<div class="field" style="margin:0"><label style="font-size:10px">Miktar *</label><input type="number" min="1" value="'+(k.miktar||'')+'" onchange="_bgKalemler['+i+'].miktar=parseInt(this.value)||0"></div>');
+
+    if(isTestKiti){
+      cols.push('160px');
+      fields.push('<button type="button" class="btn btn-ghost btn-sm" style="white-space:nowrap;margin-bottom:1px" onclick="bgOpenParamModal('+i+')"><i class="ti ti-plus"></i> Parametre Ekle</button>');
+    }
+
+    cols.push('auto');
+    fields.push('<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="bgRemoveKalem('+i+')"><i class="ti ti-trash"></i></button>');
+
+    var baseRow='<div style="display:grid;grid-template-columns:'+cols.join(' ')+';gap:8px;align-items:end">'+fields.join('')+'</div>';
+
+    var chipsRow='';
+    if(isTestKiti&&(k.parametreler||[]).length){
+      var paramChips=(k.parametreler||[]).map(function(p,pi){
         var label=esc(p.ad)+(p.deger?': '+esc(p.deger):'');
         return '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 12px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:600;border:1px solid var(--accent);margin:2px 4px 2px 0">'+label+'<button type="button" onclick="bgParamRemove('+i+','+pi+')" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;line-height:1;padding:0 0 0 2px">×</button></span>';
       }).join('');
-      extraRow='<div style="display:grid;grid-template-columns:1fr 90px;gap:8px;margin-bottom:6px">'
-          +'<div class="field" style="margin:0"><label style="font-size:10px">LOT No *</label><input type="text" value="'+esc(k.lotNo||'')+'" placeholder="ör. KLOT-001" onchange="_bgKalemler['+i+'].lotNo=this.value.trim()"></div>'
-          +'<div class="field" style="margin:0"><label style="font-size:10px">SKT (AA.YYYY) *</label><input type="text" placeholder="02.2026" maxlength="7" value="'+sktDisp+'" onchange="bgSktChange('+i+',this.value)" onkeydown="bgSktKeydown('+i+',event)"></div>'
-        +'</div>'
-        +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
-          +'<span style="font-size:10px;color:var(--text3);font-weight:500">Parametreler:</span>'
-          +paramChips
-          +'<button type="button" class="btn btn-ghost btn-sm" style="padding:3px 10px;font-size:11px" onclick="bgOpenParamModal('+i+')"><i class="ti ti-plus"></i> Parametre Ekle</button>'
+      chipsRow='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px">'
+        +'<span style="font-size:10px;color:var(--text3);font-weight:500">Parametreler:</span>'
+        +paramChips
         +'</div>';
     }
 
-    return '<div style="padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:10px">'+baseRow+extraRow+'</div>';
+    return '<div style="padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:10px">'+baseRow+chipsRow+'</div>';
   }).join('');
   el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bgAddKalem()"><i class="ti ti-plus"></i> Kalem Ekle</button></div>';
 }

@@ -1503,7 +1503,7 @@ function renderBitmisGirisler(){
           +'<td><span class="kn-badge">'+esc(k.lotNo||'—')+'</span></td>'
           +'<td style="font-family:var(--font-mono)">'+stokFmtN(k.miktar)+'</td>'
           +'<td style="font-family:var(--font-mono);font-size:11px">'+stokFmtSkt(k.sktTarih)+'</td>'
-          +'<td>'+stokDetayBadgeHtml(k)+'</td>'
+          +'<td style="font-size:11px;color:var(--text3)">'+esc(stokUrunDetayFmt(k))+'</td>'
           +'<td style="font-size:11px;color:var(--text3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(k.notlar||'')+'">'+esc(k.notlar||'—')+'</td>'
           +'</tr>';
       });
@@ -1879,7 +1879,7 @@ function renderBitmisCikislar(){
         subHtml+='<tr>'
           +'<td class="col-name" style="font-weight:500">'+esc(s.urunAdi)+'</td>'
           +'<td><span class="kn-badge">'+esc(s.lotNo||'—')+'</span></td>'
-          +'<td>'+stokDetayBadgeHtml(s)+'</td>'
+          +'<td style="font-size:11px;color:var(--text3)">'+esc(stokUrunDetayFmt(s))+'</td>'
           +'<td style="font-size:11px;color:var(--text3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(s.notlar||'')+'">'+esc(s.notlar||'—')+'</td>'
           +'<td style="font-family:var(--font-mono)">'+stokFmtN(s.miktar)+'</td>'
           +'</tr>';

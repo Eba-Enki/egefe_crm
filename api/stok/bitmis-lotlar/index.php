@@ -21,6 +21,7 @@ function lotResponse(array $row): array {
         'miktar'       => (float)$row['miktar'],
         'mevcutMiktar' => (float)$row['mevcut_miktar'],
         'sktTarih'     => $row['skt_tarih'],
+        'notlar'       => $row['notlar'],
     ];
 }
 

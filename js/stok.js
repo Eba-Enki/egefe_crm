@@ -185,6 +185,27 @@ function stokUrunDetayFmt(l){
   if(grupTipi==='cihaz') return [l.marka,l.model,l.seriNo?'SN: '+l.seriNo:''].filter(Boolean).join(' · ');
   return stokParamFmt(l.parametreler);
 }
+function stokBadgeSpan(label){
+  return '<span style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:600;border:1px solid var(--accent);margin:3px 6px 3px 0">'+esc(label)+'</span>';
+}
+// Bir lotun tüm parametre+cutoff (ya da Cihaz için marka/model/seri no) bilgisini rozet grid'i olarak render eder.
+function stokDetayBadgeHtml(l){
+  var grupTipi=stokGrupTipiOf(l.kategoriId);
+  if(grupTipi==='cihaz'){
+    var parcalar=[];
+    if(l.marka) parcalar.push('Marka: '+l.marka);
+    if(l.model) parcalar.push('Model: '+l.model);
+    if(l.seriNo) parcalar.push('Seri No: '+l.seriNo);
+    if(!parcalar.length) return '<span style="color:var(--text3);font-size:12px">Detay girilmemiş.</span>';
+    return parcalar.map(stokBadgeSpan).join('');
+  }
+  var params=l.parametreler||[];
+  if(!params.length) return '<span style="color:var(--text3);font-size:12px">Parametre eklenmemiş.</span>';
+  return params.map(function(p){
+    var label=typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad);
+    return stokBadgeSpan(label);
+  }).join('');
+}
 function stokToday(){return new Date().toISOString().slice(0,10);}
 
 function stokKatSelect(elId, selectedId){
@@ -1334,6 +1355,9 @@ async function saveHamSayim(){
 
 // ─── BİTMİŞ STOK GÖRÜNÜMÜ ────────────────────────────────────────────────────
 
+var _expandedBitmisStokLot=new Set();
+function toggleBitmisStokLot(id){if(_expandedBitmisStokLot.has(id))_expandedBitmisStokLot.delete(id);else _expandedBitmisStokLot.add(id);renderBitmisStok();}
+
 function renderBitmisStok(){
   stokInit();
   var fKat=(document.getElementById('bs-f-kat')||{}).value||'';
@@ -1388,25 +1412,35 @@ function renderBitmisStok(){
 
   var html=bulkUi+'<div class="table-wrap"><table class="compact-table" data-resize-key="stok-bitmis-liste'+(canBulk?'-bulk':'')+'"><thead><tr>'
     +(canBulk?'<th style="width:28px"><input type="checkbox" '+(allChecked?'checked':'')+' onchange="bulkToggleAll(\'bitmisStokArsiv\',this.checked,\'renderBitmisStok\')"></th>':'')
-    +'<th class="col-name">Ürün Adı</th><th>LOT No</th><th>Kategori</th><th>Detay</th><th>Giren</th><th>Mevcut</th><th>Giriş Tarihi</th><th>SKT</th><th></th></tr></thead><tbody>';
+    +'<th style="width:28px"></th>'
+    +'<th class="col-name">Ürün Adı</th><th>LOT No</th><th>Kategori</th><th>Not</th><th>Giren</th><th>Mevcut</th><th>Giriş Tarihi</th><th>SKT</th><th></th></tr></thead><tbody>';
   pagedBL.forEach(function(l){
     var kat=stokAnyKatById(l.kategoriId)||{ad:l.kategoriId};
-    var detayStr=stokUrunDetayFmt(l);
     var skt=stokSktInfo(l.sktTarih);
-    html+='<tr>'
-      +(canBulk?'<td><input type="checkbox" '+(bulkIsChecked('bitmisStokArsiv',l.id)?'checked':'')+' onchange="bulkToggleRow(\'bitmisStokArsiv\',\''+l.id+'\',\'renderBitmisStok\')"></td>':'')
+    var expanded=_expandedBitmisStokLot.has(l.id);
+    var notKisa=l.notlar||'';
+    html+='<tr style="cursor:pointer" onclick="toggleBitmisStokLot(\''+l.id+'\')">'
+      +(canBulk?'<td onclick="event.stopPropagation()"><input type="checkbox" '+(bulkIsChecked('bitmisStokArsiv',l.id)?'checked':'')+' onchange="bulkToggleRow(\'bitmisStokArsiv\',\''+l.id+'\',\'renderBitmisStok\')"></td>':'')
+      +'<td style="text-align:center;color:var(--accent);font-weight:700">'+(expanded?'<i class="ti ti-arrow-narrow-down"></i>':'<i class="ti ti-arrow-narrow-right"></i>')+'</td>'
       +'<td class="col-name" style="font-weight:500">'+esc(l.urunAdi||'—')+'</td>'
       +'<td><span class="kn-badge">'+esc(l.lotNo||'—')+'</span></td>'
       +'<td>'+esc(kat.ad)+'</td>'
-      +'<td style="font-size:11px;color:var(--text3)">'+esc(detayStr)+'</td>'
+      +'<td style="font-size:11px;color:var(--text3);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(notKisa)+'">'+esc(notKisa||'—')+'</td>'
       +'<td style="font-family:var(--font-mono)">'+stokFmtN(l.miktar)+'</td>'
       +'<td style="font-family:var(--font-mono)">'+stokFmtN(l.mevcutMiktar)+'</td>'
       +'<td style="font-size:12px;color:var(--text3)">'+esc(l.tarih||'')+'</td>'
       +'<td style="font-family:var(--font-mono);font-size:12px;color:'+skt.renk+'">'+stokFmtSkt(l.sktTarih)+(skt.etiket?' ('+skt.etiket+')':'')+'</td>'
-      +'<td><div class="action-row">'
+      +'<td onclick="event.stopPropagation()"><div class="action-row">'
         +(canWrite&&l.mevcutMiktar===0?'<button class="btn-icon" style="color:var(--red)" onclick="stokSilBitmisLot(\''+l.id+'\')"><i class="ti ti-trash"></i></button>':'')
       +'</div></td>'
       +'</tr>';
+    if(expanded){
+      html+='<tr style="border-bottom:2px solid var(--border2)"><td colspan="'+(canBulk?11:10)+'" style="padding:10px 16px 14px 44px;background:var(--bg)">'
+        +'<div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Parametreler / Detay</div>'
+        +'<div>'+stokDetayBadgeHtml(l)+'</div>'
+        +(l.notlar?'<div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px">Not</div><div style="font-size:12px;color:var(--text2);white-space:pre-wrap">'+esc(l.notlar)+'</div>':'')
+        +'</td></tr>';
+    }
   });
   wrap.innerHTML=html+'</tbody></table></div>';
   renderPagination('bitmis-stok-pagination',_bitmisStokPage,totalBS,'setBitmisStokPage');
@@ -1441,14 +1475,16 @@ function renderBitmisGirisler(){
   girisler.forEach(function(g){
     var expanded=_expandedBitmisGirisler.has(g.id);
     var katOzetMap={};(g.kalemler||[]).forEach(function(k){var katAd=(stokTicariKatById(k.kategoriId)||{}).ad||k.kategoriId||'—';katOzetMap[katAd]=(katOzetMap[katAd]||0)+1;});
-    var urunStr=Object.keys(katOzetMap).map(function(kat){return kat+' ('+katOzetMap[kat]+')';}).join(' • ');
+    var katOzetParts=Object.keys(katOzetMap).map(function(kat){return kat+' ('+katOzetMap[kat]+')';});
+    var urunStrFull=katOzetParts.join(' • ');
+    var urunStr=katOzetParts.length>3?(katOzetParts.slice(0,3).join(' • ')+' +'+(katOzetParts.length-3)+' kategori daha'):urunStrFull;
     var tarihDisp=g.tarih?g.tarih.split('-').reverse().join('.'):'—';
     html+='<tr style="cursor:pointer;background:var(--bg3)" onclick="toggleBitmisGiris(\''+g.id+'\')">'
       +'<td style="text-align:center;color:var(--green);font-weight:700">'+(expanded?'<i class="ti ti-arrow-narrow-down"></i>':'<i class="ti ti-arrow-narrow-right"></i>')+'</td>'
       +'<td><span class="kn-badge">'+esc(g.evrakNo)+'</span></td>'
       +'<td style="font-family:var(--font-mono);font-size:12px">'+tarihDisp+'</td>'
       +'<td style="text-align:center;font-family:var(--font-mono);color:var(--text3)">'+((g.kalemler||[]).length)+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)">'+esc(urunStr)+'</td>'
+      +'<td style="font-size:12px;color:var(--text2)" title="'+esc(urunStrFull)+'">'+esc(urunStr)+'</td>'
       +'<td style="font-size:11px;color:var(--text3)">'+esc(g.notlar||'')+'</td>'
       +'<td><div class="action-row">'
         +(canWrite?'<button class="btn-icon" onclick="event.stopPropagation();goBitmisGirisEdit(\''+g.id+'\')"><i class="ti ti-edit" style="color:var(--accent)"></i></button>':'')
@@ -1457,7 +1493,7 @@ function renderBitmisGirisler(){
       +'</tr>';
     if(expanded){
       var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-bitmis-girisler-detay"><thead><tr style="background:var(--bg4)">'
-        +'<th class="col-name">Ürün Adı</th><th>Kategori</th><th>LOT No</th><th>Miktar</th><th>SKT</th><th>Detay</th>'
+        +'<th class="col-name">Ürün Adı</th><th>Kategori</th><th>LOT No</th><th>Miktar</th><th>SKT</th><th>Detay</th><th>Not</th>'
         +'</tr></thead><tbody>';
       (g.kalemler||[]).forEach(function(k){
         var kat=(stokTicariKatById(k.kategoriId)||{}).ad||k.kategoriId;
@@ -1467,7 +1503,8 @@ function renderBitmisGirisler(){
           +'<td><span class="kn-badge">'+esc(k.lotNo||'—')+'</span></td>'
           +'<td style="font-family:var(--font-mono)">'+stokFmtN(k.miktar)+'</td>'
           +'<td style="font-family:var(--font-mono);font-size:11px">'+stokFmtSkt(k.sktTarih)+'</td>'
-          +'<td style="font-size:11px;color:var(--text3)">'+esc(stokUrunDetayFmt(k))+'</td>'
+          +'<td>'+stokDetayBadgeHtml(k)+'</td>'
+          +'<td style="font-size:11px;color:var(--text3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(k.notlar||'')+'">'+esc(k.notlar||'—')+'</td>'
           +'</tr>';
       });
       subHtml+='</tbody></table>';
@@ -1557,7 +1594,9 @@ function renderBitmisGirisForm(){
   bgRenderKalemler();
 }
 
-function bgYeniKalem(){return {lotNo:'',urunAdi:'',kategoriId:'',marka:'',model:'',seriNo:'',parametreler:[],miktar:0,sktTarih:''};}
+function bgYeniKalem(){return {lotNo:'',urunAdi:'',kategoriId:'',marka:'',model:'',seriNo:'',parametreler:[],miktar:0,sktTarih:'',notlar:''};}
+
+function bgToggleNot(i){_bgKalemler[i]._notAcik=!_bgKalemler[i]._notAcik;bgRenderKalemler();}
 
 function bgAddKalem(){
   _bgKalemler.push(bgYeniKalem());
@@ -1660,6 +1699,9 @@ function bgRenderKalemler(){
       fields.push('<button type="button" class="btn btn-ghost btn-sm" style="white-space:nowrap;margin-bottom:1px" onclick="bgOpenParamModal('+i+')"><i class="ti ti-plus"></i> Parametre Ekle</button>');
     }
 
+    cols.push('100px');
+    fields.push('<button type="button" class="btn btn-ghost btn-sm" style="white-space:nowrap;margin-bottom:1px'+(k.notlar?';color:var(--accent)':'')+'" onclick="bgToggleNot('+i+')"><i class="ti ti-note"></i> Not'+(k.notlar?' ✓':'')+'</button>');
+
     cols.push('auto');
     fields.push('<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="bgRemoveKalem('+i+')"><i class="ti ti-trash"></i></button>');
 
@@ -1677,7 +1719,12 @@ function bgRenderKalemler(){
         +'</div>';
     }
 
-    return '<div style="padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:10px">'+baseRow+chipsRow+'</div>';
+    var notRow='';
+    if(k._notAcik){
+      notRow='<div style="margin-top:8px"><textarea rows="2" placeholder="Bu kaleme özel not (ör. ambalaj hasarı, özel talimat)..." style="width:100%;font-size:12px;padding:6px 8px;resize:vertical" onchange="_bgKalemler['+i+'].notlar=this.value.trim()">'+esc(k.notlar||'')+'</textarea></div>';
+    }
+
+    return '<div style="padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:10px">'+baseRow+chipsRow+notRow+'</div>';
   }).join('');
   el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bgAddKalem()"><i class="ti ti-plus"></i> Kalem Ekle</button></div>';
 }
@@ -1762,7 +1809,7 @@ async function saveBitmisGiris(){
   var payload={
     evrakNo:evrakNo,tarih:tarih,notlar:notlar,
     kalemler:_bgKalemler.map(function(k){
-      return {lotId:k.lotId||null,lotNo:k.lotNo||'',urunAdi:k.urunAdi,marka:k.marka||'',model:k.model||'',seriNo:k.seriNo||'',kategoriId:k.kategoriId,parametreler:k.parametreler||[],miktar:k.miktar,sktTarih:k.sktTarih||''};
+      return {lotId:k.lotId||null,lotNo:k.lotNo||'',urunAdi:k.urunAdi,marka:k.marka||'',model:k.model||'',seriNo:k.seriNo||'',notlar:k.notlar||'',kategoriId:k.kategoriId,parametreler:k.parametreler||[],miktar:k.miktar,sktTarih:k.sktTarih||''};
     })
   };
   try{
@@ -1826,13 +1873,14 @@ function renderBitmisCikislar(){
       +'</tr>';
     if(expanded){
       var subHtml='<table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-bitmis-cikislar-detay"><thead><tr style="background:var(--bg4)">'
-        +'<th class="col-name">Ürün Adı</th><th>LOT No</th><th>Detay</th><th>Miktar</th>'
+        +'<th class="col-name">Ürün Adı</th><th>LOT No</th><th>Detay</th><th>Not</th><th>Miktar</th>'
         +'</tr></thead><tbody>';
       (c.satirlar||[]).forEach(function(s){
         subHtml+='<tr>'
           +'<td class="col-name" style="font-weight:500">'+esc(s.urunAdi)+'</td>'
           +'<td><span class="kn-badge">'+esc(s.lotNo||'—')+'</span></td>'
-          +'<td style="font-size:11px;color:var(--text3)">'+esc([s.marka,s.model,s.seriNo?'SN: '+s.seriNo:''].filter(Boolean).join(' · '))+'</td>'
+          +'<td>'+stokDetayBadgeHtml(s)+'</td>'
+          +'<td style="font-size:11px;color:var(--text3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(s.notlar||'')+'">'+esc(s.notlar||'—')+'</td>'
           +'<td style="font-family:var(--font-mono)">'+stokFmtN(s.miktar)+'</td>'
           +'</tr>';
       });
@@ -2864,10 +2912,10 @@ function stokExportHamCikislarExcel(){
 
 function stokExportBitmisStokExcel(){
   stokInit();
-  var headers=['LOT No','Ürün Adı','Kategori','Marka','Model','Seri No','Parametreler','Giriş Tarihi','Giren Miktar','Mevcut Miktar','SKT','Evrak No','Durum'];
+  var headers=['LOT No','Ürün Adı','Kategori','Marka','Model','Seri No','Parametreler','Not','Giriş Tarihi','Giren Miktar','Mevcut Miktar','SKT','Evrak No','Durum'];
   var rows=(state.bitmisStokLotlar||[]).map(function(l){
     var kat=(stokAnyKatById(l.kategoriId)||{}).ad||l.kategoriId;
-    return [l.lotNo||'',l.urunAdi||'',kat,l.marka||'',l.model||'',l.seriNo||'',stokParamFmt(l.parametreler),l.tarih||'',l.miktar||0,l.mevcutMiktar||0,stokFmtSkt(l.sktTarih),l.evrakNo||'',l.mevcutMiktar===0?'Tükendi':'Mevcut'];
+    return [l.lotNo||'',l.urunAdi||'',kat,l.marka||'',l.model||'',l.seriNo||'',stokParamFmt(l.parametreler),l.notlar||'',l.tarih||'',l.miktar||0,l.mevcutMiktar||0,stokFmtSkt(l.sktTarih),l.evrakNo||'',l.mevcutMiktar===0?'Tükendi':'Mevcut'];
   });
   _xlsxDownload(rows,headers,'Hazır Ürün Stok','hazir-urun-stok-listesi');
 }
@@ -2904,12 +2952,12 @@ function stokExportBitmisSayimSablonuExcel(){
 
 function stokExportBitmisGirislerExcel(){
   stokInit();
-  var headers=['Evrak No','Tarih','Ürün Adı','LOT No','Kategori','Marka','Model','Seri No','Miktar','SKT','Parametreler','Notlar'];
+  var headers=['Evrak No','Tarih','Ürün Adı','LOT No','Kategori','Marka','Model','Seri No','Miktar','SKT','Parametreler','Kalem Notu','Belge Notu'];
   var rows=[];
   (state.bitmisStokGirisler||[]).forEach(function(g){
     (g.kalemler||[]).forEach(function(k){
       var kat=(stokAnyKatById(k.kategoriId)||{}).ad||k.kategoriId;
-      rows.push([g.evrakNo,g.tarih||'',k.urunAdi||'',k.lotNo||'',kat,k.marka||'',k.model||'',k.seriNo||'',k.miktar||0,stokFmtSkt(k.sktTarih),stokParamFmt(k.parametreler),g.notlar||'']);
+      rows.push([g.evrakNo,g.tarih||'',k.urunAdi||'',k.lotNo||'',kat,k.marka||'',k.model||'',k.seriNo||'',k.miktar||0,stokFmtSkt(k.sktTarih),stokParamFmt(k.parametreler),k.notlar||'',g.notlar||'']);
     });
   });
   _xlsxDownload(rows,headers,'Hazır Ürün Girişler','hazir-urun-girisler');
@@ -2917,11 +2965,11 @@ function stokExportBitmisGirislerExcel(){
 
 function stokExportBitmisCikislarExcel(){
   stokInit();
-  var headers=['Evrak No','Tarih','Çıkış Nedeni','Ürün Adı','LOT No','Miktar','Notlar'];
+  var headers=['Evrak No','Tarih','Çıkış Nedeni','Ürün Adı','LOT No','Marka','Model','Seri No','Parametreler','Kalem Notu','Miktar','Belge Notu'];
   var rows=[];
   (state.bitmisCikislar||[]).forEach(function(c){
     (c.satirlar||[]).forEach(function(s){
-      rows.push([c.evrakNo||'',c.tarih||'',c.aciklama||'',s.urunAdi||'',s.lotNo||'',s.miktar||0,c.notlar||'']);
+      rows.push([c.evrakNo||'',c.tarih||'',c.aciklama||'',s.urunAdi||'',s.lotNo||'',s.marka||'',s.model||'',s.seriNo||'',stokParamFmt(s.parametreler),s.notlar||'',s.miktar||0,c.notlar||'']);
     });
   });
   _xlsxDownload(rows,headers,'Hazır Ürün Çıkışlar','hazir-urun-cikislar');

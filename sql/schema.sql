@@ -365,6 +365,7 @@ CREATE TABLE finished_stock_lots (
   marka               VARCHAR(150) NULL,
   model               VARCHAR(150) NULL,
   seri_no             VARCHAR(150) NULL,
+  notlar              TEXT NULL,
   kategori_id         VARCHAR(40) NULL,
   parametreler        JSON NULL,
   miktar              DECIMAL(15,3) NOT NULL DEFAULT 0,

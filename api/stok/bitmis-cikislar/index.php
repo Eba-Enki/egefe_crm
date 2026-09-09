@@ -8,19 +8,21 @@ requirePortalAccess($user, 'stok');
 
 function mapSatirRow(array $row): array {
     return [
-        'lotId'      => $row['lot_id'],
-        'lotNo'      => $row['lot_no'],
-        'urunAdi'    => $row['urun_adi'],
-        'marka'      => $row['marka'],
-        'model'      => $row['model'],
-        'seriNo'     => $row['seri_no'],
-        'kategoriId' => $row['lot_kategori_id'],
-        'miktar'     => (float)$row['miktar_cikis'],
+        'lotId'        => $row['lot_id'],
+        'lotNo'        => $row['lot_no'],
+        'urunAdi'      => $row['urun_adi'],
+        'marka'        => $row['marka'],
+        'model'        => $row['model'],
+        'seriNo'       => $row['seri_no'],
+        'parametreler' => $row['lot_parametreler'] ? json_decode($row['lot_parametreler'], true) : [],
+        'notlar'       => $row['lot_notlar'],
+        'kategoriId'   => $row['lot_kategori_id'],
+        'miktar'       => (float)$row['miktar_cikis'],
     ];
 }
 
 function fetchSatirlar(PDO $pdo, string $exitId): array {
-    $stmt = $pdo->prepare('SELECT i.*, l.lot_no, l.urun_adi, l.marka, l.model, l.seri_no, l.kategori_id AS lot_kategori_id FROM finished_stock_exit_items i LEFT JOIN finished_stock_lots l ON l.id = i.lot_id WHERE i.exit_id = ? ORDER BY i.id ASC');
+    $stmt = $pdo->prepare('SELECT i.*, l.lot_no, l.urun_adi, l.marka, l.model, l.seri_no, l.parametreler AS lot_parametreler, l.notlar AS lot_notlar, l.kategori_id AS lot_kategori_id FROM finished_stock_exit_items i LEFT JOIN finished_stock_lots l ON l.id = i.lot_id WHERE i.exit_id = ? ORDER BY i.id ASC');
     $stmt->execute([$exitId]);
     return array_map('mapSatirRow', $stmt->fetchAll());
 }
@@ -66,7 +68,7 @@ switch ($method) {
         if ($rows) {
             $ids = array_column($rows, 'id');
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
-            $satirStmt = $pdo->prepare("SELECT i.*, l.lot_no, l.urun_adi, l.marka, l.model, l.seri_no, l.kategori_id AS lot_kategori_id FROM finished_stock_exit_items i LEFT JOIN finished_stock_lots l ON l.id = i.lot_id WHERE i.exit_id IN ($placeholders) ORDER BY i.exit_id, i.id ASC");
+            $satirStmt = $pdo->prepare("SELECT i.*, l.lot_no, l.urun_adi, l.marka, l.model, l.seri_no, l.parametreler AS lot_parametreler, l.notlar AS lot_notlar, l.kategori_id AS lot_kategori_id FROM finished_stock_exit_items i LEFT JOIN finished_stock_lots l ON l.id = i.lot_id WHERE i.exit_id IN ($placeholders) ORDER BY i.exit_id, i.id ASC");
             $satirStmt->execute($ids);
             foreach ($satirStmt->fetchAll() as $s) {
                 $satirlarMap[$s['exit_id']][] = mapSatirRow($s);

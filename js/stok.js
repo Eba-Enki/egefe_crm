@@ -277,12 +277,13 @@ function renderStokDashboard(){
       kritikEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Kritik stok yok.</div>';
     } else {
       kritikEl.innerHTML=kritikler.map(function(k){
-        return '<div style="padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">'
-          +'<div style="flex:1">'
-            +'<div style="font-size:13px;font-weight:500;color:var(--text)">'+esc(k.ad)+' <span style="color:var(--text3);font-size:11px">('+esc(k.kat.ad)+')</span></div>'
-            +'<div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:2px">'+stokFmtN(k.toplamStrip)+' strip ≈ '+k.sheetEq.toFixed(1)+' sheet</div>'
+        return '<div style="padding:7px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;white-space:nowrap;overflow:hidden">'
+          +'<div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12px">'
+            +'<span style="font-weight:500;color:var(--text)">'+esc(k.ad)+'</span>'
+            +'<span style="color:var(--text3)"> ('+esc(k.kat.ad)+')</span>'
+            +'<span style="color:var(--text3);font-family:var(--font-mono)"> · '+stokFmtN(k.toplamStrip)+' strip ≈ '+k.sheetEq.toFixed(1)+' sheet</span>'
           +'</div>'
-          +'<span class="badge badge-reddedildi">Kritik</span>'
+          +'<span class="badge badge-reddedildi" style="flex-shrink:0">Kritik</span>'
           +'</div>';
       }).join('');
     }
@@ -305,13 +306,13 @@ function renderStokDashboard(){
       sonEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Hareket bulunamadı.</div>';
     } else {
       sonEl.innerHTML=hareketler.map(function(h){
-        return '<div style="padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">'
+        return '<div style="padding:7px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;white-space:nowrap;overflow:hidden">'
           +'<span style="width:6px;height:6px;border-radius:50%;background:'+TIP_COLORS[h.tip]+';flex-shrink:0;display:inline-block"></span>'
-          +'<div style="flex:1;min-width:0">'
-            +'<div style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(h.aciklama)+'</div>'
-            +'<div style="font-size:10px;color:var(--text3);margin-top:1px">'+esc(TIP_LABELS[h.tip]||h.tip)+(h.lot?' · '+esc(h.lot):'')+'</div>'
+          +'<div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12px">'
+            +'<span style="font-weight:500;color:var(--text)">'+esc(h.aciklama)+'</span>'
+            +'<span style="color:var(--text3)"> · '+esc(TIP_LABELS[h.tip]||h.tip)+(h.lot?' · '+esc(h.lot):'')+'</span>'
           +'</div>'
-          +'<div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);white-space:nowrap">'+esc(h.tarih||'')+'</div>'
+          +'<div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);white-space:nowrap;flex-shrink:0">'+esc(h.tarih||'')+'</div>'
           +'</div>';
       }).join('');
     }

@@ -276,6 +276,10 @@ table[data-resize-key] td.col-name{text-align:left}
 .notlar-list{flex:1;min-height:0;overflow-y:auto;padding:4px 0}
 .notlar-list::-webkit-scrollbar{width:4px}
 .notlar-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+/* Dashboard içi kaydırılabilir liste kartları (Kritik Stok / Son Hareketler) */
+.dash-scroll-list{max-height:340px;overflow-y:auto}
+.dash-scroll-list::-webkit-scrollbar{width:4px}
+.dash-scroll-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 /* Not satırı */
 .ni{display:flex;align-items:flex-start;gap:9px;padding:8px 12px;border-radius:var(--radius-sm);margin:0 6px;transition:background .12s}
 .ni:hover{background:var(--bg3)}

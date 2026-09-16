@@ -1419,11 +1419,11 @@ function renderBitmisStok(){
       +'</div>';
   }
 
-  var groupColspan=canBulk?10:9;
+  var groupColspan=canBulk?11:10;
   var html=bulkUi+'<div class="table-wrap"><table class="compact-table" data-resize-key="stok-bitmis-liste'+(canBulk?'-bulk':'')+'"><thead><tr>'
     +(canBulk?'<th style="width:28px"><input type="checkbox" '+(allChecked?'checked':'')+' onchange="bulkToggleAll(\'bitmisStokArsiv\',this.checked,\'renderBitmisStok\')"></th>':'')
     +'<th style="width:28px"></th>'
-    +'<th class="col-name">Ürün Adı</th><th>LOT No</th><th>Not</th><th>Giren</th><th>Mevcut</th><th>Giriş Tarihi</th><th>SKT</th><th></th></tr></thead><tbody>';
+    +'<th class="col-name">Ürün Adı</th><th>LOT No</th><th>Kategori</th><th>Not</th><th>Giren</th><th>Mevcut</th><th>Giriş Tarihi</th><th>SKT</th><th></th></tr></thead><tbody>';
   var lastAnaGrup=null;
   pagedBL.forEach(function(l){
     var anaGrupAd=(stokTicariKatById(bgKalemAnaGrupId(l))||{}).ad||'—';
@@ -1431,6 +1431,7 @@ function renderBitmisStok(){
       html+='<tr><td colspan="'+groupColspan+'" style="text-align:left;padding:9px 16px;background:var(--bg4);font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em">'+esc(anaGrupAd)+'</td></tr>';
       lastAnaGrup=anaGrupAd;
     }
+    var kat=stokAnyKatById(l.kategoriId)||{ad:l.kategoriId};
     var skt=stokSktInfo(l.sktTarih);
     var expanded=_expandedBitmisStokLot.has(l.id);
     var notKisa=l.notlar||'';
@@ -1439,6 +1440,7 @@ function renderBitmisStok(){
       +'<td style="text-align:center;color:var(--accent);font-weight:700">'+(expanded?'<i class="ti ti-arrow-narrow-down"></i>':'<i class="ti ti-arrow-narrow-right"></i>')+'</td>'
       +'<td class="col-name" style="font-weight:500">'+esc(l.urunAdi||'—')+'</td>'
       +'<td><span class="kn-badge">'+esc(l.lotNo||'—')+'</span></td>'
+      +'<td>'+esc(kat.ad)+'</td>'
       +'<td style="font-size:11px;color:var(--text3);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(notKisa)+'">'+esc(notKisa||'—')+'</td>'
       +'<td style="font-family:var(--font-mono)">'+stokFmtN(l.miktar)+'</td>'
       +'<td style="font-family:var(--font-mono)">'+stokFmtN(l.mevcutMiktar)+'</td>'

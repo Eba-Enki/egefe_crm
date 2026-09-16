@@ -1889,6 +1889,23 @@
   </div>
 </div>
 
+<!-- ── MODAL: HAZIR ÜRÜN SERİ NO GİRİŞİ (CİHAZ) ── -->
+<div class="modal-overlay" id="modal-bitmis-serino-sec">
+  <div class="modal" style="max-width:480px;width:90%">
+    <div class="modal-header">
+      <span class="modal-title" id="bg-serino-sec-title">Seri No Girişi</span>
+      <button class="close-btn" onclick="closeModal('modal-bitmis-serino-sec')" style="margin-left:auto">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:420px;overflow-y:auto">
+      <div id="bg-serino-sec-list" style="display:flex;flex-direction:column;gap:2px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-bitmis-serino-sec')">İptal</button>
+      <button class="btn btn-primary" onclick="confirmBgSeriNo()">Tamam</button>
+    </div>
+  </div>
+</div>
+
 <!-- Portal switcher floating panel -->
 <div id="portal-switch-panel" style="display:none;position:fixed;z-index:600;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 4px 20px rgba(0,0,0,.18);overflow:hidden;min-width:190px"></div>
 

@@ -1381,7 +1381,12 @@ function renderBitmisStok(){
   var lots=_bitmisStokTab==='arsiv'
     ? allBL.filter(function(l){return l.mevcutMiktar===0;})
     : allBL.filter(function(l){return l.mevcutMiktar>0;});
-  lots=lots.slice().sort(function(a,b){return (b.tarih||'').localeCompare(a.tarih||'');});
+  lots=lots.slice().sort(function(a,b){
+    var katA=(stokAnyKatById(a.kategoriId)||{}).ad||a.kategoriId||'';
+    var katB=(stokAnyKatById(b.kategoriId)||{}).ad||b.kategoriId||'';
+    var c=katA.localeCompare(katB,'tr');
+    return c!==0?c:(a.urunAdi||'').localeCompare(b.urunAdi||'','tr');
+  });
 
   var wrap=document.getElementById('bitmis-stok-wrap'); if(!wrap) return;
   var canWrite=state.currentUser&&state.currentUser.rol!=='izleyici';
@@ -1410,12 +1415,19 @@ function renderBitmisStok(){
       +'</div>';
   }
 
+  var groupColspan=canBulk?10:9;
   var html=bulkUi+'<div class="table-wrap"><table class="compact-table" data-resize-key="stok-bitmis-liste'+(canBulk?'-bulk':'')+'"><thead><tr>'
     +(canBulk?'<th style="width:28px"><input type="checkbox" '+(allChecked?'checked':'')+' onchange="bulkToggleAll(\'bitmisStokArsiv\',this.checked,\'renderBitmisStok\')"></th>':'')
     +'<th style="width:28px"></th>'
-    +'<th class="col-name">Ürün Adı</th><th>LOT No</th><th>Kategori</th><th>Not</th><th>Giren</th><th>Mevcut</th><th>Giriş Tarihi</th><th>SKT</th><th></th></tr></thead><tbody>';
+    +'<th class="col-name">Ürün Adı</th><th>LOT No</th><th>Not</th><th>Giren</th><th>Mevcut</th><th>Giriş Tarihi</th><th>SKT</th><th></th></tr></thead><tbody>';
+  var lastKat=null;
   pagedBL.forEach(function(l){
     var kat=stokAnyKatById(l.kategoriId)||{ad:l.kategoriId};
+    var katAd=kat.ad||'—';
+    if(katAd!==lastKat){
+      html+='<tr><td colspan="'+groupColspan+'" style="padding:9px 16px;background:var(--bg4);font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em">'+esc(katAd)+'</td></tr>';
+      lastKat=katAd;
+    }
     var skt=stokSktInfo(l.sktTarih);
     var expanded=_expandedBitmisStokLot.has(l.id);
     var notKisa=l.notlar||'';
@@ -1424,7 +1436,6 @@ function renderBitmisStok(){
       +'<td style="text-align:center;color:var(--accent);font-weight:700">'+(expanded?'<i class="ti ti-arrow-narrow-down"></i>':'<i class="ti ti-arrow-narrow-right"></i>')+'</td>'
       +'<td class="col-name" style="font-weight:500">'+esc(l.urunAdi||'—')+'</td>'
       +'<td><span class="kn-badge">'+esc(l.lotNo||'—')+'</span></td>'
-      +'<td>'+esc(kat.ad)+'</td>'
       +'<td style="font-size:11px;color:var(--text3);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(notKisa)+'">'+esc(notKisa||'—')+'</td>'
       +'<td style="font-family:var(--font-mono)">'+stokFmtN(l.miktar)+'</td>'
       +'<td style="font-family:var(--font-mono)">'+stokFmtN(l.mevcutMiktar)+'</td>'
@@ -1435,7 +1446,7 @@ function renderBitmisStok(){
       +'</div></td>'
       +'</tr>';
     if(expanded){
-      html+='<tr style="border-bottom:2px solid var(--border2)"><td colspan="'+(canBulk?11:10)+'" style="padding:10px 16px 14px 44px;background:var(--bg)">'
+      html+='<tr style="border-bottom:2px solid var(--border2)"><td colspan="'+groupColspan+'" style="padding:10px 16px 14px 44px;background:var(--bg)">'
         +'<div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Parametreler / Detay</div>'
         +'<div>'+stokDetayBadgeHtml(l)+'</div>'
         +(l.notlar?'<div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px">Not</div><div style="font-size:12px;color:var(--text2);white-space:pre-wrap">'+esc(l.notlar)+'</div>':'')
@@ -2913,7 +2924,13 @@ function stokExportHamCikislarExcel(){
 function stokExportBitmisStokExcel(){
   stokInit();
   var headers=['LOT No','Ürün Adı','Kategori','Marka','Model','Seri No','Parametreler','Not','Giriş Tarihi','Giren Miktar','Mevcut Miktar','SKT','Evrak No','Durum'];
-  var rows=(state.bitmisStokLotlar||[]).map(function(l){
+  var sortedLots=(state.bitmisStokLotlar||[]).slice().sort(function(a,b){
+    var katA=(stokAnyKatById(a.kategoriId)||{}).ad||a.kategoriId||'';
+    var katB=(stokAnyKatById(b.kategoriId)||{}).ad||b.kategoriId||'';
+    var c=katA.localeCompare(katB,'tr');
+    return c!==0?c:(a.urunAdi||'').localeCompare(b.urunAdi||'','tr');
+  });
+  var rows=sortedLots.map(function(l){
     var kat=(stokAnyKatById(l.kategoriId)||{}).ad||l.kategoriId;
     return [l.lotNo||'',l.urunAdi||'',kat,l.marka||'',l.model||'',l.seriNo||'',stokParamFmt(l.parametreler),l.notlar||'',l.tarih||'',l.miktar||0,l.mevcutMiktar||0,stokFmtSkt(l.sktTarih),l.evrakNo||'',l.mevcutMiktar===0?'Tükendi':'Mevcut'];
   });

@@ -258,9 +258,11 @@ table[data-resize-key] th.col-name,
 table[data-resize-key] td.col-name{text-align:left}
 
 /* ── DASHBOARD 2-COLUMN LAYOUT ─────────────────────────────────── */
-.db-cols{display:flex;gap:14px;align-items:flex-start}
+.db-cols{display:flex;gap:14px;align-items:stretch}
 .db-col-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
 .db-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.db-list-row{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.db-list-card{display:flex;flex-direction:column;min-height:0}
 .db-col-right{width:330px;flex-shrink:0}
 .db-notlar-card{position:sticky;top:0;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden}
 /* Notlar sekmeler */
@@ -277,7 +279,7 @@ table[data-resize-key] td.col-name{text-align:left}
 .notlar-list::-webkit-scrollbar{width:4px}
 .notlar-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 /* Dashboard içi kaydırılabilir liste kartları (Kritik Stok / Son Hareketler) */
-.dash-scroll-list{max-height:340px;overflow-y:auto}
+.dash-scroll-list{flex:1;min-height:0;overflow-y:auto}
 .dash-scroll-list::-webkit-scrollbar{width:4px}
 .dash-scroll-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 /* Not satırı */

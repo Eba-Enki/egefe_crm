@@ -1382,9 +1382,13 @@ function renderBitmisStok(){
     ? allBL.filter(function(l){return l.mevcutMiktar===0;})
     : allBL.filter(function(l){return l.mevcutMiktar>0;});
   lots=lots.slice().sort(function(a,b){
+    var anaA=(stokTicariKatById(bgKalemAnaGrupId(a))||{}).ad||'';
+    var anaB=(stokTicariKatById(bgKalemAnaGrupId(b))||{}).ad||'';
+    var c=anaA.localeCompare(anaB,'tr');
+    if(c!==0) return c;
     var katA=(stokAnyKatById(a.kategoriId)||{}).ad||a.kategoriId||'';
     var katB=(stokAnyKatById(b.kategoriId)||{}).ad||b.kategoriId||'';
-    var c=katA.localeCompare(katB,'tr');
+    c=katA.localeCompare(katB,'tr');
     return c!==0?c:(a.urunAdi||'').localeCompare(b.urunAdi||'','tr');
   });
 
@@ -1420,13 +1424,12 @@ function renderBitmisStok(){
     +(canBulk?'<th style="width:28px"><input type="checkbox" '+(allChecked?'checked':'')+' onchange="bulkToggleAll(\'bitmisStokArsiv\',this.checked,\'renderBitmisStok\')"></th>':'')
     +'<th style="width:28px"></th>'
     +'<th class="col-name">Ürün Adı</th><th>LOT No</th><th>Not</th><th>Giren</th><th>Mevcut</th><th>Giriş Tarihi</th><th>SKT</th><th></th></tr></thead><tbody>';
-  var lastKat=null;
+  var lastAnaGrup=null;
   pagedBL.forEach(function(l){
-    var kat=stokAnyKatById(l.kategoriId)||{ad:l.kategoriId};
-    var katAd=kat.ad||'—';
-    if(katAd!==lastKat){
-      html+='<tr><td colspan="'+groupColspan+'" style="padding:9px 16px;background:var(--bg4);font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em">'+esc(katAd)+'</td></tr>';
-      lastKat=katAd;
+    var anaGrupAd=(stokTicariKatById(bgKalemAnaGrupId(l))||{}).ad||'—';
+    if(anaGrupAd!==lastAnaGrup){
+      html+='<tr><td colspan="'+groupColspan+'" style="text-align:left;padding:9px 16px;background:var(--bg4);font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em">'+esc(anaGrupAd)+'</td></tr>';
+      lastAnaGrup=anaGrupAd;
     }
     var skt=stokSktInfo(l.sktTarih);
     var expanded=_expandedBitmisStokLot.has(l.id);
@@ -2925,9 +2928,13 @@ function stokExportBitmisStokExcel(){
   stokInit();
   var headers=['LOT No','Ürün Adı','Kategori','Marka','Model','Seri No','Parametreler','Not','Giriş Tarihi','Giren Miktar','Mevcut Miktar','SKT','Evrak No','Durum'];
   var sortedLots=(state.bitmisStokLotlar||[]).slice().sort(function(a,b){
+    var anaA=(stokTicariKatById(bgKalemAnaGrupId(a))||{}).ad||'';
+    var anaB=(stokTicariKatById(bgKalemAnaGrupId(b))||{}).ad||'';
+    var c=anaA.localeCompare(anaB,'tr');
+    if(c!==0) return c;
     var katA=(stokAnyKatById(a.kategoriId)||{}).ad||a.kategoriId||'';
     var katB=(stokAnyKatById(b.kategoriId)||{}).ad||b.kategoriId||'';
-    var c=katA.localeCompare(katB,'tr');
+    c=katA.localeCompare(katB,'tr');
     return c!==0?c:(a.urunAdi||'').localeCompare(b.urunAdi||'','tr');
   });
   var rows=sortedLots.map(function(l){

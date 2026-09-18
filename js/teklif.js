@@ -37,7 +37,7 @@ function removeTeklifItem(i){if(teklifItems.length>1)teklifItems.splice(i,1);ren
 function renderTeklifItems(){
   document.getElementById('ti-body').innerHTML=teklifItems.map((item,i)=>{
     const params=item.seciliParametreler||[];
-    const paramsHtml=params.length?`<div style="font-size:11px;color:rgb(143,164,176);margin-top:3px;padding-left:2px;line-height:1.4">(${params.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})</div>`:'';
+    const paramsHtml=params.length?`<div class="ti-params" onclick="openParamSecModal(${i},${params.length})" title="Parametreleri düzenle" style="font-size:11px;color:rgb(143,164,176);margin-top:3px;padding-left:2px;line-height:1.4;cursor:pointer;display:flex;align-items:center;gap:5px;width:fit-content" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='rgb(143,164,176)'">(${params.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})<i class="ti ti-pencil" style="font-size:11px"></i></div>`:'';
     return `<tr>
     <td class="ti-aciklama">
       <input type="text" id="ti-aciklama-${i}" value="${(item.aciklama||'').replace(/"/g,'&quot;')}" placeholder="Yazın veya listeden seçin..." autocomplete="off"

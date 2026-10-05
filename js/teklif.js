@@ -822,8 +822,8 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     doc.setFontSize(7);
     doc.setFont('Arial','bold');
     doc.setTextColor(...C.primary);
-    doc.text('TEKLİFİ HAZIRLAYAN', sigX + sigPad,        sigY + mm(5));
-    doc.text('MÜŞTERİ ONAYI',      sigX + colW + sigPad, sigY + mm(5));
+    doc.text('TEKLİFİ HAZIRLAYAN', sigX + colW / 2,     sigY + mm(5), {align:'center'});
+    doc.text('MÜŞTERİ ONAYI',      sigX + colW * 1.5,   sigY + mm(5), {align:'center'});
 
     // Sol sütun: hazırlayan bilgisi + marka logosu
     const cu = state.currentUser || {};
@@ -846,21 +846,24 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
       sigFs = Math.max(5.5, sigFs * textMaxW / maxTextW);
       maxTextW = measureSig(sigFs);
     }
+    // Yazı + boşluk + logo tek grup olarak sütunda ortalanır
+    const groupW = maxTextW + (bLogoW ? (maxTextW > 0 ? sigGap : 0) + bLogoW : 0);
+    const groupX = sigX + (colW - groupW) / 2;
 
     if(u.ad){
       doc.setFontSize(sigFs);
       doc.setFont('Arial','bold');
       doc.setTextColor(...C.textMid);
-      doc.text(u.ad, sigX + sigPad, sigY + mm(11));
+      doc.text(u.ad, groupX, sigY + mm(11));
       doc.setFont('Arial','normal');
       doc.setTextColor(...C.textLight);
-      if(u.email)   doc.text(u.email,   sigX + sigPad, sigY + mm(16));
-      if(u.telefon) doc.text(u.telefon, sigX + sigPad, sigY + mm(21));
+      if(u.email)   doc.text(u.email,   groupX, sigY + mm(16));
+      if(u.telefon) doc.text(u.telefon, groupX, sigY + mm(21));
     }
 
     if(brandLogoPngDataUrl){
       const bLogoH = mm(26 * (212/674));
-      const bLogoX = sigX + sigPad + maxTextW + sigGap;
+      const bLogoX = groupX + groupW - bLogoW;
       const bLogoY = sigY + mm(15) - bLogoH / 2;
       try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
     }
@@ -869,7 +872,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     doc.setFontSize(7);
     doc.setFont('Arial','normal');
     doc.setTextColor(...C.textLight);
-    doc.text('Kaşe / İmza', sigX + colW + sigPad, sigY + mm(10));
+    doc.text('Kaşe / İmza', sigX + colW * 1.5, sigY + mm(10), {align:'center'});
   }
 
   // ── FOOTER ──

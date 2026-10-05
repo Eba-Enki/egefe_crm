@@ -731,10 +731,34 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
 
   if(currentPortal === 'satis' && !imzaGizle){
     const sigBoxX = leftX;
-    const sigBoxW = mm(65);
     const sigBoxH = mm(22);
     const sigBoxY = curY;
     const sigPad  = mm(3.5);
+    const sigGap  = mm(6);   // yazı ile logo arasındaki sabit boşluk
+    const bLogoW  = brandLogoPngDataUrl ? mm(26) : 0;
+    const sigMaxW = mm(141.901) - mm(4) - sigBoxX; // Teklif Toplamı sütununa taşmasın
+
+    const cu = state.currentUser || {};
+    const u = t.olusturanAd ? {ad:t.olusturanAd,email:t.olusturanEmail,telefon:t.olusturanTelefon} : cu;
+
+    // En uzun satırı ölç; kutu sınırı aşılırsa font küçültülür
+    const measureSig = fs => {
+      doc.setFontSize(fs);
+      doc.setFont('Arial','bold');
+      let w = u.ad ? doc.getTextWidth(u.ad) : 0;
+      doc.setFont('Arial','normal');
+      if(u.email)   w = Math.max(w, doc.getTextWidth(u.email));
+      if(u.telefon) w = Math.max(w, doc.getTextWidth(u.telefon));
+      return w;
+    };
+    const sigFixedW = sigPad * 2 + (bLogoW ? sigGap + bLogoW : 0);
+    let sigFs = 8;
+    let maxTextW = u.ad ? measureSig(sigFs) : 0;
+    if(maxTextW > 0 && sigFixedW + maxTextW > sigMaxW){
+      sigFs = Math.max(5.5, sigFs * (sigMaxW - sigFixedW) / maxTextW);
+      maxTextW = measureSig(sigFs);
+    }
+    const sigBoxW = sigFixedW + maxTextW;
 
     // Box — önce çiz, üstüne metin/logo gelsin
     doc.setDrawColor(...C.border);
@@ -742,10 +766,8 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     doc.setFillColor(...C.white);
     doc.roundedRect(sigBoxX, sigBoxY, sigBoxW, sigBoxH, 2, 2, 'FD');
 
-    const cu = state.currentUser || {};
-    const u = t.olusturanAd ? {ad:t.olusturanAd,email:t.olusturanEmail,telefon:t.olusturanTelefon} : cu;
     if(u.ad){
-      doc.setFontSize(8);
+      doc.setFontSize(sigFs);
       doc.setFont('Arial','bold');
       doc.setTextColor(...C.textMid);
       doc.text(u.ad, sigBoxX + sigPad, sigBoxY + mm(6));
@@ -756,9 +778,8 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     }
 
     if(brandLogoPngDataUrl){
-      const bLogoW = mm(26);
       const bLogoH = mm(26 * (212/674));
-      const bLogoX = sigBoxX + sigBoxW - sigPad - bLogoW;
+      const bLogoX = sigBoxX + sigPad + maxTextW + sigGap;
       const bLogoY = sigBoxY + (sigBoxH - bLogoH) / 2;
       try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
     }

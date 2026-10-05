@@ -662,30 +662,46 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
   const sectionY  = tableEndY + mm(5);
   const leftX     = mm(15.446);
   const leftAreaW = mm(115);
+  const hasKdvRows = currentPortal === 'satis' && kdvOranPDF > 0;
 
-  // ── INFO BAR (Ödeme / Vade / Teslimat — tek satır düz metin) ──
-  const infoItems = [
-    t.seriNo      ? `Cihaz Seri No: ${t.seriNo}`              : null,
-    t.odemeKosulu ? `Ödeme Şekli: ${t.odemeKosulu}`            : null,
-    t.vade        ? `Vade: ${t.vade}`                          : null,
+  // ── ÖDEME / CİHAZ BİLGİSİ (sağdaki Ara Toplam / KDV satırlarıyla aynı hizada) ──
+  const vadeGun = t.odemeKosulu === 'Peşin' ? '' : String(t.vade || '').replace(/\s*Gün$/i, '').trim();
+  let odemeText = '';
+  if (t.odemeKosulu && vadeGun) odemeText = `${t.odemeKosulu} (${vadeGun} Gün)`;
+  else if (t.odemeKosulu)       odemeText = t.odemeKosulu;
+  else if (vadeGun)             odemeText = `Vade: ${vadeGun} Gün`;
+  const infoRows = [
+    odemeText ? ['Ödeme Şekli:',   odemeText] : null,
+    t.seriNo  ? ['Cihaz Seri No:', t.seriNo]  : null,
   ].filter(Boolean);
 
-  let curY = sectionY;
+  const rowPitch = hasKdvRows ? mm(6) : mm(5);
+  const rowBase0 = sectionY + (hasKdvRows ? mm(5) : mm(4));
+  let notesFirstBaseline = rowBase0;
 
-  if (infoItems.length > 0) {
-    doc.setFontSize(7);
-    doc.setFont('Arial', 'normal');
-    doc.setTextColor(...C.textLight);
-    doc.text(infoItems.join('   |   '), leftX, curY + mm(3.5));
-    curY += mm(5);
+  if (infoRows.length > 0) {
+    doc.setFontSize(8);
+    infoRows.forEach(([label, val], i) => {
+      const y = rowBase0 + i * rowPitch;
+      doc.setFont('Arial', 'bold');
+      doc.setTextColor(...C.textLabel);
+      doc.text(label, leftX, y);
+      const labelW = doc.getTextWidth(label + ' ');
+      doc.setFont('Arial', 'normal');
+      doc.setTextColor(...C.textMid);
+      doc.text(String(val), leftX + labelW, y);
+    });
+    const lastBase = rowBase0 + (infoRows.length - 1) * rowPitch;
+    // KDV satırları varsa ayırıcı, sağdaki Ara Toplam/KDV çizgisiyle aynı yükseklikte
+    const divY = hasKdvRows ? Math.max(sectionY + mm(14), lastBase + mm(3)) : lastBase + mm(3);
     doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.4);
-    doc.line(leftX, curY + mm(1), leftX + leftAreaW, curY + mm(1));
-    curY += mm(3.5);
+    doc.setLineWidth(0.3);
+    doc.line(leftX, divY, leftX + leftAreaW, divY);
+    // İlk not satırı "TEKLİF TOPLAMI" etiketiyle aynı hizada
+    notesFirstBaseline = divY + mm(6);
   }
 
   // ── NOTES ──
-  const notTextX = leftX;
   const notTextW = leftAreaW;
   const pt8lh    = mm(4.5);
 
@@ -711,81 +727,14 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     }
   });
 
-  const notBoxTopY        = curY;
-  const firstLineBaseline = notBoxTopY + mm(3);
-
   doc.setFont('Arial', 'normal');
   doc.setTextColor(...C.textMid);
   allNotLines.forEach((line, i) => {
-    doc.text(line, notTextX, firstLineBaseline + i * pt8lh);
+    doc.text(line, leftX, notesFirstBaseline + i * pt8lh);
   });
 
-  curY = notBoxTopY + mm(3) + allNotLines.length * pt8lh + mm(4);
-
-  // ── İMZA BLOĞU (yalnızca Satış Pazarlama Portalı, imza gizlenmemişse) ──
-  // Teklif Toplamı kutusuyla çakışmayı önle
-  const totalsEndY = (currentPortal === 'satis' && kdvOranPDF > 0)
-    ? sectionY + mm(16) + mm(12.40)
-    : sectionY + mm(12.40);
-  curY = Math.max(curY, totalsEndY + mm(1.5));
-
-  if(currentPortal === 'satis' && !imzaGizle){
-    const sigBoxX = leftX;
-    const sigBoxH = mm(22);
-    const sigBoxY = curY;
-    const sigPad  = mm(3.5);
-    const sigGap  = mm(6);   // yazı ile logo arasındaki sabit boşluk
-    const bLogoW  = brandLogoPngDataUrl ? mm(26) : 0;
-    const sigMaxW = mm(141.901) - mm(4) - sigBoxX; // Teklif Toplamı sütununa taşmasın
-
-    const cu = state.currentUser || {};
-    const u = t.olusturanAd ? {ad:t.olusturanAd,email:t.olusturanEmail,telefon:t.olusturanTelefon} : cu;
-
-    // En uzun satırı ölç; kutu sınırı aşılırsa font küçültülür
-    const measureSig = fs => {
-      doc.setFontSize(fs);
-      doc.setFont('Arial','bold');
-      let w = u.ad ? doc.getTextWidth(u.ad) : 0;
-      doc.setFont('Arial','normal');
-      if(u.email)   w = Math.max(w, doc.getTextWidth(u.email));
-      if(u.telefon) w = Math.max(w, doc.getTextWidth(u.telefon));
-      return w;
-    };
-    const sigFixedW = sigPad * 2 + (bLogoW ? sigGap + bLogoW : 0);
-    let sigFs = 8;
-    let maxTextW = u.ad ? measureSig(sigFs) : 0;
-    if(maxTextW > 0 && sigFixedW + maxTextW > sigMaxW){
-      sigFs = Math.max(5.5, sigFs * (sigMaxW - sigFixedW) / maxTextW);
-      maxTextW = measureSig(sigFs);
-    }
-    const sigBoxW = sigFixedW + maxTextW;
-
-    // Box — önce çiz, üstüne metin/logo gelsin
-    doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.4);
-    doc.setFillColor(...C.white);
-    doc.roundedRect(sigBoxX, sigBoxY, sigBoxW, sigBoxH, 2, 2, 'FD');
-
-    if(u.ad){
-      doc.setFontSize(sigFs);
-      doc.setFont('Arial','bold');
-      doc.setTextColor(...C.textMid);
-      doc.text(u.ad, sigBoxX + sigPad, sigBoxY + mm(6));
-      doc.setFont('Arial','normal');
-      doc.setTextColor(...C.textLight);
-      if(u.email)   doc.text(u.email,   sigBoxX + sigPad, sigBoxY + mm(11));
-      if(u.telefon) doc.text(u.telefon, sigBoxX + sigPad, sigBoxY + mm(16));
-    }
-
-    if(brandLogoPngDataUrl){
-      const bLogoH = mm(26 * (212/674));
-      const bLogoX = sigBoxX + sigPad + maxTextW + sigGap;
-      const bLogoY = sigBoxY + (sigBoxH - bLogoH) / 2;
-      try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
-    }
-
-    curY = sigBoxY + sigBoxH + mm(2);
-  }
+  const leftEndY   = notesFirstBaseline + Math.max(0, allNotLines.length - 1) * pt8lh + mm(1.5);
+  const totalsEndY = hasKdvRows ? sectionY + mm(16) + mm(12.40) : sectionY + mm(12.40);
 
   // ── TOTALS SECTION (Right side) ──
   const totalsY = sectionY;
@@ -845,6 +794,82 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     doc.setFont('Arial','bold');
     doc.setTextColor(...C.textMid);
     doc.text(`${fmtN(genelToplam)} ${pbSymbol}`, totalBoxRightEdge - mm(2.5), totalBoxY + mm(9.2), {align:'right'});
+  }
+
+  // ── İMZA TABLOSU: Teklifi Hazırlayan | Müşteri Onayı (yalnızca Satış Pazarlama Portalı, imza gizlenmemişse) ──
+  if(currentPortal === 'satis' && !imzaGizle){
+    const sigX   = leftX;
+    const sigW   = totalBoxRightEdge - leftX;
+    const colW   = sigW / 2;
+    const sigH   = mm(27);
+    const sigPad = mm(3.5);
+    const sigGap = mm(6);   // yazı ile logo arasındaki sabit boşluk
+    const bLogoW = brandLogoPngDataUrl ? mm(26) : 0;
+    let sigY = Math.max(leftEndY, totalsEndY) + mm(6);
+    // Alt bilgiye taşacaksa tablo bütün olarak yeni sayfaya geçer
+    if(sigY + sigH > mm(274)){
+      doc.addPage();
+      sigY = mm(20);
+    }
+
+    // Çerçeve + orta bölme çizgisi
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(sigX, sigY, sigW, sigH, 2, 2, 'S');
+    doc.line(sigX + colW, sigY, sigX + colW, sigY + sigH);
+
+    // Sütun başlıkları
+    doc.setFontSize(7);
+    doc.setFont('Arial','bold');
+    doc.setTextColor(...C.primary);
+    doc.text('TEKLİFİ HAZIRLAYAN', sigX + sigPad,        sigY + mm(5));
+    doc.text('MÜŞTERİ ONAYI',      sigX + colW + sigPad, sigY + mm(5));
+
+    // Sol sütun: hazırlayan bilgisi + marka logosu
+    const cu = state.currentUser || {};
+    const u = t.olusturanAd ? {ad:t.olusturanAd,email:t.olusturanEmail,telefon:t.olusturanTelefon} : cu;
+
+    // En uzun satırı ölç; sütuna sığmazsa font küçültülür
+    const measureSig = fs => {
+      doc.setFontSize(fs);
+      doc.setFont('Arial','bold');
+      let w = u.ad ? doc.getTextWidth(u.ad) : 0;
+      doc.setFont('Arial','normal');
+      if(u.email)   w = Math.max(w, doc.getTextWidth(u.email));
+      if(u.telefon) w = Math.max(w, doc.getTextWidth(u.telefon));
+      return w;
+    };
+    const textMaxW = colW - sigPad * 2 - (bLogoW ? sigGap + bLogoW : 0);
+    let sigFs = 8;
+    let maxTextW = u.ad ? measureSig(sigFs) : 0;
+    if(maxTextW > textMaxW){
+      sigFs = Math.max(5.5, sigFs * textMaxW / maxTextW);
+      maxTextW = measureSig(sigFs);
+    }
+
+    if(u.ad){
+      doc.setFontSize(sigFs);
+      doc.setFont('Arial','bold');
+      doc.setTextColor(...C.textMid);
+      doc.text(u.ad, sigX + sigPad, sigY + mm(11));
+      doc.setFont('Arial','normal');
+      doc.setTextColor(...C.textLight);
+      if(u.email)   doc.text(u.email,   sigX + sigPad, sigY + mm(16));
+      if(u.telefon) doc.text(u.telefon, sigX + sigPad, sigY + mm(21));
+    }
+
+    if(brandLogoPngDataUrl){
+      const bLogoH = mm(26 * (212/674));
+      const bLogoX = sigX + sigPad + maxTextW + sigGap;
+      const bLogoY = sigY + mm(15) - bLogoH / 2;
+      try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
+    }
+
+    // Sağ sütun: kaşe / imza alanı
+    doc.setFontSize(7);
+    doc.setFont('Arial','normal');
+    doc.setTextColor(...C.textLight);
+    doc.text('Kaşe / İmza', sigX + colW + sigPad, sigY + mm(10));
   }
 
   // ── FOOTER ──

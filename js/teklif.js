@@ -835,7 +835,12 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
 
     // Sol sütun: hazırlayan bilgisi + marka logosu
     const cu = state.currentUser || {};
-    const u = t.olusturanAd ? {ad:t.olusturanAd,email:t.olusturanEmail,telefon:t.olusturanTelefon} : cu;
+    const u = t.olusturanAd ? {ad:t.olusturanAd,email:t.olusturanEmail,telefon:t.olusturanTelefon} : {...cu};
+    // Teknik Servis: iletişim bilgisi portal ayarlarından (servis e-postası/telefonu); boşsa kişisel bilgi
+    if(!isSatisPDF){
+      if(st.email) u.email   = st.email;
+      if(st.tel)   u.telefon = st.tel;
+    }
 
     // En uzun satırı ölç; sütuna sığmazsa font küçültülür
     const measureSig = fs => {

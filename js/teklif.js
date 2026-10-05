@@ -396,6 +396,15 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
 
   const fmtN = (v) => new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0);
 
+  // Türkiye numaralarını tek formata getir: +90 (312) 482 54 51
+  const fmtPhone = (v) => {
+    let d = String(v || '').replace(/\D/g, '');
+    if (d.startsWith('90') && d.length === 12) d = d.slice(2);
+    else if (d.startsWith('0') && d.length === 11) d = d.slice(1);
+    if (d.length !== 10) return String(v || '').trim();
+    return `+90 (${d.slice(0,3)}) ${d.slice(3,6)} ${d.slice(6,8)} ${d.slice(8)}`;
+  };
+
   const C = {
     primary:    [29, 125, 149],
     textDark:   [26, 46, 59],
@@ -839,7 +848,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     // Teknik Servis: iletişim bilgisi portal ayarlarından (servis e-postası/telefonu); boşsa kişisel bilgi
     if(!isSatisPDF){
       if(st.email) u.email   = st.email;
-      if(st.tel)   u.telefon = st.tel;
+      if(st.tel)   u.telefon = fmtPhone(st.tel);
     }
 
     // En uzun satırı ölç; sütuna sığmazsa font küçültülür
@@ -898,8 +907,8 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
   doc.setTextColor(...C.textLight);
 
   const emailText = st.email || 'info@ege-fe.com';
-  const telText = st.tel || '0 (312) 482 5451';
-  const faxText = st.fax || '0 (312) 480 5453';
+  const telText = fmtPhone(st.tel || '0 (312) 482 5451');
+  const faxText = fmtPhone(st.faks || st.fax || '0 (312) 480 5453');
 
   const footerParts = ['e-posta: ' + emailText];
   if (telText) footerParts.push('Tel: ' + telText);

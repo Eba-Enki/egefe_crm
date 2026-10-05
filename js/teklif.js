@@ -662,18 +662,28 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
   const sectionY  = tableEndY + mm(5);
   const leftX     = mm(15.446);
   const leftAreaW = mm(115);
-  const hasKdvRows = currentPortal === 'satis' && kdvOranPDF > 0;
+  const isSatisPDF = currentPortal === 'satis';
+  const hasKdvRows = isSatisPDF && kdvOranPDF > 0;
 
-  // ── ÖDEME / CİHAZ BİLGİSİ (sağdaki Ara Toplam / KDV satırlarıyla aynı hizada) ──
+  // ── TİCARİ KOŞULLAR (sağdaki Ara Toplam / KDV satırlarıyla aynı hizada) ──
+  // Satış: Ödeme Şekli + KDV notu (+ Seri No) · Servis: Seri No + KDV notu (ödeme şekli yok)
   const vadeGun = t.odemeKosulu === 'Peşin' ? '' : String(t.vade || '').replace(/\s*Gün$/i, '').trim();
   let odemeText = '';
   if (t.odemeKosulu && vadeGun) odemeText = `${t.odemeKosulu} (${vadeGun} Gün)`;
   else if (t.odemeKosulu)       odemeText = t.odemeKosulu;
   else if (vadeGun)             odemeText = `Vade: ${vadeGun} Gün`;
-  const infoRows = [
-    odemeText ? ['Ödeme Şekli:',   odemeText] : null,
-    t.seriNo  ? ['Cihaz Seri No:', t.seriNo]  : null,
-  ].filter(Boolean);
+  const pbLabel = {TRY:'TL',USD:'USD',EUR:'EUR',GBP:'GBP'}[pb] || 'TL';
+  const kdvNote = isSatisPDF
+    ? (kdvOranPDF > 0
+        ? `Fiyatlarımız ${pbLabel} cinsinden verilmiş olup KDV (%${kdvOranPDF}) dahildir.`
+        : `Fiyatlarımız ${pbLabel} cinsinden verilmiş olup KDV dahil değildir.`)
+    : `Fiyatlarımız ${pbLabel} cinsinden verilmiş olup KDV (%20) dahil değildir.`;
+  const seriRow = t.seriNo ? ['Cihaz Seri No:', t.seriNo] : null;
+  // [etiket, değer] ya da [null, düz metin]
+  const infoRows = (isSatisPDF
+    ? [odemeText ? ['Ödeme Şekli:', odemeText] : null, [null, kdvNote], seriRow]
+    : [seriRow, [null, kdvNote]]
+  ).filter(Boolean);
 
   const rowPitch = hasKdvRows ? mm(6) : mm(5);
   const rowBase0 = sectionY + (hasKdvRows ? mm(5) : mm(4));
@@ -683,10 +693,13 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     doc.setFontSize(8);
     infoRows.forEach(([label, val], i) => {
       const y = rowBase0 + i * rowPitch;
-      doc.setFont('Arial', 'bold');
-      doc.setTextColor(...C.textLabel);
-      doc.text(label, leftX, y);
-      const labelW = doc.getTextWidth(label + ' ');
+      let labelW = 0;
+      if (label) {
+        doc.setFont('Arial', 'bold');
+        doc.setTextColor(...C.textLabel);
+        doc.text(label, leftX, y);
+        labelW = doc.getTextWidth(label + ' ');
+      }
       doc.setFont('Arial', 'normal');
       doc.setTextColor(...C.textMid);
       doc.text(String(val), leftX + labelW, y);
@@ -708,15 +721,8 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
   doc.setFontSize(8);
   doc.setFont('Arial', 'normal');
 
-  // KDV/fiyat notu önce, kullanıcı notu sonra
+  // KDV notu yukarıdaki ticari koşullarda; burada yalnızca kullanıcı notu
   let allNotLines = [];
-  if(currentPortal === 'satis'){
-    const pbLabel = {TRY:'TL',USD:'USD',EUR:'EUR',GBP:'GBP'}[pb] || 'TL';
-    const kdvNote = kdvOranPDF > 0
-      ? `Fiyatlarımız ${pbLabel} cinsinden verilmiş olup KDV (%${kdvOranPDF}) dahildir.`
-      : `Fiyatlarımız ${pbLabel} cinsinden verilmiş olup KDV dahil değildir.`;
-    allNotLines = allNotLines.concat(doc.splitTextToSize(kdvNote, notTextW));
-  }
   const notText  = t.notlar || 'Teklifimiz, yukarıda belirtilen tarihe kadar geçerlidir.';
   const rawLines = notText.split('\n');
   rawLines.forEach(line => {
@@ -796,15 +802,17 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     doc.text(`${fmtN(genelToplam)} ${pbSymbol}`, totalBoxRightEdge - mm(2.5), totalBoxY + mm(9.2), {align:'right'});
   }
 
-  // ── İMZA TABLOSU: Teklifi Hazırlayan | Müşteri Onayı (yalnızca Satış Pazarlama Portalı, imza gizlenmemişse) ──
-  if(currentPortal === 'satis' && !imzaGizle){
+  // ── İMZA TABLOSU: Teklifi Hazırlayan | Müşteri Onayı (imza gizlenmemişse) ──
+  if(!imzaGizle){
+    // Marka logosu yalnızca Satış Pazarlama Portalında
+    const sigLogo = isSatisPDF ? brandLogoPngDataUrl : null;
     const sigX   = leftX;
     const sigW   = totalBoxRightEdge - leftX;
     const colW   = sigW / 2;
     const sigH   = mm(27);
     const sigPad = mm(3.5);
     const sigGap = mm(6);   // yazı ile logo arasındaki sabit boşluk
-    const bLogoW = brandLogoPngDataUrl ? mm(26) : 0;
+    const bLogoW = sigLogo ? mm(26) : 0;
     let sigY = Math.max(leftEndY, totalsEndY) + mm(6);
     // Alt bilgiye taşacaksa tablo bütün olarak yeni sayfaya geçer
     if(sigY + sigH > mm(274)){
@@ -846,9 +854,9 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
       sigFs = Math.max(5.5, sigFs * textMaxW / maxTextW);
       maxTextW = measureSig(sigFs);
     }
-    // Yazı + boşluk + logo tek grup olarak sütunda ortalanır
+    // Logo varsa yazı + boşluk + logo tek grup olarak sütunda ortalanır; logo yoksa yazı sola yaslı
     const groupW = maxTextW + (bLogoW ? (maxTextW > 0 ? sigGap : 0) + bLogoW : 0);
-    const groupX = sigX + (colW - groupW) / 2;
+    const groupX = sigLogo ? sigX + (colW - groupW) / 2 : sigX + sigPad;
 
     if(u.ad){
       doc.setFontSize(sigFs);
@@ -861,11 +869,11 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
       if(u.telefon) doc.text(u.telefon, groupX, sigY + mm(21));
     }
 
-    if(brandLogoPngDataUrl){
+    if(sigLogo){
       const bLogoH = mm(26 * (212/674));
       const bLogoX = groupX + groupW - bLogoW;
       const bLogoY = sigY + mm(15) - bLogoH / 2;
-      try{ doc.addImage(brandLogoPngDataUrl,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
+      try{ doc.addImage(sigLogo,'PNG', bLogoX, bLogoY, bLogoW, bLogoH,'','FAST'); }catch(e){}
     }
 
     // Sağ sütun: kaşe / imza alanı

@@ -162,8 +162,6 @@ function openServisDetay(id){
       <div class="pd-info-grid">
         <div class="pd-info-box"><div class="info-item-label">Geliş Tarihi</div><div class="info-item-val">${fmtDate(s.gelisTarihi)||'—'}</div></div>
         <div class="pd-info-box"><div class="info-item-label">Kargo Tarihi</div><div class="info-item-val">${fmtDate(s.kargoTarihi)||'—'}</div></div>
-        <div class="pd-info-box"><div class="info-item-label">Kargo Firması</div><div class="info-item-val">${esc(s.kargoFirmasi||'—')}</div></div>
-        <div class="pd-info-box"><div class="info-item-label">Teslim Alan</div><div class="info-item-val">${esc(s.teslimAlan||'—')}</div></div>
       </div>
     </div>
     ${s.notlar?`<div class="pd-section"><div class="pd-section-title">Notlar</div><div class="pd-notes">${esc(s.notlar)}</div></div>`:''}
@@ -280,7 +278,7 @@ async function saveServis(){
   const musteriId=(document.getElementById('sf-musteri-id')||{}).value||'';
   if(!kurumVal)return toast('Kurum / müşteri zorunludur.','error');
   if(!musteriId)return toast('Lütfen müşteri listesinden seçin veya "+ Yeni Müşteri Ekle" ile ekleyin.','error');
-  const payload={musteriId,kurumAdi:toTitleCase(document.getElementById('sf-kurumAdi').value.trim()),ilgiliKisi:toTitleCase(document.getElementById('sf-ilgiliKisi').value.trim()),telefon:document.getElementById('sf-telefon').value.trim(),email:document.getElementById('sf-email').value.trim(),urunAdi:'',marka:(document.getElementById('sf-marka-sel')||{}).value||'',model:(document.getElementById('sf-model-sel')||{}).value||'',seriNo:getSeriNolar().join(', '),garantiDurumu:document.getElementById('sf-garantiDurumu').value,aksesuarlar:[...sfAksesuarlar],aksesuarDiger:document.getElementById('sf-aksesuar-diger').value.trim(),gelisTarihi:document.getElementById('sf-gelisTarihi').value,durum:editId?((state.servisler.find(function(x){return x.id===editId;})||{}).durum||'Cihaz Kabul'):'Cihaz Kabul',kargoTarihi:document.getElementById('sf-kargoTarihi').value,kargoFirmasi:toTitleCase(document.getElementById('sf-kargoFirmasi').value.trim()),teslimAlan:toTitleCase(document.getElementById('sf-teslimAlan').value.trim()),notlar:document.getElementById('sf-notlar').value};
+  const payload={musteriId,kurumAdi:toTitleCase(document.getElementById('sf-kurumAdi').value.trim()),ilgiliKisi:toTitleCase(document.getElementById('sf-ilgiliKisi').value.trim()),telefon:document.getElementById('sf-telefon').value.trim(),email:document.getElementById('sf-email').value.trim(),urunAdi:'',marka:(document.getElementById('sf-marka-sel')||{}).value||'',model:(document.getElementById('sf-model-sel')||{}).value||'',seriNo:getSeriNolar().join(', '),garantiDurumu:document.getElementById('sf-garantiDurumu').value,aksesuarlar:[...sfAksesuarlar],aksesuarDiger:document.getElementById('sf-aksesuar-diger').value.trim(),gelisTarihi:document.getElementById('sf-gelisTarihi').value,durum:editId?((state.servisler.find(function(x){return x.id===editId;})||{}).durum||'Cihaz Kabul'):'Cihaz Kabul',notlar:document.getElementById('sf-notlar').value};
   try{
     if(editId){
       const idx=state.servisler.findIndex(x=>x.id===editId);

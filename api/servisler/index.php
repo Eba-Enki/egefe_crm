@@ -7,6 +7,16 @@ requirePortalAccess($user, 'servis');
 
 const GARANTI_DEGERLERI = ['Evet', 'Hayır'];
 const DURUM_DEGERLERI = ['Cihaz Kabul', 'Arıza Tespitinde', 'Yanıt Bekleniyor', 'Onarımda', 'Teslim Edildi', 'Reddedildi', 'İşlemsiz İade'];
+// Cihazın kuruma geri gönderildiği durumlar — bu durumlara geçişte kargo tarihi otomatik atanır
+const GONDERIM_DURUMLARI = ['Teslim Edildi', 'Reddedildi', 'İşlemsiz İade'];
+
+// Kargo tarihi kullanıcıdan alınmaz: gönderim durumuna ilk geçişte bugünün tarihi atanır,
+// gönderim durumları arasında geçişte korunur, aktife geri alınınca temizlenir.
+function kargoTarihiHesapla(string $yeniDurum, ?string $eskiDurum, ?string $mevcutTarih): ?string {
+    if (!in_array($yeniDurum, GONDERIM_DURUMLARI, true)) return null;
+    if ($eskiDurum !== null && in_array($eskiDurum, GONDERIM_DURUMLARI, true) && $mevcutTarih) return $mevcutTarih;
+    return (new DateTime('now', new DateTimeZone('Europe/Istanbul')))->format('Y-m-d');
+}
 
 function servisResponse(PDO $pdo, array $row, ?array $durumGecmisi = null): array {
     return [
@@ -27,8 +37,6 @@ function servisResponse(PDO $pdo, array $row, ?array $durumGecmisi = null): arra
         'garantiDurumu'    => $row['garanti_durumu'],
         'durum'            => $row['durum'],
         'kargoTarihi'      => $row['kargo_tarihi'],
-        'kargoFirmasi'     => $row['kargo_firmasi'],
-        'teslimAlan'       => $row['teslim_alan'],
         'notlar'           => $row['notlar'],
         'olusturanKullanici' => $row['olusturan_kullanici'],
         'olusturmaTarihi'  => $row['created_at'],
@@ -84,7 +92,7 @@ switch ($method) {
         $kayitNo = nextServisKayitNo($pdo);
         $durum = enumOrDefault($input['durum'] ?? null, DURUM_DEGERLERI, 'Cihaz Kabul');
 
-        $stmt = $pdo->prepare('INSERT INTO service_records (id, kayit_no, musteri_id, kurum_adi, ilgili_kisi, telefon, email, urun_adi, marka, model, seri_no, aksesuarlar, aksesuar_diger, gelis_tarihi, garanti_durumu, durum, kargo_tarihi, kargo_firmasi, teslim_alan, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt = $pdo->prepare('INSERT INTO service_records (id, kayit_no, musteri_id, kurum_adi, ilgili_kisi, telefon, email, urun_adi, marka, model, seri_no, aksesuarlar, aksesuar_diger, gelis_tarihi, garanti_durumu, durum, kargo_tarihi, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([
             $id, $kayitNo,
             strOrNull($input['musteriId'] ?? null),
@@ -101,9 +109,7 @@ switch ($method) {
             strOrNull($input['gelisTarihi'] ?? null),
             enumOrDefault($input['garantiDurumu'] ?? null, GARANTI_DEGERLERI, 'Hayır'),
             $durum,
-            strOrNull($input['kargoTarihi'] ?? null),
-            strOrNull($input['kargoFirmasi'] ?? null),
-            strOrNull($input['teslimAlan'] ?? null),
+            kargoTarihiHesapla($durum, null, null),
             strOrNull($input['notlar'] ?? null),
             $user['id'],
         ]);
@@ -136,7 +142,7 @@ switch ($method) {
 
         $yeniDurum = enumOrDefault($input['durum'] ?? $existing['durum'], DURUM_DEGERLERI, $existing['durum']);
 
-        $stmt = $pdo->prepare('UPDATE service_records SET musteri_id=?, kurum_adi=?, ilgili_kisi=?, telefon=?, email=?, urun_adi=?, marka=?, model=?, seri_no=?, aksesuarlar=?, aksesuar_diger=?, gelis_tarihi=?, garanti_durumu=?, durum=?, kargo_tarihi=?, kargo_firmasi=?, teslim_alan=?, notlar=? WHERE id=?');
+        $stmt = $pdo->prepare('UPDATE service_records SET musteri_id=?, kurum_adi=?, ilgili_kisi=?, telefon=?, email=?, urun_adi=?, marka=?, model=?, seri_no=?, aksesuarlar=?, aksesuar_diger=?, gelis_tarihi=?, garanti_durumu=?, durum=?, kargo_tarihi=?, notlar=? WHERE id=?');
         $stmt->execute([
             strOrNull($input['musteriId'] ?? null),
             $kurumAdi,
@@ -152,9 +158,7 @@ switch ($method) {
             strOrNull($input['gelisTarihi'] ?? null),
             enumOrDefault($input['garantiDurumu'] ?? null, GARANTI_DEGERLERI, 'Hayır'),
             $yeniDurum,
-            strOrNull($input['kargoTarihi'] ?? null),
-            strOrNull($input['kargoFirmasi'] ?? null),
-            strOrNull($input['teslimAlan'] ?? null),
+            kargoTarihiHesapla($yeniDurum, $existing['durum'], $existing['kargo_tarihi']),
             strOrNull($input['notlar'] ?? null),
             $id,
         ]);

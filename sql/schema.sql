@@ -89,8 +89,6 @@ CREATE TABLE service_records (
   garanti_durumu      ENUM('Evet','Hayır') NOT NULL DEFAULT 'Hayır',
   durum               ENUM('Cihaz Kabul','Arıza Tespitinde','Yanıt Bekleniyor','Onarımda','Teslim Edildi','Reddedildi','İşlemsiz İade') NOT NULL DEFAULT 'Cihaz Kabul',
   kargo_tarihi        DATE NULL,
-  kargo_firmasi       VARCHAR(150) NULL,
-  teslim_alan         VARCHAR(150) NULL,
   notlar              TEXT NULL,
   olusturan_kullanici VARCHAR(40) NULL,
   created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

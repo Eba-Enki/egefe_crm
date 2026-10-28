@@ -25,7 +25,7 @@ var _ihrBankaOtomatik=true;   // yeni teklifte ya da para birimi değişince ilk
 var _ihrKisiListesi=[];
 
 function _ihrEl(id){return document.getElementById(id);}
-function _ihrBosKalem(){return{urunKodu:'',aciklama:'',marka:'',model:'',miktar:1,birim:'Pcs',birimFiyat:0};}
+function _ihrBosKalem(){return{urunKodu:'',aciklama:'',kategori:'',marka:'',model:'',miktar:1,birim:'Pcs',birimFiyat:0,ymSatirId:null};}
 function _ihrPB(){return(_ihrEl('itf-paraBirimi')||{}).value||'USD';}
 function _ihrCurSym(pb){return{TRY:'₺',USD:'$',EUR:'€',GBP:'£'}[pb]||pb;}
 function _ihrFmt(v){return fmtParaBirimi(v||0,_ihrPB());}
@@ -57,10 +57,16 @@ function goIhrTeklifForm(editId){
     ihrMusteriSecildi(null);
   }
   ihrItems=(t&&t.satirlar&&t.satirlar.length)
-    ?t.satirlar.map(function(s){return Object.assign(_ihrBosKalem(),{urunKodu:s.urunKodu||'',aciklama:s.aciklama||'',marka:s.marka||'',model:s.model||'',miktar:s.miktar,birim:s.birim||'Pcs',birimFiyat:s.birimFiyat||0});})
+    ?t.satirlar.map(function(s){return Object.assign(_ihrBosKalem(),{urunKodu:s.urunKodu||'',aciklama:s.aciklama||'',kategori:s.kategori||'',marka:s.marka||'',model:s.model||'',miktar:s.miktar,birim:s.birim||'Pcs',birimFiyat:s.birimFiyat||0,ymSatirId:s.ymSatirId||null});})
     :[_ihrBosKalem()];
   _ihrBankaSnapshot=t?(t.bankaHesabi||null):null;
   _ihrBankaOtomatik=!t;
+  // Yaklaşık maliyetten aktarılan teklifte bağlantı bandı (belge hâlâ varsa)
+  var band=_ihrEl('itf-ym-band');
+  if(t&&t.yaklasikMaliyet){
+    band.textContent=t.yaklasikMaliyet.numara+' yaklaşık maliyetinden aktarıldı.'+(t.durum==='Taslak'?' Tekrar aktarılırsa bu taslağın kalemleri yenilenir.':'');
+    band.style.display='';
+  } else band.style.display='none';
   ihrOnParaBirimiChange();
   showPage('ihr-teklif-form',true);
 }
@@ -115,7 +121,8 @@ function ihrRenderKalemler(){
     return '<tr>'
       +'<td class="ihr-no">'+(i+1)+'</td>'
       +'<td class="ihr-kod"><input type="text" value="'+esc(it.urunKodu||'')+'" oninput="ihrItems['+i+'].urunKodu=this.value"></td>'
-      +'<td class="ihr-aciklama"><textarea rows="'+Math.min(4,Math.max(1,Math.ceil((it.aciklama||'').length/38)))+'" placeholder="Item description (English)" oninput="ihrItems['+i+'].aciklama=this.value">'+esc(it.aciklama||'')+'</textarea></td>'
+      +'<td class="ihr-aciklama"><textarea rows="'+Math.min(4,Math.max(1,Math.ceil((it.aciklama||'').length/30)))+'" placeholder="Item description (English)" oninput="ihrItems['+i+'].aciklama=this.value">'+esc(it.aciklama||'')+'</textarea></td>'
+      +'<td class="ihr-kategori"><input type="text" value="'+esc(it.kategori||'')+'" oninput="ihrItems['+i+'].kategori=this.value"></td>'
       +'<td class="ihr-marka"><input type="text" value="'+esc(it.marka||'')+'" oninput="ihrItems['+i+'].marka=this.value"></td>'
       +'<td class="ihr-model"><input type="text" value="'+esc(it.model||'')+'" oninput="ihrItems['+i+'].model=this.value"></td>'
       +'<td class="ihr-miktar"><input type="number" min="0" step="any" value="'+(it.miktar||0)+'" oninput="ihrItems['+i+'].miktar=parseFloat(this.value)||0;ihrUpdateToplam()"></td>'
@@ -195,7 +202,7 @@ async function ihrSaveTeklif(andPrint){
   if(!kurum)return toast('Firma / müşteri zorunludur.','error');
   if(!musteriIdRaw&&!editId)return toast('Lütfen müşteri listesinden seçin veya "+ Yeni Müşteri Ekle" ile ekleyin.','error');
   var satirlar=ihrItems.filter(_ihrKalemDolu).map(function(s){
-    return{urunKodu:(s.urunKodu||'').trim(),aciklama:(s.aciklama||'').trim(),marka:(s.marka||'').trim(),model:(s.model||'').trim(),miktar:s.miktar||0,birim:s.birim||'Pcs',birimFiyat:s.birimFiyat||0};
+    return{urunKodu:(s.urunKodu||'').trim(),aciklama:(s.aciklama||'').trim(),kategori:(s.kategori||'').trim(),marka:(s.marka||'').trim(),model:(s.model||'').trim(),miktar:s.miktar||0,birim:s.birim||'Pcs',birimFiyat:s.birimFiyat||0,ymSatirId:s.ymSatirId||null};
   });
   if(!satirlar.length)return toast('En az bir teklif kalemi girin.','error');
   var payload={
@@ -243,7 +250,7 @@ async function ihrSaveTeklif(andPrint){
 function ihrDetaySatirlarHtml(t){
   return(t.satirlar||[]).map(function(s){
     var a=(s.miktar||0)*(s.birimFiyat||0);
-    var alt=[s.marka,s.model].filter(Boolean).join(' · ');
+    var alt=[s.kategori,s.marka,s.model].filter(Boolean).join(' · ');
     return'<tr><td>'+(s.urunKodu?'<span style="font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-right:6px">'+esc(s.urunKodu)+'</span>':'')+esc(s.aciklama||'—')
       +(alt?'<div class="pd-sub-text">'+esc(alt)+'</div>':'')+'</td>'
       +'<td class="r" style="color:var(--text2)">'+s.miktar+' '+esc(s.birim)+'</td>'
@@ -256,6 +263,7 @@ function ihrDetaySatirlarHtml(t){
 const IHR_KOLONLAR={
   urunKodu:['kod','ürün kodu','urun kodu','stok kodu','code','item code','product code','part no','part number','ref','reference'],
   aciklama:['açıklama','aciklama','ürün adı','urun adi','ürün','urun','description','item description','item','product','product name'],
+  kategori:['kategori','category','grup','group'],
   marka:['marka','brand','manufacturer','make'],
   model:['model','model no','model number'],
   miktar:['adet','miktar','qty','quantity','q ty'],
@@ -371,7 +379,7 @@ function ihrImportKalemExcel(e){
         if(!fiyat&&toplam&&miktar)fiyat=toplam/miktar;
         fiyat=Math.round(fiyat*100)/100;
         if(toplam&&Math.abs(miktar*fiyat-toplam)>0.01)farkli++;
-        yeni.push({urunKodu:kod,aciklama:aciklama,marka:metin(row,'marka'),model:metin(row,'model'),miktar:miktar,birim:_ihrBirim(hucre(row,'birim')),birimFiyat:fiyat});
+        yeni.push(Object.assign(_ihrBosKalem(),{urunKodu:kod,aciklama:aciklama,kategori:metin(row,'kategori'),marka:metin(row,'marka'),model:metin(row,'model'),miktar:miktar,birim:_ihrBirim(hucre(row,'birim')),birimFiyat:fiyat}));
       }
     }catch(err){return toast('Dosya okunamadı: '+err.message,'error');}
     if(!yeni.length)return toast('Dosyada aktarılacak kalem bulunamadı.','info');
@@ -462,7 +470,7 @@ async function _ihrGeneratePDF(t,logoPngDataUrl,imzaGizle){
   var contentBottom=mm(272);   // alt bilgi çizgisinin üstünde kalan son kullanılabilir y
 
   var satirlar=(t.satirlar||[]).map(function(s,i){
-    return{no:i+1,kod:s.urunKodu||'',aciklama:s.aciklama||'-',marka:s.marka||'',model:s.model||'',miktar:s.miktar||0,birim:s.birim||'Pcs',fiyat:s.birimFiyat||0,tutar:(s.miktar||0)*(s.birimFiyat||0)};
+    return{no:i+1,kod:s.urunKodu||'',aciklama:s.aciklama||'-',kategori:s.kategori||'',marka:s.marka||'',model:s.model||'',miktar:s.miktar||0,birim:s.birim||'Pcs',fiyat:s.birimFiyat||0,tutar:(s.miktar||0)*(s.birimFiyat||0)};
   });
   var genelToplam=satirlar.reduce(function(a,s){return a+s.tutar;},0);
 
@@ -515,17 +523,18 @@ async function _ihrGeneratePDF(t,logoPngDataUrl,imzaGizle){
   doc.line(mm(15.446),divY,mm(194.63),divY);
 
   // ── KALEM TABLOSU ──
-  // Kod / Marka / Model sütunlarından tamamen boş olanlar çıkarılır, genişlikleri açıklamaya eklenir
+  // Kod / Kategori / Marka / Model sütunlarından tamamen boş olanlar çıkarılır, genişlikleri açıklamaya eklenir
   var kolonlar=[
-    {k:'no',head:'#',w:7,al:'center'},
-    {k:'kod',head:'CODE',w:22,al:'left',opt:true},
-    {k:'aciklama',head:'DESCRIPTION',w:50.184,al:'left'},
-    {k:'marka',head:'BRAND',w:19,al:'left',opt:true},
-    {k:'model',head:'MODEL',w:21,al:'left',opt:true},
-    {k:'miktar',head:'QTY',w:12,al:'center'},
-    {k:'birim',head:'UNIT',w:11,al:'center'},
-    {k:'fiyat',head:'UNIT PRICE',w:17,al:'right'},
-    {k:'tutar',head:'AMOUNT',w:20,al:'right'}
+    {k:'no',head:'#',w:6,al:'center'},
+    {k:'kod',head:'CODE',w:18,al:'left',opt:true},
+    {k:'aciklama',head:'DESCRIPTION',w:44.184,al:'left'},
+    {k:'kategori',head:'CATEGORY',w:16,al:'left',opt:true},
+    {k:'marka',head:'BRAND',w:16,al:'left',opt:true},
+    {k:'model',head:'MODEL',w:17,al:'left',opt:true},
+    {k:'miktar',head:'QTY',w:11,al:'center'},
+    {k:'birim',head:'UNIT',w:10,al:'center'},
+    {k:'fiyat',head:'UNIT PRICE',w:20,al:'right'},
+    {k:'tutar',head:'AMOUNT',w:21,al:'right'}
   ];
   var ekGenislik=0;
   kolonlar=kolonlar.filter(function(c){

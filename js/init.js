@@ -15,7 +15,7 @@ var _VISIBILITY_STALE_MS = 30000; // 30 saniye
 
 // Form sayfaları — sekme geri dönüşünde yenilenmez (veri kaybı riski)
 var _FORM_PAGES = new Set([
-  'servis-form','teklif-form','ihr-teklif-form','musteri-form','urun-form',
+  'servis-form','teklif-form','ihr-teklif-form','ym-form','musteri-form','urun-form',
   'siparis-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris',
   'bitmis-cikis','bitmis-sayim','kullanici-form'
 ]);

@@ -4,70 +4,11 @@ require __DIR__ . '/../_bootstrap.php';
 
 $user = requireAuth($pdo);
 
-// Satış: Taslak→İletildi→Siparişe Dönüştü|Reddedildi  /  Servis: +Kabul Edildi+Kapandı
-const DURUM_DEGERLERI = ['Taslak','İletildi','Kabul Edildi','Siparişe Dönüştü','Reddedildi','Kapandı','Revize Edildi'];
-const BIRIM_DEGERLERI = ['Adet','Saat','Gün','Parça'];
-// Yurtdışı Satış Portalı birimleri (PDF İngilizce olduğu için doğrudan İngilizce saklanır)
-const IHRACAT_BIRIMLERI = ['Pcs','Set','Box','Pack','Roll','Meter','Kg','Hour','Day','Lot'];
-const INCOTERMS = ['EXW','FCA','FAS','FOB','CFR','CIF','CPT','CIP','DAP','DPU','DDP'];
-const PARA_BIRIMLERI = ['TRY','USD','EUR','GBP'];
-
-
+require __DIR__ . '/../../includes/teklif.php';
 
 function normalizePortal($value): ?string {
     $value = (string)($value ?? '');
     return in_array($value, ['servis', 'satis', 'ihracat'], true) ? $value : null;
-}
-
-function satirlarFromInput(array $input, string $portal): array {
-    $isIhracat = $portal === 'ihracat';
-    $out = [];
-    foreach (($input['satirlar'] ?? []) as $i => $s) {
-        $out[] = [
-            'sira'               => $i,
-            'urunKodu'           => $isIhracat ? strOrNull($s['urunKodu'] ?? null) : null,
-            'aciklama'           => strOrNull($s['aciklama'] ?? null),
-            'marka'              => $isIhracat ? strOrNull($s['marka'] ?? null) : null,
-            'model'              => $isIhracat ? strOrNull($s['model'] ?? null) : null,
-            'miktar'             => (float)($s['miktar'] ?? 0),
-            'birim'              => $isIhracat
-                ? enumOrDefault($s['birim'] ?? null, IHRACAT_BIRIMLERI, 'Pcs')
-                : enumOrDefault($s['birim'] ?? null, BIRIM_DEGERLERI, 'Adet'),
-            'birimFiyat'         => (float)($s['birimFiyat'] ?? 0),
-            'seciliParametreler' => $s['seciliParametreler'] ?? [],
-        ];
-    }
-    return $out;
-}
-
-function mapSatirRow(array $row): array {
-    return [
-        'urunKodu'           => $row['urun_kodu'] ?? null,
-        'aciklama'           => $row['aciklama'],
-        'marka'              => $row['marka'] ?? null,
-        'model'              => $row['model'] ?? null,
-        'miktar'             => (float)$row['miktar'],
-        'birim'              => $row['birim'],
-        'birimFiyat'         => (float)$row['birim_fiyat'],
-        'seciliParametreler' => $row['secili_parametreler'] ? json_decode($row['secili_parametreler'], true) : [],
-    ];
-}
-
-function fetchSatirlar(PDO $pdo, string $quoteId): array {
-    $stmt = $pdo->prepare('SELECT * FROM quote_line_items WHERE quote_id = ? ORDER BY sira ASC, id ASC');
-    $stmt->execute([$quoteId]);
-    return array_map('mapSatirRow', $stmt->fetchAll());
-}
-
-function replaceSatirlar(PDO $pdo, string $quoteId, array $satirlar): void {
-    $pdo->prepare('DELETE FROM quote_line_items WHERE quote_id = ?')->execute([$quoteId]);
-    $stmt = $pdo->prepare('INSERT INTO quote_line_items (quote_id, sira, urun_kodu, aciklama, marka, model, miktar, birim, birim_fiyat, secili_parametreler) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    foreach ($satirlar as $s) {
-        $stmt->execute([
-            $quoteId, $s['sira'], $s['urunKodu'], $s['aciklama'], $s['marka'], $s['model'], $s['miktar'], $s['birim'], $s['birimFiyat'],
-            json_encode($s['seciliParametreler'], JSON_UNESCAPED_UNICODE),
-        ]);
-    }
 }
 
 function teklifResponse(PDO $pdo, array $row, ?array $satirlar = null, ?array $durumGecmisi = null): array {
@@ -106,27 +47,8 @@ function teklifResponse(PDO $pdo, array $row, ?array $satirlar = null, ?array $d
         'olusturanTelefon'   => $row['olusturan_telefon'] ?? null,
         'olusturmaTarihi'    => $row['created_at'],
         'durumGecmisi'       => $durumGecmisi ?? fetchStatusHistory($pdo, 'teklif', $row['id']),
+        'yaklasikMaliyet'    => !empty($row['ym_id']) ? ['id' => $row['ym_id'], 'numara' => $row['ym_numara']] : null,
     ];
-}
-
-function nextTeklifNo(PDO $pdo, string $portal): string {
-    $prefix = 'TKL';
-    $digits = 5;
-
-    $stmt = $pdo->prepare('SELECT data FROM settings WHERE portal = ?');
-    $stmt->execute([$portal]);
-    $row = $stmt->fetch();
-    if ($row) {
-        $data = json_decode($row['data'], true) ?? [];
-        if (!empty($data['teklifPrefix'])) $prefix = (string)$data['teklifPrefix'];
-        if (!empty($data['teklifDigits'])) $digits = (int)$data['teklifDigits'];
-    }
-
-    $stmt = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(teklif_no, ?) AS UNSIGNED)) AS mx FROM quotes WHERE teklif_no LIKE CONCAT(?, '%')");
-    $stmt->execute([strlen($prefix) + 1, $prefix]);
-    $mx = (int)($stmt->fetch()['mx'] ?? 0);
-
-    return $prefix . str_pad((string)($mx + 1), $digits, '0', STR_PAD_LEFT);
 }
 
 // Yurtdışı teklif alanları [incoterm, teslim_yeri, banka_hesabi]; diğer portallarda NULL
@@ -157,7 +79,7 @@ switch ($method) {
         }
         requirePortalAccess($user, $portal);
 
-        $stmt = $pdo->prepare('SELECT q.*, u.ad AS olusturan_ad, u.email AS olusturan_email, u.telefon AS olusturan_telefon FROM quotes q LEFT JOIN users u ON u.id = q.olusturan_kullanici WHERE q.portal = ? ORDER BY q.created_at DESC');
+        $stmt = $pdo->prepare(TEKLIF_SELECT . ' WHERE q.portal = ? ORDER BY q.created_at DESC');
         $stmt->execute([$portal]);
         $rows = $stmt->fetchAll();
 
@@ -238,7 +160,7 @@ switch ($method) {
             throw $e;
         }
 
-        $stmt = $pdo->prepare('SELECT q.*, u.ad AS olusturan_ad, u.email AS olusturan_email, u.telefon AS olusturan_telefon FROM quotes q LEFT JOIN users u ON u.id = q.olusturan_kullanici WHERE q.id = ?');
+        $stmt = $pdo->prepare(TEKLIF_SELECT . ' WHERE q.id = ?');
         $stmt->execute([$id]);
         http_response_code(201);
         echo json_encode(['teklif' => teklifResponse($pdo, $stmt->fetch())]);
@@ -307,7 +229,7 @@ switch ($method) {
             throw $e;
         }
 
-        $stmt = $pdo->prepare('SELECT q.*, u.ad AS olusturan_ad, u.email AS olusturan_email, u.telefon AS olusturan_telefon FROM quotes q LEFT JOIN users u ON u.id = q.olusturan_kullanici WHERE q.id = ?');
+        $stmt = $pdo->prepare(TEKLIF_SELECT . ' WHERE q.id = ?');
         $stmt->execute([$id]);
         echo json_encode(['teklif' => teklifResponse($pdo, $stmt->fetch())]);
         break;

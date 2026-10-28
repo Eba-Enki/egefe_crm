@@ -21,6 +21,7 @@ var PORTAL_SAYFALAR = {
   ],
   ihracat: [
     {id:'dashboard',      label:'Dashboard'},
+    {id:'yaklasik-maliyetler', label:'Yaklaşık Maliyet'},
     {id:'teklifler',      label:'Teklifler'},
     {id:'musteriler',     label:'Müşteriler'},
     {id:'ayarlar',        label:'Ayarlar'}

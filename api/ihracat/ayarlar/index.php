@@ -17,6 +17,8 @@ $VARSAYILAN = [
     'vergiNo'         => '',
     'teklifPrefix'    => 'EXP',
     'teklifDigits'    => 5,
+    'ymPrefix'        => 'YM',
+    'ymBaslangic'     => 1,
     'bankaHesaplari'  => [],
 ];
 
@@ -62,13 +64,16 @@ switch ($method) {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
         $ayarlar = ayarlarOku($pdo, $VARSAYILAN);
 
-        foreach (['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo','teklifPrefix'] as $k) {
+        foreach (['firma','tel','faks','adres','email','web','vergiDairesi','vergiNo','teklifPrefix','ymPrefix'] as $k) {
             if (array_key_exists($k, $input)) {
                 $ayarlar[$k] = trim((string)$input[$k]);
             }
         }
         if (array_key_exists('teklifDigits', $input)) {
             $ayarlar['teklifDigits'] = min(9, max(3, (int)$input['teklifDigits']));
+        }
+        if (array_key_exists('ymBaslangic', $input)) {
+            $ayarlar['ymBaslangic'] = max(1, (int)$input['ymBaslangic']);
         }
         if (array_key_exists('bankaHesaplari', $input) && is_array($input['bankaHesaplari'])) {
             $ayarlar['bankaHesaplari'] = bankaHesaplariFromInput($input['bankaHesaplari']);

@@ -395,6 +395,8 @@ function updateSettingsPreview(){
   if(sp&&sd&&ps){var p=sp.value.trim().toUpperCase()||'KN';var d=Math.min(9,Math.max(3,parseInt(sd.value)||6));ps.textContent=p+String(1).padStart(d,'0');}
   if(tp&&td&&pt){var p2=tp.value.trim().toUpperCase()||'TKL';var d2=Math.min(9,Math.max(3,parseInt(td.value)||5));pt.textContent=p2+String(1).padStart(d2,'0');}
   if(sipp&&sipd&&prs){var p3=sipp.value.trim().toUpperCase()||'SIP';var d3=Math.min(9,Math.max(3,parseInt(sipd.value)||5));prs.textContent=p3+String(1).padStart(d3,'0');}
+  var ymp=document.getElementById('set-ym-prefix');var ymb=document.getElementById('set-ym-baslangic');var prym=document.getElementById('preview-ym');
+  if(ymp&&ymb&&prym){prym.textContent=(ymp.value.trim().toUpperCase()||'YM')+String(Math.max(1,parseInt(ymb.value)||1)).padStart(4,'0');}
 }
 // seciliParametreler ve eski veri uyumluluğu için: {id,ad,kisaltma} objesini veya encode string'i parse eder
 function parseParam(p){
@@ -521,6 +523,8 @@ async function loadSettings(){
   var tdEl=document.getElementById('set-teklif-digits');if(tdEl)tdEl.value=state.settings.teklifDigits||5;
   var sipPEl=document.getElementById('set-siparis-prefix');if(sipPEl)sipPEl.value=state.settings.siparisPrefix||'SIP';
   var sipDEl=document.getElementById('set-siparis-digits');if(sipDEl)sipDEl.value=state.settings.siparisDigits||5;
+  var ymPEl=document.getElementById('set-ym-prefix');if(ymPEl)ymPEl.value=state.settings.ymPrefix||'YM';
+  var ymBEl=document.getElementById('set-ym-baslangic');if(ymBEl)ymBEl.value=state.settings.ymBaslangic||1;
   var servisDiv=document.getElementById('settings-servis-kayit');
   var siparisDiv=document.getElementById('settings-siparis-no');
   var isSatis=typeof currentPortal!=='undefined'&&currentPortal==='satis';
@@ -554,6 +558,10 @@ async function saveSettings(){
   var tdEl=document.getElementById('set-teklif-digits');if(tdEl&&tdEl.value)state.settings.teklifDigits=Math.min(9,Math.max(3,parseInt(tdEl.value)||5));
   var sipPEl=document.getElementById('set-siparis-prefix');if(sipPEl&&sipPEl.value.trim())state.settings.siparisPrefix=sipPEl.value.trim().toUpperCase();
   var sipDEl=document.getElementById('set-siparis-digits');if(sipDEl&&sipDEl.value)state.settings.siparisDigits=Math.min(9,Math.max(3,parseInt(sipDEl.value)||5));
+  if(currentPortal==='ihracat'){
+    var ymPEl=document.getElementById('set-ym-prefix');if(ymPEl&&ymPEl.value.trim())state.settings.ymPrefix=ymPEl.value.trim().toUpperCase();
+    var ymBEl=document.getElementById('set-ym-baslangic');if(ymBEl&&ymBEl.value)state.settings.ymBaslangic=Math.max(1,parseInt(ymBEl.value)||1);
+  }
   try{
     await apiPut(currentPortal+'/ayarlar',state.settings);
   }catch(e){

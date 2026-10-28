@@ -109,12 +109,12 @@ function _startAutoLogout(){
 ['mousemove','keydown','click','touchstart'].forEach(function(evt){document.addEventListener(evt,_resetActivity,{passive:true});});
 var _formDirty=false;
 var _currentPageId='';
-var GUARDED_FORM_PAGES=new Set(['servis-form','teklif-form','ihr-teklif-form','musteri-form','urun-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris','bitmis-cikis','bitmis-sayim']);
+var GUARDED_FORM_PAGES=new Set(['servis-form','teklif-form','ihr-teklif-form','ym-form','musteri-form','urun-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris','bitmis-cikis','bitmis-sayim']);
 document.addEventListener('input',function(){if(GUARDED_FORM_PAGES.has(_currentPageId))_formDirty=true;});
 document.addEventListener('change',function(){if(GUARDED_FORM_PAGES.has(_currentPageId))_formDirty=true;});
-function renderPagination(containerId,currentPage,totalItems,fnName){
+function renderPagination(containerId,currentPage,totalItems,fnName,pageSize){
   var el=document.getElementById(containerId);if(!el)return;
-  var totalPages=Math.ceil(totalItems/PAGE_SIZE);
+  var totalPages=Math.ceil(totalItems/(pageSize||PAGE_SIZE));
   if(totalPages<=1){el.innerHTML='';return;}
   var pages=[];
   if(totalPages<=7){for(var i=1;i<=totalPages;i++)pages.push(i);}
@@ -134,7 +134,7 @@ function renderPagination(containerId,currentPage,totalItems,fnName){
   h+='</div>';
   el.innerHTML=h;
 }
-const PAGE_TITLES={dashboard:'Dashboard',servisler:'Servis Kayıtları','servis-form':'Servis Formu',teklifler:'Teklifler',tutanaklar:'Teslim Tutanakları','teklif-form':'Teklif Hazırla','ihr-teklif-form':'Yurtdışı Teklifi Hazırla',musteriler:'Müşteriler','musteri-form':'Müşteri',urunler:'Ürünler','urun-form':'Ürün',siparisler:'Siparişler',faturalar:'Faturalar','siparis-form':'Sipariş Oluştur',ayarlar:'Ayarlar',
+const PAGE_TITLES={dashboard:'Dashboard',servisler:'Servis Kayıtları','servis-form':'Servis Formu',teklifler:'Teklifler',tutanaklar:'Teslim Tutanakları','teklif-form':'Teklif Hazırla','ihr-teklif-form':'Yurtdışı Teklifi Hazırla','yaklasik-maliyetler':'Yaklaşık Maliyet','ym-form':'Yaklaşık Maliyet',musteriler:'Müşteriler','musteri-form':'Müşteri',urunler:'Ürünler','urun-form':'Ürün',siparisler:'Siparişler',faturalar:'Faturalar','siparis-form':'Sipariş Oluştur',ayarlar:'Ayarlar',
 'stok-dashboard':'<strong>STOK - DASHBOARD</strong>',
 'ham-stok':'<strong>SHEET & STRİP STOK DURUMU</strong>',
 'ham-girisler':'<strong>SHEET & STRİP STOK GİRİŞ LİSTESİ</strong>',
@@ -169,7 +169,7 @@ function _canAccessPage(user,pageId){
   if(!user)return true;
   var isAdmin=user.rol==='yönetici'||user.rol==='admin';
   if(isAdmin)return true;
-  var FORM_PAGES=new Set(['servis-form','teklif-form','ihr-teklif-form','musteri-form','urun-form','siparis-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris','bitmis-cikis','bitmis-sayim','kullanici-form']);
+  var FORM_PAGES=new Set(['servis-form','teklif-form','ihr-teklif-form','ym-form','musteri-form','urun-form','siparis-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris','bitmis-cikis','bitmis-sayim','kullanici-form']);
   if(FORM_PAGES.has(pageId))return true;
   if(!currentPortal||currentPortal==='sistem')return true;
   var iz=user.izinler&&user.izinler[currentPortal];
@@ -198,6 +198,7 @@ function showPage(id,skipRender){
   const pageTopbarBtns={
     servisler:'topbar-new-servis-btn',
     teklifler:'topbar-new-teklif-btn',
+    'yaklasik-maliyetler':'topbar-new-ym-btn',
     musteriler:'topbar-new-musteri-btn',
     urunler:'topbar-new-urun-btn',
     tutanaklar:'topbar-new-tutanak-btn'
@@ -239,7 +240,7 @@ function showPage(id,skipRender){
   } else {
     ['topbar-stok-excel','topbar-stok-ham-giris','topbar-stok-ham-cikis','topbar-stok-ham-sayim','topbar-stok-ham-sayim-sablon','topbar-stok-bitmis-giris','topbar-stok-bitmis-cikis','topbar-stok-bitmis-sayim','topbar-stok-bitmis-sayim-sablon','topbar-stok-param'].forEach(function(bid){var b=document.getElementById(bid);if(b)b.style.display='none';});
   }
-  const renders={dashboard:renderDashboard,servisler:loadServisler,teklifler:loadTeklifler,musteriler:loadMusteriler,urunler:loadUrunler,ayarlar:loadSettings,tutanaklar:loadTutanaklar,siparisler:loadSiparisler,faturalar:loadFaturalar,'siparis-form':function(){},'stok-dashboard':loadStokDashboard,'ham-stok':loadHamStok,'ham-girisler':loadHamGirisler,'ham-giris':loadHamGirisFormPage,'ham-cikislar':loadHamCikislar,'ham-cikis':loadHamCikisFormPage,'ham-sayimlar':loadHamSayimlar,'ham-sayim':loadHamSayimFormPage,'bitmis-stok':loadBitmisStok,'bitmis-girisler':loadBitmisGirisler,'bitmis-giris':loadBitmisGirisFormPage,'bitmis-cikislar':loadBitmisCikislar,'bitmis-cikis':loadBitmisCikisFormPage,'bitmis-sayimlar':loadBitmisSayimlar,'bitmis-sayim':loadBitmisSayimFormPage,'stok-ayarlar':loadStokAyarlar,'stok-parametreler':loadStokParametreler};
+  const renders={dashboard:renderDashboard,servisler:loadServisler,teklifler:loadTeklifler,'yaklasik-maliyetler':loadYaklasikMaliyetler,musteriler:loadMusteriler,urunler:loadUrunler,ayarlar:loadSettings,tutanaklar:loadTutanaklar,siparisler:loadSiparisler,faturalar:loadFaturalar,'siparis-form':function(){},'stok-dashboard':loadStokDashboard,'ham-stok':loadHamStok,'ham-girisler':loadHamGirisler,'ham-giris':loadHamGirisFormPage,'ham-cikislar':loadHamCikislar,'ham-cikis':loadHamCikisFormPage,'ham-sayimlar':loadHamSayimlar,'ham-sayim':loadHamSayimFormPage,'bitmis-stok':loadBitmisStok,'bitmis-girisler':loadBitmisGirisler,'bitmis-giris':loadBitmisGirisFormPage,'bitmis-cikislar':loadBitmisCikislar,'bitmis-cikis':loadBitmisCikisFormPage,'bitmis-sayimlar':loadBitmisSayimlar,'bitmis-sayim':loadBitmisSayimFormPage,'stok-ayarlar':loadStokAyarlar,'stok-parametreler':loadStokParametreler};
   if(!skipRender&&renders[id])renders[id]();
 }
 

@@ -109,7 +109,7 @@ function _startAutoLogout(){
 ['mousemove','keydown','click','touchstart'].forEach(function(evt){document.addEventListener(evt,_resetActivity,{passive:true});});
 var _formDirty=false;
 var _currentPageId='';
-var GUARDED_FORM_PAGES=new Set(['servis-form','teklif-form','musteri-form','urun-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris','bitmis-cikis','bitmis-sayim']);
+var GUARDED_FORM_PAGES=new Set(['servis-form','teklif-form','ihr-teklif-form','musteri-form','urun-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris','bitmis-cikis','bitmis-sayim']);
 document.addEventListener('input',function(){if(GUARDED_FORM_PAGES.has(_currentPageId))_formDirty=true;});
 document.addEventListener('change',function(){if(GUARDED_FORM_PAGES.has(_currentPageId))_formDirty=true;});
 function renderPagination(containerId,currentPage,totalItems,fnName){
@@ -134,7 +134,7 @@ function renderPagination(containerId,currentPage,totalItems,fnName){
   h+='</div>';
   el.innerHTML=h;
 }
-const PAGE_TITLES={dashboard:'Dashboard',servisler:'Servis Kayıtları','servis-form':'Servis Formu',teklifler:'Teklifler',tutanaklar:'Teslim Tutanakları','teklif-form':'Teklif Hazırla',musteriler:'Müşteriler','musteri-form':'Müşteri',urunler:'Ürünler','urun-form':'Ürün',siparisler:'Siparişler',faturalar:'Faturalar','siparis-form':'Sipariş Oluştur',ayarlar:'Ayarlar',
+const PAGE_TITLES={dashboard:'Dashboard',servisler:'Servis Kayıtları','servis-form':'Servis Formu',teklifler:'Teklifler',tutanaklar:'Teslim Tutanakları','teklif-form':'Teklif Hazırla','ihr-teklif-form':'Yurtdışı Teklifi Hazırla',musteriler:'Müşteriler','musteri-form':'Müşteri',urunler:'Ürünler','urun-form':'Ürün',siparisler:'Siparişler',faturalar:'Faturalar','siparis-form':'Sipariş Oluştur',ayarlar:'Ayarlar',
 'stok-dashboard':'<strong>STOK - DASHBOARD</strong>',
 'ham-stok':'<strong>SHEET & STRİP STOK DURUMU</strong>',
 'ham-girisler':'<strong>SHEET & STRİP STOK GİRİŞ LİSTESİ</strong>',
@@ -169,7 +169,7 @@ function _canAccessPage(user,pageId){
   if(!user)return true;
   var isAdmin=user.rol==='yönetici'||user.rol==='admin';
   if(isAdmin)return true;
-  var FORM_PAGES=new Set(['servis-form','teklif-form','musteri-form','urun-form','siparis-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris','bitmis-cikis','bitmis-sayim','kullanici-form']);
+  var FORM_PAGES=new Set(['servis-form','teklif-form','ihr-teklif-form','musteri-form','urun-form','siparis-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris','bitmis-cikis','bitmis-sayim','kullanici-form']);
   if(FORM_PAGES.has(pageId))return true;
   if(!currentPortal||currentPortal==='sistem')return true;
   var iz=user.izinler&&user.izinler[currentPortal];
@@ -337,6 +337,7 @@ async function renderSfSurecGecmisi(s){
 }
 function goTeklifForm(editId,servisId){
   if(state.currentUser?.rol==='izleyici'){toast('Yetki yok.','error');return}
+  if(currentPortal==='ihracat')return goIhrTeklifForm(editId);
   document.getElementById('tf-edit-id').value=editId||'';
   document.getElementById('tf-title').textContent=editId?'Teklif Düzenle':'Yeni Teklif Hazırla';
   if(editId){
@@ -403,9 +404,10 @@ function goMusteriForm(editId){
   const m=editId?state.musteriler.find(x=>x.id===editId):null;
   document.getElementById('mf-edit-id').value=editId||'';
   document.getElementById('mf-title').textContent=m?'Müşteri Düzenle':'Yeni Müşteri';
-  ['mf-kurum','mf-kisi','mf-tel','mf-email','mf-sehir','mf-adres','mf-not'].forEach(id=>{const f=id.replace('mf-','');document.getElementById(id).value=m?.[f]||''});
-  var mfPage=document.getElementById('mf-form-page');if(mfPage)mfPage.style.maxWidth=currentPortal==='satis'?'820px':'580px';
-  if(currentPortal==='satis'){
+  ['mf-kurum','mf-kisi','mf-tel','mf-email','mf-sehir','mf-ulke','mf-adres','mf-not'].forEach(id=>{const f=id.replace('mf-','');document.getElementById(id).value=m?.[f]||''});
+  var _kisiListeli=currentPortal==='satis'||currentPortal==='ihracat';
+  var mfPage=document.getElementById('mf-form-page');if(mfPage)mfPage.style.maxWidth=_kisiListeli?'820px':'580px';
+  if(_kisiListeli){
     musteriKisiler=(m&&m.iletisimKisileri&&m.iletisimKisileri.length)
       ?JSON.parse(JSON.stringify(m.iletisimKisileri))
       :(m&&m.kisi?[{ad:m.kisi,departman:'',tel:m.tel||'',email:m.email||''}]:[{ad:'',departman:'',tel:'',email:''}]);
@@ -470,7 +472,8 @@ function toTitleCase(str){
 // ════ COMBOS ════
 var _MUSTERI_COMBO_CFG={
   'sf-kurumAdi':{clear:'sf-kurum-clear-btn',hidden:'sf-musteri-id'},
-  'tf-kurum':{clear:'tf-kurum-clear-btn',hidden:'tf-musteri-id'}
+  'tf-kurum':{clear:'tf-kurum-clear-btn',hidden:'tf-musteri-id'},
+  'itf-kurum':{clear:'itf-kurum-clear-btn',hidden:'itf-musteri-id'}
 };
 
 // ════ TEKLİF FORMU — KAYITLI İLGİLİ KİŞİ SEÇİMİ (yalnızca Satış Pazarlama Portalı) ════
@@ -539,6 +542,8 @@ function clearMusteriSelection(inputId){
     refreshTfIlgiliKisiPicker(null);
   } else if(inputId==='sf-kurumAdi'){
     ['sf-ilgiliKisi','sf-telefon','sf-email'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  } else if(inputId==='itf-kurum'){
+    ihrMusteriSecildi(null);
   }
 }
 
@@ -574,7 +579,10 @@ function comboPickItem(inputId,dropId,idx){
   var inp=document.getElementById(inputId);
   if(inp)inp.value=item.label;
   comboClose(dropId);
-  if(inputId==='tf-kurum'||inputId==='sf-kurumAdi'){
+  if(inputId==='itf-kurum'){
+    var mi=state.musteriler.find(function(x){return x.kurum===item.label;});
+    if(mi){lockMusteriField(inputId,mi.id);ihrMusteriSecildi(mi);}
+  } else if(inputId==='tf-kurum'||inputId==='sf-kurumAdi'){
     var m=state.musteriler.find(function(x){return x.kurum===item.label;});
     if(m){
       lockMusteriField(inputId,m.id);
@@ -594,7 +602,7 @@ function comboPickItem(inputId,dropId,idx){
 
 function comboAddMusteri(inputId){
   var q=(document.getElementById(inputId)||{}).value||'';
-  var returnPage=inputId==='tf-kurum'?'teklif-form':'servis-form';
+  var returnPage={'tf-kurum':'teklif-form','itf-kurum':'ihr-teklif-form'}[inputId]||'servis-form';
   state._musterAddReturn={inputId:inputId,returnPage:returnPage};
   goMusteriForm(null);
   if(q){var kEl=document.getElementById('mf-kurum');if(kEl)kEl.value=q;}

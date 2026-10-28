@@ -730,6 +730,8 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
 .portal-badge-servis{background:var(--teal-soft);color:var(--teal)}
 .portal-badge-satis{background:var(--amber-soft);color:var(--amber)}
 .portal-badge-stok{background:var(--green-soft);color:var(--green)}
+.portal-badge-ihracat{background:rgba(224,122,51,.13);color:#e07a33}
+[data-theme="light"] .portal-badge-ihracat{background:rgba(196,92,20,.1);color:#c45c14}
 
 /* Light theme overrides */
 [data-theme="light"] .field input,[data-theme="light"] .field select,[data-theme="light"] .field textarea,
@@ -850,6 +852,51 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
   --accent-soft:rgba(22,163,74,.1);--accent-glow:rgba(22,163,74,.25);
   --sb-section-color:rgba(22,163,74,.7);
 }
+
+/* Yurtdışı Satış — Bakır #C45C14 (kurumsal paletten; açık mod) / #e07a33 (koyu mod) */
+[data-portal="ihracat"]{
+  --accent:#e07a33;--accent2:#c45c14;
+  --accent-soft:rgba(224,122,51,.13);--accent-glow:rgba(224,122,51,.25);
+  --sb-section-color:rgba(224,122,51,.65);
+  --shadow-md:0 4px 12px rgba(0,0,0,.4),0 2px 4px rgba(0,0,0,.3),0 0 0 1px rgba(224,122,51,.06);
+  --shadow-lg:0 16px 40px rgba(0,0,0,.5),0 6px 16px rgba(0,0,0,.35),0 0 0 1px rgba(224,122,51,.08);
+  --shadow-xl:0 32px 80px rgba(0,0,0,.55),0 12px 32px rgba(0,0,0,.4),0 0 0 1px rgba(224,122,51,.1);
+}
+[data-portal="ihracat"][data-theme="light"]{
+  --accent:#c45c14;--accent2:#9a4510;
+  --accent-soft:rgba(196,92,20,.1);--accent-glow:rgba(196,92,20,.25);
+  --sb-section-color:rgba(196,92,20,.7);
+}
+
+/* ── YURTDIŞI TEKLİF FORMU ── */
+.ihr-items-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ihr-items{min-width:900px}
+.ihr-items thead th{display:table-cell!important}
+.ihr-items .ihr-no{width:3%;text-align:center;color:var(--text3);font-family:var(--font-mono);font-size:11px;vertical-align:middle}
+.ihr-items .ihr-kod{width:11%}
+.ihr-items .ihr-aciklama{width:27%}
+.ihr-items .ihr-marka{width:10%}
+.ihr-items .ihr-model{width:10%}
+.ihr-items .ihr-miktar{width:7%}
+.ihr-items .ihr-birim{width:8%}
+.ihr-items .ihr-fiyat{width:11%}
+.ihr-items .ihr-total{width:10%;font-family:var(--font-mono);font-size:12px;color:var(--amber);padding-right:10px!important;text-align:right;white-space:nowrap;vertical-align:middle}
+.ihr-items thead .ihr-total,.ihr-items thead .ihr-fiyat{text-align:right}
+.ihr-items td.ihr-fiyat input,.ihr-items td.ihr-miktar input{text-align:right}
+.ihr-items textarea{width:100%;resize:vertical;min-height:30px;font-size:12px;line-height:1.4;padding:5px 7px;border:1px solid transparent;border-radius:var(--radius-sm);background:transparent;color:var(--text);font-family:var(--font-body)}
+.ihr-items textarea:hover{border-color:var(--border)}
+.ihr-items textarea:focus{outline:none;border-color:var(--accent);background:var(--bg4)}
+.ihr-kalem-aksiyon{display:flex;gap:6px;flex-wrap:wrap;text-transform:none;letter-spacing:normal;font-size:12px;font-weight:500}
+.ihr-banka-list{display:flex;flex-direction:column;gap:12px}
+.ihr-banka-kart{position:relative;display:grid;grid-template-columns:110px 1fr 1fr;gap:12px;padding:14px 46px 14px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.ihr-banka-kart .field-iban{grid-column:span 2}
+.ihr-banka-kart .ihr-banka-sil{position:absolute;top:10px;right:10px}
+.ihr-banka-kart input{font-size:13px}
+@media(max-width:700px){.ihr-banka-kart{grid-template-columns:1fr}.ihr-banka-kart .field-iban{grid-column:auto}}
+.ihr-banka-onizleme{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 18px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px}
+.ihr-banka-onizleme .lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.ihr-banka-onizleme .val{color:var(--text)}
+.ihr-banka-onizleme .val.mono{font-family:var(--font-mono);word-break:break-all}
 
 /* ── SİSTEM YÖNETİMİ ── */
 .sistem-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}

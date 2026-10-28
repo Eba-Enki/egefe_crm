@@ -10,7 +10,7 @@
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js"></script>
 <script src="vendor/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=17">
+<link rel="stylesheet" href="styles.css?v=18">
 </head>
 <body>
 
@@ -40,6 +40,16 @@
       </div>
       <div class="portal-title">Satış Pazarlama Portalı</div>
       <div class="portal-sub">Teklifler, siparişler ve müşteri yönetimi</div>
+      <div class="portal-card-cta">Portala Giriş <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+    </div>
+    <div class="portal-card" style="--card-accent:#c45c14;--card-glow:rgba(196,92,20,.18)" onclick="selectPortal('ihracat')">
+      <div class="portal-card-icon" style="background:linear-gradient(135deg,#c45c14,#9a4510);box-shadow:0 8px 24px rgba(196,92,20,.35)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+      </div>
+      <div class="portal-title">Yurtdışı Satış Portalı</div>
+      <div class="portal-sub">Yurtdışı projeler için müşteriler ve İngilizce teklifler</div>
       <div class="portal-card-cta">Portala Giriş <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
     </div>
   </div>
@@ -155,7 +165,7 @@
     <div class="sb-item servis-only" data-page="tutanaklar" onclick="showPage('tutanaklar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span><span>Tutanaklar</span></div>
     <div class="sb-section crm-only">Kayıtlar</div>
     <div class="sb-item crm-only" data-page="musteriler" onclick="showPage('musteriler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>Müşteriler</span></div>
-    <div class="sb-item crm-only" data-page="urunler" onclick="showPage('urunler')"><span class="icon"><i class="ti ti-database" style="font-size:16px"></i></span><span>Ürünler</span></div>
+    <div class="sb-item crm-only no-ihracat" data-page="urunler" onclick="showPage('urunler')"><span class="icon"><i class="ti ti-database" style="font-size:16px"></i></span><span>Ürünler</span></div>
 
     <!-- ─── Stok Yönetim Portalı ─── -->
     <div class="sb-section stok-only" style="display:none">Ana Menü</div>
@@ -401,7 +411,7 @@
           </div>
         </div>
         <div class="filter-extra">
-          <div class="filter-field"><label class="filter-field-label">Durum</label><div class="custom-select"><select id="tf-f-durum" onchange="renderTeklifler()" class="custom-select-native"><option value="">Tüm Durumlar</option><option>Taslak</option><option>İletildi</option><option>Kabul Edildi</option><option>Reddedildi</option><option class="servis-only">Kapandı</option><option class="satis-only">Siparişe Dönüştü</option><option class="satis-only">Revize Edildi</option></select><button type="button" class="custom-select-trigger" onclick="toggleCustomSelect(event,'tf-f-durum')"><span class="custom-select-label">Tüm Durumlar</span><i class="ti ti-chevron-down"></i></button></div></div>
+          <div class="filter-field"><label class="filter-field-label">Durum</label><div class="custom-select"><select id="tf-f-durum" onchange="renderTeklifler()" class="custom-select-native"><option value="">Tüm Durumlar</option><option>Taslak</option><option>İletildi</option><option>Kabul Edildi</option><option>Reddedildi</option><option class="servis-only">Kapandı</option><option class="satis-only">Siparişe Dönüştü</option><option class="satis-ihracat">Revize Edildi</option></select><button type="button" class="custom-select-trigger" onclick="toggleCustomSelect(event,'tf-f-durum')"><span class="custom-select-label">Tüm Durumlar</span><i class="ti ti-chevron-down"></i></button></div></div>
           <div class="filter-field"><label class="filter-field-label">Başlangıç Tarihi</label><input type="date" id="tf-f-ts" oninput="renderTeklifler()"></div>
           <div class="filter-field"><label class="filter-field-label">Bitiş Tarihi</label><input type="date" id="tf-f-te" oninput="renderTeklifler()"></div>
           <button class="btn btn-ghost btn-sm" onclick="clearTeklifFilters()"><i class="ti ti-x"></i> Temizle</button>
@@ -530,6 +540,114 @@
 
     </div>
 
+    <!-- ═══ YURTDIŞI TEKLİF FORMU (inline) ═══ -->
+    <div id="page-ihr-teklif-form" class="page">
+      <div class="form-page" style="max-width:1200px">
+        <div class="form-page-header">
+          <button class="btn btn-back" onclick="showPage('teklifler')"><i class="ti ti-arrow-narrow-left"></i> Geri</button>
+          <div><div class="form-page-title" id="itf-title">Yeni Yurtdışı Teklifi</div><div style="font-size:12px;color:var(--text3);margin-top:2px">PDF çıktısı İngilizce hazırlanır</div></div>
+        </div>
+        <input type="hidden" id="itf-edit-id">
+        <div class="form-card">
+          <div class="form-section-title">Müşteri / Firma Bilgileri</div>
+          <div class="form-grid">
+            <div class="field form-full">
+              <label>Firma / Müşteri</label>
+              <div class="combo-wrap">
+                <input type="text" id="itf-kurum" placeholder="Listeden seçin..." autocomplete="off"
+                  oninput="comboFilter('itf-kurum','cb-itf-musteri',getMusteriAds)"
+                  onfocus="comboFilter('itf-kurum','cb-itf-musteri',getMusteriAds)"
+                  onkeydown="comboKeydown(event,'itf-kurum','cb-itf-musteri')" onblur="setTimeout(function(){comboClose('cb-itf-musteri');musteriBlurValidate('itf-kurum');},200)">
+                <button type="button" class="combo-clear-btn" id="itf-kurum-clear-btn" style="display:none" onclick="clearMusteriSelection('itf-kurum')" title="Seçimi temizle">✕</button>
+                <input type="hidden" id="itf-musteri-id">
+                <div class="combo-dropdown" id="cb-itf-musteri"></div>
+              </div>
+            </div>
+            <div class="field"><label>İlgili Kişi (Attn.)</label><input type="text" id="itf-ilgiliKisi"></div>
+            <div class="field" id="itf-ilgili-kisi-sec-wrap" style="display:none">
+              <label>Kayıtlı Kişi Seç</label>
+              <select id="itf-ilgili-kisi-sec" onchange="ihrOnIlgiliKisiSecim()"></select>
+            </div>
+            <div class="field"><label>Telefon</label><input type="text" id="itf-telefon" placeholder="+49 30 1234 5678"></div>
+            <div class="field"><label>E-posta</label><input type="email" id="itf-email"></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Teklif Bilgileri</div>
+          <div class="form-grid">
+            <div class="field"><label>Teklif No</label><input type="text" id="itf-teklifNo" readonly style="color:var(--accent);background:var(--bg4)"></div>
+            <div class="field"><label>Teklif Tarihi</label><input type="date" id="itf-teklifTarihi"></div>
+            <div class="field"><label>Geçerlilik Tarihi</label><input type="date" id="itf-gecerlilik"></div>
+            <div class="field"><label>Para Birimi</label><select id="itf-paraBirimi" onchange="ihrOnParaBirimiChange(true)"><option value="USD">$ Amerikan Doları (USD)</option><option value="EUR">€ Euro (EUR)</option><option value="GBP">£ Sterlin (GBP)</option><option value="TRY">₺ Türk Lirası (TRY)</option></select></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            Teklif Kalemleri
+            <div class="ihr-kalem-aksiyon">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="ihrDownloadKalemSablon()" style="color:var(--text3)"><i class="ti ti-cloud-download"></i> Excel Şablonu İndir</button>
+              <label class="btn btn-ghost btn-sm" style="cursor:pointer;color:var(--green)"><i class="ti ti-file-import"></i> Excel'den İçe Aktar<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="ihrImportKalemExcel(event)"></label>
+            </div>
+          </div>
+          <div class="teklif-items-wrap ihr-items-wrap">
+            <table class="teklif-items ihr-items">
+              <thead><tr>
+                <th class="ihr-no">#</th>
+                <th class="ihr-kod">Kod</th>
+                <th class="ihr-aciklama">Açıklama</th>
+                <th class="ihr-marka">Marka</th>
+                <th class="ihr-model">Model</th>
+                <th class="ihr-miktar">Adet</th>
+                <th class="ihr-birim">Birim</th>
+                <th class="ihr-fiyat">Birim Fiyatı (<span id="itf-cur-sym">$</span>)</th>
+                <th class="ihr-total">Toplam</th>
+                <th class="ti-del"></th>
+              </tr></thead>
+              <tbody id="itf-body"></tbody>
+            </table>
+          </div>
+          <div class="teklif-totals">
+            <div class="totals-inner">
+              <div class="totals-row grand"><span>Toplam <span id="itf-kalem-sayisi" style="font-weight:400;color:var(--text3);font-size:11px"></span></span><span class="val" id="itf-toplam">0,00 $</span></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="ihrAddKalem()"><i class="ti ti-plus"></i> Kalem Ekle</button>
+            <button class="btn btn-ghost btn-sm" onclick="ihrClearKalemler()" style="color:var(--text3)"><i class="ti ti-eraser"></i> Tümünü Temizle</button>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Ticari Koşullar <span style="font-weight:400;color:var(--text3)">(PDF'te İngilizce görünür)</span></div>
+          <div class="form-grid">
+            <div class="field"><label>Teslim Şekli (Incoterms® 2020)</label><select id="itf-incoterm"></select></div>
+            <div class="field"><label>Teslim Yeri</label><input type="text" id="itf-teslimYeri" placeholder="Ankara, Türkiye / Hamburg Port"></div>
+            <div class="field"><label>Teslim Süresi</label><input type="text" id="itf-teslimat" list="itf-teslimat-list" placeholder="4-6 weeks after order confirmation"><datalist id="itf-teslimat-list"><option value="Ex-stock"><option value="2-3 weeks after order confirmation"><option value="4-6 weeks after order confirmation"><option value="6-8 weeks after order confirmation"><option value="8-10 weeks after receipt of advance payment"></datalist></div>
+            <div class="field"><label>Ödeme Koşulları</label><input type="text" id="itf-odemeKosulu" list="itf-odeme-list" placeholder="100% advance payment by T/T"><datalist id="itf-odeme-list"><option value="100% advance payment by T/T"><option value="50% advance, 50% before shipment by T/T"><option value="30% advance, 70% before shipment by T/T"><option value="100% by irrevocable L/C at sight"><option value="Net 30 days from invoice date"></datalist></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Banka Bilgileri</div>
+          <div class="form-grid">
+            <div class="field form-full"><label>Banka Hesabı <span id="itf-banka-pb" style="font-weight:400;color:var(--text3)"></span></label><select id="itf-banka" onchange="ihrRenderBankaOnizleme()"></select></div>
+          </div>
+          <div id="itf-banka-onizleme" class="ihr-banka-onizleme" style="display:none"></div>
+          <div id="itf-banka-uyari" style="display:none;font-size:12px;color:var(--text3);margin-top:8px"></div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Notlar / Şartlar <span style="font-weight:400;color:var(--text3)">(İngilizce yazın — PDF'e aynen aktarılır)</span></div>
+          <div class="field"><textarea id="itf-notlar" rows="3" placeholder="Warranty: 24 months from delivery. Packing: export standard..."></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="showPage('teklifler')">İptal</button>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;margin-right:auto;color:var(--text2)">
+            <input type="checkbox" id="itf-imza-gizle"> İmzayı Kaldır
+          </label>
+          <button class="btn btn-amber" onclick="ihrSaveTeklif(true)">Kaydet + PDF İndir</button>
+          <button class="btn btn-primary" onclick="ihrSaveTeklif(false)">Kaydet</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ MÜŞTERİLER ═══ -->
     <div id="page-musteriler" class="page">
       <div class="filter-bar"><div class="filter-row"><input type="text" id="fm-ara" placeholder="Ara..." oninput="renderMusteriler()" style="width:220px"><label class="btn btn-ghost btn-sm can-write" style="cursor:pointer"><i class="ti ti-plus"></i> Excel'den Ekle<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importMusterilerExcel(event)"></label><button class="btn btn-ghost btn-sm can-write" onclick="downloadMusteriSablon()" style="font-size:11px;color:var(--text3)"><i class="ti ti-cloud-download"></i> Şablonu İndir</button><span style="margin-left:auto;font-size:11px;color:var(--text3)" id="musteri-count"></span></div></div>
@@ -538,7 +656,7 @@
           <div style="display:flex;align-items:center;gap:12px"><span class="card-title">Müşteriler</span><span id="musteri-bulk-count" style="font-size:12px;color:var(--text2)"></span></div>
           <div id="musteri-bulk-bar"></div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th id="th-musteri-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('musteriList',this.checked,'renderMusteriler')"></th><th class="sortable" style="text-align:center" onclick="sortMusteri('kayitNo')">Kayıt No<span class="sort-ind" id="msort-kayitNo"></span></th><th class="sortable" onclick="sortMusteri('kurum')">Kurum<span class="sort-ind" id="msort-kurum"></span></th><th class="sortable" style="text-align:center" onclick="sortMusteri('kisi')">İlgili Kişi<span class="sort-ind" id="msort-kisi"></span></th><th style="text-align:center">Telefon</th><th style="text-align:center">E-posta</th><th class="sortable" style="text-align:center" onclick="sortMusteri('sehir')">Şehir<span class="sort-ind" id="msort-sehir"></span></th><th style="text-align:right;width:80px">İşlemler</th></tr></thead><tbody id="musteri-table-body"></tbody></table><div id="musteri-empty" class="empty-state" style="display:none"><div class="icon">⊙</div><h3 style="color:var(--text2)">Müşteri yok</h3></div></div><div id="musteri-pagination"></div>
+        <div class="table-wrap"><table><thead><tr><th id="th-musteri-check" style="display:none;width:28px"><input type="checkbox" onchange="bulkToggleAll('musteriList',this.checked,'renderMusteriler')"></th><th class="sortable" style="text-align:center" onclick="sortMusteri('kayitNo')">Kayıt No<span class="sort-ind" id="msort-kayitNo"></span></th><th class="sortable" onclick="sortMusteri('kurum')">Kurum<span class="sort-ind" id="msort-kurum"></span></th><th class="sortable" style="text-align:center" onclick="sortMusteri('kisi')">İlgili Kişi<span class="sort-ind" id="msort-kisi"></span></th><th style="text-align:center">Telefon</th><th style="text-align:center">E-posta</th><th class="sortable" style="text-align:center" onclick="sortMusteri('sehir')"><span id="th-musteri-sehir">Şehir</span><span class="sort-ind" id="msort-sehir"></span></th><th style="text-align:right;width:80px">İşlemler</th></tr></thead><tbody id="musteri-table-body"></tbody></table><div id="musteri-empty" class="empty-state" style="display:none"><div class="icon">⊙</div><h3 style="color:var(--text2)">Müşteri yok</h3></div></div><div id="musteri-pagination"></div>
       </div>
     </div>
 
@@ -557,11 +675,12 @@
             <div class="field tf-servis-field"><label>Telefon</label><input type="tel" id="mf-tel"></div>
             <div class="field tf-servis-field"><label>E-posta</label><input type="email" id="mf-email"></div>
             <div class="field"><label>Şehir</label><input type="text" id="mf-sehir"></div>
+            <div class="field ihracat-only" style="display:none"><label>Ülke</label><input type="text" id="mf-ulke" placeholder="Germany, Iraq, Kazakhstan..."></div>
             <div class="field form-full"><label>Adres</label><textarea id="mf-adres" rows="2"></textarea></div>
             <div class="field form-full"><label>Notlar</label><textarea id="mf-not" rows="2"></textarea></div>
           </div>
         </div>
-        <div class="form-card tf-satis-field" style="display:none">
+        <div class="form-card tf-satis-field ihracat-only" style="display:none">
           <div class="form-section-title">İlgili Kişiler <span style="font-weight:400;color:var(--text3)">(satın alma, teknik, muhasebe vb.)</span></div>
           <div class="teklif-items-wrap">
             <table class="teklif-items">
@@ -799,6 +918,12 @@
             </span>
             <span class="settings-nav-label">Kayıt Numaraları</span>
           </div>
+          <div class="settings-nav-item ihracat-only" data-panel="banka" onclick="switchSettingsPanel('banka')" style="display:none">
+            <span class="settings-nav-icon">
+              <i class="ti ti-building-bank" style="font-size:16px"></i>
+            </span>
+            <span class="settings-nav-label">Banka Hesapları</span>
+          </div>
           <div class="settings-nav-section">Arayüz</div>
           <div class="settings-nav-item" data-panel="gorunum" onclick="switchSettingsPanel('gorunum')">
             <span class="settings-nav-icon">
@@ -928,6 +1053,28 @@
                 </div>
               </div>
               <div class="settings-preview-row">Örnek: <strong id="preview-teklif">TKL00001</strong></div>
+            </div>
+            <div class="settings-footer">
+              <button class="btn btn-ghost" onclick="loadSettings()">Sıfırla</button>
+              <button class="btn btn-primary" onclick="saveSettings()">Değişiklikleri Kaydet</button>
+            </div>
+          </div>
+
+          <!-- Panel: Banka Hesapları (Yurtdışı Satış) -->
+          <div id="sp-banka" class="settings-panel ihracat-only" style="display:none">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon">
+                <i class="ti ti-building-bank" style="font-size:20px"></i>
+              </div>
+              <div>
+                <div class="settings-panel-title">Banka Hesapları</div>
+                <div class="settings-panel-sub">Yurtdışı tekliflerinde para birimine göre seçilip PDF'e eklenen hesaplar</div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div id="ihr-banka-list" class="ihr-banka-list"></div>
+              <div id="ihr-banka-empty" style="display:none;font-size:12px;color:var(--text3);padding:10px 2px">Henüz banka hesabı eklenmedi.</div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="ihrAddBankaHesabi()"><i class="ti ti-plus"></i> Hesap Ekle</button>
             </div>
             <div class="settings-footer">
               <button class="btn btn-ghost" onclick="loadSettings()">Sıfırla</button>
@@ -1628,18 +1775,19 @@
 
 <script src="js/api.js?v=2"></script>
 <script src="js/state.js?v=13"></script>
-<script src="js/auth.js?v=12"></script>
-<script src="js/sistem.js?v=2"></script>
-<script src="js/ui.js?v=24"></script>
-<script src="js/dashboard.js?v=5"></script>
+<script src="js/auth.js?v=13"></script>
+<script src="js/sistem.js?v=3"></script>
+<script src="js/ui.js?v=25"></script>
+<script src="js/dashboard.js?v=6"></script>
 <script src="js/servis.js?v=13"></script>
-<script src="js/teklif.js?v=18"></script>
+<script src="js/teklif.js?v=19"></script>
+<script src="js/ihracat.js?v=1"></script>
 <script src="js/tutanak.js?v=6"></script>
-<script src="js/musteri.js?v=14"></script>
-<script src="js/export.js?v=5"></script>
-<script src="js/satis.js?v=18"></script>
+<script src="js/musteri.js?v=15"></script>
+<script src="js/export.js?v=6"></script>
+<script src="js/satis.js?v=19"></script>
 <script src="js/stok.js?v=5"></script>
-<script src="js/init.js?v=9"></script>
+<script src="js/init.js?v=10"></script>
 <script src="js/resizable-cols.js?v=1"></script>
 <script src="js/notlar.js?v=1"></script>
 <!-- ─── FATURA MODAL ─── -->

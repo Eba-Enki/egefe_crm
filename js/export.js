@@ -67,7 +67,7 @@ function exportData(){
     faturalar:state.faturalar||[],
     settings:state.settings||{}
   };
-  var portal_tag=portal==='satis'?'satis':'servis';
+  var portal_tag=portal||'servis';
   var fname='egefe_yedek_'+portal_tag+'_'+today()+'.json';
   _dlBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),fname);
   toast('Yedek alındı: '+fname,'success');

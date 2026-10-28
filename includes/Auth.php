@@ -33,6 +33,7 @@ function userPermissions(PDO $pdo, string $userId): array {
         'servis' => ['erisim' => false, 'sayfalar' => []],
         'satis'  => ['erisim' => false, 'sayfalar' => []],
         'stok'   => ['erisim' => false, 'sayfalar' => []],
+        'ihracat' => ['erisim' => false, 'sayfalar' => []],
     ];
     foreach ($stmt->fetchAll() as $row) {
         $izinler[$row['portal']] = [

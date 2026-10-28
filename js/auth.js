@@ -19,6 +19,12 @@ var PORTAL_SAYFALAR = {
     {id:'urunler',        label:'Ürünler'},
     {id:'ayarlar',        label:'Ayarlar'}
   ],
+  ihracat: [
+    {id:'dashboard',      label:'Dashboard'},
+    {id:'teklifler',      label:'Teklifler'},
+    {id:'musteriler',     label:'Müşteriler'},
+    {id:'ayarlar',        label:'Ayarlar'}
+  ],
   stok: [
     {id:'stok-dashboard', label:'Dashboard'},
     {id:'ham-stok',       label:'Sheet & Strip Stok Listesi'},
@@ -33,6 +39,10 @@ var PORTAL_SAYFALAR = {
     {id:'stok-ayarlar',   label:'Ayarlar'}
   ]
 };
+
+var PORTAL_ADLARI = {servis:'Teknik Servis Portalı',satis:'Satış Pazarlama Portalı',ihracat:'Yurtdışı Satış Portalı',stok:'Stok Yönetim Portalı'};
+var PORTAL_KISA_ADLARI = {servis:'Teknik Servis',satis:'Satış Pazarlama',ihracat:'Yurtdışı Satış',stok:'Stok Yönetim'};
+var PORTAL_LISTESI = ['servis','satis','ihracat','stok'];
 
 function _allSayfalar(portal){
   return (PORTAL_SAYFALAR[portal]||[]).map(function(p){return p.id;});
@@ -91,7 +101,7 @@ async function selectPortal(pkey){
   }
 
   var nameEl=document.getElementById('login-portal-name');
-  if(nameEl)nameEl.textContent=pkey==='servis'?'Teknik Servis Portalı':pkey==='satis'?'Satış Pazarlama Portalı':'Stok Yönetim Portalı';
+  if(nameEl)nameEl.textContent=PORTAL_ADLARI[pkey]||'';
   document.getElementById('login-screen').style.display='flex';
 }
 
@@ -135,17 +145,25 @@ function applyPortal(){
   var isServis=currentPortal==='servis';
   var isSatis=currentPortal==='satis';
   var isStok=currentPortal==='stok';
+  var isIhracat=currentPortal==='ihracat';
   document.querySelectorAll('.servis-only').forEach(function(el){el.style.display=isServis?'':'none';});
   document.querySelectorAll('.satis-only').forEach(function(el){el.style.display=isSatis?'':'none';});
+  document.querySelectorAll('.satis-ihracat').forEach(function(el){el.style.display=(isSatis||isIhracat)?'':'none';});
   document.querySelectorAll('.stok-only').forEach(function(el){el.style.display=isStok?'':'none';});
   document.querySelectorAll('.crm-only').forEach(function(el){el.style.display=isStok?'none':'';});
+  document.querySelectorAll('.no-ihracat').forEach(function(el){if(isIhracat)el.style.display='none';});
   var badge=document.getElementById('portal-badge');
   if(badge){
-    badge.textContent=isServis?'Teknik Servis':isSatis?'Satış & Pazarlama':'Stok Yönetim';
-    badge.className='portal-badge '+(isServis?'portal-badge-servis':isSatis?'portal-badge-satis':'portal-badge-stok');
+    badge.textContent=isServis?'Teknik Servis':isSatis?'Satış & Pazarlama':isIhracat?'Yurtdışı Satış':'Stok Yönetim';
+    badge.className='portal-badge portal-badge-'+(currentPortal||'stok');
   }
   document.querySelectorAll('.tf-servis-field').forEach(function(el){el.style.display=isServis?'':'none';});
   document.querySelectorAll('.tf-satis-field').forEach(function(el){el.style.display=isSatis?'':'none';});
+  // .ihracat-only: satış sınıflarıyla birlikte kullanılan öğeler satış portalında da görünür kalır
+  document.querySelectorAll('.ihracat-only').forEach(function(el){
+    if(isIhracat)el.style.display='';
+    else if(!(isSatis&&(el.classList.contains('tf-satis-field')||el.classList.contains('satis-only'))))el.style.display='none';
+  });
   var defaultPage=isStok?'stok-dashboard':'dashboard';
   showPage(defaultPage);
   renderPortalSwitcher();
@@ -154,12 +172,11 @@ function applyPortal(){
 function renderPortalSwitcher(){
   var wrap=document.getElementById('portal-switcher-wrap');
   if(!wrap||!state.currentUser)return;
-  var authorized=['servis','satis','stok'].filter(function(p){return _userCanAccessPortal(state.currentUser,p);});
+  var authorized=PORTAL_LISTESI.filter(function(p){return _userCanAccessPortal(state.currentUser,p);});
   if(authorized.length<2){wrap.style.display='none';return;}
   wrap.style.display='';
   var label=document.getElementById('portal-switch-label');
-  var labels={servis:'Teknik Servis',satis:'Satış Pazarlama',stok:'Stok Yönetim'};
-  if(label)label.textContent=labels[currentPortal]||currentPortal;
+  if(label)label.textContent=PORTAL_KISA_ADLARI[currentPortal]||currentPortal;
 }
 
 function togglePortalSwitcher(e){
@@ -168,8 +185,8 @@ function togglePortalSwitcher(e){
   var btn=document.getElementById('portal-switch-btn');
   if(!panel||!btn)return;
   if(panel.style.display==='none'||!panel.style.display){
-    var authorized=['servis','satis','stok'].filter(function(p){return _userCanAccessPortal(state.currentUser,p);});
-    var labels={servis:'Teknik Servis Portalı',satis:'Satış Pazarlama Portalı',stok:'Stok Yönetim Portalı'};
+    var authorized=PORTAL_LISTESI.filter(function(p){return _userCanAccessPortal(state.currentUser,p);});
+    var labels=PORTAL_ADLARI;
     panel.innerHTML='<div style="padding:4px">'+authorized.map(function(p){
       var isActive=p===currentPortal;
       return '<div '+(isActive?'':'onclick="switchToPortal(\''+p+'\')"')+' style="display:flex;align-items:center;padding:9px 12px;border-radius:4px;cursor:'+(isActive?'default':'pointer')+';background:'+(isActive?'var(--bg3)':'transparent')+'" '+(isActive?'':' onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'transparent\'"')+'>'

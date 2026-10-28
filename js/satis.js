@@ -111,7 +111,8 @@ function showTeklifDurumMenu(tid,btnEl){
   if(!t)return;
   var SATIS_DUR=['Reddedildi'];
   var SERVIS_DUR=['İletildi','Kabul Edildi','Reddedildi','Kapandı'];
-  var durList=currentPortal==='satis'?SATIS_DUR:SERVIS_DUR;
+  var IHRACAT_DUR=['Kabul Edildi','Reddedildi'];
+  var durList=currentPortal==='satis'?SATIS_DUR:currentPortal==='ihracat'?IHRACAT_DUR:SERVIS_DUR;
   var menu=document.createElement('div');
   menu.className='durum-quick-menu';
   menu.style.cssText='position:fixed;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;z-index:600;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5);overflow:hidden;';

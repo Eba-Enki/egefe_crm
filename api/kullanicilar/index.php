@@ -9,7 +9,7 @@ if ($user['rol'] !== 'yönetici') {
     exit;
 }
 
-const PORTAL_DEGERLERI = ['servis', 'satis', 'stok'];
+const PORTAL_DEGERLERI = ['servis', 'satis', 'stok', 'ihracat'];
 
 
 function izinlerFromInput(array $input): array {

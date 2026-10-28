@@ -4,7 +4,7 @@ require __DIR__ . '/../_bootstrap.php';
 
 $user = requireAuth($pdo);
 
-const GECERLI_PORTALLAR = ['servis', 'satis', 'stok'];
+const GECERLI_PORTALLAR = ['servis', 'satis', 'stok', 'ihracat'];
 const GECERLI_TURLER    = ['kisisel', 'takim'];
 
 $method = $_SERVER['REQUEST_METHOD'];

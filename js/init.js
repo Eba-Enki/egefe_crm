@@ -15,7 +15,7 @@ var _VISIBILITY_STALE_MS = 30000; // 30 saniye
 
 // Form sayfaları — sekme geri dönüşünde yenilenmez (veri kaybı riski)
 var _FORM_PAGES = new Set([
-  'servis-form','teklif-form','musteri-form','urun-form',
+  'servis-form','teklif-form','ihr-teklif-form','musteri-form','urun-form',
   'siparis-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris',
   'bitmis-cikis','bitmis-sayim','kullanici-form'
 ]);
@@ -78,11 +78,14 @@ async function loadCoreData() {
     }
   }
 
-  try {
-    var res3 = await apiGet('urunler?portal=' + currentPortal);
-    state.urunler = res3.urunler || [];
-  } catch (e) {
-    state.urunler = state.urunler || [];
+  // Yurtdışı Satış Portalı'nda ürün kaydı tutulmaz; kalemler elle ya da Excel'den girilir
+  if (currentPortal !== 'ihracat') {
+    try {
+      var res3 = await apiGet('urunler?portal=' + currentPortal);
+      state.urunler = res3.urunler || [];
+    } catch (e) {
+      state.urunler = state.urunler || [];
+    }
   }
 
   try {

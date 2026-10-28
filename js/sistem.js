@@ -55,10 +55,10 @@ function renderSistemKullanicilar(){
     var isSelf = state.currentUser && u.id === state.currentUser.id;
     var rolLabel = {yönetici:'Yönetici','kullanıcı':'Kullanıcı',izleyici:'İzleyici'}[u.rol]||u.rol;
     var rolClass = u.rol==='yönetici'?'badge-green':u.rol==='izleyici'?'badge-gray':'badge-blue';
-    var portalBadges = ['servis','satis','stok'].filter(function(p){
+    var portalBadges = PORTAL_LISTESI.filter(function(p){
       return u.rol==='yönetici'||(u.izinler&&u.izinler[p]&&u.izinler[p].erisim);
     }).map(function(p){
-      var lbl = p==='servis'?'Servis':p==='satis'?'Satış':'Stok';
+      var lbl = {servis:'Servis',satis:'Satış',ihracat:'Yurtdışı',stok:'Stok'}[p]||p;
       return '<span class="sistem-portal-chip">'+lbl+'</span>';
     }).join('');
     html += '<div class="sistem-user-row">'
@@ -112,6 +112,7 @@ function _renderIzinMatrix(u){
   var portalMeta = [
     {key:'servis', label:'Teknik Servis Portalı',    icon:'🔧'},
     {key:'satis',  label:'Satış Pazarlama Portalı', icon:'📊'},
+    {key:'ihracat',label:'Yurtdışı Satış Portalı',  icon:'🌍'},
     {key:'stok',   label:'Stok Yönetim Portalı',    icon:'📦'}
   ];
   var html = '';
@@ -163,9 +164,9 @@ async function saveSistemUser(){
   if(!_sistemEditId&&!sifre) return toast('Yeni kullanıcı için şifre zorunlu.','error');
   if(sifre&&sifre.length<4) return toast('Şifre en az 4 karakter olmalı.','error');
 
-  var izinler = {servis:{erisim:false,sayfalar:[]},satis:{erisim:false,sayfalar:[]},stok:{erisim:false,sayfalar:[]}};
+  var izinler = {servis:{erisim:false,sayfalar:[]},satis:{erisim:false,sayfalar:[]},ihracat:{erisim:false,sayfalar:[]},stok:{erisim:false,sayfalar:[]}};
   if(rol!=='yönetici'){
-    ['servis','satis','stok'].forEach(function(p){
+    PORTAL_LISTESI.forEach(function(p){
       var erisimCb = document.getElementById('sf-erisim-'+p);
       var erisim   = erisimCb&&erisimCb.checked;
       var sayfalar = [];
@@ -180,6 +181,7 @@ async function saveSistemUser(){
     izinler = {
       servis:{erisim:true, sayfalar:_allSayfalar('servis')},
       satis: {erisim:true, sayfalar:_allSayfalar('satis')},
+      ihracat:{erisim:true, sayfalar:_allSayfalar('ihracat')},
       stok:  {erisim:true, sayfalar:_allSayfalar('stok')}
     };
   }

@@ -137,7 +137,11 @@ function saveTeklifAndPrint(){saveTeklif(true)}
 
 // ════ TEKLIF LIST ════
 const TSD={'Taslak':'badge-sf','İletildi':'badge-onay-bekl','Kabul Edildi':'badge-onaylandi','Siparişe Dönüştü':'badge-teslim','Reddedildi':'badge-reddedildi','Kapandı':'badge-teslim','Revize Edildi':'badge-sf'};
-function getTeklifArsivDurumlari(){return currentPortal==='satis'?['Siparişe Dönüştü','Reddedildi','Revize Edildi']:['Reddedildi','Kapandı'];}
+function getTeklifArsivDurumlari(){
+  if(currentPortal==='satis')return['Siparişe Dönüştü','Reddedildi','Revize Edildi'];
+  if(currentPortal==='ihracat')return['Kabul Edildi','Reddedildi','Revize Edildi'];
+  return['Reddedildi','Kapandı'];
+}
 let teklifTab='aktif';
 function switchTeklifTab(tab){
   teklifTab=tab;
@@ -187,7 +191,7 @@ function renderTeklifler(){
   var fcEl=document.getElementById('teklif-filter-count');
   if(fcEl)fcEl.textContent=filtTl2.length!==tabTl.length?filtTl2.length+'/'+tabTl.length+' teklif':tabTl.length+' teklif';
   var newTH=JSON.stringify([fK2,fTN,fSeri,fD2,fTS2,fTE2,teklifTab]);if(newTH!==_teklifFilterHash){tekliflerPage=1;_teklifFilterHash=newTH;}
-  var showTemsilci=currentPortal==='satis';
+  var showTemsilci=currentPortal==='satis'||currentPortal==='ihracat';
   var thS=document.getElementById('th-sorumlu');
   if(thS)thS.style.display=showTemsilci?'':'none';
   var sfSeriEl=document.getElementById('tf-f-seri');
@@ -219,8 +223,8 @@ function renderTeklifler(){
     <td style="text-align:center"><span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>${getRedBilgi(t)?'<span title="'+esc(getRedBilgi(t).neden)+'" style="margin-left:6px;font-size:10px;color:var(--text3);cursor:help">📋</span>':''}</td>
     ${showTemsilci?`<td style="font-size:12px;color:var(--text3);text-align:center">${esc(t.sorumlu||'—')}</td>`:''}
     <td style="text-align:right"><div class="action-row" onclick="event.stopPropagation()">
-      ${canEdit&&currentPortal==='satis'&&t.durum==='Taslak'?`<button class="btn-icon" title="Müşteriye İlet" style="color:var(--teal)" onclick="teklifGonder('${t.id}')"><i class="ti ti-send"></i></button>`:''}
-      ${canEdit&&(currentPortal!=='satis'||t.durum==='İletildi')?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)"><i class="ti ti-loader"></i></button>`:''}
+      ${canEdit&&currentPortal!=='servis'&&t.durum==='Taslak'?`<button class="btn-icon" title="Müşteriye İlet" style="color:var(--teal)" onclick="teklifGonder('${t.id}')"><i class="ti ti-send"></i></button>`:''}
+      ${canEdit&&(currentPortal==='servis'||t.durum==='İletildi')?`<button class="btn-icon" title="Durum Değiştir" style="color:var(--accent)" onclick="showTeklifDurumMenu('${t.id}',this)"><i class="ti ti-loader"></i></button>`:''}
       ${canEdit&&currentPortal==='satis'&&t.durum==='İletildi'?`<button class="btn-icon" title="Sipariş Oluştur" style="color:var(--purple)" onclick="goSiparisForm('${t.id}')"><i class="ti ti-cube-send"></i></button>`:''}
     </div></td>
   </tr>`).join('');
@@ -253,7 +257,7 @@ function openTeklifDetay(id){
   state.activeTeklifId=id;
   const toplam=calcTeklifToplam(t);
   let ara=0;
-  const sarHtml=(t.satirlar||[]).map(s=>{const a=s.miktar*s.birimFiyat;ara+=a;const sp=s.seciliParametreler||[];const rawAciklama=(s._baseAciklama||s.aciklama||'').trim();const parenMatch=rawAciklama.match(/\(([^()]+)\)\s*$/);const baseName=(parenMatch?rawAciklama.slice(0,parenMatch.index):rawAciklama).trim();let kategori=parenMatch?parenMatch[1].trim():'';if(!kategori&&baseName){const urun=(state.urunler||[]).find(u=>u.urunAdi===baseName)||(state.urunler||[]).find(u=>(u.urunAdi||'').trim().toLowerCase()===baseName.toLowerCase());kategori=urun?(urun.kategori||''):'';}const baseAciklama=(baseName||'—')+(kategori?' ('+kategori+')':'');const pHtml=sp.length?`<div class="pd-sub-text">(${sp.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})</div>`:'';return`<tr><td>${esc(baseAciklama)}${pHtml}</td><td class="r" style="color:var(--text2)">${s.miktar} ${esc(s.birim)}</td><td class="r">${fmtParaBirimi(s.birimFiyat,t.paraBirimi)}</td><td class="r">${fmtParaBirimi(a,t.paraBirimi)}</td></tr>`;}).join('');
+  const sarHtml=currentPortal==='ihracat'?ihrDetaySatirlarHtml(t):(t.satirlar||[]).map(s=>{const a=s.miktar*s.birimFiyat;ara+=a;const sp=s.seciliParametreler||[];const rawAciklama=(s._baseAciklama||s.aciklama||'').trim();const parenMatch=rawAciklama.match(/\(([^()]+)\)\s*$/);const baseName=(parenMatch?rawAciklama.slice(0,parenMatch.index):rawAciklama).trim();let kategori=parenMatch?parenMatch[1].trim():'';if(!kategori&&baseName){const urun=(state.urunler||[]).find(u=>u.urunAdi===baseName)||(state.urunler||[]).find(u=>(u.urunAdi||'').trim().toLowerCase()===baseName.toLowerCase());kategori=urun?(urun.kategori||''):'';}const baseAciklama=(baseName||'—')+(kategori?' ('+kategori+')':'');const pHtml=sp.length?`<div class="pd-sub-text">(${sp.map(p=>esc(typeof p==='string'?p:(p.deger?p.ad+': '+p.deger:p.ad))).join(', ')})</div>`:'';return`<tr><td>${esc(baseAciklama)}${pHtml}</td><td class="r" style="color:var(--text2)">${s.miktar} ${esc(s.birim)}</td><td class="r">${fmtParaBirimi(s.birimFiyat,t.paraBirimi)}</td><td class="r">${fmtParaBirimi(a,t.paraBirimi)}</td></tr>`;}).join('');
   const canEdit=state.currentUser?.rol!=='izleyici';
   document.getElementById('td-teklifno').textContent=t.teklifNo;
   document.getElementById('td-durum').innerHTML=`<span class="badge ${TSD[t.durum]||'badge-sf'}">${esc(t.durum)}</span>`;
@@ -262,7 +266,7 @@ function openTeklifDetay(id){
   document.getElementById('td-kayitno').textContent=t.kayitNo||'—';
   var _eb=document.getElementById('td-edit-btn');if(_eb)_eb.style.display=canEdit?'':'none';
   var _db=document.getElementById('td-delete-btn');if(_db)_db.style.display=canEdit?'':'none';
-  var _rb=document.getElementById('td-revize-btn');if(_rb)_rb.style.display=(canEdit&&currentPortal==='satis'&&t.durum==='İletildi')?'':'none';
+  var _rb=document.getElementById('td-revize-btn');if(_rb)_rb.style.display=(canEdit&&currentPortal!=='servis'&&t.durum==='İletildi')?'':'none';
   document.getElementById('td-body').innerHTML=`
     ${canEdit&&currentPortal==='servis'&&t.durum==='İletildi'?`<div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="changeTeklifDurum('${t.id}','Kabul Edildi');closeModal('modal-teklif-detay')">✓ Kabul Et</button><button class="btn btn-danger btn-sm" onclick="changeTeklifDurum('${t.id}','Reddedildi');closeModal('modal-teklif-detay')">✕ Reddet</button></div>`:''}
     <div class="pd-contact" style="grid-template-columns:2fr 1fr 1.5fr">
@@ -276,8 +280,11 @@ function openTeklifDetay(id){
         ${currentPortal==='servis'?`<div class="pd-info-box"><div class="info-item-label">Seri No</div><div class="info-item-val">${esc(t.seriNo||'—')}</div></div>`:''}
         <div class="pd-info-box"><div class="info-item-label">Teklif Tarihi</div><div class="info-item-val">${fmtDate(t.teklifTarihi)||'—'}</div></div>
         <div class="pd-info-box"><div class="info-item-label">Geçerlilik</div><div class="info-item-val">${fmtDate(t.gecerlilikTarihi)||'—'}</div></div>
-        ${t.odemeKosulu?`<div class="pd-info-box"><div class="info-item-label">Ödeme Şekli</div><div class="info-item-val">${esc(t.odemeKosulu)}</div></div>`:''}
+        ${t.odemeKosulu?`<div class="pd-info-box"><div class="info-item-label">${currentPortal==='ihracat'?'Ödeme Koşulları':'Ödeme Şekli'}</div><div class="info-item-val">${esc(t.odemeKosulu)}</div></div>`:''}
         ${t.vade?`<div class="pd-info-box"><div class="info-item-label">Vade</div><div class="info-item-val">${esc(t.vade)}</div></div>`:''}
+        ${t.incoterm?`<div class="pd-info-box"><div class="info-item-label">Incoterms</div><div class="info-item-val">${esc(t.incoterm+(t.teslimYeri?' '+t.teslimYeri:''))}</div></div>`:''}
+        ${currentPortal==='ihracat'&&t.teslimat?`<div class="pd-info-box"><div class="info-item-label">Teslim Süresi</div><div class="info-item-val">${esc(t.teslimat)}</div></div>`:''}
+        ${t.bankaHesabi&&t.bankaHesabi.iban?`<div class="pd-info-box"><div class="info-item-label">Banka</div><div class="info-item-val">${esc((t.bankaHesabi.bankaAdi||'')+' · '+t.bankaHesabi.paraBirimi)}</div></div>`:''}
       </div>
     </div>
     <div class="pd-section">
@@ -336,6 +343,7 @@ async function revizeTeklif(id){
       musteriId:t.musteriId,kurum:t.kurum,ilgiliKisi:t.ilgiliKisi,telefon:t.telefon,email:t.email,
       teklifTarihi:today(),gecerlilikTarihi:t.gecerlilikTarihi,notlar:t.notlar,
       paraBirimi:t.paraBirimi,odemeKosulu:t.odemeKosulu,vade:t.vade,kdvOran:t.kdvOran,
+      teslimat:t.teslimat,incoterm:t.incoterm,teslimYeri:t.teslimYeri,bankaHesabi:t.bankaHesabi,
       satirlar:JSON.parse(JSON.stringify(t.satirlar||[])),sorumlu:t.sorumlu,
       portal:currentPortal,durum:'Taslak'
     };
@@ -345,7 +353,7 @@ async function revizeTeklif(id){
       closeModal('modal-teklif-detay');
       renderTeklifler();renderDashboard();
       toast('Revizyon oluşturuldu: '+newTeklifNo,'success');
-      goTeklifForm(res.teklif.id);showPage('teklif-form',true);
+      goTeklifForm(res.teklif.id);
     }catch(e){
       await updateTeklifDurum(id,{durum:prevDurum});
       const ri=state.teklifler.findIndex(x=>x.id===id);if(ri>=0)state.teklifler[ri].durum=prevDurum;
@@ -357,6 +365,7 @@ async function revizeTeklif(id){
 // ════ PDF ════
 function printTeklifById(id){
   const t=state.teklifler.find(x=>x.id===id);if(!t)return;
+  if(t.portal==='ihracat')return printIhracatTeklif(t);
   const imzaGizle=!!(document.getElementById('tf-imza-gizle')||{}).checked;
   const logoImg=new Image();
   logoImg.onload=function(){

@@ -7,23 +7,32 @@ $user = requireAuth($pdo);
 // Satış: Taslak→İletildi→Siparişe Dönüştü|Reddedildi  /  Servis: +Kabul Edildi+Kapandı
 const DURUM_DEGERLERI = ['Taslak','İletildi','Kabul Edildi','Siparişe Dönüştü','Reddedildi','Kapandı','Revize Edildi'];
 const BIRIM_DEGERLERI = ['Adet','Saat','Gün','Parça'];
+// Yurtdışı Satış Portalı birimleri (PDF İngilizce olduğu için doğrudan İngilizce saklanır)
+const IHRACAT_BIRIMLERI = ['Pcs','Set','Box','Pack','Roll','Meter','Kg','Hour','Day','Lot'];
+const INCOTERMS = ['EXW','FCA','FAS','FOB','CFR','CIF','CPT','CIP','DAP','DPU','DDP'];
 const PARA_BIRIMLERI = ['TRY','USD','EUR','GBP'];
 
 
 
 function normalizePortal($value): ?string {
     $value = (string)($value ?? '');
-    return in_array($value, ['servis', 'satis'], true) ? $value : null;
+    return in_array($value, ['servis', 'satis', 'ihracat'], true) ? $value : null;
 }
 
-function satirlarFromInput(array $input): array {
+function satirlarFromInput(array $input, string $portal): array {
+    $isIhracat = $portal === 'ihracat';
     $out = [];
     foreach (($input['satirlar'] ?? []) as $i => $s) {
         $out[] = [
             'sira'               => $i,
+            'urunKodu'           => $isIhracat ? strOrNull($s['urunKodu'] ?? null) : null,
             'aciklama'           => strOrNull($s['aciklama'] ?? null),
+            'marka'              => $isIhracat ? strOrNull($s['marka'] ?? null) : null,
+            'model'              => $isIhracat ? strOrNull($s['model'] ?? null) : null,
             'miktar'             => (float)($s['miktar'] ?? 0),
-            'birim'              => enumOrDefault($s['birim'] ?? null, BIRIM_DEGERLERI, 'Adet'),
+            'birim'              => $isIhracat
+                ? enumOrDefault($s['birim'] ?? null, IHRACAT_BIRIMLERI, 'Pcs')
+                : enumOrDefault($s['birim'] ?? null, BIRIM_DEGERLERI, 'Adet'),
             'birimFiyat'         => (float)($s['birimFiyat'] ?? 0),
             'seciliParametreler' => $s['seciliParametreler'] ?? [],
         ];
@@ -33,7 +42,10 @@ function satirlarFromInput(array $input): array {
 
 function mapSatirRow(array $row): array {
     return [
+        'urunKodu'           => $row['urun_kodu'] ?? null,
         'aciklama'           => $row['aciklama'],
+        'marka'              => $row['marka'] ?? null,
+        'model'              => $row['model'] ?? null,
         'miktar'             => (float)$row['miktar'],
         'birim'              => $row['birim'],
         'birimFiyat'         => (float)$row['birim_fiyat'],
@@ -49,10 +61,10 @@ function fetchSatirlar(PDO $pdo, string $quoteId): array {
 
 function replaceSatirlar(PDO $pdo, string $quoteId, array $satirlar): void {
     $pdo->prepare('DELETE FROM quote_line_items WHERE quote_id = ?')->execute([$quoteId]);
-    $stmt = $pdo->prepare('INSERT INTO quote_line_items (quote_id, sira, aciklama, miktar, birim, birim_fiyat, secili_parametreler) VALUES (?, ?, ?, ?, ?, ?, ?)');
+    $stmt = $pdo->prepare('INSERT INTO quote_line_items (quote_id, sira, urun_kodu, aciklama, marka, model, miktar, birim, birim_fiyat, secili_parametreler) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
     foreach ($satirlar as $s) {
         $stmt->execute([
-            $quoteId, $s['sira'], $s['aciklama'], $s['miktar'], $s['birim'], $s['birimFiyat'],
+            $quoteId, $s['sira'], $s['urunKodu'], $s['aciklama'], $s['marka'], $s['model'], $s['miktar'], $s['birim'], $s['birimFiyat'],
             json_encode($s['seciliParametreler'], JSON_UNESCAPED_UNICODE),
         ]);
     }
@@ -79,6 +91,9 @@ function teklifResponse(PDO $pdo, array $row, ?array $satirlar = null, ?array $d
         'vade'               => $row['vade'],
         'kdvOran'            => (int)($row['kdv_oran'] ?? 0),
         'teslimat'           => $row['teslimat'],
+        'incoterm'           => $row['incoterm'] ?? null,
+        'teslimYeri'         => $row['teslim_yeri'] ?? null,
+        'bankaHesabi'        => !empty($row['banka_hesabi']) ? json_decode($row['banka_hesabi'], true) : null,
         'sorumlu'            => $row['sorumlu'],
         'durum'              => $row['durum'],
         'redNedeni'          => $row['red_nedeni'],
@@ -114,6 +129,22 @@ function nextTeklifNo(PDO $pdo, string $portal): string {
     return $prefix . str_pad((string)($mx + 1), $digits, '0', STR_PAD_LEFT);
 }
 
+// Yurtdışı teklif alanları [incoterm, teslim_yeri, banka_hesabi]; diğer portallarda NULL
+function ihracatAlanlari(array $input, string $portal): array {
+    if ($portal !== 'ihracat') return [null, null, null];
+    $incoterm = in_array($input['incoterm'] ?? '', INCOTERMS, true) ? $input['incoterm'] : null;
+    $banka = $input['bankaHesabi'] ?? null;
+    $bankaJson = null;
+    if (is_array($banka) && trim((string)($banka['iban'] ?? '')) !== '') {
+        $temiz = [];
+        foreach (['bankaAdi', 'sube', 'hesapSahibi', 'iban', 'swift', 'paraBirimi'] as $k) {
+            $temiz[$k] = trim((string)($banka[$k] ?? ''));
+        }
+        $bankaJson = json_encode($temiz, JSON_UNESCAPED_UNICODE);
+    }
+    return [$incoterm, strOrNull($input['teslimYeri'] ?? null), $bankaJson];
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
@@ -121,7 +152,7 @@ switch ($method) {
         $portal = normalizePortal($_GET['portal'] ?? '');
         if (!$portal) {
             http_response_code(400);
-            echo json_encode(['error' => 'portal parametresi (servis veya satis) zorunlu']);
+            echo json_encode(['error' => 'portal parametresi (servis, satis veya ihracat) zorunlu']);
             exit;
         }
         requirePortalAccess($user, $portal);
@@ -155,7 +186,7 @@ switch ($method) {
         $kurum = trim((string)($input['kurum'] ?? ''));
         if (!$portal || $kurum === '') {
             http_response_code(400);
-            echo json_encode(['error' => 'portal (servis/satis) ve kurum adı zorunlu']);
+            echo json_encode(['error' => 'portal (servis/satis/ihracat) ve kurum adı zorunlu']);
             exit;
         }
         requirePortalAccess($user, $portal);
@@ -167,12 +198,13 @@ switch ($method) {
         $teklifNo = ($parentId !== null && !empty($input['teklifNo']))
             ? trim((string)$input['teklifNo'])
             : nextTeklifNo($pdo, $portal);
-        $satirlar = satirlarFromInput($input);
-        $kdvOran = in_array((int)($input['kdvOran'] ?? 0), [0, 10, 20], true) ? (int)($input['kdvOran'] ?? 0) : 0;
+        $satirlar = satirlarFromInput($input, $portal);
+        $kdvOran = ($portal !== 'ihracat' && in_array((int)($input['kdvOran'] ?? 0), [0, 10, 20], true)) ? (int)($input['kdvOran'] ?? 0) : 0;
+        [$incoterm, $teslimYeri, $bankaJson] = ihracatAlanlari($input, $portal);
 
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO quotes (id, portal, teklif_no, parent_id, revizyon_no, musteri_id, servis_id, kayit_no, seri_no, kurum, ilgili_kisi, telefon, email, teklif_tarihi, gecerlilik_tarihi, notlar, para_birimi, odeme_kosulu, vade, kdv_oran, teslimat, sorumlu, durum, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt = $pdo->prepare('INSERT INTO quotes (id, portal, teklif_no, parent_id, revizyon_no, musteri_id, servis_id, kayit_no, seri_no, kurum, ilgili_kisi, telefon, email, teklif_tarihi, gecerlilik_tarihi, notlar, para_birimi, odeme_kosulu, vade, kdv_oran, teslimat, incoterm, teslim_yeri, banka_hesabi, sorumlu, durum, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([
                 $id, $portal, $teklifNo, $parentId, $revizyonNo,
                 strOrNull($input['musteriId'] ?? null),
@@ -191,6 +223,9 @@ switch ($method) {
                 strOrNull($input['vade'] ?? null),
                 $kdvOran,
                 strOrNull($input['teslimat'] ?? null),
+                $incoterm,
+                $teslimYeri,
+                $bankaJson,
                 strOrNull($input['sorumlu'] ?? null) ?? $user['ad'],
                 'Taslak',
                 $user['id'],
@@ -229,13 +264,14 @@ switch ($method) {
         }
         requirePortalAccess($user, $existing['portal']);
 
-        $satirlar = satirlarFromInput($input);
-        $kdvOran = in_array((int)($input['kdvOran'] ?? 0), [0, 10, 20], true) ? (int)($input['kdvOran'] ?? 0) : 0;
+        $satirlar = satirlarFromInput($input, $existing['portal']);
+        $kdvOran = ($existing['portal'] !== 'ihracat' && in_array((int)($input['kdvOran'] ?? 0), [0, 10, 20], true)) ? (int)($input['kdvOran'] ?? 0) : 0;
+        [$incoterm, $teslimYeri, $bankaJson] = ihracatAlanlari($input, $existing['portal']);
         $yeniDurum = enumOrDefault($input['durum'] ?? $existing['durum'], DURUM_DEGERLERI, $existing['durum']);
 
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('UPDATE quotes SET musteri_id=?, servis_id=?, kayit_no=?, seri_no=?, kurum=?, ilgili_kisi=?, telefon=?, email=?, teklif_tarihi=?, gecerlilik_tarihi=?, notlar=?, para_birimi=?, odeme_kosulu=?, vade=?, kdv_oran=?, teslimat=?, sorumlu=?, durum=?, red_nedeni=? WHERE id=?');
+            $stmt = $pdo->prepare('UPDATE quotes SET musteri_id=?, servis_id=?, kayit_no=?, seri_no=?, kurum=?, ilgili_kisi=?, telefon=?, email=?, teklif_tarihi=?, gecerlilik_tarihi=?, notlar=?, para_birimi=?, odeme_kosulu=?, vade=?, kdv_oran=?, teslimat=?, incoterm=?, teslim_yeri=?, banka_hesabi=?, sorumlu=?, durum=?, red_nedeni=? WHERE id=?');
             $stmt->execute([
                 strOrNull($input['musteriId'] ?? null),
                 strOrNull($input['servisId'] ?? null),
@@ -253,6 +289,9 @@ switch ($method) {
                 strOrNull($input['vade'] ?? null),
                 $kdvOran,
                 strOrNull($input['teslimat'] ?? null),
+                $incoterm,
+                $teslimYeri,
+                $bankaJson,
                 strOrNull($input['sorumlu'] ?? $existing['sorumlu']),
                 $yeniDurum,
                 strOrNull($input['redNedeni'] ?? $existing['red_nedeni']),

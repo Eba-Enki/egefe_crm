@@ -9,6 +9,8 @@ function renderDashboard(){
   var thisYear  = now.getFullYear();
   if(currentPortal === 'satis'){
     _dbSatis(tl, sps, fts, mus, now, thisMonth, thisYear);
+  } else if(currentPortal === 'ihracat'){
+    _dbIhracat(tl, mus, now);
   } else {
     _dbServis(s, tl, mus, now, thisMonth, thisYear);
   }
@@ -36,6 +38,76 @@ function _barRow(label,cnt,total,hex){
     +'<div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden">'
     +'<div style="height:100%;width:'+pct+'%;background:'+hex+';border-radius:4px;transition:width .35s ease"></div>'
     +'</div></div>';
+}
+
+// ═══ YURTDIŞI SATIŞ ═══
+function _dbIhracat(tl, mus, now){
+  var guncel   = tl.filter(function(t){return t.durum!=='Revize Edildi';});
+  var acik     = guncel.filter(function(t){return ['Taslak','İletildi'].includes(t.durum);});
+  var kabul    = guncel.filter(function(t){return t.durum==='Kabul Edildi';});
+  var red      = guncel.filter(function(t){return t.durum==='Reddedildi';});
+  var buAy     = guncel.filter(function(t){
+    var d=new Date(t.teklifTarihi||t.olusturmaTarihi);
+    return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+  });
+  var sonuclanan = kabul.length+red.length;
+  var basari = sonuclanan>0 ? Math.round(kabul.length/sonuclanan*100) : 0;
+
+  var kpiEl = document.getElementById('db-kpi-grid');
+  if(kpiEl) kpiEl.innerHTML =
+    _kpiCard('Açık Teklif', acik.length, acik.filter(function(t){return t.durum==='Taslak';}).length+' taslak · '+acik.filter(function(t){return t.durum==='İletildi';}).length+' iletildi', 'var(--accent)')
+   +_kpiCard('Bu Ay', buAy.length, now.toLocaleString('tr-TR',{month:'long',year:'numeric'}), 'var(--teal)')
+   +_kpiCard('Kabul Edilen', kabul.length, sonuclanan>0?'%'+basari+' başarı oranı':'Sonuçlanan teklif yok', 'var(--green)')
+   +_kpiCard('Müşteri', mus.length, 'Kayıtlı yurtdışı müşteri', 'var(--amber)');
+
+  // ─ Teklif Durum Dağılımı (yatay çubuklar)
+  var IDUR = [
+    {l:'Taslak',       hex:'#64748b'},
+    {l:'İletildi',     hex:'#f59e0b'},
+    {l:'Kabul Edildi', hex:'#4ade80'},
+    {l:'Reddedildi',   hex:'#f87171'}
+  ];
+  var dTotal = guncel.length||1;
+  var dBars = IDUR.map(function(d){
+    var cnt = guncel.filter(function(t){return t.durum===d.l;}).length;
+    return cnt>0 ? _barRow(d.l, cnt, dTotal, d.hex) : '';
+  }).join('');
+  var chartTitle = document.getElementById('db-chart-title');
+  if(chartTitle) chartTitle.textContent = 'Teklif Durum Dağılımı';
+  var chartBody = document.getElementById('db-chart-body');
+  if(chartBody) chartBody.innerHTML = dBars || '<div style="color:var(--text3);font-size:13px;padding:8px 0">Henüz teklif bulunmuyor.</div>';
+
+  // ─ Alt Panel: para birimine göre açık ve kabul edilen teklif tutarları
+  var fmt = function(v,pb){return new Intl.NumberFormat('tr-TR',{style:'currency',currency:pb,maximumFractionDigits:0}).format(v||0);};
+  var pbTopla = function(liste){
+    var m = {};
+    liste.forEach(function(t){var pb=t.paraBirimi||'USD';m[pb]=(m[pb]||0)+calcTeklifToplam(t);});
+    return m;
+  };
+  var pbSatir = function(map){
+    var keys = Object.keys(map);
+    if(!keys.length) return '<div style="color:var(--text3);font-size:13px">Kayıt yok.</div>';
+    return keys.sort().map(function(pb){
+      return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px">'
+        +'<span style="color:var(--text2)">'+pb+'</span>'
+        +'<span style="font-family:var(--font-mono);color:var(--text);font-weight:600">'+fmt(map[pb],pb)+'</span>'
+        +'</div>';
+    }).join('');
+  };
+  var secEl = document.getElementById('db-secondary');
+  if(secEl) secEl.innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'
+      +'<div class="card">'
+        +'<div class="card-header"><span class="card-title">Açık Teklif Tutarı</span><span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+acik.length+' teklif</span></div>'
+        +'<div class="card-body">'+pbSatir(pbTopla(acik))+'</div>'
+      +'</div>'
+      +'<div class="card">'
+        +'<div class="card-header"><span class="card-title">Kabul Edilen Tutar</span><span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">'+kabul.length+' teklif</span></div>'
+        +'<div class="card-body">'+pbSatir(pbTopla(kabul))+'</div>'
+      +'</div>'
+    +'</div>';
+
+  if(typeof renderNotlar === 'function') renderNotlar();
 }
 
 // ═══ TEKNİK SERVİS ═══

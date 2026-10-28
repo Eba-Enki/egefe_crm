@@ -3,11 +3,11 @@ declare(strict_types=1);
 require __DIR__ . '/../_bootstrap.php';
 
 $user = requireAuth($pdo);
-requireAnyPortalAccess($user, ['servis', 'satis']);
+requireAnyPortalAccess($user, ['servis', 'satis', 'ihracat']);
 
 function normalizePortal($value): ?string {
     $v = strtolower(trim((string)$value));
-    return in_array($v, ['servis', 'satis'], true) ? $v : null;
+    return in_array($v, ['servis', 'satis', 'ihracat'], true) ? $v : null;
 }
 
 function musteriResponse(array $row): array {
@@ -20,15 +20,16 @@ function musteriResponse(array $row): array {
         'tel'               => $row['tel'],
         'email'             => $row['email'],
         'sehir'             => $row['sehir'],
+        'ulke'              => $row['ulke'] ?? null,
         'adres'             => $row['adres'],
         'not'               => $row['notlar'],
         'iletisimKisileri'  => !empty($row['iletisim_kisileri']) ? json_decode($row['iletisim_kisileri'], true) : [],
     ];
 }
 
-// İlgili kişi listesi yalnızca Satış Pazarlama Portalı'nda kullanılır; boş ad satırları elenir
+// İlgili kişi listesi Satış Pazarlama ve Yurtdışı Satış portallarında kullanılır; boş ad satırları elenir
 function iletisimKisilerFromInput(array $input, string $portal): array {
-    if ($portal !== 'satis') return [];
+    if ($portal !== 'satis' && $portal !== 'ihracat') return [];
     $out = [];
     foreach (($input['iletisimKisileri'] ?? []) as $k) {
         $ad = trim((string)($k['ad'] ?? ''));
@@ -50,7 +51,7 @@ switch ($method) {
         $portal = normalizePortal($_GET['portal'] ?? '');
         if (!$portal) {
             http_response_code(400);
-            echo json_encode(['error' => 'portal parametresi (servis veya satis) zorunlu']);
+            echo json_encode(['error' => 'portal parametresi (servis, satis veya ihracat) zorunlu']);
             exit;
         }
         requirePortalAccess($user, $portal);
@@ -65,7 +66,7 @@ switch ($method) {
         $kurum = trim((string)($input['kurum'] ?? ''));
         if (!$portal || $kurum === '') {
             http_response_code(400);
-            echo json_encode(['error' => 'portal (servis/satis) ve kurum adı zorunlu']);
+            echo json_encode(['error' => 'portal (servis/satis/ihracat) ve kurum adı zorunlu']);
             exit;
         }
         requirePortalAccess($user, $portal);
@@ -77,7 +78,7 @@ switch ($method) {
         $mx = $maxRow->fetch();
         $kayitNo = 'MK' . str_pad((string)((int)($mx['mx'] ?? 0) + 1), 5, '0', STR_PAD_LEFT);
 
-        $stmt = $pdo->prepare('INSERT INTO customers (id, kayit_no, portal, kurum, kisi, iletisim_kisileri, tel, email, sehir, adres, notlar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt = $pdo->prepare('INSERT INTO customers (id, kayit_no, portal, kurum, kisi, iletisim_kisileri, tel, email, sehir, ulke, adres, notlar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([
             $id, $kayitNo, $portal, $kurum,
             strOrNull($input['kisi'] ?? null),
@@ -85,6 +86,7 @@ switch ($method) {
             strOrNull($input['tel'] ?? null),
             strOrNull($input['email'] ?? null),
             strOrNull($input['sehir'] ?? null),
+            strOrNull($input['ulke'] ?? null),
             strOrNull($input['adres'] ?? null),
             strOrNull($input['not'] ?? null),
         ]);
@@ -115,7 +117,7 @@ switch ($method) {
         }
         requirePortalAccess($user, $existing['portal']);
 
-        $stmt = $pdo->prepare('UPDATE customers SET kurum=?, kisi=?, iletisim_kisileri=?, tel=?, email=?, sehir=?, adres=?, notlar=? WHERE id=?');
+        $stmt = $pdo->prepare('UPDATE customers SET kurum=?, kisi=?, iletisim_kisileri=?, tel=?, email=?, sehir=?, ulke=?, adres=?, notlar=? WHERE id=?');
         $stmt->execute([
             $kurum,
             strOrNull($input['kisi'] ?? null),
@@ -123,6 +125,7 @@ switch ($method) {
             strOrNull($input['tel'] ?? null),
             strOrNull($input['email'] ?? null),
             strOrNull($input['sehir'] ?? null),
+            strOrNull($input['ulke'] ?? null),
             strOrNull($input['adres'] ?? null),
             strOrNull($input['not'] ?? null),
             $id,

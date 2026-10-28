@@ -29,7 +29,11 @@ function renderMusteriler(){
   if(q)data=data.filter(m=>(m.kurum+m.kisi+m.tel).toLowerCase().includes(q));
   document.getElementById('musteri-count').textContent=data.length+' müşteri';
   var newMH=JSON.stringify([q,_musteriSortCol,_musteriSortDir]);if(newMH!==_musteriFilterHash){musterilerPage=1;_musteriFilterHash=newMH;}
-  data.sort(function(a,b){var va=(a[_musteriSortCol]||'').toString().toLowerCase(),vb=(b[_musteriSortCol]||'').toString().toLowerCase(),dir=_musteriSortDir==='asc'?1:-1;return va<vb?-dir:va>vb?dir:0;});
+  // Yurtdışı Satış Portalı'nda Şehir sütunu yerine Ülke gösterilir
+  var isIhracat=currentPortal==='ihracat';
+  var _sortKey=(isIhracat&&_musteriSortCol==='sehir')?'ulke':_musteriSortCol;
+  var thSehir=document.getElementById('th-musteri-sehir');if(thSehir)thSehir.textContent=isIhracat?'Ülke':'Şehir';
+  data.sort(function(a,b){var va=(a[_sortKey]||'').toString().toLowerCase(),vb=(b[_sortKey]||'').toString().toLowerCase(),dir=_musteriSortDir==='asc'?1:-1;return va<vb?-dir:va>vb?dir:0;});
   var canEdit=state.currentUser&&state.currentUser.rol!=='izleyici';
   bulkSetVisible('musteriList',data.map(function(m){return m.id;}));
   var thCheck=document.getElementById('th-musteri-check');
@@ -44,7 +48,7 @@ function renderMusteriler(){
   document.getElementById('musteri-empty').style.display='none';
   var pagedM=data.slice((musterilerPage-1)*PAGE_SIZE,musterilerPage*PAGE_SIZE);
   renderPagination('musteri-pagination',musterilerPage,data.length,'setMusterilerPage');
-  tbody.innerHTML=pagedM.map(m=>{return`<tr>${canEdit?`<td onclick="event.stopPropagation()"><input type="checkbox" ${bulkIsChecked('musteriList',m.id)?'checked':''} onchange="bulkToggleRow('musteriList','${esc(m.id)}','renderMusteriler')"></td>`:''}<td style="text-align:center"><span class="kn-badge" style="color:var(--accent);font-size:10px">${esc(m.kayitNo||'—')}</span></td><td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(m.kurum)}</td><td style="color:var(--text2);text-align:center">${esc(m.kisi||'—')}</td><td class="td-mono" style="text-align:center">${esc(m.tel||'—')}</td><td style="color:var(--text2);text-align:center">${esc(m.email||'—')}</td><td style="text-align:center">${esc(m.sehir||'—')}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goMusteriForm('${esc(m.id)}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('musteri','${esc(m.id)}')"><i class="ti ti-trash"></i></button></div></td></tr>`;}).join('');
+  tbody.innerHTML=pagedM.map(m=>{return`<tr>${canEdit?`<td onclick="event.stopPropagation()"><input type="checkbox" ${bulkIsChecked('musteriList',m.id)?'checked':''} onchange="bulkToggleRow('musteriList','${esc(m.id)}','renderMusteriler')"></td>`:''}<td style="text-align:center"><span class="kn-badge" style="color:var(--accent);font-size:10px">${esc(m.kayitNo||'—')}</span></td><td style="font-weight:500;max-width:220px;white-space:normal;word-break:break-word">${esc(m.kurum)}</td><td style="color:var(--text2);text-align:center">${esc(m.kisi||'—')}</td><td class="td-mono" style="text-align:center">${esc(m.tel||'—')}</td><td style="color:var(--text2);text-align:center">${esc(m.email||'—')}</td><td style="text-align:center">${esc((isIhracat?m.ulke:m.sehir)||'—')}</td><td><div class="action-row" style="justify-content:flex-end"><button class="btn-icon" onclick="goMusteriForm('${esc(m.id)}')"><i class="ti ti-edit" style="color:var(--accent)"></i></button><button class="btn-icon" style="color:var(--red)" onclick="confirmDelete('musteri','${esc(m.id)}')"><i class="ti ti-trash"></i></button></div></td></tr>`;}).join('');
 }
 // ════ MÜŞTERİ İLGİLİ KİŞİLERİ (yalnızca Satış Pazarlama Portalı) ════
 var musteriKisiler=[];
@@ -63,18 +67,22 @@ function renderMusteriKisiler(){
   }).join('');
 }
 async function saveMusteri(){
-  const kurum=toTitleCase(document.getElementById('mf-kurum').value.trim());if(!kurum)return toast('Kurum adı zorunlu.','error');
+  // Yurtdışı müşterilerde Türkçe büyük/küçük harf ve TR telefon biçimlendirmesi uygulanmaz (GmbH, LLC, +49...)
+  const isIhracat=currentPortal==='ihracat';
+  const _case=isIhracat?function(v){return v;}:toTitleCase;
+  const _tel=isIhracat?function(v){return(v||'').trim();}:formatTel;
+  const kurum=_case(document.getElementById('mf-kurum').value.trim());if(!kurum)return toast('Kurum adı zorunlu.','error');
   const editId=document.getElementById('mf-edit-id').value;
-  const isSatisPortal=currentPortal==='satis';
+  const isSatisPortal=currentPortal==='satis'||isIhracat;
   var kisiListesi=[];
   var birincil={kisi:'',tel:'',email:''};
   if(isSatisPortal){
-    kisiListesi=musteriKisiler.map(function(k){return{ad:toTitleCase((k.ad||'').trim()),departman:toTitleCase((k.departman||'').trim()),tel:formatTel(k.tel||''),email:(k.email||'').trim()};}).filter(function(k){return k.ad;});
+    kisiListesi=musteriKisiler.map(function(k){return{ad:_case((k.ad||'').trim()),departman:_case((k.departman||'').trim()),tel:_tel(k.tel||''),email:(k.email||'').trim()};}).filter(function(k){return k.ad;});
     if(kisiListesi.length)birincil={kisi:kisiListesi[0].ad,tel:kisiListesi[0].tel,email:kisiListesi[0].email};
   } else {
     birincil={kisi:toTitleCase(document.getElementById('mf-kisi').value.trim()),tel:formatTel(document.getElementById('mf-tel').value),email:document.getElementById('mf-email').value.trim()};
   }
-  const payload={kurum,kisi:birincil.kisi,tel:birincil.tel,email:birincil.email,iletisimKisileri:kisiListesi,sehir:toTitleCase(document.getElementById('mf-sehir').value.trim()),adres:toTitleCase(document.getElementById('mf-adres').value.trim()),not:document.getElementById('mf-not').value.trim()};
+  const payload={kurum,kisi:birincil.kisi,tel:birincil.tel,email:birincil.email,iletisimKisileri:kisiListesi,sehir:_case(document.getElementById('mf-sehir').value.trim()),ulke:isIhracat?document.getElementById('mf-ulke').value.trim():'',adres:_case(document.getElementById('mf-adres').value.trim()),not:document.getElementById('mf-not').value.trim()};
   var savedMId;
   try{
     if(editId){
@@ -98,7 +106,9 @@ async function saveMusteri(){
     _formDirty=false;showPage(ret.returnPage,true);
     var inp=document.getElementById(ret.inputId);if(inp)inp.value=payload.kurum;
     lockMusteriField(ret.inputId,savedMId);
-    if(ret.inputId==='tf-kurum'){
+    if(ret.inputId==='itf-kurum'){
+      ihrMusteriSecildi(state.musteriler.find(function(x){return x.id===savedMId;}));
+    } else if(ret.inputId==='tf-kurum'){
       var ki=document.getElementById('tf-ilgiliKisi');if(ki)ki.value=payload.kisi||'';
       var tel=document.getElementById('tf-telefon');if(tel)tel.value=payload.tel||'';
       var eml=document.getElementById('tf-email');if(eml)eml.value=payload.email||'';
@@ -514,12 +524,13 @@ async function loadSettings(){
   var servisDiv=document.getElementById('settings-servis-kayit');
   var siparisDiv=document.getElementById('settings-siparis-no');
   var isSatis=typeof currentPortal!=='undefined'&&currentPortal==='satis';
-  if(servisDiv)servisDiv.style.display=isSatis?'none':'';
+  if(servisDiv)servisDiv.style.display=currentPortal==='servis'?'':'none';
   if(siparisDiv)siparisDiv.style.display=isSatis?'':'none';
   updateSettingsPreview();
   renderUrunKategorileri();
   renderUrunMarkalari();
   renderParametreler();
+  if(currentPortal==='ihracat')ihrRenderBankaHesaplari();
 }
 function renderFooter(){
   var s=state.settings||{};
@@ -651,8 +662,9 @@ function confirmDeleteBulk(type,ids){
 function downloadMusteriSablon(){
   if(!window.XLSX){toast('Excel kütüphanesi yüklenemedi.','error');return;}
   var wb=XLSX.utils.book_new();
-  var ws=XLSX.utils.aoa_to_sheet([['Kurum Adı*','İlgili Kişi','Telefon','E-posta','Şehir','Adres','Notlar']]);
-  ws['!cols']=[{wch:30},{wch:20},{wch:15},{wch:25},{wch:15},{wch:35},{wch:30}];
+  var isIhracat=currentPortal==='ihracat';
+  var ws=XLSX.utils.aoa_to_sheet([isIhracat?['Kurum Adı*','İlgili Kişi','Telefon','E-posta','Şehir','Ülke','Adres','Notlar']:['Kurum Adı*','İlgili Kişi','Telefon','E-posta','Şehir','Adres','Notlar']]);
+  ws['!cols']=isIhracat?[{wch:30},{wch:20},{wch:15},{wch:25},{wch:15},{wch:15},{wch:35},{wch:30}]:[{wch:30},{wch:20},{wch:15},{wch:25},{wch:15},{wch:35},{wch:30}];
   XLSX.utils.book_append_sheet(wb,ws,'Müşteriler');
   var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
   var blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
@@ -676,13 +688,15 @@ function importMusterilerExcel(e){
         if(!kurum){atlanan++;continue;}
         var mevcutMu=state.musteriler.some(function(m){return m.kurum.toLowerCase()===kurum.toLowerCase();});
         if(mevcutMu){atlanan++;continue;}
+        var _case=currentPortal==='ihracat'?function(v){return v;}:toTitleCase;
         var payload={
-          kurum:toTitleCase(kurum),
-          kisi:toTitleCase((row['İlgili Kişi']||'').toString().trim()),
+          kurum:_case(kurum),
+          kisi:_case((row['İlgili Kişi']||'').toString().trim()),
           tel:(row['Telefon']||'').toString().trim(),
           email:(row['E-posta']||'').toString().trim(),
-          sehir:toTitleCase((row['Şehir']||'').toString().trim()),
-          adres:toTitleCase((row['Adres']||'').toString().trim()),
+          sehir:_case((row['Şehir']||'').toString().trim()),
+          ulke:(row['Ülke']||'').toString().trim(),
+          adres:_case((row['Adres']||'').toString().trim()),
           not:(row['Notlar']||'').toString().trim()
         };
         try{

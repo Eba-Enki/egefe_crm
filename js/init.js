@@ -23,7 +23,7 @@ var _FORM_PAGES = new Set([
 var _STOK_PAGES = new Set([
   'stok-dashboard','ham-stok','ham-girisler','ham-cikislar','ham-sayimlar',
   'bitmis-stok','bitmis-girisler','bitmis-cikislar','bitmis-sayimlar',
-  'stok-ayarlar','stok-parametreler'
+  'stok-ayarlar','stok-parametreler','ref-ana-stok'
 ]);
 
 document.addEventListener('visibilitychange', function() {

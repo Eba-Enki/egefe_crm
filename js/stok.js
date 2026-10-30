@@ -2575,6 +2575,7 @@ async function loadStokAyarlar(){
   stokRenderKatAyar();
   stokRenderEsikler();
   stokNedenRender();
+  if(typeof refAyarPanelYukle==='function')refAyarPanelYukle();
   var hcpEl=document.getElementById('set-ham-cikis-prefix');
   if(hcpEl){hcpEl.value=state.stokSettings.hamCikisPrefix||'HC'; stokPrefixPrev();}
   var tcpEl=document.getElementById('set-ticari-cikis-prefix');

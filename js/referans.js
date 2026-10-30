@@ -4,13 +4,24 @@
 var _refAnaTab='aktif';
 var _refAnaPage=1;
 var REF_AKTIF_DURUMLAR=['Kapalı Ambalaj','Açık Ambalaj'];
-var REF_KONUM_TIPLERI=['Ampul Kutusu','Siyah Rack','Mor Rack'];
-var REF_COZUCULER=['Metanol','Asetonitril'];
-var REF_GRUPLAR=['AMP','BAR','BZD','COC','FENC','K2','K3','K4','MDMA','MET','MTD','OPI','THC','TCA'];
+// Çözücü ve konum seçenekleri Stok Ayarlar → Çözücü ve Konumlar'dan yönetilir
+var REF_AYAR_VARSAYILAN={refCozuculer:['Metanol','Asetonitril'],refKonumlar:['Ampul Kutusu','Siyah Rack','Mor Rack']};
+var REF_AYAR_ETIKET={refCozuculer:'Çözücü',refKonumlar:'Konum'};
 // Başlıklar CSS ile büyük harfe çevriliyor; µ büyüyünce M gibi görünmesin
 function refBirim(b){return '<span style="text-transform:none">'+b+'</span>';}
 
+function refAyarListe(k){return (state.refAyarlar&&state.refAyarlar[k])||REF_AYAR_VARSAYILAN[k];}
+async function refAyarlariYukle(){
+  try{
+    var a=(await apiGet('stok/ayarlar')).ayarlar||{};
+    state.refAyarlar={refCozuculer:a.refCozuculer||REF_AYAR_VARSAYILAN.refCozuculer,refKonumlar:a.refKonumlar||REF_AYAR_VARSAYILAN.refKonumlar};
+  }catch(e){
+    state.refAyarlar=state.refAyarlar||null;
+  }
+}
+
 async function loadRefAnaStok(){
+  var ayarYukleme=refAyarlariYukle();
   try{
     var res=await apiGet('stok/ref-ana-stoklar');
     state.refAnaStoklar=res.stoklar||[];
@@ -18,6 +29,7 @@ async function loadRefAnaStok(){
     toast(e.message||'Ana stoklar yüklenemedi.','error');
     state.refAnaStoklar=state.refAnaStoklar||[];
   }
+  await ayarYukleme;
   refFillFilterOptions();
   renderRefAnaStok();
 }
@@ -63,7 +75,7 @@ function refFillFilterOptions(){
   var kSel=document.getElementById('ra-f-konum');
   if(kSel){
     var curK=kSel.value;
-    var konumlar=Array.from(new Set(REF_KONUM_TIPLERI.concat(list.map(function(s){return s.konumTipi||'';}).filter(Boolean))));
+    var konumlar=Array.from(new Set(refAyarListe('refKonumlar').concat(list.map(function(s){return s.konumTipi||'';}).filter(Boolean))));
     kSel.innerHTML='<option value="">Tüm Konumlar</option>'+konumlar.map(function(k){return '<option'+(k===curK?' selected':'')+'>'+esc(k)+'</option>';}).join('');
   }
 }
@@ -143,23 +155,20 @@ function renderRefAnaStok(){
 }
 
 // ── Form (yeni / düzenle) ──
-function refDatalistDoldur(){
-  var all=state.refAnaStoklar||[];
-  function fill(id,base,key){
-    var el=document.getElementById(id);if(!el)return;
-    var vals=Array.from(new Set(base.concat(all.map(function(s){return s[key]||'';}).filter(Boolean)))).sort(function(a,b){return a.localeCompare(b,'tr');});
-    el.innerHTML=vals.map(function(v){return '<option value="'+esc(v)+'">';}).join('');
-  }
-  fill('ra-dl-grup',REF_GRUPLAR,'grup');
-  fill('ra-dl-cozucu',REF_COZUCULER,'cozucu');
-  fill('ra-dl-konum',REF_KONUM_TIPLERI,'konumTipi');
+// Seçenekler ayarlardaki listeden gelir; kayıttaki değer listeden çıkarılmışsa yine de korunur
+function refSelectDoldur(id,ayarKey,mevcut){
+  var el=document.getElementById(id);if(!el)return;
+  var vals=refAyarListe(ayarKey).slice();
+  if(mevcut&&vals.indexOf(mevcut)<0)vals.push(mevcut);
+  el.innerHTML='<option value="">— Seçin —</option>'+vals.map(function(v){return '<option value="'+esc(v)+'">'+esc(v)+'</option>';}).join('');
 }
 
 function openRefAnaForm(id){
   if(state.currentUser&&state.currentUser.rol==='izleyici'){toast('Yetki yok.','error');return;}
   if(!id)_refFormDetaydan=false;
   var s=id?(state.refAnaStoklar||[]).find(function(x){return x.id===id;}):null;
-  refDatalistDoldur();
+  refSelectDoldur('ra-form-cozucu','refCozuculer',s&&s.cozucu);
+  refSelectDoldur('ra-form-konum-tipi','refKonumlar',s&&s.konumTipi);
   document.getElementById('ra-form-title').textContent=s?'Ana Stok Düzenle — '+s.kod:'Yeni Ana Stok';
   document.getElementById('ra-form-id').value=s?s.id:'';
   var set=function(fid,v){var el=document.getElementById(fid);if(el)el.value=v==null?'':v;};
@@ -520,4 +529,54 @@ async function saveRefImport(){
   _refImportKayitlar=[];
   closeModal('modal-ref-import');
   loadRefAnaStok();
+}
+
+// ── Stok Ayarlar → Çözücü ve Konumlar ──
+async function refAyarPanelYukle(){
+  await refAyarlariYukle();
+  refAyarRender('refCozuculer');
+  refAyarRender('refKonumlar');
+}
+
+function refAyarRender(k){
+  var el=document.getElementById('ref-ayar-liste-'+k);if(!el)return;
+  var list=refAyarListe(k);
+  if(!list.length){el.innerHTML='<div style="padding:8px 0;font-size:13px;color:var(--text3)">Henüz tanımlanmamış.</div>';return;}
+  el.innerHTML='<div style="display:flex;flex-direction:column;gap:4px">'+list.map(function(v,i){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border)">'
+      +'<span style="font-size:13px;color:var(--text)">'+esc(v)+'</span>'
+      +'<button class="btn-icon sa-action" style="color:var(--red);flex-shrink:0" title="Sil" onclick="refAyarSil(\''+k+'\','+i+')"><i class="ti ti-trash"></i></button>'
+      +'</div>';
+  }).join('')+'</div>';
+}
+
+async function refAyarKaydet(k,yeni){
+  var body={};body[k]=yeni;
+  var res=await apiPut('stok/ayarlar',body);
+  state.refAyarlar=state.refAyarlar||{refCozuculer:refAyarListe('refCozuculer'),refKonumlar:refAyarListe('refKonumlar')};
+  state.refAyarlar[k]=(res.ayarlar&&res.ayarlar[k])||yeni;
+  refAyarRender(k);
+}
+
+async function refAyarEkle(k){
+  var inp=document.getElementById('ref-ayar-yeni-'+k);if(!inp)return;
+  var val=inp.value.trim();
+  if(!val)return toast(REF_AYAR_ETIKET[k]+' adı boş olamaz.','error');
+  var list=refAyarListe(k);
+  if(list.some(function(v){return v.toLocaleLowerCase('tr')===val.toLocaleLowerCase('tr');}))return toast('Bu '+REF_AYAR_ETIKET[k].toLocaleLowerCase('tr')+' zaten listede.','info');
+  try{await refAyarKaydet(k,list.concat([val]));}
+  catch(e){return toast(e.message||'Kaydedilemedi.','error');}
+  inp.value='';
+  toast(REF_AYAR_ETIKET[k]+' eklendi.','success');
+}
+
+function refAyarSil(k,i){
+  var list=refAyarListe(k);
+  var ad=list[i];if(ad==null)return;
+  showConfirm('"'+ad+'" listeden kaldırılsın mı? Bu değeri kullanan mevcut kayıtlar değişmez.',async function(){
+    var yeni=list.slice();yeni.splice(i,1);
+    try{await refAyarKaydet(k,yeni);}
+    catch(e){return toast(e.message||'Silinemedi.','error');}
+    toast(REF_AYAR_ETIKET[k]+' kaldırıldı.','info');
+  });
 }

@@ -10,6 +10,9 @@ const VARSAYILAN_AYARLAR = [
     'hamCikisPrefix'    => 'HC',
     'ticariCikisPrefix' => 'TC',
     'cikisNedenleri'    => ['Müşteri Siparişi','Demo / Numune','E-ticaret','İç Kullanım','İade','Diğer'],
+    // Referans standartlar formundaki seçim listeleri
+    'refCozuculer'      => ['Metanol','Asetonitril'],
+    'refKonumlar'       => ['Ampul Kutusu','Siyah Rack','Mor Rack'],
 ];
 
 function ayarlarOku(PDO $pdo): array {
@@ -40,11 +43,13 @@ switch ($method) {
         if (array_key_exists('ticariCikisPrefix', $input)) {
             $ayarlar['ticariCikisPrefix'] = trim((string)$input['ticariCikisPrefix']) ?: 'TC';
         }
-        if (array_key_exists('cikisNedenleri', $input) && is_array($input['cikisNedenleri'])) {
-            $ayarlar['cikisNedenleri'] = array_values(array_filter(
-                array_map(fn($v) => trim((string)$v), $input['cikisNedenleri']),
-                fn($v) => $v !== ''
-            ));
+        foreach (['cikisNedenleri', 'refCozuculer', 'refKonumlar'] as $listeAnahtari) {
+            if (array_key_exists($listeAnahtari, $input) && is_array($input[$listeAnahtari])) {
+                $ayarlar[$listeAnahtari] = array_values(array_unique(array_filter(
+                    array_map(fn($v) => trim((string)$v), $input[$listeAnahtari]),
+                    fn($v) => $v !== ''
+                )));
+            }
         }
 
         $json = json_encode($ayarlar, JSON_UNESCAPED_UNICODE);

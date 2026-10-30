@@ -1718,6 +1718,11 @@
             </span>
             <span class="settings-nav-label">Stok Eşiği</span>
           </div>
+          <div class="settings-nav-section">Referans Standartlar</div>
+          <div class="settings-nav-item" data-panel="ref" onclick="switchStokSettingsPanel('ref')">
+            <span class="settings-nav-icon"><i class="ti ti-flask" style="font-size:16px"></i></span>
+            <span class="settings-nav-label">Çözücü ve Konumlar</span>
+          </div>
           <div class="settings-nav-section">Sistem</div>
           <div class="settings-nav-item" data-panel="veri" onclick="switchStokSettingsPanel('veri')">
             <span class="settings-nav-icon">
@@ -1824,6 +1829,33 @@
             </div>
             <div class="settings-section">
               <div id="stok-esik-body"></div>
+            </div>
+          </div>
+
+          <!-- Panel: Referans Standartlar — Çözücü ve Konumlar -->
+          <div id="ssp-ref" class="settings-panel">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon"><i class="ti ti-flask" style="font-size:20px"></i></div>
+              <div>
+                <div class="settings-panel-title">Çözücü ve Konumlar</div>
+                <div class="settings-panel-sub">Ana stok formunda seçilecek çözücü ve saklama konumu listeleri</div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-subsection-title">Çözücüler</div>
+              <div style="display:flex;gap:8px;margin-bottom:12px">
+                <input type="text" id="ref-ayar-yeni-refCozuculer" placeholder="ör. Metanol" onkeydown="if(event.key==='Enter')refAyarEkle('refCozuculer')" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:8px 11px;font-size:13px;outline:none;font-family:var(--font-body)">
+                <button class="btn btn-primary" onclick="refAyarEkle('refCozuculer')">Ekle</button>
+              </div>
+              <div id="ref-ayar-liste-refCozuculer"></div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-subsection-title">Konumlar</div>
+              <div style="display:flex;gap:8px;margin-bottom:12px">
+                <input type="text" id="ref-ayar-yeni-refKonumlar" placeholder="ör. Siyah Rack" onkeydown="if(event.key==='Enter')refAyarEkle('refKonumlar')" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:8px 11px;font-size:13px;outline:none;font-family:var(--font-body)">
+                <button class="btn btn-primary" onclick="refAyarEkle('refKonumlar')">Ekle</button>
+              </div>
+              <div id="ref-ayar-liste-refKonumlar"></div>
             </div>
           </div>
 
@@ -1944,8 +1976,8 @@
 <script src="js/musteri.js?v=16"></script>
 <script src="js/export.js?v=6"></script>
 <script src="js/satis.js?v=19"></script>
-<script src="js/stok.js?v=5"></script>
-<script src="js/referans.js?v=1"></script>
+<script src="js/stok.js?v=6"></script>
+<script src="js/referans.js?v=3"></script>
 <script src="js/init.js?v=12"></script>
 <script src="js/resizable-cols.js?v=1"></script>
 <script src="js/notlar.js?v=1"></script>
@@ -2220,20 +2252,19 @@
     </div>
     <div class="modal-body">
       <input type="hidden" id="ra-form-id">
-      <datalist id="ra-dl-grup"></datalist><datalist id="ra-dl-cozucu"></datalist><datalist id="ra-dl-konum"></datalist>
       <div class="form-grid">
-        <div class="field"><label>Grup (Kısaltma)</label><input type="text" id="ra-form-grup" list="ra-dl-grup" placeholder="AMP, BZD, COC..."></div>
+        <div class="field"><label>Grup (Kısaltma)</label><input type="text" id="ra-form-grup" placeholder="AMP, BZD, COC..."></div>
         <div class="field"><label>Standart Adı <span class="req">*</span></label><input type="text" id="ra-form-standart" placeholder="Örn. Oxazepam"></div>
         <div class="field"><label>Katalog No</label><input type="text" id="ra-form-katalog"></div>
         <div class="field"><label>Lot No</label><input type="text" id="ra-form-lot"></div>
         <div class="field"><label>Üretici</label><input type="text" id="ra-form-uretici"></div>
         <div class="field"><label>Konsantrasyon (µg/mL)</label><input type="number" id="ra-form-kons" min="0" step="any" placeholder="Bilinmiyorsa boş bırakın"></div>
-        <div class="field"><label>Çözücü</label><input type="text" id="ra-form-cozucu" list="ra-dl-cozucu"></div>
+        <div class="field"><label>Çözücü</label><select id="ra-form-cozucu"></select></div>
         <div class="field"><label>Hacim (µL) <span class="req">*</span></label><input type="number" id="ra-form-hacim" min="0" step="any"><div id="ra-form-hacim-not" style="font-size:11px;color:var(--text3);margin-top:3px"></div></div>
         <div class="field" id="ra-form-durum-wrap"><label>Ambalaj Durumu</label><select id="ra-form-durum" onchange="refFormDurumChange()"><option>Kapalı Ambalaj</option><option>Açık Ambalaj</option></select></div>
         <div class="field" id="ra-form-acilis-wrap"><label>Açılış Tarihi</label><input type="date" id="ra-form-acilis"></div>
         <div class="field"><label>SKT (açıldıktan sonra)</label><input type="date" id="ra-form-skt"></div>
-        <div class="field"><label>Konum</label><input type="text" id="ra-form-konum-tipi" list="ra-dl-konum" placeholder="Ampul Kutusu, Siyah Rack..."></div>
+        <div class="field"><label>Konum</label><select id="ra-form-konum-tipi"></select></div>
         <div class="field"><label>Pozisyon</label><input type="text" id="ra-form-konum-poz" placeholder="Rack pozisyon no"></div>
         <div class="field form-full"><label>Not</label><textarea id="ra-form-notlar" rows="2"></textarea></div>
         <div class="field form-full"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none"><input type="checkbox" id="ra-form-dogrulanmadi" style="width:auto"> Bazı bilgiler doğrulanmadı (etiket okunmuyor, konsantrasyon belirsiz vb.)</label></div>

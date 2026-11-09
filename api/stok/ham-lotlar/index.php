@@ -13,6 +13,8 @@ function lotResponse(array $row): array {
         'lotNo'       => $row['lot_no'],
         'tarih'       => $row['tarih'],
         'parametreAd' => $row['parametre_ad'],
+        'tip'         => $row['tip'] ?? 'tekli',
+        'parametreler'=> !empty($row['parametreler']) ? json_decode($row['parametreler'], true) : [],
         'cutoff'      => $row['cutoff'],
         'ekOzellik'   => $row['ek_ozellik'],
         'kategoriId'  => $row['kategori_id'],

@@ -14,11 +14,41 @@ function stokSPS(PDO $pdo, string $kategoriId): int {
     return (int)round(((float)$k['sheet_boyu'] / (float)$k['kesim_boleni']) * (1 - (float)($k['fire_pct'] ?? 0) / 100));
 }
 
+// Kalemin tip/parametreler/cutoff alanlarını hazırlar. Çoklu kalemde parametreler
+// A-Z sıralanır, tekrarlar atılır ve cutoff sütununa özet yazılır.
+function hamKalemTipAlanlari(array $k, int $i): array {
+    $tip = ($k['tip'] ?? 'tekli') === 'coklu' ? 'coklu' : 'tekli';
+    if ($tip === 'tekli') {
+        return ['tip' => 'tekli', 'parametreler' => null, 'cutoff' => strOrNull($k['cutoff'] ?? null)];
+    }
+    $liste = [];
+    foreach ((array)($k['parametreler'] ?? []) as $p) {
+        $ad = strOrNull(is_array($p) ? ($p['ad'] ?? null) : null);
+        if ($ad === null || isset($liste[$ad])) continue;
+        $liste[$ad] = ['ad' => $ad, 'deger' => strOrNull($p['deger'] ?? null) ?? ''];
+    }
+    if (count($liste) < 2) {
+        http_response_code(400);
+        echo json_encode(['error' => ($i + 1) . '. kalem çoklu olduğu için en az 2 parametre seçilmelidir']);
+        exit;
+    }
+    uksort($liste, fn($a, $b) => strcasecmp((string)$a, (string)$b));
+    $liste = array_values($liste);
+    $ozet = implode(' · ', array_map(fn($p) => $p['deger'] !== '' ? $p['ad'] . ':' . $p['deger'] : $p['ad'], $liste));
+    return [
+        'tip'          => 'coklu',
+        'parametreler' => json_encode($liste, JSON_UNESCAPED_UNICODE),
+        'cutoff'       => mb_substr($ozet, 0, 500),
+    ];
+}
+
 function kalemResponse(array $row): array {
     return [
         'lotId'       => $row['id'],
         'lotNo'       => $row['lot_no'],
         'parametreAd' => $row['parametre_ad'],
+        'tip'         => $row['tip'] ?? 'tekli',
+        'parametreler'=> !empty($row['parametreler']) ? json_decode($row['parametreler'], true) : [],
         'cutoff'      => $row['cutoff'],
         'ekOzellik'   => $row['ek_ozellik'],
         'kategoriId'  => $row['kategori_id'],
@@ -95,6 +125,7 @@ switch ($method) {
                 echo json_encode(['error' => (($i + 1)) . '. kalemde sheet miktarı geçersiz']);
                 exit;
             }
+            $kalemler[$i] = array_merge($k, hamKalemTipAlanlari($k, $i));
         }
 
         $girisId = 'hg' . (string)(int)round(microtime(true) * 1000);
@@ -105,7 +136,7 @@ switch ($method) {
             $stmt = $pdo->prepare('INSERT INTO raw_stock_entries (id, evrak_no, tarih, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?)');
             $stmt->execute([$girisId, $evrakNo, $tarih, $notlar, $user['id']]);
 
-            $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, ek_ozellik, kategori_id, sheet_giren, mevcut_sheet, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, tip, parametreler, cutoff, ek_ozellik, kategori_id, sheet_giren, mevcut_sheet, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             foreach ($kalemler as $i => $k) {
                 $kategoriId = (string)$k['kategoriId'];
                 $sheetGiren = (float)$k['sheetMiktar'];
@@ -116,7 +147,7 @@ switch ($method) {
                 $lotStmt->execute([
                     $lotId, $girisId, $evrakNo,
                     (string)$k['lotNo'], $tarih, (string)$k['parametreAd'],
-                    strOrNull($k['cutoff'] ?? null), $ekOzellik, $kategoriId,
+                    $k['tip'], $k['parametreler'], $k['cutoff'], $ekOzellik, $kategoriId,
                     $sheetGiren, $sheetGiren, $stripGiren, $stripGiren,
                     strOrNull($k['sktTarih'] ?? null), $user['id'],
                 ]);
@@ -161,6 +192,7 @@ switch ($method) {
                 echo json_encode(['error' => (($i + 1)) . '. kalemde sheet miktarı geçersiz']);
                 exit;
             }
+            $kalemler[$i] = array_merge($k, hamKalemTipAlanlari($k, $i));
         }
 
         $check = $pdo->prepare('SELECT * FROM raw_stock_entries WHERE id = ?');
@@ -187,7 +219,8 @@ switch ($method) {
             $lotId = strOrNull($k['lotId'] ?? null);
             $kalemData = [
                 'lotNo' => (string)$k['lotNo'], 'parametreAd' => (string)$k['parametreAd'],
-                'cutoff' => strOrNull($k['cutoff'] ?? null), 'ekOzellik' => strOrNull($k['ekOzellik'] ?? null) ?? 'Standart',
+                'tip' => $k['tip'], 'parametreler' => $k['parametreler'],
+                'cutoff' => $k['cutoff'], 'ekOzellik' => strOrNull($k['ekOzellik'] ?? null) ?? 'Standart',
                 'kategoriId' => $kategoriId,
                 'sheetGiren' => $sheetGiren, 'stripGiren' => $stripGiren,
                 'sktTarih' => strOrNull($k['sktTarih'] ?? null),
@@ -227,15 +260,15 @@ switch ($method) {
             $pdo->prepare('UPDATE raw_stock_entries SET evrak_no=?, tarih=?, notlar=? WHERE id=?')
                 ->execute([$evrakNo, $tarih, $notlar, $id]);
 
-            $updStmt = $pdo->prepare('UPDATE raw_stock_lots SET evrak_no=?, lot_no=?, tarih=?, parametre_ad=?, cutoff=?, ek_ozellik=?, kategori_id=?, sheet_giren=?, mevcut_sheet=?, strip_giren=?, mevcut_strip=?, skt_tarih=? WHERE id=?');
+            $updStmt = $pdo->prepare('UPDATE raw_stock_lots SET evrak_no=?, lot_no=?, tarih=?, parametre_ad=?, tip=?, parametreler=?, cutoff=?, ek_ozellik=?, kategori_id=?, sheet_giren=?, mevcut_sheet=?, strip_giren=?, mevcut_strip=?, skt_tarih=? WHERE id=?');
             foreach ($updates as $lotId => $u) {
-                $updStmt->execute([$evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['cutoff'], $u['ekOzellik'], $u['kategoriId'], $u['sheetGiren'], $u['mevcutSheet'], $u['stripGiren'], $u['mevcutStrip'], $u['sktTarih'], $lotId]);
+                $updStmt->execute([$evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['tip'], $u['parametreler'], $u['cutoff'], $u['ekOzellik'], $u['kategoriId'], $u['sheetGiren'], $u['mevcutSheet'], $u['stripGiren'], $u['mevcutStrip'], $u['sktTarih'], $lotId]);
             }
 
-            $insStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, cutoff, ek_ozellik, kategori_id, sheet_giren, mevcut_sheet, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $insStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, tip, parametreler, cutoff, ek_ozellik, kategori_id, sheet_giren, mevcut_sheet, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             foreach ($inserts as $i => $u) {
                 $newLotId = 'hl' . (string)(int)round(microtime(true) * 1000) . $i;
-                $insStmt->execute([$newLotId, $id, $evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['cutoff'], $u['ekOzellik'], $u['kategoriId'], $u['sheetGiren'], $u['sheetGiren'], $u['stripGiren'], $u['stripGiren'], $u['sktTarih'], $user['id']]);
+                $insStmt->execute([$newLotId, $id, $evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['tip'], $u['parametreler'], $u['cutoff'], $u['ekOzellik'], $u['kategoriId'], $u['sheetGiren'], $u['sheetGiren'], $u['stripGiren'], $u['stripGiren'], $u['sktTarih'], $user['id']]);
             }
 
             if ($removals) {

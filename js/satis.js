@@ -758,14 +758,18 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   const lblStyle={fontStyle:'bold'};
   const centerStyle={halign:'center'};
 
-  const tableBody=[];
-  (s.satirlar||[]).forEach((k,i)=>{
+  // Kalemleri normalize et, hizmet kalemlerini çıkar ve aynı ürünleri topla.
+  // Teklifte satırlar ayrı gösterilir; iş emrinde ürün adı + kategori + parametreler + birim
+  // aynı olan satırlar tek satırda birleştirilir (miktar kırılımı parantez içinde).
+  const gruplar=[];const grupMap={};
+  (s.satirlar||[]).forEach(k=>{
     // "ProductName (Kategori)" satış açıklaması: kategori doğrudan bu ekten okunur —
     // ürün listesinde aynı isimde birden fazla kategori (İdrar/Ağız Sıvısı gibi) olabildiği
     // için isimle yeniden eşleştirmek yanlış kategoriyi seçebilir.
     const rawAciklama=(k._baseAciklama||k.aciklama||'').trim();
     const parenMatch=rawAciklama.match(/\(([^()]+)\)\s*$/);
     const base=(parenMatch?rawAciklama.slice(0,parenMatch.index):rawAciklama).trim();
+    if(/hizmet/i.test(base))return; // hizmet kalemleri üretim iş emrinde yer almaz
     const params=k.seciliParametreler||[];
     let kategori=parenMatch?parenMatch[1].trim():'';
     if(!kategori){
@@ -774,7 +778,19 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
       kategori=urun?(urun.kategori||''):'';
     }
     const paramList=params.map(p=>typeof p==='string'?p:(p.ad||'')).filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
-    const miktarStr=String(k.miktar)+' '+(k.birim||'Adet');
+    const birim=k.birim||'Adet';
+    const key=[base.toLocaleLowerCase('tr'),kategori.toLocaleLowerCase('tr'),paramList.join('|').toLocaleLowerCase('tr'),birim.toLocaleLowerCase('tr')].join('§');
+    const miktar=Number(k.miktar)||0;
+    if(grupMap[key]){grupMap[key].miktarlar.push(miktar);}
+    else{const g={base,kategori,paramList,birim,miktarlar:[miktar]};grupMap[key]=g;gruplar.push(g);}
+  });
+
+  const tableBody=[];
+  gruplar.forEach((g,i)=>{
+    const {base,kategori,paramList}=g;
+    const toplam=g.miktarlar.reduce((a,b)=>a+b,0);
+    const fmtN=n=>Number.isInteger(n)?String(n):String(Math.round(n*1000)/1000).replace('.',',');
+    const miktarStr=fmtN(toplam)+' '+g.birim+(g.miktarlar.length>1?' ('+g.miktarlar.map(fmtN).join(' + ')+')':'');
     const paramPairRows=paramList.length?Math.ceil(paramList.length/2):0;
     const rowsInGroup=4+paramPairRows;
 
@@ -820,7 +836,7 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
       3:{cellWidth:colW.lbl2},
       4:{cellWidth:colW.val2}
     },
-    margin:{left:mm(15.446),right:mm(15.446)},
+    margin:{left:mm(15.446),right:mm(15.446),top:mm(20),bottom:mm(18)},
     didDrawPage:(data)=>{tableEndY=data.cursor.y;}
   });
   doc.setCharSpace(0);doc.setFont('Arial','normal');
@@ -838,8 +854,11 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   }
 
   // ── İMZA ALANLARI ──
-  const sigY=y+mm(8);
+  // Footer alanı (alttan ~18mm) ile çakışacaksa imza kutuları yeni sayfaya geçer.
   const sigH=mm(24),sigW=mm(78);
+  const footerTop=pageH-mm(18);
+  let sigY=y+mm(8);
+  if(sigY+sigH>footerTop){doc.addPage();sigY=mm(20);}
 
   // Hazırlayan
   doc.setDrawColor(...C.border);doc.setLineWidth(0.75);
@@ -863,10 +882,17 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
   doc.text('Tarih :',sig2X+mm(3),sigY+mm(15.5));
   doc.text('İmza :',sig2X+mm(3),sigY+mm(21));
 
-  // ── FOOTER ──
-  doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
-  doc.text('Bu form üretim birimi için düzenlenmiştir. Ticari bilgi içermez.',mm(15.446),pageH-mm(10));
-  doc.text(st.firma||'Egefe Bilişim Sağlık San. ve Tic. A.Ş.',pageW-mm(15.446),pageH-mm(10),{align:'right'});
+  // ── FOOTER (her sayfaya) ──
+  const pageCount=doc.getNumberOfPages();
+  for(let p=1;p<=pageCount;p++){
+    doc.setPage(p);
+    doc.setDrawColor(...C.border);doc.setLineWidth(0.5);
+    doc.line(mm(15.446),pageH-mm(14),pageW-mm(15.446),pageH-mm(14));
+    doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
+    doc.text('Bu form üretim birimi için düzenlenmiştir. Ticari bilgi içermez.',mm(15.446),pageH-mm(10));
+    if(pageCount>1)doc.text('Sayfa '+p+' / '+pageCount,pageW/2,pageH-mm(10),{align:'center'});
+    doc.text(st.firma||'Egefe Bilişim Sağlık San. ve Tic. A.Ş.',pageW-mm(15.446),pageH-mm(10),{align:'right'});
+  }
 
   doc.save('is-emri-'+(s.siparisNo||'siparis')+'.pdf');
 }

@@ -711,6 +711,13 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
     doc.setFont('Arial','normal');doc.text(fmtD(s.tahminTeslimat),rx3,mm(59.58)+6);
   }
 
+  // Öncelik — üretim elle işaretler
+  const _onY=(s.tahminTeslimat?mm(64.05):mm(59.58))+6;
+  doc.setFont('Arial','bold');doc.text('Öncelik',rx1,_onY);doc.text(':',rx2,_onY);
+  doc.setFont('Arial','normal');doc.setDrawColor(...C.textLight);doc.setLineWidth(0.6);
+  doc.rect(rx3,_onY-mm(2.4),mm(2.6),mm(2.6));doc.text('Normal',rx3+mm(3.8),_onY);
+  doc.rect(rx3+mm(15),_onY-mm(2.4),mm(2.6),mm(2.6));doc.text('Acil',rx3+mm(18.3),_onY);
+
   // ── MÜŞTERİ BİLGİLERİ (sol) ──
   const lx1=mm(15.446),lx2=mm(41.228),lx3=mm(44.126);
   const _slMaxW=mm(93),_slRGap=mm(4.291),_slLh8=8*1.15;
@@ -748,144 +755,146 @@ async function _generateUretimFormPDF(s,logoPngDataUrl){
 
   // ── AYRAÇ ──
   doc.setDrawColor(...C.tableBg);doc.setLineWidth(0.75);
-  const _sdivY=Math.max(mm(67.9),_scurY+mm(3));
+  const _sdivY=Math.max(mm(70),_scurY+mm(3));
   doc.line(mm(15.446),_sdivY,mm(194.63),_sdivY);
 
-  // ── TABLO (etiket/değer + parametre-lot ızgarası) ──
-  // 5 sütun, toplam mm(179.108) = mm(194.556) - mm(15.446)
-  const tableY=_sdivY+mm(2.517);
-  const colW={no:mm(9),lbl1:mm(35),val1:mm(55),lbl2:mm(35),val2:mm(45.108)};
-  const lblStyle={fontStyle:'bold'};
-  const centerStyle={halign:'center'};
+  // ── TABLO (klasik iş emri: kalem başına tek satır) ──
+  const L=mm(15.446),R=mm(194.556),TW=R-L; // toplam genişlik mm(179.108)
+  const tableY=_sdivY+mm(3);
+  const fmtN=n=>Number.isInteger(n)?String(n):String(Math.round(n*1000)/1000).replace('.',',');
+  const findUrun=base=>(state.urunler||[]).find(u=>u.urunAdi===base)
+    ||(state.urunler||[]).find(u=>(u.urunAdi||'').trim().toLocaleLowerCase('tr')===base.toLocaleLowerCase('tr'));
 
   // Kalemleri normalize et, hizmet kalemlerini çıkar ve aynı ürünleri topla.
-  // Teklifte satırlar ayrı gösterilir; iş emrinde ürün adı + kategori + parametreler + birim
-  // aynı olan satırlar tek satırda birleştirilir (miktar kırılımı parantez içinde).
+  // Teklifte satırlar ayrı gösterilir; iş emrinde ürün + parametre/çeşit + birim aynı olan
+  // satırlar tek satırda birleştirilir (miktar kırılımı altında gösterilir).
   const gruplar=[];const grupMap={};
   (s.satirlar||[]).forEach(k=>{
-    // "ProductName (Kategori)" satış açıklaması: kategori doğrudan bu ekten okunur —
-    // ürün listesinde aynı isimde birden fazla kategori (İdrar/Ağız Sıvısı gibi) olabildiği
-    // için isimle yeniden eşleştirmek yanlış kategoriyi seçebilir.
+    // Açıklamadaki "Ürün Adı (…)" eki: virgüllü ise parametre listesi (THC, OPI, AMP),
+    // değilse ürünün çeşidi/kategorisi (Pozitif, Boş, İdrar …) olarak yorumlanır.
     const rawAciklama=(k._baseAciklama||k.aciklama||'').trim();
     const parenMatch=rawAciklama.match(/\(([^()]+)\)\s*$/);
     const base=(parenMatch?rawAciklama.slice(0,parenMatch.index):rawAciklama).trim();
     if(/hizmet/i.test(base))return; // hizmet kalemleri üretim iş emrinde yer almaz
-    const params=k.seciliParametreler||[];
-    let kategori=parenMatch?parenMatch[1].trim():'';
-    if(!kategori){
-      const urun=(state.urunler||[]).find(u=>u.urunAdi===base)
-        ||(state.urunler||[]).find(u=>(u.urunAdi||'').trim().toLowerCase()===base.toLowerCase());
-      kategori=urun?(urun.kategori||''):'';
+    const ek=parenMatch?parenMatch[1].trim():'';
+    let paramList=(k.seciliParametreler||[]).map(p=>typeof p==='string'?p:(p.ad||'')).map(x=>x.trim()).filter(Boolean);
+    let cesit='';
+    if(ek){
+      if(!paramList.length&&ek.includes(','))paramList=ek.split(',').map(x=>x.trim()).filter(Boolean);
+      else if(!ek.includes(','))cesit=ek;
     }
-    const paramList=params.map(p=>typeof p==='string'?p:(p.ad||'')).filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
+    paramList=[...new Set(paramList)].sort((a,b)=>a.localeCompare(b,'tr'));
+    const urun=findUrun(base);
+    if(!cesit&&!paramList.length&&urun&&urun.kategori)cesit=urun.kategori;
+    const kod=urun?(urun.urunKodu||''):'';
     const birim=k.birim||'Adet';
-    const key=[base.toLocaleLowerCase('tr'),kategori.toLocaleLowerCase('tr'),paramList.join('|').toLocaleLowerCase('tr'),birim.toLocaleLowerCase('tr')].join('§');
+    const key=[base,cesit,paramList.join('|'),birim].map(x=>x.toLocaleLowerCase('tr')).join('§');
     const miktar=Number(k.miktar)||0;
     if(grupMap[key]){grupMap[key].miktarlar.push(miktar);}
-    else{const g={base,kategori,paramList,birim,miktarlar:[miktar]};grupMap[key]=g;gruplar.push(g);}
+    else{const g={base,kod,cesit,paramList,birim,miktarlar:[miktar]};grupMap[key]=g;gruplar.push(g);}
   });
 
-  const tableBody=[];
-  gruplar.forEach((g,i)=>{
-    const {base,kategori,paramList}=g;
+  const tableBody=gruplar.map((g,i)=>{
     const toplam=g.miktarlar.reduce((a,b)=>a+b,0);
-    const fmtN=n=>Number.isInteger(n)?String(n):String(Math.round(n*1000)/1000).replace('.',',');
-    const miktarStr=fmtN(toplam)+' '+g.birim+(g.miktarlar.length>1?' ('+g.miktarlar.map(fmtN).join(' + ')+')':'');
-    const paramPairRows=paramList.length?Math.ceil(paramList.length/2):0;
-    const rowsInGroup=4+paramPairRows;
-
-    tableBody.push([
-      {content:i+1,rowSpan:rowsInGroup,styles:{halign:'center',valign:'middle',fontStyle:'bold'}},
-      {content:'Kategori',styles:lblStyle},
-      {content:kategori||'—',colSpan:3}
-    ]);
-    tableBody.push([
-      {content:'Parametre Sayısı',styles:lblStyle},
-      {content:String(paramList.length),colSpan:3}
-    ]);
-    tableBody.push([
-      {content:'Ürün Adı',styles:lblStyle},
-      {content:base||'—',colSpan:3}
-    ]);
-    tableBody.push([
-      {content:'Sipariş Miktarı',styles:lblStyle},
-      {content:miktarStr,colSpan:3}
-    ]);
-    for(let p=0;p<paramPairRows;p++){
-      const a=paramList[p*2],b=paramList[p*2+1];
-      tableBody.push([
-        {content:a,styles:centerStyle},
-        '',
-        b?{content:b,styles:centerStyle}:'',
-        ''
-      ]);
-    }
+    const urunTxt=g.base+(g.kod?'\nKod: '+g.kod:'');
+    const pcParts=[];
+    if(g.paramList.length)pcParts.push(g.paramList.join(', ')+'\n('+g.paramList.length+' parametre)');
+    if(g.cesit)pcParts.push(g.cesit);
+    const miktarTxt=fmtN(toplam)+(g.miktarlar.length>1?'\n('+g.miktarlar.map(fmtN).join(' + ')+')':'');
+    return [String(i+1),urunTxt,pcParts.join('\n')||'—',miktarTxt,g.birim,'','',''];
   });
 
+  const colW=[mm(8),mm(46),mm(37),mm(22),mm(12),mm(18),mm(20)];
+  colW.push(TW-colW.reduce((a,b)=>a+b,0)); // SKT: kalan genişlik
   let tableEndY=tableY;
   doc.autoTable({
     startY:tableY,
-    head:[],
+    head:[['#','Ürün','Parametre / Çeşit','Sipariş\nMiktarı','Birim','Üretilen\nMiktar','LOT No','SKT']],
     body:tableBody,
     theme:'grid',
-    styles:{font:'Arial',fontSize:8,cellPadding:{top:2,right:2,bottom:2,left:2},textColor:C.textDark,lineColor:C.border,lineWidth:0.5,valign:'middle'},
+    showHead:'everyPage',
+    styles:{font:'Arial',fontSize:8,cellPadding:{top:2.5,right:3,bottom:2.5,left:3},textColor:C.textDark,lineColor:C.border,lineWidth:0.5,valign:'middle',minCellHeight:mm(9)},
+    headStyles:{fillColor:C.tableBg,textColor:C.textMid,fontStyle:'bold',fontSize:7.5,halign:'center',valign:'middle',minCellHeight:mm(8)},
     columnStyles:{
-      0:{cellWidth:colW.no},
-      1:{cellWidth:colW.lbl1},
-      2:{cellWidth:colW.val1},
-      3:{cellWidth:colW.lbl2},
-      4:{cellWidth:colW.val2}
+      0:{cellWidth:colW[0],halign:'center',fontStyle:'bold'},
+      1:{cellWidth:colW[1]},
+      2:{cellWidth:colW[2]},
+      3:{cellWidth:colW[3],halign:'center'},
+      4:{cellWidth:colW[4],halign:'center'},
+      5:{cellWidth:colW[5]},
+      6:{cellWidth:colW[6]},
+      7:{cellWidth:colW[7]}
     },
-    margin:{left:mm(15.446),right:mm(15.446),top:mm(20),bottom:mm(18)},
+    didParseCell:(data)=>{
+      // Üretimin dolduracağı sütunlar hafif tonlu
+      if(data.section==='body'&&data.column.index>=5)data.cell.styles.fillColor=C.boxBg;
+      // Toplam miktar kalın
+      if(data.section==='body'&&data.column.index===3)data.cell.styles.fontStyle='bold';
+    },
+    margin:{left:L,right:L,top:mm(20),bottom:mm(18)},
     didDrawPage:(data)=>{tableEndY=data.cursor.y;}
   });
   doc.setCharSpace(0);doc.setFont('Arial','normal');
 
-  let y=tableEndY+mm(6);
-
-  // ── NOTLAR ──
-  if(s.notlar){
-    doc.setFontSize(8);doc.setFont('Arial','bold');doc.setTextColor(...C.textLabel);
-    doc.text('Not :',mm(15.446),y);
-    doc.setFont('Arial','normal');doc.setTextColor(...C.textMid);
-    const notLines=doc.splitTextToSize(s.notlar,mm(160));
-    doc.text(notLines,mm(24.405),y);
-    y+=notLines.length*mm(4.5)+mm(6);
-  }
-
-  // ── İMZA ALANLARI ──
-  // Footer alanı (alttan ~18mm) ile çakışacaksa imza kutuları yeni sayfaya geçer.
-  const sigH=mm(24),sigW=mm(78);
+  // ── ALT BÖLÜM: not + ambalaj talimatı + imzalar (sığmazsa yeni sayfa) ──
   const footerTop=pageH-mm(18);
-  let sigY=y+mm(8);
-  if(sigY+sigH>footerTop){doc.addPage();sigY=mm(20);}
+  doc.setFontSize(8);
+  const notLines=s.notlar?doc.splitTextToSize(s.notlar,TW-mm(32)):[];
+  const notH=notLines.length?notLines.length*mm(4)+mm(3):0;
+  const ambH=mm(13);
+  const sigH=mm(27),sigGap=mm(5),sigW=(TW-2*sigGap)/3;
+  const blockH=mm(7)+notH+ambH+mm(5)+sigH;
+  let y=tableEndY+mm(7);
+  if(y-mm(7)+blockH>footerTop){doc.addPage();y=mm(20);}
 
-  // Hazırlayan
-  doc.setDrawColor(...C.border);doc.setLineWidth(0.75);
-  doc.setFillColor(...C.boxBg);
-  doc.roundedRect(mm(15.446),sigY,sigW,sigH,2,2,'FD');
-  doc.setFontSize(7.5);doc.setFont('Arial','bold');doc.setTextColor(...C.textLight);
-  doc.text('HAZIRLAYAN',mm(15.446)+mm(3),sigY+mm(4.5));
-  doc.setFont('Arial','normal');doc.setTextColor(...C.textMid);
-  doc.text('Ad Soyad :',mm(15.446)+mm(3),sigY+mm(10));
-  doc.text('Tarih :',mm(15.446)+mm(3),sigY+mm(15.5));
-  doc.text('İmza :',mm(15.446)+mm(3),sigY+mm(21));
+  const lblX=L,valX=L+mm(32);
+  if(notLines.length){
+    doc.setFont('Arial','bold');doc.setTextColor(...C.textLabel);
+    doc.text('Not / Özel Talimat :',lblX,y);
+    doc.setFont('Arial','normal');doc.setTextColor(...C.textMid);
+    doc.text(notLines,valX,y);
+    y+=notH;
+  }
+  // Ambalaj / Etiket talimatı — elle doldurulacak iki satır
+  doc.setFont('Arial','bold');doc.setTextColor(...C.textLabel);
+  doc.text('Ambalaj / Etiket :',lblX,y);
+  doc.setDrawColor(...C.border);doc.setLineWidth(0.5);
+  doc.setLineDashPattern([1,1.5],0);
+  doc.line(valX,y+mm(0.8),R,y+mm(0.8));
+  doc.line(valX,y+mm(7),R,y+mm(7));
+  doc.setLineDashPattern([],0);
+  y+=ambH;
 
-  // Kontrol / Onay
-  const sig2X=mm(15.446)+sigW+mm(10);
-  doc.setFillColor(...C.boxBg);
-  doc.roundedRect(sig2X,sigY,sigW,sigH,2,2,'FD');
-  doc.setFont('Arial','bold');doc.setTextColor(...C.textLight);
-  doc.text('KONTROL / ONAY',sig2X+mm(3),sigY+mm(4.5));
-  doc.setFont('Arial','normal');doc.setTextColor(...C.textMid);
-  doc.text('Ad Soyad :',sig2X+mm(3),sigY+mm(10));
-  doc.text('Tarih :',sig2X+mm(3),sigY+mm(15.5));
-  doc.text('İmza :',sig2X+mm(3),sigY+mm(21));
+  // İmza kutuları: Hazırlayan · Üretim · Kalite Kontrol / Onay
+  const sigY=y;
+  const sigBoxes=[
+    {t:'HAZIRLAYAN (SATIŞ)',f:['Ad Soyad :','Tarih :','İmza :']},
+    {t:'ÜRETİM',f:['Başlangıç :','Bitiş :','Ad Soyad / İmza :']},
+    {t:'KALİTE KONTROL / ONAY',f:['Ad Soyad :','Tarih :','İmza :']}
+  ];
+  sigBoxes.forEach((b,i)=>{
+    const x=L+i*(sigW+sigGap);
+    doc.setDrawColor(...C.border);doc.setLineWidth(0.75);
+    doc.setFillColor(...C.boxBg);
+    doc.roundedRect(x,sigY,sigW,sigH,2,2,'FD');
+    doc.setFontSize(7.5);doc.setFont('Arial','bold');doc.setTextColor(...C.textLight);
+    doc.text(b.t,x+mm(3),sigY+mm(5));
+    doc.setFont('Arial','normal');doc.setTextColor(...C.textMid);
+    b.f.forEach((f,j)=>doc.text(f,x+mm(3),sigY+mm(11.5+j*6)));
+  });
 
   // ── FOOTER (her sayfaya) ──
   const pageCount=doc.getNumberOfPages();
   for(let p=1;p<=pageCount;p++){
     doc.setPage(p);
+    if(p>1){ // devam sayfası başlığı
+      doc.setFontSize(8);doc.setFont('Arial','bold');doc.setTextColor(...C.textMid);
+      doc.text('SİPARİŞ İŞ EMRİ — '+(s.siparisNo||''),mm(15.446),mm(12));
+      doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);
+      doc.text((s.kurum||'')+' (devam)',pageW-mm(15.446),mm(12),{align:'right'});
+      doc.setDrawColor(...C.primary);doc.setLineWidth(1);
+      doc.line(mm(15.446),mm(14),pageW-mm(15.446),mm(14));
+    }
     doc.setDrawColor(...C.border);doc.setLineWidth(0.5);
     doc.line(mm(15.446),pageH-mm(14),pageW-mm(15.446),pageH-mm(14));
     doc.setFontSize(7);doc.setFont('Arial','normal');doc.setTextColor(...C.textLight);

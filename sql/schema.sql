@@ -236,7 +236,7 @@ CREATE TABLE stock_categories (
   grup_tipi       ENUM('test_kiti','cihaz','sarf') NULL,
   ad              VARCHAR(150) NOT NULL,
   sheet_boyu      INT NULL,
-  kesim_boleni    INT NULL,
+  kesim_boleni    DECIMAL(10,3) NULL,
   fire_pct        DECIMAL(5,2) NULL,
   KEY idx_sc_parent (parent_id),
   CONSTRAINT fk_sc_parent FOREIGN KEY (parent_id) REFERENCES stock_categories(id) ON DELETE CASCADE

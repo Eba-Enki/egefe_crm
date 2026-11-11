@@ -17,7 +17,7 @@ function kategoriResponse(array $row): array {
         'grupTipi'     => $row['grup_tipi'],
         'ad'           => $row['ad'],
         'sheetBoyu'    => $row['sheet_boyu'] !== null ? (int)$row['sheet_boyu'] : null,
-        'kesimBoleni'  => $row['kesim_boleni'] !== null ? (int)$row['kesim_boleni'] : null,
+        'kesimBoleni'  => $row['kesim_boleni'] !== null ? (float)$row['kesim_boleni'] : null,
         'firePct'      => $row['fire_pct'] !== null ? (float)$row['fire_pct'] : null,
     ];
 }
@@ -82,7 +82,7 @@ switch ($method) {
         $stmt->execute([
             $id, $tip, $parentId, $grupTipi, $ad,
             $tip === 'ham' ? (int)($input['sheetBoyu'] ?? 0) : null,
-            $tip === 'ham' ? (int)($input['kesimBoleni'] ?? 0) : null,
+            $tip === 'ham' ? round((float)str_replace(',', '.', (string)($input['kesimBoleni'] ?? 0)), 3) : null,
             $tip === 'ham' ? (float)($input['firePct'] ?? 0) : null,
         ]);
 
@@ -115,7 +115,7 @@ switch ($method) {
         $stmt->execute([
             $ad,
             $existing['tip'] === 'ham' ? (int)($input['sheetBoyu'] ?? $existing['sheet_boyu']) : null,
-            $existing['tip'] === 'ham' ? (int)($input['kesimBoleni'] ?? $existing['kesim_boleni']) : null,
+            $existing['tip'] === 'ham' ? round((float)str_replace(',', '.', (string)($input['kesimBoleni'] ?? $existing['kesim_boleni'])), 3) : null,
             $existing['tip'] === 'ham' ? (float)($input['firePct'] ?? $existing['fire_pct']) : null,
             $id,
         ]);

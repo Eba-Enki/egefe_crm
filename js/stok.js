@@ -145,6 +145,16 @@ function stokTicariKatOptionsHiyerarsik(){
   }).join('');
 }
 
+// Ondalıklı sayı: hem "3,98" hem "3.98" kabul edilir
+function stokParseDec(v){
+  var n=parseFloat(String(v==null?'':v).trim().replace(',','.'));
+  return isFinite(n)&&n>0?Math.round(n*1000)/1000:0;
+}
+function stokFmtDec(v){
+  if(v==null||v==='') return '';
+  return String(Math.round(Number(v)*1000)/1000).replace('.',',');
+}
+
 function stokSPS(kategoriId){
   var k=stokKatById(kategoriId);
   if(!k) return 90;
@@ -2753,7 +2763,7 @@ function stokRenderHamKatAyar(){
         +'<div style="display:grid;grid-template-columns:1fr 90px 90px 70px;gap:8px;align-items:end;margin-bottom:10px">'
           +'<div class="field" style="margin:0"><label style="font-size:10px">Kategori Adı *</label><input type="text" id="kat-edit-ad" value="'+esc(k.ad)+'"></div>'
           +'<div class="field" style="margin:0"><label style="font-size:10px">Sheet Boyu (mm)</label><input type="number" id="kat-edit-sb" value="'+k.sheetBoyu+'" min="1" style="text-align:center"></div>'
-          +'<div class="field" style="margin:0"><label style="font-size:10px">Kesim Böleni (mm)</label><input type="number" id="kat-edit-kb" value="'+k.kesimBoleni+'" min="1" style="text-align:center"></div>'
+          +'<div class="field" style="margin:0"><label style="font-size:10px">Kesim Böleni (mm)</label><input type="text" inputmode="decimal" id="kat-edit-kb" value="'+stokFmtDec(k.kesimBoleni)+'" style="text-align:center"></div>'
           +'<div class="field" style="margin:0"><label style="font-size:10px">Fire<br>(%)</label><input type="number" id="kat-edit-fp" value="'+k.firePct+'" min="0" max="50" style="text-align:center"></div>'
         +'</div>'
         +'<div style="display:flex;justify-content:flex-end;gap:8px">'
@@ -2768,7 +2778,7 @@ function stokRenderHamKatAyar(){
           +'<div style="min-width:0"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Kategori Adı</div><div style="font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(k.ad)+'</div></div>'
           +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;align-items:center">'
             +'<div style="text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Sheet Boyu (mm)</div><div style="font-size:13px;font-family:var(--font-mono);color:var(--text)">'+k.sheetBoyu+'</div></div>'
-            +'<div style="text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Kesim Böleni (mm)</div><div style="font-size:13px;font-family:var(--font-mono);color:var(--text)">'+k.kesimBoleni+'</div></div>'
+            +'<div style="text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Kesim Böleni (mm)</div><div style="font-size:13px;font-family:var(--font-mono);color:var(--text)">'+stokFmtDec(k.kesimBoleni)+'</div></div>'
             +'<div style="text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Fire<br>(%)</div><div style="font-size:13px;font-family:var(--font-mono);color:var(--text)">'+k.firePct+'</div></div>'
             +'<div style="text-align:center"><div style="font-size:10px;color:var(--teal);font-weight:600;margin-bottom:3px">Strip /<br>Sheet</div><div style="font-size:13px;font-family:var(--font-mono);color:var(--teal);font-weight:600">'+sps+'</div></div>'
           +'</div>'
@@ -2789,7 +2799,7 @@ async function stokHamKatKaydet(i){
   var kat=stokKatList()[i]; if(!kat) return;
   var ad=toTitleCase(((document.getElementById('kat-edit-ad')||{}).value||'').trim());
   var sb=parseInt((document.getElementById('kat-edit-sb')||{}).value)||kat.sheetBoyu;
-  var kb=parseInt((document.getElementById('kat-edit-kb')||{}).value)||kat.kesimBoleni;
+  var kb=stokParseDec((document.getElementById('kat-edit-kb')||{}).value)||kat.kesimBoleni;
   var fp=parseFloat((document.getElementById('kat-edit-fp')||{}).value)||0;
   if(!ad) return toast('Kategori adı zorunludur.','error');
   try{
@@ -2913,7 +2923,7 @@ async function stokKatEkle(){
   stokInit();
   var ad=toTitleCase(((document.getElementById('kat-yeni-ad')||{}).value||'').trim());
   var sb=parseInt((document.getElementById('kat-yeni-sb')||{}).value)||300;
-  var kb=parseInt((document.getElementById('kat-yeni-kb')||{}).value)||3;
+  var kb=stokParseDec((document.getElementById('kat-yeni-kb')||{}).value)||3;
   var fp=parseFloat((document.getElementById('kat-yeni-fp')||{}).value)||0;
   if(!ad) return toast('Kategori adı zorunludur.','error');
   try{
@@ -2985,7 +2995,7 @@ async function saveStokAyarlar(){
   var payloads=kats.map(function(k,i){
     var ad=((document.getElementById('kat-ad-'+i)||{}).value||'').trim()||k.ad;
     var sb=parseInt((document.getElementById('kat-sb-'+i)||{}).value)||k.sheetBoyu;
-    var kb=parseInt((document.getElementById('kat-kb-'+i)||{}).value)||k.kesimBoleni;
+    var kb=stokParseDec((document.getElementById('kat-kb-'+i)||{}).value)||k.kesimBoleni;
     var fp=parseFloat((document.getElementById('kat-fp-'+i)||{}).value)||0;
     return {id:k.id,ad:ad,sheetBoyu:sb,kesimBoleni:kb,firePct:fp};
   });
@@ -3008,7 +3018,7 @@ async function stokKatGuncelleSatir(i){
   var fpEl=document.getElementById('kat-fp-'+i);
   var ad=(adEl?adEl.value:'').trim()||kat.ad;
   var sb=parseInt(sbEl?sbEl.value:'')||kat.sheetBoyu;
-  var kb=parseInt(kbEl?kbEl.value:'')||kat.kesimBoleni;
+  var kb=stokParseDec(kbEl?kbEl.value:'')||kat.kesimBoleni;
   var fp=parseFloat(fpEl?fpEl.value:'')||0;
   if(ad===kat.ad&&sb===kat.sheetBoyu&&kb===kat.kesimBoleni&&fp===kat.firePct) return;
   if(!ad) return toast('Kategori adı boş olamaz.','error');

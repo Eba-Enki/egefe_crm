@@ -68,6 +68,7 @@ function goIhrTeklifForm(editId){
     band.style.display='';
   } else band.style.display='none';
   ihrOnParaBirimiChange();
+  fillTemsilciSelect('itf-temsilci','ihracat',t);
   showPage('ihr-teklif-form',true);
 }
 
@@ -222,6 +223,7 @@ async function ihrSaveTeklif(andPrint){
     bankaHesabi:_ihrSeciliBanka(),
     notlar:_ihrEl('itf-notlar').value,
     kdvOran:0,
+    temsilciKullanici:_ihrEl('itf-temsilci').value||'',
     satirlar:satirlar
   };
   var savedId;
@@ -661,8 +663,7 @@ async function _ihrGeneratePDF(t,logoPngDataUrl,imzaGizle){
     doc.setFontSize(7);doc.setFont('Arial','bold');doc.setTextColor.apply(doc,C.primary);
     doc.text('PREPARED BY',sigX+sColW/2,blokY+mm(5),{align:'center'});
     doc.text('CUSTOMER APPROVAL',sigX+sColW*1.5,blokY+mm(5),{align:'center'});
-    var cu=state.currentUser||{};
-    var u=t.olusturanAd?{ad:t.olusturanAd,email:t.olusturanEmail,telefon:t.olusturanTelefon}:{ad:cu.ad,email:cu.email,telefon:cu.telefon};
+    var u=teklifImzaKisi(t);
     if(u.telefon)u.telefon=fmtPhone(u.telefon);
     if(u.ad){
       doc.setFontSize(8);doc.setFont('Arial','bold');doc.setTextColor.apply(doc,C.textMid);

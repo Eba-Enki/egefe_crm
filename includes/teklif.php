@@ -11,8 +11,33 @@ const IHRACAT_BIRIMLERI = ['Pcs','Set','Box','Pack','Roll','Meter','Kg','Hour','
 const INCOTERMS = ['EXW','FCA','FAS','FOB','CFR','CIF','CPT','CIP','DAP','DPU','DDP'];
 const PARA_BIRIMLERI = ['TRY','USD','EUR','GBP'];
 
-// Teklif satırı + oluşturan kullanıcı + bağlı yaklaşık maliyet (bir teklife en fazla bir belge bağlanır)
-const TEKLIF_SELECT = 'SELECT q.*, u.ad AS olusturan_ad, u.email AS olusturan_email, u.telefon AS olusturan_telefon, ce.id AS ym_id, ce.numara AS ym_numara FROM quotes q LEFT JOIN users u ON u.id = q.olusturan_kullanici LEFT JOIN cost_estimates ce ON ce.teklif_id = q.id';
+// Teklif satırı + oluşturan kullanıcı + satış temsilcisi + bağlı yaklaşık maliyet (bir teklife en fazla bir belge bağlanır)
+const TEKLIF_SELECT = 'SELECT q.*, u.ad AS olusturan_ad, u.email AS olusturan_email, u.telefon AS olusturan_telefon, tu.ad AS temsilci_ad, tu.email AS temsilci_email, tu.telefon AS temsilci_telefon, ce.id AS ym_id, ce.numara AS ym_numara FROM quotes q LEFT JOIN users u ON u.id = q.olusturan_kullanici LEFT JOIN users tu ON tu.id = q.temsilci_kullanici LEFT JOIN cost_estimates ce ON ce.teklif_id = q.id';
+
+// Teklif temsilcisi olarak seçilebilecek kullanıcılar: yöneticiler + portala erişimi olan kullanıcılar (izleyiciler hariç)
+function temsilciAdaylari(PDO $pdo, string $portal): array {
+    $stmt = $pdo->prepare("SELECT u.id, u.ad, u.email, u.telefon FROM users u LEFT JOIN user_permissions p ON p.user_id = u.id AND p.portal = ? WHERE u.rol = 'yonetici' OR (u.rol = 'kullanici' AND p.erisim = 1) ORDER BY u.ad");
+    $stmt->execute([$portal]);
+    return $stmt->fetchAll();
+}
+
+// Gelen temsilci seçimini çözer → [temsilci_kullanici, sorumlu(ad)].
+// Seçim gönderilmemişse veya değişmemişse mevcut değer korunur; yeni teklifte varsayılan giriş yapan kullanıcıdır.
+function temsilciCoz(PDO $pdo, array $input, string $portal, array $user, ?array $existing = null): array {
+    $secilen = strOrNull($input['temsilciKullanici'] ?? null);
+    if ($existing !== null && ($secilen === null || $secilen === $existing['temsilci_kullanici'])) {
+        return [$existing['temsilci_kullanici'], $existing['sorumlu']];
+    }
+    if ($secilen === null) {
+        return [$user['id'], strOrNull($input['sorumlu'] ?? null) ?? $user['ad']];
+    }
+    foreach (temsilciAdaylari($pdo, $portal) as $aday) {
+        if ($aday['id'] === $secilen) return [$aday['id'], $aday['ad']];
+    }
+    http_response_code(400);
+    echo json_encode(['error' => 'Seçilen satış temsilcisi bu portalda yetkili değil.']);
+    exit;
+}
 
 // Serbest metin birimi (adet, pcs, kutu...) yurtdışı teklif birim listesine çevirir; tanınmayan birim Pcs olur
 function ihracatBirim($value): string {

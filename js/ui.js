@@ -404,6 +404,7 @@ function goTeklifForm(editId,servisId){
     }
     teklifItems=[{aciklama:'',miktar:1,birim:'Adet',birimFiyat:0}];
   }
+  if(currentPortal==='satis')fillTemsilciSelect('tf-temsilci','satis',editId?state.teklifler.find(x=>x.id===editId):null);
   renderTeklifItems();showPage('teklif-form',true);
 }
 function goMusteriForm(editId){

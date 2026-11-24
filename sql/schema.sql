@@ -120,6 +120,7 @@ CREATE TABLE quotes (
   vade                VARCHAR(100) NULL,
   teslimat            VARCHAR(150) NULL,
   sorumlu             VARCHAR(150) NULL,
+  temsilci_kullanici  VARCHAR(40) NULL,
   durum               ENUM('Taslak','İletildi','Kabul Edildi','Siparişe Dönüştü','Reddedildi','Kapandı') NOT NULL DEFAULT 'Taslak',
   red_nedeni          VARCHAR(255) NULL,
   olusturan_kullanici VARCHAR(40) NULL,
@@ -128,7 +129,8 @@ CREATE TABLE quotes (
   KEY idx_quotes_musteri (musteri_id),
   CONSTRAINT fk_quotes_musteri FOREIGN KEY (musteri_id) REFERENCES customers(id) ON DELETE SET NULL,
   CONSTRAINT fk_quotes_servis FOREIGN KEY (servis_id) REFERENCES service_records(id) ON DELETE SET NULL,
-  CONSTRAINT fk_quotes_user FOREIGN KEY (olusturan_kullanici) REFERENCES users(id) ON DELETE SET NULL
+  CONSTRAINT fk_quotes_user FOREIGN KEY (olusturan_kullanici) REFERENCES users(id) ON DELETE SET NULL,
+  CONSTRAINT fk_quotes_temsilci FOREIGN KEY (temsilci_kullanici) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci;
 
 CREATE TABLE quote_line_items (

@@ -95,11 +95,41 @@ function onOdemeSekliChange(){
   if(isPesin)vd.value='';
 }
 
+// ════ SATIŞ TEMSİLCİSİ ════
+// Teklif formundaki temsilci listesini doldurur. Yeni teklifte giriş yapan kullanıcı seçili gelir;
+// mevcut temsilcinin portal yetkisi kalkmışsa da listede tutulur ki düzenleme onu değiştirmesin.
+async function fillTemsilciSelect(selId,portal,t){
+  var sel=document.getElementById(selId);if(!sel)return;
+  var cu=state.currentUser||{};
+  var seciliId=t?(t.temsilciKullanici||''):(cu.id||'');
+  var seciliAd=t?(t.temsilciAd||t.sorumlu||''):(cu.ad||'');
+  var tok=String(Date.now())+Math.random();
+  sel.dataset.tok=tok;
+  sel.innerHTML='<option value="'+esc(seciliId)+'">'+esc(seciliAd||'— Seçilmedi —')+'</option>';
+  sel.value=seciliId;
+  var liste;
+  try{liste=(await apiGet('temsilciler?portal='+encodeURIComponent(portal))).temsilciler||[];}
+  catch(e){return;}
+  if(sel.dataset.tok!==tok)return; // bu arada form başka bir teklif için açıldı
+  var html=seciliId?'':'<option value="">— Seçilmedi —</option>';
+  if(seciliId&&!liste.some(function(u){return u.id===seciliId;}))html+='<option value="'+esc(seciliId)+'">'+esc(seciliAd)+'</option>';
+  html+=liste.map(function(u){return '<option value="'+esc(u.id)+'">'+esc(u.ad)+'</option>';}).join('');
+  sel.innerHTML=html;
+  sel.value=seciliId;
+}
+// PDF "Teklifi Hazırlayan" imzası: seçili temsilci → (eski kayıt) oluşturan → oturumdaki kullanıcı
+function teklifImzaKisi(t){
+  if(t.temsilciAd)return{ad:t.temsilciAd,email:t.temsilciEmail,telefon:t.temsilciTelefon};
+  if(t.olusturanAd)return{ad:t.olusturanAd,email:t.olusturanEmail,telefon:t.olusturanTelefon};
+  var cu=state.currentUser||{};
+  return{ad:cu.ad,email:cu.email,telefon:cu.telefon};
+}
+
 // ════ SAVE TEKLIF ════
 function buildTeklifPayload(){
   var _musteriIdRaw=(document.getElementById('tf-musteri-id')||{}).value||'';
   var _musteriId=(_musteriIdRaw==='__edit_existing__')?'':_musteriIdRaw;
-  return{teklifNo:document.getElementById('tf-teklifNo').value,musteriId:_musteriId,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:toTitleCase(document.getElementById('tf-kurum').value),ilgiliKisi:toTitleCase(document.getElementById('tf-ilgiliKisi').value),teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',paraBirimi:(document.getElementById('tf-paraBirimi')||{}).value||'TRY',odemeKosulu:(document.getElementById('tf-odemeKosulu')||{}).value||'',vade:(function(){var _v=(document.getElementById('tf-vade')||{}).value||'';return _v?_v+' Gün':'';})(),kdvOran:(function(){var _cb=document.getElementById('tf-kdv-cb');var _sel=document.getElementById('tf-kdv-oran');return(_cb&&_cb.checked&&_sel)?parseInt(_sel.value)||0:0;})(),satirlar:JSON.parse(JSON.stringify(teklifItems))};
+  return{teklifNo:document.getElementById('tf-teklifNo').value,musteriId:_musteriId,servisId:(function(){var _ps=document.getElementById('tf-servis-ara');return _ps?(_ps.dataset.servisid||''):'';})(),kayitNo:document.getElementById('tf-kayitNo').value,seriNo:document.getElementById('tf-seriNo').value,kurum:toTitleCase(document.getElementById('tf-kurum').value),ilgiliKisi:toTitleCase(document.getElementById('tf-ilgiliKisi').value),teklifTarihi:document.getElementById('tf-teklifTarihi').value,gecerlilikTarihi:document.getElementById('tf-gecerlilik').value,notlar:document.getElementById('tf-notlar').value,telefon:(document.getElementById('tf-telefon')||{}).value||'',email:(document.getElementById('tf-email')||{}).value||'',paraBirimi:(document.getElementById('tf-paraBirimi')||{}).value||'TRY',odemeKosulu:(document.getElementById('tf-odemeKosulu')||{}).value||'',vade:(function(){var _v=(document.getElementById('tf-vade')||{}).value||'';return _v?_v+' Gün':'';})(),kdvOran:(function(){var _cb=document.getElementById('tf-kdv-cb');var _sel=document.getElementById('tf-kdv-oran');return(_cb&&_cb.checked&&_sel)?parseInt(_sel.value)||0:0;})(),temsilciKullanici:currentPortal==='satis'?((document.getElementById('tf-temsilci')||{}).value||''):'',satirlar:JSON.parse(JSON.stringify(teklifItems))};
 }
 async function saveTeklif(andPrint=false){
   const editId=document.getElementById('tf-edit-id').value;
@@ -344,7 +374,7 @@ async function revizeTeklif(id){
       teklifTarihi:today(),gecerlilikTarihi:t.gecerlilikTarihi,notlar:t.notlar,
       paraBirimi:t.paraBirimi,odemeKosulu:t.odemeKosulu,vade:t.vade,kdvOran:t.kdvOran,
       teslimat:t.teslimat,incoterm:t.incoterm,teslimYeri:t.teslimYeri,bankaHesabi:t.bankaHesabi,
-      satirlar:JSON.parse(JSON.stringify(t.satirlar||[])),sorumlu:t.sorumlu,
+      satirlar:JSON.parse(JSON.stringify(t.satirlar||[])),sorumlu:t.sorumlu,temsilciKullanici:t.temsilciKullanici||'',
       portal:currentPortal,durum:'Taslak'
     };
     try{
@@ -852,8 +882,7 @@ async function _generateTeklifPDF(t,logoPngDataUrl,brandLogoPngDataUrl,imzaGizle
     doc.text('MÜŞTERİ ONAYI',      sigX + colW * 1.5,   sigY + mm(5), {align:'center'});
 
     // Sol sütun: hazırlayan bilgisi + marka logosu
-    const cu = state.currentUser || {};
-    const u = t.olusturanAd ? {ad:t.olusturanAd,email:t.olusturanEmail,telefon:t.olusturanTelefon} : {...cu};
+    const u = teklifImzaKisi(t);
     // Teknik Servis: iletişim bilgisi portal ayarlarından (servis e-postası/telefonu); boşsa kişisel bilgi
     if(!isSatisPDF){
       if(st.email) u.email   = st.email;

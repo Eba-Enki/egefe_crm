@@ -248,10 +248,10 @@ function teklifeAktar(PDO $pdo, array $user, string $ceId): array {
     $teklifId = 't' . (string)(int)round(microtime(true) * 1000);
     $teklifNo = nextTeklifNo($pdo, 'ihracat');
     $bugun = date('Y-m-d');
-    $pdo->prepare('INSERT INTO quotes (id, portal, teklif_no, musteri_id, kurum, ilgili_kisi, telefon, email, teklif_tarihi, gecerlilik_tarihi, para_birimi, kdv_oran, sorumlu, durum, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)')->execute([
+    $pdo->prepare('INSERT INTO quotes (id, portal, teklif_no, musteri_id, kurum, ilgili_kisi, telefon, email, teklif_tarihi, gecerlilik_tarihi, para_birimi, kdv_oran, sorumlu, temsilci_kullanici, durum, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)')->execute([
         $teklifId, 'ihracat', $teklifNo, $ce['musteri_id'], (string)($musteri['firma'] ?? ''),
         strOrNull($musteri['kisi'] ?? null), strOrNull($musteri['tel'] ?? null), strOrNull($musteri['email'] ?? null),
-        $bugun, date('Y-m-d', strtotime('+30 days')), $ce['para_birimi'], $user['ad'], 'Taslak', $user['id'],
+        $bugun, date('Y-m-d', strtotime('+30 days')), $ce['para_birimi'], $user['ad'], $user['id'], 'Taslak', $user['id'],
     ]);
     replaceSatirlar($pdo, $teklifId, $satirlar);
     logStatusHistory($pdo, 'teklif', $teklifId, 'Taslak', $user['id']);

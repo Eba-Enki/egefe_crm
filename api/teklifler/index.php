@@ -35,7 +35,11 @@ function teklifResponse(PDO $pdo, array $row, ?array $satirlar = null, ?array $d
         'incoterm'           => $row['incoterm'] ?? null,
         'teslimYeri'         => $row['teslim_yeri'] ?? null,
         'bankaHesabi'        => !empty($row['banka_hesabi']) ? json_decode($row['banka_hesabi'], true) : null,
-        'sorumlu'            => $row['sorumlu'],
+        'sorumlu'            => $row['temsilci_ad'] ?? $row['sorumlu'],
+        'temsilciKullanici'  => $row['temsilci_kullanici'] ?? null,
+        'temsilciAd'         => $row['temsilci_ad'] ?? null,
+        'temsilciEmail'      => $row['temsilci_email'] ?? null,
+        'temsilciTelefon'    => $row['temsilci_telefon'] ?? null,
         'durum'              => $row['durum'],
         'redNedeni'          => $row['red_nedeni'],
         'parentId'           => $row['parent_id'],
@@ -123,10 +127,18 @@ switch ($method) {
         $satirlar = satirlarFromInput($input, $portal);
         $kdvOran = ($portal !== 'ihracat' && in_array((int)($input['kdvOran'] ?? 0), [0, 10, 20], true)) ? (int)($input['kdvOran'] ?? 0) : 0;
         [$incoterm, $teslimYeri, $bankaJson] = ihracatAlanlari($input, $portal);
+        // Revizyonda ana teklifin temsilcisi (yetkisi sonradan kalkmış olsa bile) aynen aktarılır
+        $parentRow = null;
+        if ($parentId !== null) {
+            $ps = $pdo->prepare('SELECT temsilci_kullanici, sorumlu FROM quotes WHERE id = ?');
+            $ps->execute([$parentId]);
+            $parentRow = $ps->fetch() ?: null;
+        }
+        [$temsilciId, $sorumlu] = temsilciCoz($pdo, $input, $portal, $user, $parentRow);
 
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO quotes (id, portal, teklif_no, parent_id, revizyon_no, musteri_id, servis_id, kayit_no, seri_no, kurum, ilgili_kisi, telefon, email, teklif_tarihi, gecerlilik_tarihi, notlar, para_birimi, odeme_kosulu, vade, kdv_oran, teslimat, incoterm, teslim_yeri, banka_hesabi, sorumlu, durum, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt = $pdo->prepare('INSERT INTO quotes (id, portal, teklif_no, parent_id, revizyon_no, musteri_id, servis_id, kayit_no, seri_no, kurum, ilgili_kisi, telefon, email, teklif_tarihi, gecerlilik_tarihi, notlar, para_birimi, odeme_kosulu, vade, kdv_oran, teslimat, incoterm, teslim_yeri, banka_hesabi, sorumlu, temsilci_kullanici, durum, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([
                 $id, $portal, $teklifNo, $parentId, $revizyonNo,
                 strOrNull($input['musteriId'] ?? null),
@@ -148,7 +160,8 @@ switch ($method) {
                 $incoterm,
                 $teslimYeri,
                 $bankaJson,
-                strOrNull($input['sorumlu'] ?? null) ?? $user['ad'],
+                $sorumlu,
+                $temsilciId,
                 'Taslak',
                 $user['id'],
             ]);
@@ -190,10 +203,11 @@ switch ($method) {
         $kdvOran = ($existing['portal'] !== 'ihracat' && in_array((int)($input['kdvOran'] ?? 0), [0, 10, 20], true)) ? (int)($input['kdvOran'] ?? 0) : 0;
         [$incoterm, $teslimYeri, $bankaJson] = ihracatAlanlari($input, $existing['portal']);
         $yeniDurum = enumOrDefault($input['durum'] ?? $existing['durum'], DURUM_DEGERLERI, $existing['durum']);
+        [$temsilciId, $sorumlu] = temsilciCoz($pdo, $input, $existing['portal'], $user, $existing);
 
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('UPDATE quotes SET musteri_id=?, servis_id=?, kayit_no=?, seri_no=?, kurum=?, ilgili_kisi=?, telefon=?, email=?, teklif_tarihi=?, gecerlilik_tarihi=?, notlar=?, para_birimi=?, odeme_kosulu=?, vade=?, kdv_oran=?, teslimat=?, incoterm=?, teslim_yeri=?, banka_hesabi=?, sorumlu=?, durum=?, red_nedeni=? WHERE id=?');
+            $stmt = $pdo->prepare('UPDATE quotes SET musteri_id=?, servis_id=?, kayit_no=?, seri_no=?, kurum=?, ilgili_kisi=?, telefon=?, email=?, teklif_tarihi=?, gecerlilik_tarihi=?, notlar=?, para_birimi=?, odeme_kosulu=?, vade=?, kdv_oran=?, teslimat=?, incoterm=?, teslim_yeri=?, banka_hesabi=?, sorumlu=?, temsilci_kullanici=?, durum=?, red_nedeni=? WHERE id=?');
             $stmt->execute([
                 strOrNull($input['musteriId'] ?? null),
                 strOrNull($input['servisId'] ?? null),
@@ -214,7 +228,8 @@ switch ($method) {
                 $incoterm,
                 $teslimYeri,
                 $bankaJson,
-                strOrNull($input['sorumlu'] ?? $existing['sorumlu']),
+                $sorumlu,
+                $temsilciId,
                 $yeniDurum,
                 strOrNull($input['redNedeni'] ?? $existing['red_nedeni']),
                 $id,

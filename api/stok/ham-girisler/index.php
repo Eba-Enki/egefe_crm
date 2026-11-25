@@ -233,7 +233,7 @@ switch ($method) {
                     echo json_encode(['error' => $old['lot_no'] . ' LOT\'unda kullanılmış stok mevcut girişten fazla, sheet miktarını azaltamazsınız.']);
                     exit;
                 }
-                $newMevcutSheet = max(0, round((float)$old['mevcut_sheet'] + ($sheetGiren - (float)$old['sheet_giren']), 2));
+                $newMevcutSheet = max(0, round((float)$old['mevcut_sheet'] + ($sheetGiren - (float)$old['sheet_giren']), 3));
                 $kalemData['mevcutStrip'] = $newMevcut;
                 $kalemData['mevcutSheet'] = $newMevcutSheet;
                 $updates[$lotId] = $kalemData;

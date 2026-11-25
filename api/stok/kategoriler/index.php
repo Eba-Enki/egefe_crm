@@ -22,6 +22,59 @@ function kategoriResponse(array $row): array {
     ];
 }
 
+// Kategorinin strip/sheet oranı (diğer stok uçlarındaki stokSPS ile aynı formül).
+function kategoriSPS($sheetBoyu, $kesimBoleni, $firePct): int {
+    if (!$sheetBoyu || !$kesimBoleni || (float)$kesimBoleni == 0.0) return 90;
+    return (int)round(((float)$sheetBoyu / (float)$kesimBoleni) * (1 - (float)($firePct ?? 0) / 100));
+}
+
+// Kesim parametreleri değişince kategorideki tüm LOT'ların strip değerlerini yeni
+// orana göre yeniden hesaplar. Fiziksel gerçek sheet miktarıdır: giriş strip'i
+// sheet_giren'den, çıkış/fire strip'leri çıkıştaki sheet'lerden türetilir ve
+// mevcut stok giriş − tüm çıkışlar olarak yeniden kurulur (migration 022 ile aynı model).
+// Henüz düzeltmesi yapılmamış sayım kalemleri de yeni orana çevrilir.
+function kategoriStripYenidenHesapla(PDO $pdo, string $kategoriId, int $eskiSps, int $yeniSps): int {
+    $sps = $yeniSps;
+
+    $pdo->prepare('UPDATE raw_stock_lots SET strip_giren = ROUND(sheet_giren * ?) WHERE kategori_id = ?')
+        ->execute([$sps, $kategoriId]);
+
+    $pdo->prepare(
+        'UPDATE raw_stock_exit_items i JOIN raw_stock_lots l ON l.id = i.lot_id
+         SET i.strip_cikis = LEAST(ROUND(i.sheet_cikis * ?), ROUND((i.sheet_cikis + i.fire_sheet) * ?)),
+             i.fire_strip  = ROUND((i.sheet_cikis + i.fire_sheet) * ?)
+                           - LEAST(ROUND(i.sheet_cikis * ?), ROUND((i.sheet_cikis + i.fire_sheet) * ?))
+         WHERE l.kategori_id = ?'
+    )->execute([$sps, $sps, $sps, $sps, $sps, $kategoriId]);
+
+    $stmt = $pdo->prepare(
+        'UPDATE raw_stock_lots l
+         LEFT JOIN (
+           SELECT lot_id, SUM(strip_cikis + fire_strip) AS toplam_strip, SUM(sheet_cikis + fire_sheet) AS toplam_sheet
+           FROM raw_stock_exit_items WHERE lot_id IS NOT NULL GROUP BY lot_id
+         ) x ON x.lot_id = l.id
+         SET l.mevcut_strip = GREATEST(0, l.strip_giren - COALESCE(x.toplam_strip, 0)),
+             l.mevcut_sheet = GREATEST(0, ROUND(l.sheet_giren - COALESCE(x.toplam_sheet, 0), 3))
+         WHERE l.kategori_id = ?'
+    );
+    $stmt->execute([$kategoriId]);
+
+    // Düzeltmesi bekleyen sayımlar sheet üzerinden eşitlendiği için sheet değerleri
+    // aynı kalır; yalnızca ayrıca sayılan strip'in sheet karşılığı ve bilgi amaçlı
+    // strip değerleri yeni orana çevrilir.
+    $pdo->prepare(
+        'UPDATE raw_stock_count_items i JOIN raw_stock_lots l ON l.id = i.lot_id
+         SET i.sayilan_toplam_sheet = ROUND(i.sayilan_sheet + i.sayilan_strip / ?, 3),
+             i.sayilan_miktar = ROUND(i.sayilan_sheet * ? + i.sayilan_strip),
+             i.sistem_miktar  = ROUND(COALESCE(i.sistem_sheet, i.sistem_miktar / ?) * ?)
+         WHERE l.kategori_id = ? AND i.duzeltme_evrak_no IS NULL'
+    )->execute([max(1, $sps), $sps, max(1, $eskiSps), $sps, $kategoriId]);
+
+    $cnt = $pdo->prepare('SELECT COUNT(*) FROM raw_stock_lots WHERE kategori_id = ?');
+    $cnt->execute([$kategoriId]);
+    return (int)$cnt->fetchColumn();
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
@@ -111,18 +164,34 @@ switch ($method) {
             exit;
         }
 
-        $stmt = $pdo->prepare('UPDATE stock_categories SET ad=?, sheet_boyu=?, kesim_boleni=?, fire_pct=? WHERE id=?');
-        $stmt->execute([
-            $ad,
-            $existing['tip'] === 'ham' ? (int)($input['sheetBoyu'] ?? $existing['sheet_boyu']) : null,
-            $existing['tip'] === 'ham' ? round((float)str_replace(',', '.', (string)($input['kesimBoleni'] ?? $existing['kesim_boleni'])), 3) : null,
-            $existing['tip'] === 'ham' ? (float)($input['firePct'] ?? $existing['fire_pct']) : null,
-            $id,
-        ]);
+        $yeniSb = $existing['tip'] === 'ham' ? (int)($input['sheetBoyu'] ?? $existing['sheet_boyu']) : null;
+        $yeniKb = $existing['tip'] === 'ham' ? round((float)str_replace(',', '.', (string)($input['kesimBoleni'] ?? $existing['kesim_boleni'])), 3) : null;
+        $yeniFp = $existing['tip'] === 'ham' ? (float)($input['firePct'] ?? $existing['fire_pct']) : null;
+
+        $eskiSps = kategoriSPS($existing['sheet_boyu'], $existing['kesim_boleni'], $existing['fire_pct']);
+        $yeniSps = kategoriSPS($yeniSb, $yeniKb, $yeniFp);
+        $yenidenHesaplanan = 0;
+
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare('UPDATE stock_categories SET ad=?, sheet_boyu=?, kesim_boleni=?, fire_pct=? WHERE id=?');
+            $stmt->execute([$ad, $yeniSb, $yeniKb, $yeniFp, $id]);
+
+            if ($existing['tip'] === 'ham' && $eskiSps !== $yeniSps) {
+                $yenidenHesaplanan = kategoriStripYenidenHesapla($pdo, $id, $eskiSps, $yeniSps);
+            }
+            $pdo->commit();
+        } catch (Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
 
         $stmt = $pdo->prepare('SELECT * FROM stock_categories WHERE id = ?');
         $stmt->execute([$id]);
-        echo json_encode(['kategori' => kategoriResponse($stmt->fetch())]);
+        echo json_encode([
+            'kategori' => kategoriResponse($stmt->fetch()),
+            'yenidenHesaplananLot' => $yenidenHesaplanan,
+        ]);
         break;
 
     case 'DELETE':

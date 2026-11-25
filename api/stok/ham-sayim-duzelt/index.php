@@ -47,7 +47,7 @@ if (!$count) {
     exit;
 }
 
-$itemStmt = $pdo->prepare('SELECT i.*, l.lot_no, l.cutoff, l.tip AS lot_tip, l.parametreler AS lot_parametreler, l.ek_ozellik AS lot_ek_ozellik, l.kategori_id AS lot_kategori_id, l.skt_tarih AS lot_skt_tarih FROM raw_stock_count_items i LEFT JOIN raw_stock_lots l ON l.id = i.lot_id WHERE i.count_id = ? AND i.duzeltme_evrak_no IS NULL AND i.sayilan_miktar <> i.sistem_miktar ORDER BY i.id ASC');
+$itemStmt = $pdo->prepare('SELECT i.*, l.lot_no, l.cutoff, l.tip AS lot_tip, l.parametreler AS lot_parametreler, l.ek_ozellik AS lot_ek_ozellik, l.kategori_id AS lot_kategori_id, l.skt_tarih AS lot_skt_tarih FROM raw_stock_count_items i LEFT JOIN raw_stock_lots l ON l.id = i.lot_id WHERE i.count_id = ? AND i.duzeltme_evrak_no IS NULL AND COALESCE(i.sayilan_toplam_sheet, 0) <> COALESCE(i.sistem_sheet, 0) ORDER BY i.id ASC');
 $itemStmt->execute([$countId]);
 $items = $itemStmt->fetchAll();
 
@@ -69,8 +69,8 @@ $aciklamaBase = 'Stok Sayım Düzeltmesi (' . $count['evrak_no'] . ')';
 $notlarFull = $notlar ? ($aciklamaBase . ' — ' . $notlar) : $aciklamaBase;
 $tarih = date('Y-m-d');
 
-$fazlalar = array_values(array_filter($items, fn($it) => (float)$it['sayilan_miktar'] > (float)$it['sistem_miktar']));
-$eksikler = array_values(array_filter($items, fn($it) => (float)$it['sayilan_miktar'] < (float)$it['sistem_miktar']));
+$fazlalar = array_values(array_filter($items, fn($it) => (float)$it['sayilan_toplam_sheet'] > (float)$it['sistem_sheet']));
+$eksikler = array_values(array_filter($items, fn($it) => (float)$it['sayilan_toplam_sheet'] < (float)$it['sistem_sheet']));
 
 $pdo->beginTransaction();
 try {
@@ -85,9 +85,10 @@ try {
 
         $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, tip, parametreler, cutoff, ek_ozellik, kategori_id, sheet_giren, mevcut_sheet, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         foreach ($fazlalar as $i => $it) {
-            $fark = (int)((float)$it['sayilan_miktar'] - (float)$it['sistem_miktar']);
+            // Fark sheet olarak eklenir; strip karşılığı sheet'ten türetilir.
+            $sheetEs = round((float)$it['sayilan_toplam_sheet'] - (float)$it['sistem_sheet'], 3);
             $sps = stokSPS($pdo, (string)$it['lot_kategori_id']);
-            $sheetEs = $sps > 0 ? round($fark / $sps, 2) : 0;
+            $fark = (int)round($sheetEs * $sps);
             $newLotId = 'hl' . (string)(int)round(microtime(true) * 1000) . 'd' . $i;
             $lotStmt->execute([
                 $newLotId, $girisId, $girisEvrakNo,
@@ -111,13 +112,14 @@ try {
             $stmt->execute([$cikisId, $cikisEvrakNo, $tarih, $kategoriId !== '' ? $kategoriId : null, 'Stok Sayım Eksiği', $notlarFull, $user['id']]);
 
             $itemStmt2 = $pdo->prepare('INSERT INTO raw_stock_exit_items (exit_id, lot_id, sheet_cikis, strip_cikis, parametre_ad) VALUES (?, ?, ?, ?, ?)');
-            $decStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = mevcut_strip - ?, mevcut_sheet = GREATEST(0, mevcut_sheet - ?) WHERE id = ? AND mevcut_strip >= ?');
+            $decStmt = $pdo->prepare('UPDATE raw_stock_lots SET mevcut_strip = GREATEST(0, mevcut_strip - ?), mevcut_sheet = GREATEST(0, mevcut_sheet - ?) WHERE id = ? AND mevcut_sheet >= ?');
             foreach ($grupItems as $it) {
-                $fark = (int)((float)$it['sistem_miktar'] - (float)$it['sayilan_miktar']);
+                // Eksik sheet olarak düşülür; strip karşılığı sheet'ten türetilir.
+                $sheetEs = round((float)$it['sistem_sheet'] - (float)$it['sayilan_toplam_sheet'], 3);
                 $sps = stokSPS($pdo, (string)$it['lot_kategori_id']);
-                $sheetEs = $sps > 0 ? round($fark / $sps, 2) : 0;
+                $fark = (int)round($sheetEs * $sps);
                 $itemStmt2->execute([$cikisId, $it['lot_id'], $sheetEs, $fark, $it['parametre_ad']]);
-                $decStmt->execute([$fark, $sheetEs, $it['lot_id'], $fark]);
+                $decStmt->execute([$fark, $sheetEs, $it['lot_id'], $sheetEs]);
                 if ($decStmt->rowCount() === 0) {
                     throw new RuntimeException(($it['parametre_ad'] ?? 'Bir kalem') . ' (' . $it['lot_no'] . '): mevcut stok, sayım eksiğinden az olduğu için düzeltilemedi.');
                 }

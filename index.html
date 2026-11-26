@@ -2063,7 +2063,7 @@
 <script src="js/satis.js?v=21"></script>
 <script src="js/stok.js?v=13"></script>
 <script src="js/referans.js?v=3"></script>
-<script src="js/tedarik.js?v=4"></script>
+<script src="js/tedarik.js?v=5"></script>
 <script src="js/init.js?v=13"></script>
 <script src="js/resizable-cols.js?v=1"></script>
 <script src="js/notlar.js?v=1"></script>
@@ -2466,13 +2466,13 @@
 <div class="modal-overlay" id="modal-td-yeni">
   <div class="modal" style="max-width:620px;width:94%">
     <div class="modal-header">
-      <span class="modal-title">Yeni Kalem</span>
+      <span class="modal-title" id="td-yeni-baslik">Yeni Kalem</span>
       <button class="close-btn" onclick="closeModal('modal-td-yeni')" style="margin-left:auto">✕</button>
     </div>
     <div class="modal-body" id="td-yeni-govde"></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-td-yeni')">İptal</button>
-      <button class="btn btn-primary" onclick="tdYeniKalemEkle()">Listeye Ekle</button>
+      <button class="btn btn-primary" id="td-yeni-btn" onclick="tdYeniKalemEkle()">Listeye Ekle</button>
     </div>
   </div>
 </div>

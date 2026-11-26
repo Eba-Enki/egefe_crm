@@ -85,7 +85,7 @@ function tdKatalog(){
     if(!map[key]){
       var params=(l.parametreler||[]).filter(function(p){return p&&typeof p==='object';});
       var tamAd=(l.urunAdi||'').trim()+((l.marka||l.model)?' ('+[l.marka,l.model].filter(Boolean).join(' ')+')':'');
-      map[key]={key:key,kaynak:'bitmis',kategoriId:l.kategoriId,anahtar:anahtar,tamAd:tamAd,
+      map[key]={key:key,kaynak:'bitmis',kategoriId:l.kategoriId,anahtar:anahtar,tamAd:tamAd,urunAdi:(l.urunAdi||'').trim(),
         kisaltma:params.map(function(p){return p.ad;}).filter(Boolean).join(' / '),
         cutoff:params.filter(function(p){return p.deger;}).map(function(p){return p.ad+':'+p.deger;}).join(' · '),
         marka:l.marka||'',model:l.model||'',mevcut:0,birim:'adet'};
@@ -397,7 +397,7 @@ function tdRenderSatirlar(){
     tdOzetRender();return;
   }
   var thead='<thead><tr><th style="width:50px;text-align:center">Sınıf</th><th class="col-name">Tam Adı</th><th>Kısaltma</th><th>Cut-off</th>'
-    +'<th style="text-align:right;width:90px">Mevcut</th><th style="width:140px">Tedarik Miktarı</th><th style="width:34px"></th></tr></thead>';
+    +'<th style="text-align:right;width:90px">Mevcut</th><th style="width:140px">Tedarik Miktarı</th><th style="width:70px"></th></tr></thead>';
   el.innerHTML=gruplar.map(function(g){
     var birim=g.kaynak==='ham'?'sheet':'adet';
     var top=g.satirlar.reduce(function(a,r){return a+(Number(r.miktar)||0);},0);
@@ -413,7 +413,8 @@ function tdRenderSatirlar(){
           +'<td style="font-family:var(--font-mono);font-size:12px">'+esc(r.cutoff||'—')+'</td>'
           +'<td style="text-align:right;font-family:var(--font-mono);color:var(--text3)">'+(r.mevcut!=null?tdFmt(r.mevcut):'—')+'</td>'
           +'<td><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" step="'+(r.kaynak==='ham'?'0.001':'1')+'" value="'+(r.miktar||'')+'" placeholder="0" style="width:100%" onchange="tdMiktarDegis(\''+k+'\',this.value)"><span style="font-size:11px;color:var(--text3)">'+(r.kaynak==='ham'?'sh':'ad')+'</span></div></td>'
-          +'<td><button class="btn-icon" style="color:var(--red)" onclick="tdSatirSil(\''+k+'\')" title="Listeden çıkar"><i class="ti ti-x"></i></button></td>'
+          +'<td style="white-space:nowrap"><button class="btn-icon" onclick="tdKalemDuzenle(\''+k+'\')" title="Kalemi düzenle (ad, kısaltma, cut-off, kategori…)"><i class="ti ti-edit"></i></button>'
+            +'<button class="btn-icon" style="color:var(--red)" onclick="tdSatirSil(\''+k+'\')" title="Listeden çıkar"><i class="ti ti-x"></i></button></td>'
           +'</tr>';
       }).join('')+'</tbody></table></div></div>';
   }).join('');
@@ -601,10 +602,27 @@ function tdOneriAktar(){
 
 var _tdYeniTaslak=null;
 
-function tdYeniKalemAc(){
-  _tdYeniTaslak={key:'yeni',kaynak:'ham',kategoriId:(stokKatList()[0]||{}).id||'',tamAd:'',kisaltma:'',cutoff:'',marka:'',model:'',parametreler:[],miktar:''};
+function tdYeniPencereAc(duzenle){
+  var b=document.getElementById('td-yeni-baslik'); if(b) b.textContent=duzenle?'Kalemi Düzenle':'Yeni Kalem';
+  var btn=document.getElementById('td-yeni-btn'); if(btn) btn.textContent=duzenle?'Kaydet':'Listeye Ekle';
   tdYeniRender();
   openModal('modal-td-yeni');
+}
+
+function tdYeniKalemAc(){
+  _tdYeniTaslak={key:'yeni',duzenleKey:null,kaynak:'ham',kategoriId:(stokKatList()[0]||{}).id||'',tamAd:'',kisaltma:'',cutoff:'',marka:'',model:'',parametreler:[],miktar:''};
+  tdYeniPencereAc(false);
+}
+
+// Listedeki bir kalemi (stoktan gelen veya yeni) aynı pencerede düzenler
+function tdKalemDuzenle(key){
+  var r=_tdSatirlar.find(function(x){return x.key===key;}); if(!r) return;
+  var params=(r.parametreler&&r.parametreler.length)?r.parametreler:tdCutoffParametreler(r.kisaltma,r.cutoff);
+  _tdYeniTaslak={key:'yeni',duzenleKey:key,kaynak:r.kaynak,kategoriId:r.kategoriId||'',
+    tamAd:r.kaynak==='bitmis'?(r.urunAdi||r.tamAd||''):(r.tamAd||''),
+    kisaltma:r.kisaltma||'',cutoff:r.cutoff||'',marka:r.marka||'',model:r.model||'',
+    parametreler:JSON.parse(JSON.stringify(params)),miktar:r.miktar||''};
+  tdYeniPencereAc(true);
 }
 
 function tdYeniRender(){
@@ -691,19 +709,26 @@ function tdYeniKalemEkle(){
     anahtar=[tamAd.toLowerCase(),(r.marka||'').trim().toLowerCase(),(r.model||'').trim().toLowerCase()].join('|');
     key='bitmis|'+r.kategoriId+'|'+anahtar;
   }
+  // Düzenlemede eski satır çıkarılır, girilen bilgilere göre yeniden eklenir
+  var duzenle=!!r.duzenleKey;
+  var eski=duzenle?_tdSatirlar.find(function(x){return x.key===r.duzenleKey;}):null;
+  if(eski) _tdSatirlar=_tdSatirlar.filter(function(x){return x!==eski;});
   // Stokta zaten kayıtlıysa yeni kalem değil, o ürünün kendi satırı olarak eklenir
   var kat=tdKatalog().find(function(x){return x.key===key;});
   var listede=_tdSatirlar.find(function(x){return x.key===key;});
   if(listede){
     listede.miktar=miktar;
-    toast(listede.tamAd+' zaten listedeydi; miktarı güncellendi.','info');
+    toast(duzenle?'Aynı kalem listede zaten vardı; ikisi birleştirildi (miktar: '+tdFmt(miktar)+').':listede.tamAd+' zaten listedeydi; miktarı güncellendi.','info');
   }else if(kat){
     var s=tdSiniflar()[tdSinifKey(kat)]||{};
-    _tdSatirlar.push(Object.assign({},kat,{sinif:s.sinif||'',miktar:miktar,hedef:null,manuel:false}));
-    toast(kat.tamAd+' stokta kayıtlı bir ürün; listeye eklendi.','info');
+    // Yarı mamulde elle düzeltilen tam ad korunur (eşleşme kısaltma + cut-off ile yapılır)
+    _tdSatirlar.push(Object.assign({},kat,{sinif:s.sinif||'',miktar:miktar,hedef:eski&&eski.key===key?eski.hedef:null,manuel:false,
+      tamAd:r.kaynak==='ham'&&duzenle?tamAd:kat.tamAd}));
+    toast(duzenle?'Kalem güncellendi.':kat.tamAd+' stokta kayıtlı bir ürün; listeye eklendi.',duzenle?'success':'info');
   }else{
     _tdSatirlar.push({key:'m'+(++_tdManuelSayac),kaynak:r.kaynak,kategoriId:r.kategoriId,anahtar:anahtar,tamAd:tamAd,kisaltma:(r.kisaltma||'').trim(),cutoff:(r.cutoff||'').trim(),
       parametreler:r.parametreler||[],marka:(r.marka||'').trim(),model:(r.model||'').trim(),mevcut:null,hedef:null,birim:r.kaynak==='ham'?'sheet':'adet',sinif:'',manuel:true,miktar:miktar});
+    if(duzenle) toast(eski&&!eski.manuel?'Kalem güncellendi. Bilgileri stoktaki kayıtla eşleşmediği için "yeni" kalem olarak listelendi.':'Kalem güncellendi.','success');
   }
   closeModal('modal-td-yeni');
   _tdYeniTaslak=null;

@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../../_bootstrap.php';
+require __DIR__ . '/../../../includes/tedarik.php';
 
 $user = requireAuth($pdo);
 requirePortalAccess($user, 'stok');
@@ -55,6 +56,7 @@ function kalemResponse(array $row): array {
         'sheetGiren'  => (float)$row['sheet_giren'],
         'stripGiren'  => (int)$row['strip_giren'],
         'sktTarih'    => $row['skt_tarih'],
+        'tedarikKalemId' => isset($row['tedarik_kalem_id']) && $row['tedarik_kalem_id'] !== null ? (int)$row['tedarik_kalem_id'] : null,
     ];
 }
 
@@ -136,7 +138,7 @@ switch ($method) {
             $stmt = $pdo->prepare('INSERT INTO raw_stock_entries (id, evrak_no, tarih, notlar, olusturan_kullanici) VALUES (?, ?, ?, ?, ?)');
             $stmt->execute([$girisId, $evrakNo, $tarih, $notlar, $user['id']]);
 
-            $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, tip, parametreler, cutoff, ek_ozellik, kategori_id, sheet_giren, mevcut_sheet, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $lotStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, tip, parametreler, cutoff, ek_ozellik, kategori_id, tedarik_kalem_id, sheet_giren, mevcut_sheet, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             foreach ($kalemler as $i => $k) {
                 $kategoriId = (string)$k['kategoriId'];
                 $sheetGiren = (float)$k['sheetMiktar'];
@@ -148,11 +150,13 @@ switch ($method) {
                     $lotId, $girisId, $evrakNo,
                     (string)$k['lotNo'], $tarih, (string)$k['parametreAd'],
                     $k['tip'], $k['parametreler'], $k['cutoff'], $ekOzellik, $kategoriId,
+                    tdKalemIdCoz($pdo, $k['tedarikKalemId'] ?? null, 'ham'),
                     $sheetGiren, $sheetGiren, $stripGiren, $stripGiren,
                     strOrNull($k['sktTarih'] ?? null), $user['id'],
                 ]);
             }
 
+            tdKabulYenidenHesapla($pdo, tdGirisTedarikleri($pdo, 'raw_stock_lots', $girisId));
             $pdo->commit();
         } catch (Throwable $e) {
             $pdo->rollBack();
@@ -224,6 +228,7 @@ switch ($method) {
                 'kategoriId' => $kategoriId,
                 'sheetGiren' => $sheetGiren, 'stripGiren' => $stripGiren,
                 'sktTarih' => strOrNull($k['sktTarih'] ?? null),
+                'tedarikKalemId' => tdKalemIdCoz($pdo, $k['tedarikKalemId'] ?? null, 'ham'),
             ];
             if ($lotId !== null && isset($existingLots[$lotId])) {
                 $old = $existingLots[$lotId];
@@ -255,20 +260,22 @@ switch ($method) {
 
         $notlar = strOrNull($input['notlar'] ?? null);
 
+        $etkilenenTedarikler = tdGirisTedarikleri($pdo, 'raw_stock_lots', $id);
+
         $pdo->beginTransaction();
         try {
             $pdo->prepare('UPDATE raw_stock_entries SET evrak_no=?, tarih=?, notlar=? WHERE id=?')
                 ->execute([$evrakNo, $tarih, $notlar, $id]);
 
-            $updStmt = $pdo->prepare('UPDATE raw_stock_lots SET evrak_no=?, lot_no=?, tarih=?, parametre_ad=?, tip=?, parametreler=?, cutoff=?, ek_ozellik=?, kategori_id=?, sheet_giren=?, mevcut_sheet=?, strip_giren=?, mevcut_strip=?, skt_tarih=? WHERE id=?');
+            $updStmt = $pdo->prepare('UPDATE raw_stock_lots SET evrak_no=?, lot_no=?, tarih=?, parametre_ad=?, tip=?, parametreler=?, cutoff=?, ek_ozellik=?, kategori_id=?, tedarik_kalem_id=?, sheet_giren=?, mevcut_sheet=?, strip_giren=?, mevcut_strip=?, skt_tarih=? WHERE id=?');
             foreach ($updates as $lotId => $u) {
-                $updStmt->execute([$evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['tip'], $u['parametreler'], $u['cutoff'], $u['ekOzellik'], $u['kategoriId'], $u['sheetGiren'], $u['mevcutSheet'], $u['stripGiren'], $u['mevcutStrip'], $u['sktTarih'], $lotId]);
+                $updStmt->execute([$evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['tip'], $u['parametreler'], $u['cutoff'], $u['ekOzellik'], $u['kategoriId'], $u['tedarikKalemId'], $u['sheetGiren'], $u['mevcutSheet'], $u['stripGiren'], $u['mevcutStrip'], $u['sktTarih'], $lotId]);
             }
 
-            $insStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, tip, parametreler, cutoff, ek_ozellik, kategori_id, sheet_giren, mevcut_sheet, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $insStmt = $pdo->prepare('INSERT INTO raw_stock_lots (id, giris_id, evrak_no, lot_no, tarih, parametre_ad, tip, parametreler, cutoff, ek_ozellik, kategori_id, tedarik_kalem_id, sheet_giren, mevcut_sheet, strip_giren, mevcut_strip, skt_tarih, olusturan_kullanici) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             foreach ($inserts as $i => $u) {
                 $newLotId = 'hl' . (string)(int)round(microtime(true) * 1000) . $i;
-                $insStmt->execute([$newLotId, $id, $evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['tip'], $u['parametreler'], $u['cutoff'], $u['ekOzellik'], $u['kategoriId'], $u['sheetGiren'], $u['sheetGiren'], $u['stripGiren'], $u['stripGiren'], $u['sktTarih'], $user['id']]);
+                $insStmt->execute([$newLotId, $id, $evrakNo, $u['lotNo'], $tarih, $u['parametreAd'], $u['tip'], $u['parametreler'], $u['cutoff'], $u['ekOzellik'], $u['kategoriId'], $u['tedarikKalemId'], $u['sheetGiren'], $u['sheetGiren'], $u['stripGiren'], $u['stripGiren'], $u['sktTarih'], $user['id']]);
             }
 
             if ($removals) {
@@ -276,6 +283,7 @@ switch ($method) {
                 $pdo->prepare("DELETE FROM raw_stock_lots WHERE id IN ($placeholders)")->execute($removals);
             }
 
+            tdKabulYenidenHesapla($pdo, array_merge($etkilenenTedarikler, tdGirisTedarikleri($pdo, 'raw_stock_lots', $id)));
             $pdo->commit();
         } catch (Throwable $e) {
             $pdo->rollBack();
@@ -303,10 +311,12 @@ switch ($method) {
                 exit;
             }
         }
+        $etkilenenTedarikler = tdGirisTedarikleri($pdo, 'raw_stock_lots', $id);
         $pdo->beginTransaction();
         try {
             $pdo->prepare('DELETE FROM raw_stock_lots WHERE giris_id = ?')->execute([$id]);
             $pdo->prepare('DELETE FROM raw_stock_entries WHERE id = ?')->execute([$id]);
+            tdKabulYenidenHesapla($pdo, $etkilenenTedarikler);
             $pdo->commit();
         } catch (Throwable $e) {
             $pdo->rollBack();

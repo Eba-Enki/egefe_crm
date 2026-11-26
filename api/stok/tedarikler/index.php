@@ -24,6 +24,12 @@ function tdNum($v): float {
     return round((float)str_replace(',', '.', (string)($v ?? 0)), 3);
 }
 
+function tdKabulVar(PDO $pdo, string $orderId): bool {
+    $s = $pdo->prepare('SELECT COUNT(*) FROM stock_purchase_order_items WHERE order_id = ? AND kabul_edilen > 0');
+    $s->execute([$orderId]);
+    return (int)$s->fetchColumn() > 0;
+}
+
 function tdKalemResponse(array $row): array {
     return [
         'id'          => (int)$row['id'],
@@ -190,6 +196,8 @@ switch ($method) {
         if (array_key_exists('durum', $input) && !array_key_exists('kalemler', $input)) {
             $durum = (string)$input['durum'];
             if (!in_array($durum, TEDARIK_DURUMLARI, true)) tdFail(400, 'Geçersiz durum');
+            // Taslak düzenlenince kalemler yeniden yazılır; mal kabulü yapılmış bir liste taslağa dönemez
+            if ($durum === 'Taslak' && tdKabulVar($pdo, $id)) tdFail(400, 'Mal kabulü yapılmış bir tedarik listesi taslağa döndürülemez');
             $pdo->prepare('UPDATE stock_purchase_orders SET durum = ? WHERE id = ?')->execute([$durum, $id]);
             echo json_encode(['tedarik' => tdGetir($pdo, $id)]);
             break;
@@ -222,6 +230,7 @@ switch ($method) {
         $row = $stmt->fetch();
         if (!$row) tdFail(404, 'Tedarik listesi bulunamadı');
         if (!in_array($row['durum'], ['Taslak', 'İptal'], true)) tdFail(400, 'Yalnızca taslak veya iptal edilmiş tedarik listeleri silinebilir');
+        if (tdKabulVar($pdo, $id)) tdFail(400, 'Mal kabulü yapılmış bir tedarik listesi silinemez');
         $pdo->prepare('DELETE FROM stock_purchase_orders WHERE id = ?')->execute([$id]);
         echo json_encode(['ok' => true]);
         break;

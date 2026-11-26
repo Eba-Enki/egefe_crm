@@ -699,6 +699,7 @@ function renderHamGirisForm(){
       if(document.getElementById('hg-tarih')) document.getElementById('hg-tarih').value=g.tarih||'';
       if(document.getElementById('hg-notlar')) document.getElementById('hg-notlar').value=g.notlar||'';
       _hgKalemler=(g.kalemler||[]).map(function(k){return Object.assign({},k,{sheetMiktar:k.sheetMiktar||k.sheetGiren||0});});
+      if(typeof tdGirisBaglamKur==='function') tdGirisBaglamKur('ham',_hgKalemler,hgRenderKalemler);
       hgRenderKalemler();
       return;
     }
@@ -708,6 +709,13 @@ function renderHamGirisForm(){
   var tarihEl=document.getElementById('hg-tarih');
   if(tarihEl) tarihEl.value=stokToday();
   if(document.getElementById('hg-notlar')) document.getElementById('hg-notlar').value='';
+  // Tedarik listesinden "Mal Kabul" ile gelindiyse kalan kalemlerle doldur
+  var tdDolu=typeof tdGirisOnDoldur==='function'?tdGirisOnDoldur('ham'):null;
+  if(tdDolu&&tdDolu.kalemler.length){
+    _hgKalemler=tdDolu.kalemler;
+    if(document.getElementById('hg-notlar')) document.getElementById('hg-notlar').value=tdDolu.notlar;
+    if(titleEl) titleEl.textContent='Mal Kabul — Yarı Mamul Girişi';
+  }
   hgRenderKalemler();
 }
 
@@ -784,9 +792,11 @@ function hgRenderKalemler(){
       +'<button class="btn-icon" style="color:var(--red);margin-bottom:2px" onclick="hgRemoveKalem('+i+')"><i class="ti ti-trash"></i></button>'
       +'</div>'
       +chipsRow
+      +(typeof tdGirisSatirHtml==='function'?tdGirisSatirHtml('ham',i,k):'')
       +'</div>';
   }).join('');
-  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="hgAddKalem()"><i class="ti ti-plus"></i> Kalem Ekle</button></div>';
+  var tdBanner=typeof tdGirisBannerHtml==='function'?tdGirisBannerHtml('ham'):'';
+  el.innerHTML=tdBanner+rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="hgAddKalem()"><i class="ti ti-plus"></i> Kalem Ekle</button></div>';
 }
 
 // Tip değişince parametre alanı sıfırlanır: tekli parametre kısaltması ile çoklu ürün adı karışmasın.
@@ -828,7 +838,7 @@ async function saveHamGiris(){
     evrakNo:evrakNo,tarih:tarih,notlar:notlar,
     kalemler:_hgKalemler.map(function(k){
       var coklu=k.tip==='coklu';
-      return {lotId:k.lotId||null,kategoriId:k.kategoriId,parametreAd:k.parametreAd,tip:coklu?'coklu':'tekli',parametreler:coklu?(k.parametreler||[]):[],cutoff:coklu?'':(k.cutoff||''),ekOzellik:k.ekOzellik||'',lotNo:k.lotNo,sheetMiktar:k.sheetMiktar,sktTarih:k.sktTarih||''};
+      return {lotId:k.lotId||null,kategoriId:k.kategoriId,parametreAd:k.parametreAd,tip:coklu?'coklu':'tekli',parametreler:coklu?(k.parametreler||[]):[],cutoff:coklu?'':(k.cutoff||''),ekOzellik:k.ekOzellik||'',lotNo:k.lotNo,sheetMiktar:k.sheetMiktar,sktTarih:k.sktTarih||'',tedarikKalemId:k.tedarikKalemId||null};
     })
   };
   try{
@@ -846,7 +856,9 @@ async function saveHamGiris(){
   }
   if(document.getElementById('hg-edit-id')) document.getElementById('hg-edit-id').value='';
   await loadStokData(true);
-  _formDirty=false;showPage('ham-girisler');
+  _formDirty=false;
+  if(typeof tdGirisKaydedildi==='function'&&await tdGirisKaydedildi('ham')) return;
+  showPage('ham-girisler');
 }
 
 // ─── HAM STOK ÇIKIŞLAR LİSTESİ ───────────────────────────────────────────────
@@ -1814,6 +1826,7 @@ function renderBitmisGirisForm(){
         if(!kk.seriNolar) kk.seriNolar=kk.seriNo?[kk.seriNo]:[];
         return kk;
       });
+      if(typeof tdGirisBaglamKur==='function') tdGirisBaglamKur('bitmis',_bgKalemler,bgRenderKalemler);
       bgRenderKalemler();
       return;
     }
@@ -1822,6 +1835,13 @@ function renderBitmisGirisForm(){
   if(document.getElementById('bg-evrak')) document.getElementById('bg-evrak').value='';
   if(document.getElementById('bg-tarih')) document.getElementById('bg-tarih').value=stokToday();
   if(document.getElementById('bg-notlar')) document.getElementById('bg-notlar').value='';
+  // Tedarik listesinden "Mal Kabul" ile gelindiyse kalan kalemlerle doldur
+  var tdDolu=typeof tdGirisOnDoldur==='function'?tdGirisOnDoldur('bitmis'):null;
+  if(tdDolu&&tdDolu.kalemler.length){
+    _bgKalemler=tdDolu.kalemler;
+    if(document.getElementById('bg-notlar')) document.getElementById('bg-notlar').value=tdDolu.notlar;
+    if(titleEl) titleEl.textContent='Mal Kabul — Hazır Ürün Girişi';
+  }
   bgRenderKalemler();
 }
 
@@ -1959,9 +1979,11 @@ function bgRenderKalemler(){
       notRow='<div style="margin-top:8px"><textarea rows="2" placeholder="Bu kaleme özel not (ör. ambalaj hasarı, özel talimat)..." style="width:100%;font-size:12px;padding:6px 8px;resize:vertical" onchange="_bgKalemler['+i+'].notlar=this.value.trim()">'+esc(k.notlar||'')+'</textarea></div>';
     }
 
-    return '<div style="padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:10px">'+baseRow+chipsRow+notRow+'</div>';
+    var tdSatir=typeof tdGirisSatirHtml==='function'?tdGirisSatirHtml('bitmis',i,k):'';
+    return '<div style="padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:10px">'+baseRow+chipsRow+notRow+tdSatir+'</div>';
   }).join('');
-  el.innerHTML=rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bgAddKalem()"><i class="ti ti-plus"></i> Kalem Ekle</button></div>';
+  var tdBanner=typeof tdGirisBannerHtml==='function'?tdGirisBannerHtml('bitmis'):'';
+  el.innerHTML=tdBanner+rows+'<div style="margin-top:6px"><button class="btn-brand" onclick="bgAddKalem()"><i class="ti ti-plus"></i> Kalem Ekle</button></div>';
 }
 
 // ─── HAZIR ÜRÜN PARAMETRE + CUT-OFF SEÇİM POPUP ─────────────────────────────
@@ -2108,11 +2130,11 @@ async function saveBitmisGiris(){
           lotId:idx===0?(k.lotId||null):null,
           lotNo:k.lotNo||'',urunAdi:k.urunAdi,marka:k.marka||'',model:k.model||'',seriNo:sn,
           notlar:k.notlar||'',kategoriId:k.kategoriId,parametreler:k.parametreler||[],
-          miktar:1,sktTarih:k.sktTarih||''
+          miktar:1,sktTarih:k.sktTarih||'',tedarikKalemId:k.tedarikKalemId||null
         });
       });
     } else {
-      kalemlerPayload.push({lotId:k.lotId||null,lotNo:k.lotNo||'',urunAdi:k.urunAdi,marka:k.marka||'',model:k.model||'',seriNo:k.seriNo||'',notlar:k.notlar||'',kategoriId:k.kategoriId,parametreler:k.parametreler||[],miktar:k.miktar,sktTarih:k.sktTarih||''});
+      kalemlerPayload.push({lotId:k.lotId||null,lotNo:k.lotNo||'',urunAdi:k.urunAdi,marka:k.marka||'',model:k.model||'',seriNo:k.seriNo||'',notlar:k.notlar||'',kategoriId:k.kategoriId,parametreler:k.parametreler||[],miktar:k.miktar,sktTarih:k.sktTarih||'',tedarikKalemId:k.tedarikKalemId||null});
     }
   });
   var payload={evrakNo:evrakNo,tarih:tarih,notlar:notlar,kalemler:kalemlerPayload};
@@ -2131,7 +2153,9 @@ async function saveBitmisGiris(){
   }
   if(document.getElementById('bg-edit-id')) document.getElementById('bg-edit-id').value='';
   await loadStokData(true);
-  _formDirty=false;showPage('bitmis-girisler');
+  _formDirty=false;
+  if(typeof tdGirisKaydedildi==='function'&&await tdGirisKaydedildi('bitmis')) return;
+  showPage('bitmis-girisler');
 }
 
 // ─── TİCARİ STOK ÇIKIŞLAR LİSTESİ ───────────────────────────────────────────

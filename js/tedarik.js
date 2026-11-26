@@ -204,23 +204,33 @@ function renderTedarikler(){
       +'<td style="font-size:12px">'+esc(t.tedarikci||'—')+'</td>'
       +'<td style="text-align:center;font-family:var(--font-mono)">'+(t.kalemler||[]).length+'</td>'
       +'<td style="font-family:var(--font-mono);font-size:12px">'+tdMiktarOzet(t)+'</td>'
-      +'<td><span class="badge '+(TD_DURUM_BADGE[t.durum]||'badge-gray')+'">'+esc(t.durum)+'</span></td>'
+      +'<td><span class="badge '+(TD_DURUM_BADGE[t.durum]||'badge-gray')+'">'+esc(t.durum)+'</span>'
+        +(tdKabulVarMi(t)?'<span style="font-size:11px;font-family:var(--font-mono);color:var(--text3);margin-left:6px">%'+tdKabulYuzde(t)+'</span>':'')+'</td>'
       +'<td><div class="action-row">'
+        +(canWrite&&TD_KABUL_DURUMLARI.indexOf(t.durum)>=0?['ham','bitmis'].filter(function(kaynak){return tdKaynakKalan(t,kaynak).length;}).map(function(kaynak){
+          return '<button class="btn btn-ghost btn-sm" style="color:var(--accent)" onclick="event.stopPropagation();tdMalKabulBaslat(\''+t.id+'\',\''+kaynak+'\')" title="Gelen '+TD_KAYNAK_ETIKET[kaynak].toLocaleLowerCase('tr')+' kalemlerini stoğa giriş yap"><i class="ti ti-package-import"></i> '+(kaynak==='ham'?'Yarı Mamul':'Hazır Ürün')+' Mal Kabul</button>';
+        }).join(''):'')
         +'<button class="btn btn-ghost btn-sm" style="color:var(--green)" onclick="event.stopPropagation();tdExcel(\''+t.id+'\')" title="Tedarikçiye gönderilecek Excel listesi"><i class="ti ti-file-download"></i> Excel</button>'
         +(canWrite&&taslak?'<button class="btn-icon" onclick="event.stopPropagation();goTedarikDuzenle(\''+t.id+'\')" title="Düzenle"><i class="ti ti-edit"></i></button>':'')
-        +(canWrite&&(taslak||t.durum==='İptal')?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();tdSil(\''+t.id+'\')" title="Sil"><i class="ti ti-trash"></i></button>':'')
+        +(canWrite&&(taslak||t.durum==='İptal')&&!tdKabulVarMi(t)?'<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();tdSil(\''+t.id+'\')" title="Sil"><i class="ti ti-trash"></i></button>':'')
       +'</div></td></tr>';
     if(exp){
       var sub='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 10px">';
       if(canWrite){
         sub+='<label style="font-size:12px;color:var(--text2)">Durum</label><select onchange="tdDurumDegistir(\''+t.id+'\',this.value)" style="font-size:12px;padding:4px 8px">'
-          +TD_DURUMLAR.map(function(d){return '<option'+(d===t.durum?' selected':'')+'>'+esc(d)+'</option>';}).join('')+'</select>';
+          +TD_DURUMLAR.filter(function(d){return d!=='Taslak'||t.durum==='Taslak'||!tdKabulVarMi(t);}).map(function(d){return '<option'+(d===t.durum?' selected':'')+'>'+esc(d)+'</option>';}).join('')+'</select>';
       }
       if(t.notlar) sub+='<span style="font-size:12px;color:var(--text3)">Not: '+esc(t.notlar)+'</span>';
+      var girisler=tdBagliGirisler(t);
+      var gEvrak=Object.keys(girisler);
+      if(gEvrak.length) sub+='<span style="font-size:12px;color:var(--text3)">Mal kabul girişleri: '+gEvrak.map(function(e){return '<span class="kn-badge">'+esc(e)+'</span>';}).join(' ')+'</span>';
+      var kabulGoster=t.durum!=='Taslak';
       sub+='</div><table class="compact-table" style="width:100%;margin:0" data-resize-key="stok-tedarikler-detay"><thead><tr style="background:var(--bg4)">'
         +'<th>Tür</th><th>Kategori</th><th style="width:50px;text-align:center">Sınıf</th><th class="col-name">Tam Adı</th><th>Kısaltma</th><th>Cut-off</th><th style="text-align:right">Mevcut (o an)</th><th style="text-align:right">Tedarik Miktarı</th>'
+        +(kabulGoster?'<th style="text-align:right">Kabul Edilen</th><th style="text-align:right">Kalan</th>':'')
         +'</tr></thead><tbody>';
       (t.kalemler||[]).forEach(function(k){
+        var kalan=tdKalan(k); var kabul=Number(k.kabulEdilen)||0;
         sub+='<tr>'
           +'<td style="font-size:12px">'+TD_KAYNAK_ETIKET[k.kaynak]+(k.manuel?' <span style="font-size:10px;color:var(--text3)">(manuel)</span>':'')+'</td>'
           +'<td style="font-size:12px">'+esc(tdKategoriAd(k.kaynak,k.kategoriId))+'</td>'
@@ -230,6 +240,8 @@ function renderTedarikler(){
           +'<td style="font-family:var(--font-mono);font-size:12px">'+esc(k.cutoff||'—')+'</td>'
           +'<td style="text-align:right;font-family:var(--font-mono);color:var(--text3)">'+(k.mevcut!=null?tdFmt(k.mevcut):'—')+'</td>'
           +'<td style="text-align:right;font-family:var(--font-mono);font-weight:600">'+tdFmt(k.miktar)+' '+k.birim+'</td>'
+          +(kabulGoster?'<td style="text-align:right;font-family:var(--font-mono);color:'+(kabul>0?'var(--green)':'var(--text3)')+'">'+(kabul>0?tdFmt(kabul):'—')+'</td>'
+            +'<td style="text-align:right;font-family:var(--font-mono);font-weight:600;color:'+(kalan>0?'var(--amber)':'var(--green)')+'">'+(kalan>0?tdFmt(kalan):'✓')+'</td>':'')
           +'</tr>';
       });
       sub+='</tbody></table>';
@@ -684,4 +696,110 @@ async function tdAyarSinifDegis(kaynak,katId,anahtar,sinif){
   try{await tdSinifKaydet(kaynak,katId,anahtar,sinif||null);}
   catch(e){toast(e.message||'Sınıf kaydedilemedi.','error');return;}
   tdAyarSinifRender();
+}
+
+// ─── Mal Kabul ────────────────────────────────────────────────────────────────
+// Tedarik listesinden "Mal Kabul" ile Yarı Mamul / Hazır Ürün giriş formu, kalan
+// miktarlarla dolu açılır. Her giriş satırı bir tedarik kalemine bağlanır; bir
+// kalem birden fazla LOT ile gelebilir. Kabul edilen miktar ve tedarik durumu,
+// giriş kaydedilince/düzenlenince/silinince sunucuda yeniden hesaplanır.
+
+var TD_KABUL_DURUMLARI=['Tedarikçiye İletildi','Kısmi Mal Kabul','Mal Kabul Tamamlandı'];
+var _tdMalKabul=null;                    // {tedarikId, kaynak} — form açılırken tüketilir
+var _tdGirisBaglam={ham:null,bitmis:null}; // giriş formunun bağlı olduğu tedarik listesi
+
+function tdKalan(k){return Math.max(0,tdR3((Number(k.miktar)||0)-(Number(k.kabulEdilen)||0)));}
+function tdKaynakKalan(t,kaynak){return (t.kalemler||[]).filter(function(k){return k.kaynak===kaynak&&tdKalan(k)>0;});}
+function tdKabulYuzde(t){
+  var top=0,gelen=0;
+  (t.kalemler||[]).forEach(function(k){top+=Number(k.miktar)||0;gelen+=Math.min(Number(k.kabulEdilen)||0,Number(k.miktar)||0);});
+  return top>0?Math.round(gelen/top*100):0;
+}
+function tdKabulVarMi(t){return (t.kalemler||[]).some(function(k){return (Number(k.kabulEdilen)||0)>0;});}
+
+// Kalemlere bağlı giriş belgelerinin evrak numaraları
+function tdBagliGirisler(t){
+  var ids={};(t.kalemler||[]).forEach(function(k){ids[k.id]=k.kaynak;});
+  var out={};
+  (state.hamStokLotlar||[]).forEach(function(l){if(l.tedarikKalemId&&ids[l.tedarikKalemId])out[l.evrakNo||'—']='ham';});
+  (state.bitmisStokLotlar||[]).forEach(function(l){if(l.tedarikKalemId&&ids[l.tedarikKalemId])out[l.evrakNo||'—']='bitmis';});
+  return out;
+}
+
+function tdMalKabulBaslat(id,kaynak){
+  var t=(state.tedarikler||[]).find(function(x){return x.id===id;}); if(!t) return;
+  if(TD_KABUL_DURUMLARI.indexOf(t.durum)<0) return toast('Mal kabul için tedarik listesinin "Tedarikçiye İletildi" durumunda olması gerekir.','error');
+  if(!tdKaynakKalan(t,kaynak).length) return toast('Bu türde kabul edilecek kalan kalem yok.','info');
+  _tdMalKabul={tedarikId:id,kaynak:kaynak};
+  if(kaynak==='ham') goHamGirisYeni(); else goBitmisGirisYeni();
+}
+
+// Yeni giriş formu açılırken çağrılır: mal kabul başlatıldıysa kalan kalemlerle
+// dolu kalem listesini döndürür, değilse null.
+function tdGirisOnDoldur(kaynak){
+  _tdGirisBaglam[kaynak]=null;
+  var mk=_tdMalKabul;
+  if(!mk||mk.kaynak!==kaynak) return null;
+  _tdMalKabul=null;
+  var t=(state.tedarikler||[]).find(function(x){return x.id===mk.tedarikId;}); if(!t) return null;
+  _tdGirisBaglam[kaynak]=t;
+  var kalemler=tdKaynakKalan(t,kaynak).map(function(k){
+    var kalan=tdKalan(k);
+    if(kaynak==='ham'){
+      var src=(state.hamStokLotlar||[]).find(function(l){return l.kategoriId===k.kategoriId&&l.parametreAd===k.anahtar&&(l.cutoff||'').trim()===(k.cutoff||'');});
+      var coklu=!!(src&&src.tip==='coklu');
+      return {kategoriId:k.kategoriId||'',tip:coklu?'coklu':'tekli',parametreAd:k.anahtar||'',cutoff:coklu?'':(k.cutoff||''),
+        parametreler:coklu?JSON.parse(JSON.stringify(src.parametreler||[])):[],ekOzellik:'',lotNo:'',sheetMiktar:kalan,sktTarih:'',tedarikKalemId:k.id};
+    }
+    var bsrc=(state.bitmisStokLotlar||[]).find(function(l){return l.kategoriId===k.kategoriId&&tdBitmisAnahtar(l)===k.anahtar;});
+    return {lotNo:'',urunAdi:bsrc?bsrc.urunAdi:k.tamAd,kategoriId:k.kategoriId||'',marka:bsrc?(bsrc.marka||''):(k.marka||''),model:bsrc?(bsrc.model||''):(k.model||''),
+      seriNo:'',seriNolar:[],parametreler:bsrc?JSON.parse(JSON.stringify(bsrc.parametreler||[])):[],miktar:Math.ceil(kalan),sktTarih:'',notlar:'',tedarikKalemId:k.id};
+  });
+  return {kalemler:kalemler,notlar:(t.evrakNo||'')+' mal kabulü'+(t.tedarikci?' — '+t.tedarikci:'')};
+}
+
+// Var olan bir giriş düzenlenirken: kalemleri tedarike bağlıysa bağlamı kurar.
+function tdGirisBaglamKur(kaynak,kalemler,yenidenCiz){
+  _tdGirisBaglam[kaynak]=null;
+  var ids=(kalemler||[]).map(function(k){return k.tedarikKalemId;}).filter(Boolean);
+  if(!ids.length) return;
+  var bul=function(){
+    var t=(state.tedarikler||[]).find(function(x){return (x.kalemler||[]).some(function(k){return ids.indexOf(k.id)>=0;});});
+    _tdGirisBaglam[kaynak]=t||null;
+  };
+  if(state.tedarikler){bul();return;}
+  apiGet('stok/tedarikler').then(function(r){state.tedarikler=r.tedarikler||[];bul();if(yenidenCiz)yenidenCiz();}).catch(function(){});
+}
+
+function tdGirisBannerHtml(kaynak){
+  var t=_tdGirisBaglam[kaynak]; if(!t) return '';
+  return '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;margin-bottom:10px;border:1px solid var(--accent);background:var(--accent-soft);border-radius:var(--radius-sm);font-size:12px;color:var(--text)">'
+    +'<i class="ti ti-truck-delivery" style="font-size:16px;color:var(--accent)"></i>'
+    +'<span><b>'+esc(t.evrakNo)+'</b> mal kabulü'+(t.tedarikci?' · '+esc(t.tedarikci):'')+'</span>'
+    +'<span style="color:var(--text3)">Gelen miktarları ve LOT bilgilerini girin. Bir kalem birden fazla LOT ile geldiyse "Kalem Ekle" ile satır ekleyip aynı tedarik kalemini seçin; gelmeyen satırları silin.</span>'
+    +'</div>';
+}
+
+function tdGirisSatirHtml(kaynak,i,k){
+  var t=_tdGirisBaglam[kaynak]; if(!t) return '';
+  var dizi=kaynak==='ham'?'_hgKalemler':'_bgKalemler';
+  var opts=(t.kalemler||[]).filter(function(x){return x.kaynak===kaynak;}).map(function(x){
+    var etiket=x.tamAd+(x.kisaltma&&x.kisaltma!==x.tamAd?' ('+x.kisaltma+')':'')+(x.cutoff?' · '+x.cutoff:'')+' — '+tdKategoriAd(x.kaynak,x.kategoriId)
+      +' — tedarik '+tdFmt(x.miktar)+', kabul '+tdFmt(x.kabulEdilen)+' '+x.birim;
+    return '<option value="'+x.id+'"'+(Number(k.tedarikKalemId)===x.id?' selected':'')+'>'+esc(etiket)+'</option>';
+  }).join('');
+  return '<div style="display:flex;align-items:center;gap:8px;margin-top:8px">'
+    +'<span style="font-size:10px;font-weight:600;color:var(--accent);white-space:nowrap"><i class="ti ti-truck-delivery"></i> Tedarik Kalemi</span>'
+    +'<select style="flex:1;font-size:12px;padding:3px 6px" onchange="'+dizi+'['+i+'].tedarikKalemId=this.value?parseInt(this.value,10):null">'
+    +'<option value="">— Tedarik dışı —</option>'+opts+'</select></div>';
+}
+
+// Giriş kaydedildikten sonra: mal kabulüyse tedarik listesine dönülür.
+async function tdGirisKaydedildi(kaynak){
+  var t=_tdGirisBaglam[kaynak];
+  _tdGirisBaglam[kaynak]=null;
+  if(!t) return false;
+  _tdExpanded.add(t.id);
+  showPage('tedarikler');
+  return true;
 }

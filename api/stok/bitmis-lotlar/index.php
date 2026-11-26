@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../../_bootstrap.php';
+require __DIR__ . '/../../../includes/tedarik.php';
 
 $user = requireAuth($pdo);
 requirePortalAccess($user, 'stok');
@@ -21,6 +22,7 @@ function lotResponse(array $row): array {
         'miktar'       => (float)$row['miktar'],
         'mevcutMiktar' => (float)$row['mevcut_miktar'],
         'sktTarih'     => $row['skt_tarih'],
+        'tedarikKalemId' => isset($row['tedarik_kalem_id']) && $row['tedarik_kalem_id'] !== null ? (int)$row['tedarik_kalem_id'] : null,
         'notlar'       => $row['notlar'],
     ];
 }
@@ -73,7 +75,9 @@ switch ($method) {
             echo json_encode(['error' => 'Bu LOT tükenmediği için silinemez.']);
             exit;
         }
+        $tdEtkilenen = tdLotSilinmedenOnce($pdo, 'finished_stock_lots', 'miktar', $id);
         $pdo->prepare('DELETE FROM finished_stock_lots WHERE id = ?')->execute([$id]);
+        tdKabulYenidenHesapla($pdo, $tdEtkilenen);
         echo json_encode(['ok' => true]);
         break;
 

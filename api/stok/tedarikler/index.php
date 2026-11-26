@@ -132,15 +132,17 @@ function tdKalemleriYaz(PDO $pdo, string $orderId, array $kalemler): void {
     }
 }
 
+// Kategori başına ihtiyaç miktarı: {"kategoriler": {"ham|<kategoriId>": 10, ...}}
+// (sonraki listede aynı değerlerle başlamak için saklanır)
 function tdHedefler($v): ?string {
-    if (!is_array($v)) return null;
+    if (!is_array($v) || !isset($v['kategoriler']) || !is_array($v['kategoriler'])) return null;
     $out = [];
-    foreach (TEDARIK_KAYNAKLAR as $kaynak) {
-        foreach (['A', 'B', 'C'] as $s) {
-            $out[$kaynak][$s] = max(0.0, tdNum($v[$kaynak][$s] ?? 0));
-        }
+    foreach ($v['kategoriler'] as $key => $miktar) {
+        $key = mb_substr(trim((string)$key), 0, 100);
+        if ($key === '' || !preg_match('/^(ham|bitmis)\|/', $key) || $miktar === null || $miktar === '') continue;
+        $out[$key] = max(0.0, tdNum($miktar));
     }
-    return json_encode($out);
+    return json_encode(['kategoriler' => (object)$out], JSON_UNESCAPED_UNICODE);
 }
 
 $method = $_SERVER['REQUEST_METHOD'];

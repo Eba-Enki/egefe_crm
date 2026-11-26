@@ -1993,8 +1993,10 @@ var _bgParamSecHedef='bg'; // 'bg' = hazır ürün girişi, 'hg' = çoklu yarı 
 
 function bgOpenParamModal(i,hedef){
   _bgParamSecIdx=i;
-  _bgParamSecHedef=hedef==='hg'?'hg':'bg';
-  var k=(_bgParamSecHedef==='hg'?_hgKalemler:_bgKalemler)[i];
+  _bgParamSecHedef=hedef==='hg'?'hg':(hedef==='td'?'td':'bg');
+  // 'td' = tedarik listesindeki manuel kalem (i = satır anahtarı)
+  var k=_bgParamSecHedef==='td'?(typeof tdSatirBul==='function'?tdSatirBul(i):null):(_bgParamSecHedef==='hg'?_hgKalemler:_bgKalemler)[i];
+  if(!k) return;
   var mevcut=k.parametreler||[];
   var mevMap={};
   mevcut.forEach(function(p){mevMap[p.ad]=p.deger||'';});
@@ -2038,6 +2040,11 @@ function confirmBgParamSec(){
     return {ad:cb.value,deger:deger};
   });
   closeModal('modal-bitmis-parametre-sec');
+  if(_bgParamSecHedef==='td'){
+    selected.sort(function(a,b){return a.ad.localeCompare(b.ad,'tr');});
+    if(typeof tdParametrelerUygula==='function') tdParametrelerUygula(_bgParamSecIdx,selected);
+    return;
+  }
   if(_bgParamSecHedef==='hg'){
     // Liste stokParamList() ile zaten A-Z; yine de sırayı garanti altına al.
     selected.sort(function(a,b){return a.ad.localeCompare(b.ad,'tr');});

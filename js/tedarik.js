@@ -14,9 +14,7 @@ var _tdPage=1;
 var _tdExpanded=new Set();
 var _tdEditId=null;
 var _tdSatirlar=[];
-var _tdHedefler=null;
-var _tdKapsam={};
-var _tdSadeceMiktarli=false;
+var _tdHedefler={};   // kategori ihtiyaçları: {"ham|kategoriId": miktar}
 var _tdManuelSayac=0;
 
 // ─── Veri ─────────────────────────────────────────────────────────────────────
@@ -293,6 +291,11 @@ function tdExcel(id){
 }
 
 // ─── Form ─────────────────────────────────────────────────────────────────────
+// Ana form yalnızca listeye aktarılan kalemleri gösterir. Kalemler üç yoldan eklenir:
+//  • Yarı Mamul Önerileri / Hazır Ürün Ekle: kategori sekmeli pencere; kategoriye
+//    tek bir ihtiyaç miktarı yazılır, öneri = ihtiyaç − mevcut. Miktarlar düzeltilir,
+//    istenmeyenler X ile çıkarılır, "Listeye Aktar" ile ana listeye geçer.
+//  • Yeni Kalem: stokta hiç kaydı olmayan ürün (çoklu parametre + cut-off girilebilir).
 
 function goTedarikYeni(){_tdEditId=null;showPage('tedarik');}
 function goTedarikDuzenle(id){_tdEditId=id;showPage('tedarik');}
@@ -307,6 +310,7 @@ function tdSonrakiEvrak(){
   return prefix+'-'+String(mx+1).padStart(5,'0');
 }
 
+// Kategori listesi: tüm yarı mamul kategorileri + kalemi olan hazır ürün kategorileri
 function tdKapsamListesi(){
   var out=stokKatList().map(function(k){return {kaynak:'ham',kategoriId:k.id,ad:k.ad};});
   var bmKatlar={};
@@ -316,6 +320,10 @@ function tdKapsamListesi(){
     .forEach(function(x){out.push(x);});
   return out;
 }
+
+function tdSiraKarsilastir(x,y){return (x.tamAd||'').localeCompare(y.tamAd||'','tr')||(x.cutoff||'').localeCompare(y.cutoff||'','tr');}
+function tdEsc(s){return esc(s).replace(/'/g,"\\'");}
+function tdKayitKey(k){return k.kaynak==='ham'?('ham|'+k.kategoriId+'|'+k.anahtar+'|'+(k.cutoff||'')):('bitmis|'+k.kategoriId+'|'+k.anahtar);}
 
 function renderTedarikForm(){
   var t=_tdEditId?(state.tedarikler||[]).find(function(x){return x.id===_tdEditId;}):null;
@@ -331,158 +339,308 @@ function renderTedarikForm(){
   document.getElementById('td-tedarikci').value=t?(t.tedarikci||''):sonTedarikci;
   document.getElementById('td-notlar').value=t?(t.notlar||''):'';
 
-  var sonHedef=((state.tedarikler||[]).find(function(x){return x.hedefler;})||{}).hedefler;
-  _tdHedefler=JSON.parse(JSON.stringify((t&&t.hedefler)||sonHedef||TD_HEDEF_VARSAYILAN));
-  ['ham','bitmis'].forEach(function(k){if(!_tdHedefler[k])_tdHedefler[k]=Object.assign({},TD_HEDEF_VARSAYILAN[k]);});
+  // Kategori ihtiyaçları: düzenlenen listeden, yoksa en son listeden hatırlanır
+  var son=(state.tedarikler||[]).find(function(x){return x.hedefler&&x.hedefler.kategoriler;});
+  _tdHedefler=Object.assign({},(t&&t.hedefler&&t.hedefler.kategoriler)||(son&&son.hedefler.kategoriler)||{});
+  _tdOneri=null;
+  _tdCikarilanlar={};
 
-  _tdKapsam={};
-  tdKapsamListesi().forEach(function(x){_tdKapsam[x.kaynak+'|'+x.kategoriId]=true;});
-  _tdSadeceMiktarli=!!t;
+  // Düzenlemede yalnızca kayıtlı kalemler gelir
   _tdSatirlar=[];
-  tdSatirlariKur(t?t.kalemler:null);
-  tdRenderForm();
-}
-
-// Katalogdan satırları kurar; kayıtlı (düzenlenen) listenin miktarları korunur,
-// katalogda karşılığı olmayan kayıtlı kalemler manuel satır olarak eklenir.
-function tdSatirlariKur(kayitliKalemler){
-  var katalog=tdKatalog();
-  var sinif=tdSiniflar(katalog);
-  var oncekiler={};
-  _tdSatirlar.forEach(function(r){oncekiler[r.key]=r;});
-  var manueller=_tdSatirlar.filter(function(r){return r.manuel;});
-  var satirlar=katalog.map(function(r){
-    var s=sinif[tdSinifKey(r)]||{sinif:'C',oto:'C',manuel:false,tuketim:0};
-    var eski=oncekiler[r.key];
-    return Object.assign({},r,{sinif:s.sinif,sinifManuel:s.manuel,tuketim:s.tuketim,manuel:false,
-      elle:eski?eski.elle:false,miktar:eski&&eski.elle?eski.miktar:0});
-  });
-  if(kayitliKalemler){
-    var byKey={};satirlar.forEach(function(r){byKey[r.key]=r;});
-    kayitliKalemler.forEach(function(k){
-      var key=k.kaynak==='ham'?('ham|'+k.kategoriId+'|'+k.anahtar+'|'+(k.cutoff||'')):('bitmis|'+k.kategoriId+'|'+k.anahtar);
-      if(!k.manuel&&byKey[key]){byKey[key].miktar=k.miktar;byKey[key].elle=true;return;}
-      manueller.push({key:'m'+(++_tdManuelSayac),kaynak:k.kaynak,kategoriId:k.kategoriId,anahtar:k.anahtar||'',tamAd:k.tamAd,kisaltma:k.kisaltma||'',cutoff:k.cutoff||'',
-        marka:k.marka||'',model:k.model||'',mevcut:null,birim:k.birim,sinif:k.sinif||'',manuel:true,elle:true,miktar:k.miktar});
+  if(t){
+    var katalog=tdKatalog();
+    var sinif=tdSiniflar(katalog);
+    var byKey={};katalog.forEach(function(r){byKey[r.key]=r;});
+    (t.kalemler||[]).forEach(function(k){
+      var kat=!k.manuel?byKey[tdKayitKey(k)]:null;
+      if(kat){
+        _tdSatirlar.push(Object.assign({},kat,{sinif:(sinif[tdSinifKey(kat)]||{}).sinif||k.sinif||'',miktar:k.miktar,hedef:k.hedef,manuel:false}));
+      }else{
+        _tdSatirlar.push({key:'m'+(++_tdManuelSayac),kaynak:k.kaynak,kategoriId:k.kategoriId,anahtar:k.anahtar||'',tamAd:k.tamAd,kisaltma:k.kisaltma||'',cutoff:k.cutoff||'',
+          parametreler:tdCutoffParametreler(k.kisaltma,k.cutoff),marka:k.marka||'',model:k.model||'',mevcut:k.mevcut,hedef:k.hedef,
+          birim:k.birim||(k.kaynak==='ham'?'sheet':'adet'),sinif:k.sinif||'',manuel:true,miktar:k.miktar});
+      }
     });
   }
-  _tdSatirlar=satirlar.concat(manueller);
-  tdOneriHesapla();
-}
-
-function tdHedefOf(r){return Number((_tdHedefler[r.kaynak]||{})[r.sinif])||0;}
-
-function tdOneriHesapla(){
-  _tdSatirlar.forEach(function(r){
-    if(r.manuel||r.elle) return;
-    var h=tdHedefOf(r);
-    r.miktar=r.mevcut<h?Math.ceil(tdR3(h-r.mevcut)):0;
-  });
-}
-
-function tdRenderForm(){
-  // Kapsam
-  var kEl=document.getElementById('td-kapsam');
-  if(kEl){
-    var liste=tdKapsamListesi();
-    var grup=function(kaynak){
-      var items=liste.filter(function(x){return x.kaynak===kaynak;});
-      if(!items.length) return '';
-      return '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">'
-        +'<span style="font-size:11px;font-weight:600;color:var(--text3);width:84px">'+TD_KAYNAK_ETIKET[kaynak].toLocaleUpperCase('tr')+'</span>'
-        +items.map(function(x){
-          var k=x.kaynak+'|'+x.kategoriId; var on=!!_tdKapsam[k];
-          return '<label class="td-chip'+(on?' td-chip-on':'')+'"><input type="checkbox"'+(on?' checked':'')+' onchange="tdKapsamDegis(\''+esc(k).replace(/'/g,"\\'")+'\',this.checked)">'+esc(x.ad)+'</label>';
-        }).join('')
-        +'<button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick="tdKapsamHepsi(\''+kaynak+'\')">Tümü / Hiçbiri</button>'
-        +'</div>';
-    };
-    kEl.innerHTML=grup('ham')+grup('bitmis');
-  }
-  // Hedefler
-  var hEl=document.getElementById('td-hedefler');
-  if(hEl){
-    hEl.innerHTML=['ham','bitmis'].map(function(kaynak){
-      return '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
-        +'<span style="font-size:12px;color:var(--text2);width:150px">'+TD_KAYNAK_ETIKET[kaynak]+' <span style="color:var(--text3)">('+(kaynak==='ham'?'sheet':'adet')+')</span></span>'
-        +['A','B','C'].map(function(s){
-          return '<label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:'+TD_SINIF_RENK[s]+'">'+s
-            +'<input type="number" min="0" step="1" value="'+(_tdHedefler[kaynak][s]||0)+'" style="width:64px;text-align:center" onchange="tdHedefDegis(\''+kaynak+'\',\''+s+'\',this.value)"></label>';
-        }).join('')
-        +'</div>';
-    }).join('');
-  }
-  var smEl=document.getElementById('td-sadece-miktarli'); if(smEl) smEl.checked=_tdSadeceMiktarli;
   tdRenderSatirlar();
 }
 
-function tdKapsamDegis(k,on){_tdKapsam[k]=on;tdRenderForm();}
-function tdKapsamHepsi(kaynak){
-  var items=tdKapsamListesi().filter(function(x){return x.kaynak===kaynak;});
-  var hepsiAcik=items.every(function(x){return _tdKapsam[x.kaynak+'|'+x.kategoriId];});
-  items.forEach(function(x){_tdKapsam[x.kaynak+'|'+x.kategoriId]=!hepsiAcik;});
-  tdRenderForm();
-}
-function tdHedefDegis(kaynak,s,val){
-  _tdHedefler[kaynak][s]=Math.max(0,parseFloat(String(val).replace(',','.'))||0);
-  // Hedef değişince elle girilmemiş satırların önerisi yeniden hesaplanır
-  tdOneriHesapla();tdRenderSatirlar();
-}
-function tdSadeceMiktarliDegis(on){_tdSadeceMiktarli=on;tdRenderSatirlar();}
-function tdOnerileriSifirla(){
-  _tdSatirlar.forEach(function(r){if(!r.manuel) r.elle=false;});
-  tdOneriHesapla();tdRenderSatirlar();
-  toast('Elle değiştirilen miktarlar önerilen değerlere döndürüldü.','info');
+function tdSatirBul(key){
+  if(key==='yeni') return _tdYeniTaslak;
+  return _tdSatirlar.find(function(r){return r.key===key;});
 }
 
-function tdSatirBul(key){return _tdSatirlar.find(function(r){return r.key===key;});}
+// Ana listedeki kalemler, kategori grupları halinde (ekrandaki ve kayıttaki sıra)
+function tdGruplar(){
+  var sira=tdKapsamListesi().map(function(x){return x.kaynak+'|'+x.kategoriId;});
+  var gruplar={};
+  _tdSatirlar.forEach(function(r){
+    var g=r.kaynak+'|'+(r.kategoriId||'');
+    if(!gruplar[g]){
+      gruplar[g]={key:g,kaynak:r.kaynak,kategoriId:r.kategoriId,ad:tdKategoriAd(r.kaynak,r.kategoriId),satirlar:[]};
+      if(sira.indexOf(g)<0) sira.push(g);
+    }
+    gruplar[g].satirlar.push(r);
+  });
+  return sira.filter(function(g){return gruplar[g];}).map(function(g){
+    gruplar[g].satirlar.sort(tdSiraKarsilastir);
+    return gruplar[g];
+  });
+}
+
+function tdRenderSatirlar(){
+  var el=document.getElementById('td-satirlar'); if(!el) return;
+  var gruplar=tdGruplar();
+  if(!gruplar.length){
+    el.innerHTML='<div style="padding:28px;text-align:center;color:var(--text3);font-size:13px;border:1px dashed var(--border);border-radius:var(--radius-sm)">'
+      +'Liste boş. <b>Yarı Mamul Önerileri</b> veya <b>Hazır Ürün Ekle</b> ile stoktaki ürünlerden, <b>Yeni Kalem</b> ile stokta olmayan bir üründen ekleyin.</div>';
+    tdOzetRender();return;
+  }
+  var thead='<thead><tr><th style="width:50px;text-align:center">Sınıf</th><th class="col-name">Tam Adı</th><th>Kısaltma</th><th>Cut-off</th>'
+    +'<th style="text-align:right;width:90px">Mevcut</th><th style="width:140px">Tedarik Miktarı</th><th style="width:34px"></th></tr></thead>';
+  el.innerHTML=gruplar.map(function(g){
+    var birim=g.kaynak==='ham'?'sheet':'adet';
+    var top=g.satirlar.reduce(function(a,r){return a+(Number(r.miktar)||0);},0);
+    return '<div class="td-bolum"><div class="td-bolum-baslik"><span>'+esc(g.ad)+' <span style="font-weight:400;color:var(--text3)">· '+TD_KAYNAK_ETIKET[g.kaynak]+' · '+g.satirlar.length+' kalem</span></span>'
+      +'<span style="font-family:var(--font-mono);font-size:12px;color:var(--text2)">'+tdFmt(top)+' '+birim+'</span></div>'
+      +'<div class="table-wrap"><table class="compact-table" style="width:100%">'+thead+'<tbody>'
+      +g.satirlar.map(function(r){
+        var k=tdEsc(r.key);
+        return '<tr'+(!(r.miktar>0)?' style="opacity:.55"':'')+'>'
+          +'<td style="text-align:center;font-weight:700;color:'+(TD_SINIF_RENK[r.sinif]||'var(--text3)')+'">'+esc(r.sinif||'—')+'</td>'
+          +'<td class="col-name" style="font-weight:500">'+esc(r.tamAd)+(r.manuel?' <span class="badge badge-blue" style="font-size:10px">yeni</span>':'')+'</td>'
+          +'<td style="font-family:var(--font-mono);font-size:12px">'+esc(r.kisaltma||'—')+'</td>'
+          +'<td style="font-family:var(--font-mono);font-size:12px">'+esc(r.cutoff||'—')+'</td>'
+          +'<td style="text-align:right;font-family:var(--font-mono);color:var(--text3)">'+(r.mevcut!=null?tdFmt(r.mevcut):'—')+'</td>'
+          +'<td><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" step="'+(r.kaynak==='ham'?'0.001':'1')+'" value="'+(r.miktar||'')+'" placeholder="0" style="width:100%" onchange="tdMiktarDegis(\''+k+'\',this.value)"><span style="font-size:11px;color:var(--text3)">'+(r.kaynak==='ham'?'sh':'ad')+'</span></div></td>'
+          +'<td><button class="btn-icon" style="color:var(--red)" onclick="tdSatirSil(\''+k+'\')" title="Listeden çıkar"><i class="ti ti-x"></i></button></td>'
+          +'</tr>';
+      }).join('')+'</tbody></table></div></div>';
+  }).join('');
+  tdOzetRender();
+}
 
 function tdMiktarDegis(key,val){
   var r=tdSatirBul(key); if(!r) return;
   var n=Math.max(0,parseFloat(String(val).replace(',','.'))||0);
   r.miktar=r.kaynak==='ham'?tdR3(n):Math.round(n);
-  r.elle=true;
   tdRenderSatirlar();
 }
+function tdSatirSil(key){
+  // Ana listeden çıkarılan stok kalemi öneri penceresinde de tekrar önerilmez (geri alınabilir)
+  var r=tdSatirBul(key); if(r&&!r.manuel) _tdCikarilanlar[key]=1;
+  _tdSatirlar=_tdSatirlar.filter(function(x){return x.key!==key;});tdRenderSatirlar();
+}
 
-async function tdSinifDegis(key,sinif){
-  var r=tdSatirBul(key); if(!r) return;
-  if(r.manuel){r.sinif=sinif;tdRenderSatirlar();return;}
-  try{
-    // "Otomatik" seçilirse elle verilen sınıf silinir
-    await tdSinifKaydet(r.kaynak,r.kategoriId,r.anahtar,sinif==='oto'?null:sinif);
-  }catch(e){toast(e.message||'Sınıf kaydedilemedi.','error');return;}
-  var sinifMap=tdSiniflar();
-  var s=sinifMap[tdSinifKey(r)];
-  _tdSatirlar.forEach(function(x){
-    if(!x.manuel&&tdSinifKey(x)===tdSinifKey(r)&&s){x.sinif=s.sinif;x.sinifManuel=s.manuel;}
+function tdSeciliSatirlar(){return _tdSatirlar.filter(function(r){return r.miktar>0;});}
+
+function tdOzetRender(){
+  var el=document.getElementById('td-ozet'); if(!el) return;
+  var sec=tdSeciliSatirlar();
+  var sh=0,ad=0;sec.forEach(function(r){if(r.kaynak==='ham')sh+=r.miktar;else ad+=r.miktar;});
+  el.innerHTML='<b>'+sec.length+'</b> kalem'+(sh?' · <b>'+tdFmt(sh)+'</b> sheet':'')+(ad?' · <b>'+tdFmt(ad)+'</b> adet':'');
+}
+
+// ─── Öneri penceresi (Yarı Mamul Önerileri / Hazır Ürün Ekle) ───
+
+var _tdOneri=null; // {kaynak, katlar:[{key,ad}], aktif, satirlar:[], tumu, arama}
+var _tdCikarilanlar={}; // X ile çıkarılan stok kalemleri (form açık kaldıkça tekrar önerilmez)
+
+function tdOneriAc(kaynak){
+  var katalog=tdKatalog().filter(function(r){return r.kaynak===kaynak;});
+  var sinif=tdSiniflar();
+  var listede={};_tdSatirlar.forEach(function(r){if(!r.manuel)listede[r.key]=r;});
+  var satirlar=katalog.map(function(r){
+    var s=sinif[tdSinifKey(r)]||{};var l=listede[r.key];
+    return Object.assign({},r,{sinif:s.sinif||'C',tuketim:s.tuketim||0,listede:!!l,miktar:l?l.miktar:0,elle:!!l,cikarildi:!l&&!!_tdCikarilanlar[r.key]});
   });
-  tdOneriHesapla();tdRenderSatirlar();
+  var katlar=tdKapsamListesi().filter(function(x){return x.kaynak===kaynak&&satirlar.some(function(r){return r.kategoriId===x.kategoriId;});})
+    .map(function(x){return {key:x.kaynak+'|'+x.kategoriId,ad:x.ad};});
+  if(!katlar.length) return toast('Stokta kayıtlı '+TD_KAYNAK_ETIKET[kaynak].toLocaleLowerCase('tr')+' bulunamadı. "Yeni Kalem" ile ekleyebilirsiniz.','info');
+  var oncekiAktif=_tdOneri&&_tdOneri.kaynak===kaynak?_tdOneri.aktif:null;
+  _tdOneri={kaynak:kaynak,katlar:katlar,aktif:katlar.some(function(k){return k.key===oncekiAktif;})?oncekiAktif:katlar[0].key,satirlar:satirlar,tumu:false,arama:''};
+  tdOneriHesapla();
+  document.getElementById('td-oneri-baslik').textContent=kaynak==='ham'?'Yarı Mamul Önerileri':'Hazır Ürün Ekle';
+  tdOneriRender();
+  openModal('modal-td-oneri');
 }
 
-function tdManuelEkle(){
-  var ilkKat=(stokKatList()[0]||{}).id||'';
-  _tdSatirlar.push({key:'m'+(++_tdManuelSayac),kaynak:'ham',kategoriId:ilkKat,anahtar:'',tamAd:'',kisaltma:'',cutoff:'',marka:'',model:'',
-    mevcut:null,birim:'sheet',sinif:'',manuel:true,elle:true,miktar:0});
-  tdRenderSatirlar();
-  var inp=document.querySelector('#td-satirlar tr[data-key="m'+_tdManuelSayac+'"] input[data-alan="tamAd"]');
-  if(inp) inp.focus();
+function tdOneriHedef(katKey){
+  var v=_tdHedefler[katKey];
+  return (v===undefined||v===null||v==='')?null:Number(v);
 }
-function tdManuelSil(key){_tdSatirlar=_tdSatirlar.filter(function(r){return r.key!==key;});tdRenderSatirlar();}
-function tdManuelAlan(key,alan,val){
-  var r=tdSatirBul(key); if(!r) return;
+
+// Elle değiştirilmemiş satırlarda öneri = ihtiyaç − mevcut (tam sayıya yukarı)
+function tdOneriHesapla(){
+  _tdOneri.satirlar.forEach(function(r){
+    var h=tdOneriHedef(r.kaynak+'|'+r.kategoriId);
+    r.hedef=h;
+    if(r.elle||r.cikarildi) return;
+    r.miktar=h===null?0:(r.mevcut<h?Math.ceil(tdR3(h-r.mevcut)):0);
+  });
+}
+
+function tdOneriAktifSatirlar(){return _tdOneri.satirlar.filter(function(r){return r.kaynak+'|'+r.kategoriId===_tdOneri.aktif;});}
+function tdOneriAktarilacak(){return _tdOneri.satirlar.filter(function(r){return !r.cikarildi&&r.miktar>0;});}
+
+function tdOneriRender(){
+  if(!_tdOneri) return;
+  var o=_tdOneri;
+  var birim=o.kaynak==='ham'?'sheet':'adet';
+  document.getElementById('td-oneri-sekmeler').innerHTML=o.katlar.map(function(k){
+    var n=o.satirlar.filter(function(r){return r.kaynak+'|'+r.kategoriId===k.key&&!r.cikarildi&&r.miktar>0;}).length;
+    return '<button type="button" class="td-sekme'+(k.key===o.aktif?' td-sekme-on':'')+'" onclick="tdOneriSekme(\''+tdEsc(k.key)+'\')">'+esc(k.ad)
+      +(n?' <span class="td-sekme-say">'+n+'</span>':'')+'</button>';
+  }).join('');
+  var h=tdOneriHedef(o.aktif);
+  var cikan=tdOneriAktifSatirlar().filter(function(r){return r.cikarildi;}).length;
+  document.getElementById('td-oneri-arac').innerHTML=
+    '<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text)">İhtiyaç'
+      +'<input type="number" min="0" step="1" value="'+(h===null?'':h)+'" placeholder="—" style="width:90px;text-align:center" onchange="tdOneriHedefDegis(this.value)">'
+      +'<span style="font-weight:400;color:var(--text3)">'+birim+'</span></label>'
+    +'<input type="text" placeholder="Ara..." value="'+esc(o.arama)+'" style="min-width:200px" oninput="_tdOneri.arama=this.value;tdOneriRenderTablo()">'
+    +(h!==null?'<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer"><input type="checkbox"'+(o.tumu?' checked':'')+' onchange="_tdOneri.tumu=this.checked;tdOneriRenderTablo()"> Önerisi olmayanları da göster</label>':'')
+    +(cikan?'<button class="btn btn-ghost btn-sm" onclick="tdOneriGeriAl()"><i class="ti ti-arrow-back-up"></i> Çıkarılan '+cikan+' kalemi geri al</button>':'')
+    +'<span style="font-size:12px;color:var(--text3);margin-left:auto">'+(h===null?'İhtiyaç girerseniz öneri = ihtiyaç − mevcut hesaplanır; girmezseniz miktarları elle yazabilirsiniz.':'Öneri = ihtiyaç − mevcut. Miktarları değiştirebilir, istemediklerinizi X ile çıkarabilirsiniz.')+'</span>';
+  tdOneriRenderTablo();
+}
+
+function tdOneriRenderTablo(){
+  var o=_tdOneri; if(!o) return;
+  var h=tdOneriHedef(o.aktif);
+  var ara=(o.arama||'').toLocaleLowerCase('tr').trim();
+  var rows=tdOneriAktifSatirlar().filter(function(r){
+    if(r.cikarildi) return false;
+    if(h!==null&&!o.tumu&&!(r.miktar>0)&&!r.listede) return false;
+    if(ara&&!((r.tamAd||'')+' '+(r.kisaltma||'')+' '+(r.cutoff||'')).toLocaleLowerCase('tr').includes(ara)) return false;
+    return true;
+  }).sort(function(x,y){return (y.tuketim-x.tuketim)||tdSiraKarsilastir(x,y);});
+  var el=document.getElementById('td-oneri-tablo');
+  if(!rows.length){
+    el.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px">'+(ara?'Aramaya uyan ürün yok.':(h!==null?'Bu kategoride ihtiyacın altında kalan ürün yok.':'Bu kategoride ürün yok.'))+'</div>';
+  }else{
+    var ay=(state.stokSettings&&state.stokSettings.tedarikDonemAy)||6;
+    el.innerHTML='<div class="table-wrap"><table class="compact-table" style="width:100%"><thead><tr>'
+      +'<th style="width:50px;text-align:center">Sınıf</th><th class="col-name">Tam Adı</th><th>Kısaltma</th><th>Cut-off</th>'
+      +'<th style="text-align:right;width:100px" title="Son '+ay+' aydaki çıkışlar">Tüketim ('+ay+' ay)</th><th style="text-align:right;width:80px">Mevcut</th><th style="width:140px">Tedarik Miktarı</th><th style="width:34px"></th>'
+      +'</tr></thead><tbody>'
+      +rows.map(function(r){
+        var k=tdEsc(r.key);
+        return '<tr'+(!(r.miktar>0)?' style="opacity:.6"':'')+'>'
+          +'<td style="text-align:center;font-weight:700;color:'+(TD_SINIF_RENK[r.sinif]||'var(--text3)')+'">'+esc(r.sinif)+'</td>'
+          +'<td class="col-name" style="font-weight:500">'+esc(r.tamAd)+(r.listede?' <span class="badge badge-teslim" style="font-size:10px">listede</span>':'')+(r.mevcut>0?'':' <span class="badge badge-gray" style="font-size:10px">tükenmiş</span>')+'</td>'
+          +'<td style="font-family:var(--font-mono);font-size:12px">'+esc(r.kisaltma||'—')+'</td>'
+          +'<td style="font-family:var(--font-mono);font-size:12px">'+esc(r.cutoff||'—')+'</td>'
+          +'<td style="text-align:right;font-family:var(--font-mono);font-size:12px;color:var(--text3)">'+(r.tuketim?tdFmt(r.tuketim):'—')+'</td>'
+          +'<td style="text-align:right;font-family:var(--font-mono)">'+tdFmt(r.mevcut)+'</td>'
+          +'<td><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" step="'+(r.kaynak==='ham'?'0.001':'1')+'" value="'+(r.miktar||'')+'" placeholder="0" style="width:100%;'+(r.elle?'border-color:var(--amber)':'')+'" onchange="tdOneriMiktar(\''+k+'\',this.value)"><span style="font-size:11px;color:var(--text3)">'+(r.kaynak==='ham'?'sh':'ad')+'</span></div></td>'
+          +'<td><button class="btn-icon" style="color:var(--red)" onclick="tdOneriCikar(\''+k+'\')" title="Listeden çıkar"><i class="ti ti-x"></i></button></td>'
+          +'</tr>';
+      }).join('')+'</tbody></table></div>';
+  }
+  var akt=tdOneriAktarilacak();
+  var sh=0,ad=0;akt.forEach(function(r){if(r.kaynak==='ham')sh+=r.miktar;else ad+=r.miktar;});
+  document.getElementById('td-oneri-ozet').innerHTML='Aktarılacak: <b>'+akt.length+'</b> kalem'+(sh?' · <b>'+tdFmt(sh)+'</b> sheet':'')+(ad?' · <b>'+tdFmt(ad)+'</b> adet':'')+' <span style="color:var(--text3)">(tüm sekmeler)</span>';
+}
+
+function tdOneriSatir(key){return _tdOneri.satirlar.find(function(r){return r.key===key;});}
+function tdOneriSekme(key){_tdOneri.aktif=key;_tdOneri.arama='';tdOneriRender();}
+function tdOneriHedefDegis(val){
+  var v=String(val).trim();
+  if(v==='') delete _tdHedefler[_tdOneri.aktif];
+  else _tdHedefler[_tdOneri.aktif]=Math.max(0,parseFloat(v.replace(',','.'))||0);
+  // İhtiyaç değişince o kategoride elle girilmemiş miktarlar yeniden hesaplanır
+  tdOneriHesapla();tdOneriRender();
+}
+function tdOneriMiktar(key,val){
+  var r=tdOneriSatir(key); if(!r) return;
+  var n=Math.max(0,parseFloat(String(val).replace(',','.'))||0);
+  r.miktar=r.kaynak==='ham'?tdR3(n):Math.round(n);
+  r.elle=true;
+  tdOneriRender();
+}
+function tdOneriCikar(key){
+  var r=tdOneriSatir(key); if(!r) return;
+  r.cikarildi=true;r.miktar=0;_tdCikarilanlar[key]=1;
+  tdOneriRender();
+}
+function tdOneriGeriAl(){
+  tdOneriAktifSatirlar().forEach(function(r){if(r.cikarildi){r.cikarildi=false;r.elle=r.listede;delete _tdCikarilanlar[r.key];}});
+  tdOneriHesapla();tdOneriRender();
+}
+
+// Miktarı olanlar ana listeye eklenir / güncellenir; listede olup pencerede
+// çıkarılan veya 0 yapılanlar ana listeden de çıkarılır.
+function tdOneriAktar(){
+  var o=_tdOneri; if(!o) return;
+  var eklenen=0,guncellenen=0,cikan=0;
+  o.satirlar.forEach(function(r){
+    var mevcutSatir=_tdSatirlar.find(function(x){return !x.manuel&&x.key===r.key;});
+    var aktar=!r.cikarildi&&r.miktar>0;
+    if(aktar){
+      if(mevcutSatir){
+        if(mevcutSatir.miktar!==r.miktar) guncellenen++;
+        mevcutSatir.miktar=r.miktar;mevcutSatir.hedef=r.hedef;
+      }else{
+        _tdSatirlar.push({key:r.key,kaynak:r.kaynak,kategoriId:r.kategoriId,anahtar:r.anahtar,tamAd:r.tamAd,kisaltma:r.kisaltma,cutoff:r.cutoff,
+          marka:r.marka,model:r.model,mevcut:r.mevcut,birim:r.birim,sinif:r.sinif,hedef:r.hedef,miktar:r.miktar,manuel:false});
+        eklenen++;
+      }
+    }else if(mevcutSatir){
+      _tdSatirlar=_tdSatirlar.filter(function(x){return x!==mevcutSatir;});
+      cikan++;
+    }
+  });
+  closeModal('modal-td-oneri');
+  tdRenderSatirlar();
+  var p=[];if(eklenen)p.push(eklenen+' kalem eklendi');if(guncellenen)p.push(guncellenen+' kalem güncellendi');if(cikan)p.push(cikan+' kalem çıkarıldı');
+  toast(p.length?p.join(', ')+'.':'Listede değişiklik olmadı.',p.length?'success':'info');
+}
+
+// ─── Yeni Kalem penceresi (stokta kaydı olmayan ürün) ───
+
+var _tdYeniTaslak=null;
+
+function tdYeniKalemAc(){
+  _tdYeniTaslak={key:'yeni',kaynak:'ham',kategoriId:(stokKatList()[0]||{}).id||'',tamAd:'',kisaltma:'',cutoff:'',marka:'',model:'',parametreler:[],miktar:''};
+  tdYeniRender();
+  openModal('modal-td-yeni');
+}
+
+function tdYeniRender(){
+  var r=_tdYeniTaslak; if(!r) return;
+  var ham=r.kaynak==='ham';
+  var alan=function(etiket,html,tam){return '<div class="field"'+(tam?' style="grid-column:1/-1"':'')+'><label>'+etiket+'</label>'+html+'</div>';};
+  var inp=function(a,ph,extra){return '<input type="text" value="'+esc(r[a]||'')+'" placeholder="'+ph+'" onchange="_tdYeniTaslak.'+a+'=this.value.trim()"'+(extra||'')+'>';};
+  var chips=(r.parametreler||[]).map(function(p){
+    return '<span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:600;border:1px solid var(--accent);margin:2px 4px 2px 0">'+esc(p.ad)+(p.deger?': '+esc(p.deger):'')+'</span>';
+  }).join('');
+  document.getElementById('td-yeni-govde').innerHTML='<div class="form-grid">'
+    +alan('Tür <span class="req">*</span>','<select onchange="tdYeniAlan(\'kaynak\',this.value)"><option value="ham"'+(ham?' selected':'')+'>Yarı Mamul</option><option value="bitmis"'+(!ham?' selected':'')+'>Hazır Ürün</option></select>')
+    +alan('Kategori <span class="req">*</span>','<select onchange="_tdYeniTaslak.kategoriId=this.value"><option value="">Seçin...</option>'+tdKatOptions(r.kaynak,r.kategoriId)+'</select>')
+    +alan((ham?'Parametre / Ürün Adı':'Ürün Adı')+' <span class="req">*</span>',inp('tamAd',ham?'ör. Amfetamin veya 5\'li Multi Panel':'ör. 4\'lü İdrar Test Kiti',ham?' list="td-param-dl" onchange="tdYeniAlan(\'tamAd\',this.value)"':''),true)
+    +(!ham?alan('Marka',inp('marka','')):'')+(!ham?alan('Model',inp('model','')):'')
+    +alan('Parametreler ve Cut-off','<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><button type="button" class="btn btn-ghost btn-sm" onclick="bgOpenParamModal(\'yeni\',\'td\')"><i class="ti ti-list-check"></i> Parametre Seç ('+(r.parametreler||[]).length+')</button>'+chips+'</div>'
+      +'<div style="font-size:11px;color:var(--text3);margin-top:4px">'+(ham?'Çoklu panel için birden fazla parametre seçin; tekli parametrede tek seçim yeterli.':'Test kitlerinde içerdiği parametreleri cut-off değerleriyle seçin.')+'</div>',true)
+    +alan('Kısaltma',inp('kisaltma','ör. AMP'))
+    +alan('Cut-off',inp('cutoff','ör. 50'))
+    +alan('Tedarik Miktarı ('+(ham?'sheet':'adet')+') <span class="req">*</span>','<input type="number" min="0" step="'+(ham?'0.001':'1')+'" value="'+esc(r.miktar)+'" onchange="_tdYeniTaslak.miktar=this.value">')
+    +'</div><datalist id="td-param-dl">'+(state.stokSettings.parametreler||[]).filter(function(p){return p.aktif!==false;}).map(function(p){return '<option value="'+esc(p.ad)+'">'+esc(p.kisaltma||'')+'</option>';}).join('')+'</datalist>';
+}
+
+function tdYeniAlan(alan,val){
+  var r=_tdYeniTaslak; if(!r) return;
   r[alan]=val;
   if(alan==='kaynak'){
-    r.birim=val==='ham'?'sheet':'adet';
-    var ilk=val==='ham'?(stokKatList()[0]||{}).id:(tdKapsamListesi().filter(function(x){return x.kaynak==='bitmis';})[0]||{}).kategoriId;
-    r.kategoriId=ilk||'';
-    tdRenderSatirlar();
+    r.kategoriId=val==='ham'?((stokKatList()[0]||{}).id||''):'';
+    r.parametreler=[];r.kisaltma='';r.cutoff='';
   }
   if(alan==='tamAd'&&r.kaynak==='ham'){
     // Parametre listesinden seçildiyse kısaltma otomatik dolar
     var p=(state.stokSettings.parametreler||[]).find(function(x){return x.ad===val||x.kisaltma===val;});
-    if(p){r.tamAd=p.ad;r.kisaltma=p.kisaltma||'';r.anahtar=p.kisaltma||p.ad;tdRenderSatirlar();}
+    if(p){r.tamAd=p.ad;r.kisaltma=p.kisaltma||'';}
   }
+  tdYeniRender();
 }
 
 function tdKatOptions(kaynak,secili){
@@ -492,114 +650,81 @@ function tdKatOptions(kaynak,secili){
   return list.map(function(k){return '<option value="'+esc(k.id)+'"'+(k.id===secili?' selected':'')+'>'+esc(k.ad)+'</option>';}).join('');
 }
 
-function tdRenderSatirlar(){
-  var el=document.getElementById('td-satirlar'); if(!el) return;
-  var sinifSira={A:0,B:1,C:2};
-  var gorunur=function(r){return !_tdSadeceMiktarli||r.miktar>0;};
-  var html='';
-  var bolumler=tdKapsamListesi().filter(function(x){return _tdKapsam[x.kaynak+'|'+x.kategoriId];});
-  var thead='<thead><tr><th style="width:74px;text-align:center">Sınıf</th><th class="col-name">Tam Adı</th><th>Kısaltma</th><th>Cut-off</th>'
-    +'<th style="text-align:right;width:90px">Tüketim*</th><th style="text-align:right;width:80px">Mevcut</th><th style="text-align:right;width:70px">Hedef</th><th style="width:120px">Tedarik Miktarı</th><th style="width:34px"></th></tr></thead>';
-  bolumler.forEach(function(b){
-    var rows=_tdSatirlar.filter(function(r){return !r.manuel&&r.kaynak===b.kaynak&&r.kategoriId===b.kategoriId;});
-    if(!rows.length) return;
-    rows.sort(function(x,y){return (sinifSira[x.sinif]-sinifSira[y.sinif])||(x.tamAd||'').localeCompare(y.tamAd||'','tr')||(x.cutoff||'').localeCompare(y.cutoff||'','tr');});
-    var gorunen=rows.filter(gorunur);
-    var top=rows.reduce(function(a,r){return a+(r.miktar||0);},0);
-    html+='<div class="td-bolum"><div class="td-bolum-baslik"><span>'+esc(b.ad)+' <span style="font-weight:400;color:var(--text3)">· '+TD_KAYNAK_ETIKET[b.kaynak]+'</span></span>'
-      +'<span style="font-family:var(--font-mono);font-size:12px;color:var(--text2)">'+(top?tdFmt(top)+' '+(b.kaynak==='ham'?'sheet':'adet'):'—')+'</span></div>';
-    if(!gorunen.length){html+='<div style="padding:8px 12px;font-size:12px;color:var(--text3)">Bu kategoride tedarik miktarı girilmiş kalem yok.</div></div>';return;}
-    html+='<div class="table-wrap"><table class="compact-table" style="width:100%">'+thead+'<tbody>'
-      +gorunen.map(tdSatirHtml).join('')+'</tbody></table></div></div>';
-  });
-  var manuel=_tdSatirlar.filter(function(r){return r.manuel;});
-  html+='<div class="td-bolum"><div class="td-bolum-baslik"><span>Manuel Eklenen Kalemler</span>'
-    +'<button class="btn btn-ghost btn-sm" onclick="tdManuelEkle()"><i class="ti ti-plus"></i> Manuel Kalem Ekle</button></div>';
-  if(manuel.length){
-    html+='<div class="table-wrap"><table class="compact-table" style="width:100%"><thead><tr><th style="width:110px">Tür</th><th style="width:170px">Kategori</th><th class="col-name">Tam Adı</th><th>Kısaltma</th><th>Cut-off</th><th style="width:120px">Tedarik Miktarı</th><th style="width:34px"></th></tr></thead><tbody>'
-      +manuel.map(tdManuelSatirHtml).join('')+'</tbody></table></div>';
-  }else{
-    html+='<div style="padding:8px 12px;font-size:12px;color:var(--text3)">Önerilerde olmayan bir ürünü veya parametreyi buradan ekleyebilirsiniz.</div>';
+// "AMP / THC" + "AMP:50 · THC:25" → [{ad:'AMP',deger:'50'},{ad:'THC',deger:'25'}]
+function tdCutoffParametreler(kisaltma,cutoff){
+  var adlar=String(kisaltma||'').split('/').map(function(s){return s.trim();}).filter(Boolean);
+  var degerler={};
+  String(cutoff||'').split('·').forEach(function(p){var i=p.indexOf(':');if(i>0)degerler[p.slice(0,i).trim()]=p.slice(i+1).trim();});
+  // Tek parametrede cut-off "50" gibi yalın yazılmış olabilir
+  if(adlar.length===1&&cutoff&&String(cutoff).indexOf(':')<0) degerler[adlar[0]]=String(cutoff).trim();
+  return adlar.map(function(ad){return {ad:ad,deger:degerler[ad]||''};});
+}
+
+// Parametre seçim penceresinden gelen seçim (çoklu) yeni kalem taslağına uygulanır
+function tdParametrelerUygula(key,secilen){
+  var r=tdSatirBul(key); if(!r) return;
+  r.parametreler=secilen;
+  r.kisaltma=secilen.map(function(p){return p.ad;}).join(' / ');
+  // Yarı mamul tekli parametrede cut-off yalın ("50"), diğerlerinde "AD:değer" biçiminde
+  var yalin=r.kaynak==='ham'&&secilen.length===1;
+  r.cutoff=secilen.filter(function(p){return p.deger;}).map(function(p){return yalin?p.deger:p.ad+':'+p.deger;}).join(' · ');
+  if(r.kaynak==='ham'&&secilen.length===1&&!(r.tamAd||'').trim()){
+    var p=tdParamBul(secilen[0].ad); r.tamAd=p?p.ad:secilen[0].ad;
   }
-  html+='</div>';
-  if(!bolumler.length) html='<div style="padding:12px;font-size:12px;color:var(--text3)">Yukarıdan en az bir kategori seçin.</div>'+html;
-  el.innerHTML=html+'<datalist id="td-param-dl">'+(state.stokSettings.parametreler||[]).filter(function(p){return p.aktif!==false;}).map(function(p){return '<option value="'+esc(p.ad)+'">'+esc(p.kisaltma||'')+'</option>';}).join('')+'</datalist>';
-  tdOzetRender();
+  if(key==='yeni') tdYeniRender(); else tdRenderSatirlar();
 }
 
-function tdSatirHtml(r){
-  var h=tdHedefOf(r);
-  var sinifSel='<select style="font-size:12px;padding:2px 4px;font-weight:700;color:'+TD_SINIF_RENK[r.sinif]+'" onchange="tdSinifDegis(\''+esc(r.key).replace(/'/g,"\\'")+'\',this.value)" title="'+(r.sinifManuel?'Elle verildi':'Otomatik (tüketime göre)')+'">'
-    +['A','B','C'].map(function(s){return '<option value="'+s+'"'+(s===r.sinif?' selected':'')+'>'+s+(s===r.sinif&&r.sinifManuel?' ✎':'')+'</option>';}).join('')
-    +(r.sinifManuel?'<option value="oto">Otomatiğe dön</option>':'')+'</select>';
-  var bos=!r.miktar;
-  return '<tr data-key="'+esc(r.key)+'"'+(bos?' style="opacity:.55"':'')+'>'
-    +'<td style="text-align:center">'+sinifSel+'</td>'
-    +'<td class="col-name" style="font-weight:500">'+esc(r.tamAd)+'</td>'
-    +'<td style="font-family:var(--font-mono);font-size:12px">'+esc(r.kisaltma||'—')+'</td>'
-    +'<td style="font-family:var(--font-mono);font-size:12px">'+esc(r.cutoff||'—')+'</td>'
-    +'<td style="text-align:right;font-family:var(--font-mono);font-size:12px;color:var(--text3)">'+(r.tuketim?tdFmt(r.tuketim):'—')+'</td>'
-    +'<td style="text-align:right;font-family:var(--font-mono)">'+tdFmt(r.mevcut)+'</td>'
-    +'<td style="text-align:right;font-family:var(--font-mono);color:var(--text3)">'+tdFmt(h)+'</td>'
-    +'<td><input type="number" min="0" step="'+(r.kaynak==='ham'?'0.001':'1')+'" value="'+(r.miktar||'')+'" placeholder="0" style="width:100%;'+(r.elle?'border-color:var(--amber)':'')+'" title="'+(r.elle?'Elle girildi':'Önerilen miktar')+'" onchange="tdMiktarDegis(\''+esc(r.key).replace(/'/g,"\\'")+'\',this.value)"></td>'
-    +'<td style="font-size:11px;color:var(--text3)">'+(r.kaynak==='ham'?'sh':'ad')+'</td>'
-    +'</tr>';
-}
-
-function tdManuelSatirHtml(r){
-  var k=esc(r.key).replace(/'/g,"\\'");
-  var inp=function(alan,ph,extra){return '<input type="text" data-alan="'+alan+'" value="'+esc(r[alan]||'')+'" placeholder="'+ph+'" style="width:100%" onchange="tdManuelAlan(\''+k+'\',\''+alan+'\',this.value)"'+(extra||'')+'>';};
-  return '<tr data-key="'+esc(r.key)+'">'
-    +'<td><select style="width:100%" onchange="tdManuelAlan(\''+k+'\',\'kaynak\',this.value)"><option value="ham"'+(r.kaynak==='ham'?' selected':'')+'>Yarı Mamul</option><option value="bitmis"'+(r.kaynak==='bitmis'?' selected':'')+'>Hazır Ürün</option></select></td>'
-    +'<td><select style="width:100%" onchange="tdManuelAlan(\''+k+'\',\'kategoriId\',this.value)">'+tdKatOptions(r.kaynak,r.kategoriId)+'</select></td>'
-    +'<td>'+inp('tamAd',r.kaynak==='ham'?'Parametre / ürün adı':'Ürün adı',r.kaynak==='ham'?' list="td-param-dl"':'')+'</td>'
-    +'<td>'+inp('kisaltma','ör. AMP')+'</td>'
-    +'<td>'+inp('cutoff','ör. 50')+'</td>'
-    +'<td><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" step="'+(r.kaynak==='ham'?'0.001':'1')+'" value="'+(r.miktar||'')+'" placeholder="0" style="width:100%" onchange="tdMiktarDegis(\''+k+'\',this.value)"><span style="font-size:11px;color:var(--text3)">'+(r.kaynak==='ham'?'sh':'ad')+'</span></div></td>'
-    +'<td><button class="btn-icon" style="color:var(--red)" onclick="tdManuelSil(\''+k+'\')" title="Kaldır"><i class="ti ti-x"></i></button></td>'
-    +'</tr>';
-}
-
-function tdSeciliSatirlar(){
-  return _tdSatirlar.filter(function(r){
-    if(!(r.miktar>0)) return false;
-    if(r.manuel) return true;
-    return !!_tdKapsam[r.kaynak+'|'+r.kategoriId];
-  });
-}
-
-function tdOzetRender(){
-  var el=document.getElementById('td-ozet'); if(!el) return;
-  var sec=tdSeciliSatirlar();
-  var sh=0,ad=0;sec.forEach(function(r){if(r.kaynak==='ham')sh+=r.miktar;else ad+=r.miktar;});
-  el.innerHTML='<b>'+sec.length+'</b> kalem'+(sh?' · <b>'+tdFmt(sh)+'</b> sheet':'')+(ad?' · <b>'+tdFmt(ad)+'</b> adet':'');
+function tdYeniKalemEkle(){
+  var r=_tdYeniTaslak; if(!r) return;
+  var tamAd=(r.tamAd||'').trim();
+  var miktar=Math.max(0,parseFloat(String(r.miktar).replace(',','.'))||0);
+  if(!r.kategoriId) return toast('Kategori seçin.','error');
+  if(!tamAd) return toast('Ürün / parametre adı zorunludur.','error');
+  if(!(miktar>0)) return toast('Tedarik miktarı girin.','error');
+  miktar=r.kaynak==='ham'?tdR3(miktar):Math.round(miktar);
+  var cok=(r.parametreler||[]).length>1;
+  var anahtar,key;
+  if(r.kaynak==='ham'){
+    anahtar=cok?tamAd:((r.kisaltma||'').trim()||tamAd);
+    key='ham|'+r.kategoriId+'|'+anahtar+'|'+(r.cutoff||'').trim();
+  }else{
+    anahtar=[tamAd.toLowerCase(),(r.marka||'').trim().toLowerCase(),(r.model||'').trim().toLowerCase()].join('|');
+    key='bitmis|'+r.kategoriId+'|'+anahtar;
+  }
+  // Stokta zaten kayıtlıysa yeni kalem değil, o ürünün kendi satırı olarak eklenir
+  var kat=tdKatalog().find(function(x){return x.key===key;});
+  var listede=_tdSatirlar.find(function(x){return x.key===key;});
+  if(listede){
+    listede.miktar=miktar;
+    toast(listede.tamAd+' zaten listedeydi; miktarı güncellendi.','info');
+  }else if(kat){
+    var s=tdSiniflar()[tdSinifKey(kat)]||{};
+    _tdSatirlar.push(Object.assign({},kat,{sinif:s.sinif||'',miktar:miktar,hedef:null,manuel:false}));
+    toast(kat.tamAd+' stokta kayıtlı bir ürün; listeye eklendi.','info');
+  }else{
+    _tdSatirlar.push({key:'m'+(++_tdManuelSayac),kaynak:r.kaynak,kategoriId:r.kategoriId,anahtar:anahtar,tamAd:tamAd,kisaltma:(r.kisaltma||'').trim(),cutoff:(r.cutoff||'').trim(),
+      parametreler:r.parametreler||[],marka:(r.marka||'').trim(),model:(r.model||'').trim(),mevcut:null,hedef:null,birim:r.kaynak==='ham'?'sheet':'adet',sinif:'',manuel:true,miktar:miktar});
+  }
+  closeModal('modal-td-yeni');
+  _tdYeniTaslak=null;
+  tdRenderSatirlar();
 }
 
 async function saveTedarik(){
   var tarih=document.getElementById('td-tarih').value;
   if(!tarih) return toast('Tarih zorunludur.','error');
-  var sec=tdSeciliSatirlar();
-  if(!sec.length) return toast('En az bir kaleme tedarik miktarı girin.','error');
-  var eksik=sec.find(function(r){return r.manuel&&!(r.tamAd||'').trim();});
-  if(eksik) return toast('Manuel eklenen kalemlerde ürün / parametre adı zorunludur.','error');
-  // Kaydedilen sıra = ekrandaki sıra (kategori bölümleri, sonra manueller)
   var sira=[];
-  var sinifSira={A:0,B:1,C:2};
-  tdKapsamListesi().forEach(function(b){
-    sec.filter(function(r){return !r.manuel&&r.kaynak===b.kaynak&&r.kategoriId===b.kategoriId;})
-      .sort(function(x,y){return (sinifSira[x.sinif]-sinifSira[y.sinif])||(x.tamAd||'').localeCompare(y.tamAd||'','tr')||(x.cutoff||'').localeCompare(y.cutoff||'','tr');})
-      .forEach(function(r){sira.push(r);});
-  });
-  sec.filter(function(r){return r.manuel;}).forEach(function(r){sira.push(r);});
+  tdGruplar().forEach(function(g){g.satirlar.forEach(function(r){if(r.miktar>0)sira.push(r);});});
+  if(!sira.length) return toast('Listeye en az bir kalem ekleyin ve miktarını girin.','error');
   var payload={
     id:_tdEditId||undefined,
     tarih:tarih,
     tedarikci:document.getElementById('td-tedarikci').value.trim(),
     notlar:document.getElementById('td-notlar').value.trim(),
-    hedefler:_tdHedefler,
+    hedefler:{kategoriler:_tdHedefler},
     kalemler:sira.map(function(r){
-      return {kaynak:r.kaynak,kategoriId:r.kategoriId||null,anahtar:r.anahtar||(r.manuel?(r.kisaltma||r.tamAd):''),tamAd:(r.tamAd||'').trim(),kisaltma:r.kisaltma||'',cutoff:r.cutoff||'',
-        marka:r.marka||'',model:r.model||'',sinif:r.sinif||'',mevcut:r.manuel?null:r.mevcut,hedef:r.manuel?null:tdHedefOf(r),miktar:r.miktar,manuel:!!r.manuel};
+      return {kaynak:r.kaynak,kategoriId:r.kategoriId||null,anahtar:r.anahtar||'',tamAd:(r.tamAd||'').trim(),kisaltma:r.kisaltma||'',cutoff:r.cutoff||'',
+        marka:r.marka||'',model:r.model||'',sinif:r.sinif||'',mevcut:r.mevcut,hedef:r.hedef!=null?r.hedef:null,miktar:r.miktar,manuel:!!r.manuel};
     })
   };
   var res;
@@ -747,13 +872,18 @@ function tdGirisOnDoldur(kaynak){
     var kalan=tdKalan(k);
     if(kaynak==='ham'){
       var src=(state.hamStokLotlar||[]).find(function(l){return l.kategoriId===k.kategoriId&&l.parametreAd===k.anahtar&&(l.cutoff||'').trim()===(k.cutoff||'');});
-      var coklu=!!(src&&src.tip==='coklu');
-      return {kategoriId:k.kategoriId||'',tip:coklu?'coklu':'tekli',parametreAd:k.anahtar||'',cutoff:coklu?'':(k.cutoff||''),
-        parametreler:coklu?JSON.parse(JSON.stringify(src.parametreler||[])):[],ekOzellik:'',lotNo:'',sheetMiktar:kalan,sktTarih:'',tedarikKalemId:k.id};
+      // Stokta karşılığı olmayan (manuel eklenmiş) kalemde parametreler kısaltma/cut-off'tan çözülür
+      var cozulen=src?null:tdCutoffParametreler(k.kisaltma,k.cutoff);
+      var coklu=src?src.tip==='coklu':cozulen.length>1;
+      var params=src?(src.parametreler||[]):cozulen;
+      var parametreAd=src?k.anahtar:(coklu?k.tamAd:((cozulen[0]||{}).ad||k.anahtar||''));
+      var cutoff=src?(k.cutoff||''):(coklu?'':((cozulen[0]||{}).deger||k.cutoff||''));
+      return {kategoriId:k.kategoriId||'',tip:coklu?'coklu':'tekli',parametreAd:parametreAd||'',cutoff:coklu?'':cutoff,
+        parametreler:coklu?JSON.parse(JSON.stringify(params)):[],ekOzellik:'',lotNo:'',sheetMiktar:kalan,sktTarih:'',tedarikKalemId:k.id};
     }
     var bsrc=(state.bitmisStokLotlar||[]).find(function(l){return l.kategoriId===k.kategoriId&&tdBitmisAnahtar(l)===k.anahtar;});
     return {lotNo:'',urunAdi:bsrc?bsrc.urunAdi:k.tamAd,kategoriId:k.kategoriId||'',marka:bsrc?(bsrc.marka||''):(k.marka||''),model:bsrc?(bsrc.model||''):(k.model||''),
-      seriNo:'',seriNolar:[],parametreler:bsrc?JSON.parse(JSON.stringify(bsrc.parametreler||[])):[],miktar:Math.ceil(kalan),sktTarih:'',notlar:'',tedarikKalemId:k.id};
+      seriNo:'',seriNolar:[],parametreler:JSON.parse(JSON.stringify(bsrc?(bsrc.parametreler||[]):tdCutoffParametreler(k.kisaltma,k.cutoff))),miktar:Math.ceil(kalan),sktTarih:'',notlar:'',tedarikKalemId:k.id};
   });
   return {kalemler:kalemler,notlar:(t.evrakNo||'')+' mal kabulü'+(t.tedarikci?' — '+t.tedarikci:'')};
 }

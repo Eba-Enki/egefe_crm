@@ -10,7 +10,7 @@
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js"></script>
 <script src="vendor/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=22">
+<link rel="stylesheet" href="styles.css?v=23">
 </head>
 <body>
 
@@ -1539,19 +1539,15 @@
           <div class="field"><label>Tedarikçi</label><input type="text" id="td-tedarikci" placeholder="Tedarikçi firma"></div>
           <div class="field form-full"><label>Not</label><textarea id="td-notlar" rows="2" placeholder="ör. Aralık toplu tedarik"></textarea></div>
         </div>
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin:18px 0 8px">Kapsam <span style="font-weight:400;color:var(--text3)">— öneriye girecek kategoriler</span></div>
-        <div id="td-kapsam"></div>
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin:18px 0 8px">Hedef Stok <span style="font-weight:400;color:var(--text3)">— sınıf başına; tedarik miktarı = hedef − mevcut (tam sayıya yukarı yuvarlanır). 0 girilen sınıftan tedarik önerilmez.</span></div>
-        <div id="td-hedefler" style="display:flex;flex-direction:column;gap:8px"></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:20px 0 8px">
-          <div style="font-size:13px;font-weight:600;color:var(--text)">Kalemler <span style="font-weight:400;color:var(--text3)">— miktarları dilediğiniz gibi değiştirebilirsiniz</span></div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer"><input type="checkbox" id="td-sadece-miktarli" onchange="tdSadeceMiktarliDegis(this.checked)"> Sadece miktarı olanları göster</label>
-            <button class="btn btn-ghost btn-sm" onclick="tdOnerileriSifirla()" title="Elle değiştirilen miktarları önerilen değerlere döndür"><i class="ti ti-refresh"></i> Önerilere Dön</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:20px 0 10px">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Tedarik Kalemleri</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" style="color:var(--accent)" onclick="tdOneriAc('ham')"><i class="ti ti-bulb"></i> Yarı Mamul Önerileri</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--accent)" onclick="tdOneriAc('bitmis')"><i class="ti ti-package"></i> Hazır Ürün Ekle</button>
+            <button class="btn btn-ghost btn-sm" onclick="tdYeniKalemAc()"><i class="ti ti-plus"></i> Yeni Kalem</button>
           </div>
         </div>
         <div id="td-satirlar"></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px">* Tüketim: son dönemdeki çıkışlar (kesilen + fire); sınıflandırmada kullanılır. Sınıfı satırdan değiştirebilirsiniz, değişiklik kalıcıdır.</div>
         <div style="display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap">
           <button class="btn btn-primary" onclick="saveTedarik()">Tedarik Listesini Kaydet</button>
           <button class="btn btn-ghost" onclick="showPage('tedarikler')">İptal</button>
@@ -2065,9 +2061,9 @@
 <script src="js/musteri.js?v=16"></script>
 <script src="js/export.js?v=6"></script>
 <script src="js/satis.js?v=21"></script>
-<script src="js/stok.js?v=12"></script>
+<script src="js/stok.js?v=13"></script>
 <script src="js/referans.js?v=3"></script>
-<script src="js/tedarik.js?v=2"></script>
+<script src="js/tedarik.js?v=4"></script>
 <script src="js/init.js?v=13"></script>
 <script src="js/resizable-cols.js?v=1"></script>
 <script src="js/notlar.js?v=1"></script>
@@ -2446,6 +2442,41 @@
 </div>
 
 <!-- ── MODAL: HAZIR ÜRÜN PARAMETRE + CUT-OFF SEÇİM ── -->
+<!-- Tedarik: Yarı Mamul Önerileri / Hazır Ürün Ekle -->
+<div class="modal-overlay" id="modal-td-oneri">
+  <div class="modal" style="max-width:1180px;width:96%">
+    <div class="modal-header">
+      <span class="modal-title" id="td-oneri-baslik">Yarı Mamul Önerileri</span>
+      <button class="close-btn" onclick="closeModal('modal-td-oneri')" style="margin-left:auto">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto">
+      <div id="td-oneri-sekmeler" class="td-sekmeler"></div>
+      <div id="td-oneri-arac" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0"></div>
+      <div id="td-oneri-tablo"></div>
+    </div>
+    <div class="modal-footer">
+      <span id="td-oneri-ozet" style="font-size:12px;color:var(--text2);margin-right:auto"></span>
+      <button class="btn btn-ghost" onclick="closeModal('modal-td-oneri')">Kapat</button>
+      <button class="btn btn-primary" onclick="tdOneriAktar()"><i class="ti ti-arrow-bar-to-down"></i> Listeye Aktar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tedarik: Yeni Kalem (listede olmayan ürün) -->
+<div class="modal-overlay" id="modal-td-yeni">
+  <div class="modal" style="max-width:620px;width:94%">
+    <div class="modal-header">
+      <span class="modal-title">Yeni Kalem</span>
+      <button class="close-btn" onclick="closeModal('modal-td-yeni')" style="margin-left:auto">✕</button>
+    </div>
+    <div class="modal-body" id="td-yeni-govde"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-td-yeni')">İptal</button>
+      <button class="btn btn-primary" onclick="tdYeniKalemEkle()">Listeye Ekle</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-bitmis-parametre-sec">
   <div class="modal" style="max-width:520px;width:90%">
     <div class="modal-header">

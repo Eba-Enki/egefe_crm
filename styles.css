@@ -990,3 +990,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
 .td-bolum{border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;overflow:hidden}
 .td-bolum-baslik{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;background:var(--bg3);font-size:13px;font-weight:600;color:var(--text);border-bottom:1px solid var(--border)}
 .td-bolum .table-wrap{margin:0;border:0;border-radius:0}
+.td-sekmeler{display:flex;gap:6px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.td-sekme{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--border);border-radius:999px;background:var(--bg3);color:var(--text2);cursor:pointer;transition:background-color .15s ease,border-color .15s ease,color .15s ease}
+.td-sekme:hover{border-color:var(--accent);color:var(--text)}
+.td-sekme:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.td-sekme:active{transform:scale(.97)}
+.td-sekme-on{background:var(--accent);border-color:var(--accent);color:#fff}
+.td-sekme-on:hover{color:#fff}
+.td-sekme-say{font-family:var(--font-mono);font-size:10px;padding:1px 6px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.td-sekme-on .td-sekme-say{background:rgba(255,255,255,.25);color:#fff}

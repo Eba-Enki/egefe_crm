@@ -17,13 +17,13 @@ var _VISIBILITY_STALE_MS = 30000; // 30 saniye
 var _FORM_PAGES = new Set([
   'servis-form','teklif-form','ihr-teklif-form','ym-form','musteri-form','urun-form',
   'siparis-form','ham-giris','ham-cikis','ham-sayim','bitmis-giris',
-  'bitmis-cikis','bitmis-sayim','kullanici-form'
+  'bitmis-cikis','bitmis-sayim','tedarik','kullanici-form'
 ]);
 
 var _STOK_PAGES = new Set([
   'stok-dashboard','ham-stok','ham-girisler','ham-cikislar','ham-sayimlar',
   'bitmis-stok','bitmis-girisler','bitmis-cikislar','bitmis-sayimlar',
-  'stok-ayarlar','stok-parametreler','ref-ana-stok'
+  'stok-ayarlar','stok-parametreler','ref-ana-stok','tedarikler'
 ]);
 
 document.addEventListener('visibilitychange', function() {

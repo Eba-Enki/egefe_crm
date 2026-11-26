@@ -55,6 +55,10 @@ async function loadStokData(force){
     state.stokSettings.hamCikisPrefix=ayarlar.hamCikisPrefix||'HC';
     state.stokSettings.ticariCikisPrefix=ayarlar.ticariCikisPrefix||'TC';
     state.stokSettings.cikisNedenleri=ayarlar.cikisNedenleri||[];
+    state.stokSettings.tedarikPrefix=ayarlar.tedarikPrefix||'TD';
+    state.stokSettings.tedarikSinifA=ayarlar.tedarikSinifA!==undefined?ayarlar.tedarikSinifA:70;
+    state.stokSettings.tedarikSinifB=ayarlar.tedarikSinifB!==undefined?ayarlar.tedarikSinifB:20;
+    state.stokSettings.tedarikDonemAy=ayarlar.tedarikDonemAy||6;
     state.hamStokGirisler=sonuc[4].girisler||[];
     state.hamStokLotlar=sonuc[5].lotlar||[];
     state.hamStokCikislar=sonuc[6].cikislar||[];
@@ -2670,6 +2674,7 @@ async function loadStokAyarlar(){
   stokRenderEsikler();
   stokNedenRender();
   if(typeof refAyarPanelYukle==='function')refAyarPanelYukle();
+  if(typeof tdAyarPanelYukle==='function')tdAyarPanelYukle();
   var hcpEl=document.getElementById('set-ham-cikis-prefix');
   if(hcpEl){hcpEl.value=state.stokSettings.hamCikisPrefix||'HC'; stokPrefixPrev();}
   var tcpEl=document.getElementById('set-ticari-cikis-prefix');

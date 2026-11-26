@@ -13,6 +13,11 @@ const VARSAYILAN_AYARLAR = [
     // Referans standartlar formundaki seçim listeleri
     'refCozuculer'      => ['Metanol','Asetonitril'],
     'refKonumlar'       => ['Ampul Kutusu','Siyah Rack','Mor Rack'],
+    // Tedarik: belge öneki ve A/B/C sınıflandırması (kategori tüketiminin birikimli payı)
+    'tedarikPrefix'     => 'TD',
+    'tedarikSinifA'     => 70,
+    'tedarikSinifB'     => 20,
+    'tedarikDonemAy'    => 6,
 ];
 
 function ayarlarOku(PDO $pdo): array {
@@ -42,6 +47,18 @@ switch ($method) {
         }
         if (array_key_exists('ticariCikisPrefix', $input)) {
             $ayarlar['ticariCikisPrefix'] = trim((string)$input['ticariCikisPrefix']) ?: 'TC';
+        }
+        if (array_key_exists('tedarikPrefix', $input)) {
+            $ayarlar['tedarikPrefix'] = trim((string)$input['tedarikPrefix']) ?: 'TD';
+        }
+        if (array_key_exists('tedarikSinifA', $input) || array_key_exists('tedarikSinifB', $input)) {
+            $a = max(1, min(99, (int)($input['tedarikSinifA'] ?? $ayarlar['tedarikSinifA'])));
+            $b = max(0, min(100 - $a, (int)($input['tedarikSinifB'] ?? $ayarlar['tedarikSinifB'])));
+            $ayarlar['tedarikSinifA'] = $a;
+            $ayarlar['tedarikSinifB'] = $b;
+        }
+        if (array_key_exists('tedarikDonemAy', $input)) {
+            $ayarlar['tedarikDonemAy'] = max(1, min(36, (int)$input['tedarikDonemAy']));
         }
         foreach (['cikisNedenleri', 'refCozuculer', 'refKonumlar'] as $listeAnahtari) {
             if (array_key_exists($listeAnahtari, $input) && is_array($input[$listeAnahtari])) {

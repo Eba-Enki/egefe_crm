@@ -10,7 +10,7 @@
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js"></script>
 <script src="vendor/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=21">
+<link rel="stylesheet" href="styles.css?v=22">
 </head>
 <body>
 
@@ -172,6 +172,8 @@
     <div class="sb-item stok-only" data-page="bitmis-girisler" style="display:none" onclick="showPage('bitmis-girisler')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Hazır Ürün Stok Girişler</span></div>
     <div class="sb-item stok-only" data-page="bitmis-cikislar" style="display:none" onclick="showPage('bitmis-cikislar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><span>Hazır Ürün Stok Çıkışlar</span></div>
     <div class="sb-item stok-only" data-page="bitmis-sayimlar" style="display:none" onclick="showPage('bitmis-sayimlar')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span>Hazır Ürün Stok Sayımı</span></div>
+    <div class="sb-section stok-only" style="display:none">Tedarik</div>
+    <div class="sb-item stok-only" data-page="tedarikler" style="display:none" onclick="showPage('tedarikler')"><span class="icon"><i class="ti ti-truck-delivery"></i></span><span>Tedarik Listeleri</span></div>
     <div class="sb-section stok-only" style="display:none">Referans Standartlar</div>
     <div class="sb-item stok-only" data-page="ref-ana-stok" style="display:none" onclick="showPage('ref-ana-stok')"><span class="icon"><i class="ti ti-flask"></i></span><span>Ana Stoklar</span></div>
   </nav>
@@ -251,6 +253,7 @@
       <button class="btn btn-primary btn-sm admin-only stok-only" id="topbar-stok-param" style="display:none" onclick="stokParamFormAc()"><i class="ti ti-plus"></i> Yeni Parametre</button>
       <button class="btn btn-ghost btn-sm can-write stok-only" id="topbar-ref-ana-import" style="display:none" onclick="refImportSec()"><i class="ti ti-file-upload"></i> Excel'den Aktar</button>
       <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-ref-ana-yeni" style="display:none" onclick="openRefAnaForm()"><i class="ti ti-plus"></i> Yeni Ana Stok</button>
+      <button class="btn btn-primary btn-sm can-write stok-only" id="topbar-stok-tedarik" style="display:none" onclick="goTedarikYeni()"><i class="ti ti-plus"></i> Yeni Tedarik Listesi</button>
     </div>
   </div>
 
@@ -1509,6 +1512,54 @@
       </div></div>
     </div>
 
+    <!-- ═══ TEDARİK LİSTELERİ ═══ -->
+    <div id="page-tedarikler" class="page stok-only">
+      <div class="filter-bar" style="margin-bottom:14px">
+        <div class="filter-row">
+          <div class="filter-search">
+            <input type="text" id="tdl-arama" placeholder="Tedarik No / Tedarikçi / Not..." oninput="_tdPage=1;renderTedarikler()" style="min-width:240px">
+          </div>
+          <select id="tdl-durum" onchange="_tdPage=1;renderTedarikler()">
+            <option value="">Tüm Durumlar</option>
+            <option>Taslak</option><option>Tedarikçiye İletildi</option><option>Kısmi Mal Kabul</option><option>Mal Kabul Tamamlandı</option><option>İptal</option>
+          </select>
+        </div>
+      </div>
+      <div id="tedarikler-wrap"></div>
+      <div id="tedarikler-pagination" style="margin-top:12px"></div>
+    </div>
+
+    <!-- ═══ TEDARİK LİSTESİ FORMU ═══ -->
+    <div id="page-tedarik" class="page stok-only">
+      <div class="form-wrap" style="max-width:1280px"><div class="form-card">
+        <div class="form-section-title" id="td-form-baslik" style="margin-bottom:16px">Yeni Tedarik Listesi</div>
+        <div class="form-grid">
+          <div class="field"><label>Tedarik No</label><input type="text" id="td-evrak" disabled></div>
+          <div class="field"><label>Tarih <span class="req">*</span></label><input type="date" id="td-tarih"></div>
+          <div class="field"><label>Tedarikçi</label><input type="text" id="td-tedarikci" placeholder="Tedarikçi firma"></div>
+          <div class="field form-full"><label>Not</label><textarea id="td-notlar" rows="2" placeholder="ör. Aralık toplu tedarik"></textarea></div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin:18px 0 8px">Kapsam <span style="font-weight:400;color:var(--text3)">— öneriye girecek kategoriler</span></div>
+        <div id="td-kapsam"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin:18px 0 8px">Hedef Stok <span style="font-weight:400;color:var(--text3)">— sınıf başına; tedarik miktarı = hedef − mevcut (tam sayıya yukarı yuvarlanır). 0 girilen sınıftan tedarik önerilmez.</span></div>
+        <div id="td-hedefler" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:20px 0 8px">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Kalemler <span style="font-weight:400;color:var(--text3)">— miktarları dilediğiniz gibi değiştirebilirsiniz</span></div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer"><input type="checkbox" id="td-sadece-miktarli" onchange="tdSadeceMiktarliDegis(this.checked)"> Sadece miktarı olanları göster</label>
+            <button class="btn btn-ghost btn-sm" onclick="tdOnerileriSifirla()" title="Elle değiştirilen miktarları önerilen değerlere döndür"><i class="ti ti-refresh"></i> Önerilere Dön</button>
+          </div>
+        </div>
+        <div id="td-satirlar"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">* Tüketim: son dönemdeki çıkışlar (kesilen + fire); sınıflandırmada kullanılır. Sınıfı satırdan değiştirebilirsiniz, değişiklik kalıcıdır.</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="saveTedarik()">Tedarik Listesini Kaydet</button>
+          <button class="btn btn-ghost" onclick="showPage('tedarikler')">İptal</button>
+          <span id="td-ozet" style="font-size:13px;color:var(--text2);margin-left:auto"></span>
+        </div>
+      </div></div>
+    </div>
+
     <!-- ═══ TİCARİ STOK GÖRÜNÜMÜ ═══ -->
     <div id="page-bitmis-stok" class="page stok-only">
       <div class="filter-bar" style="margin-bottom:14px">
@@ -1720,6 +1771,11 @@
             </span>
             <span class="settings-nav-label">Stok Eşiği</span>
           </div>
+          <div class="settings-nav-section">Tedarik</div>
+          <div class="settings-nav-item" data-panel="tedarik" onclick="switchStokSettingsPanel('tedarik')">
+            <span class="settings-nav-icon"><i class="ti ti-truck-delivery" style="font-size:16px"></i></span>
+            <span class="settings-nav-label">Tedarik ve Sınıflar</span>
+          </div>
           <div class="settings-nav-section">Referans Standartlar</div>
           <div class="settings-nav-item" data-panel="ref" onclick="switchStokSettingsPanel('ref')">
             <span class="settings-nav-icon"><i class="ti ti-flask" style="font-size:16px"></i></span>
@@ -1831,6 +1887,37 @@
             </div>
             <div class="settings-section">
               <div id="stok-esik-body"></div>
+            </div>
+          </div>
+
+          <!-- Panel: Tedarik ve Sınıflar -->
+          <div id="ssp-tedarik" class="settings-panel">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon"><i class="ti ti-truck-delivery" style="font-size:20px"></i></div>
+              <div>
+                <div class="settings-panel-title">Tedarik ve Sınıflar</div>
+                <div class="settings-panel-sub">Tedarik listesi numarası ve kalemlerin A / B / C sınıflandırması</div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-subsection-title">Genel</div>
+              <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end">
+                <div class="field" style="margin:0"><label style="font-size:11px">Tedarik No Öneki</label><input type="text" id="td-set-prefix" style="width:90px;text-align:center"></div>
+                <div class="field" style="margin:0"><label style="font-size:11px">Tüketim Dönemi (ay)</label><input type="number" id="td-set-donem" min="1" max="36" style="width:90px;text-align:center"></div>
+                <div class="field" style="margin:0"><label style="font-size:11px;color:var(--green)">A — ilk %</label><input type="number" id="td-set-a" min="1" max="99" style="width:80px;text-align:center" oninput="tdAyarCOzet()"></div>
+                <div class="field" style="margin:0"><label style="font-size:11px;color:var(--amber)">B — sonraki %</label><input type="number" id="td-set-b" min="0" max="99" style="width:80px;text-align:center" oninput="tdAyarCOzet()"></div>
+                <div class="field" style="margin:0"><label style="font-size:11px">C — kalan</label><div id="td-set-c" style="padding:8px 4px;font-family:var(--font-mono);font-weight:600">%10</div></div>
+                <button class="btn btn-primary" onclick="tdAyarKaydet()">Kaydet</button>
+              </div>
+              <div style="font-size:12px;color:var(--text3);margin-top:10px">Her kategoride kalemler son dönemdeki tüketime göre büyükten küçüğe sıralanır. Kategori tüketiminin ilk A%'sini oluşturanlar A, sonraki B%'sini oluşturanlar B, kalanlar ve hiç tüketilmeyenler C olur.</div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-subsection-title">Sınıflar</div>
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+                <label style="font-size:12px;color:var(--text2)">Kategori</label>
+                <select id="td-set-kat" onchange="tdAyarSinifRender()" style="min-width:260px"></select>
+              </div>
+              <div id="td-set-siniflar"></div>
             </div>
           </div>
 
@@ -1966,9 +2053,9 @@
 
 <script src="js/api.js?v=2"></script>
 <script src="js/state.js?v=13"></script>
-<script src="js/auth.js?v=15"></script>
+<script src="js/auth.js?v=16"></script>
 <script src="js/sistem.js?v=3"></script>
-<script src="js/ui.js?v=28"></script>
+<script src="js/ui.js?v=29"></script>
 <script src="js/dashboard.js?v=6"></script>
 <script src="js/servis.js?v=13"></script>
 <script src="js/teklif.js?v=20"></script>
@@ -1978,9 +2065,10 @@
 <script src="js/musteri.js?v=16"></script>
 <script src="js/export.js?v=6"></script>
 <script src="js/satis.js?v=21"></script>
-<script src="js/stok.js?v=10"></script>
+<script src="js/stok.js?v=11"></script>
 <script src="js/referans.js?v=3"></script>
-<script src="js/init.js?v=12"></script>
+<script src="js/tedarik.js?v=1"></script>
+<script src="js/init.js?v=13"></script>
 <script src="js/resizable-cols.js?v=1"></script>
 <script src="js/notlar.js?v=1"></script>
 <!-- ─── FATURA MODAL ─── -->
